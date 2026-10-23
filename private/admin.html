@@ -688,12 +688,21 @@
     }
 
 function renderAdminScreen() {
-      const admin = getActiveAdmin() || { name: 'مسؤول النظام', isMaster: true };
+      // 1. محاولة جلب الأدمن الحقيقي المسجل حالياً من الجلسة
+      const admin = getActiveAdmin();
       
-      // تعيين اسم الأدمن وحالته فوراً وإلغاء جملة جاري التحميل
+      // 2. إذا لم تكتمل البيانات بعد، ننتظر مزامنة السيرفر بهدوء بدون فرض قيم وهمية تُعطل الصلاحيات
+      if (!admin) {
+        const sessionLabel = document.getElementById('currentAdminSessionLabel');
+        if (sessionLabel) sessionLabel.innerText = 'جاري مزامنة صلاحيات الأدمن... 🔄';
+        syncFromCloudServer();
+        return;
+      }
+      
+      // 3. تعيين اسم الأدمن وحالته الحقيقية (أدمن رئيسي 👑 أو مسؤول) بناءً على قاعدة البيانات
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
-        sessionLabel.innerText = `${admin.name || 'مسؤول النظام'} (${admin.isMaster ? 'أدمن رئيسي' : 'مسؤول'})`;
+        sessionLabel.innerText = `${admin.name || 'مسؤول النظام'} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
       }
 
       applyAdminPermissionsUI();
