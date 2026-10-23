@@ -1118,6 +1118,10 @@ app.post('/api/auth/customer/login', authLimiter, async (req, res) => {
     return res.status(400).json({ success: false, message: 'برجاء إدخال رقم هاتف مصري صحيح (11 رقم يبدأ بـ 01) 📱⚠️' });
   }
 
+app.get('/install', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'install.html'));
+});
+
   try {
     let { data: customer, error: fetchError } = await supabase
       .from('customers')
@@ -2790,6 +2794,10 @@ async function cancelExpiredWaitingOrdersOnServer() {
 }
 
 setInterval(cancelExpiredWaitingOrdersOnServer, 60 * 1000).unref();
+
+app.get('/install', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'install.html'));
+});
 
 // تشغيل الخادم
 app.listen(PORT, async () => {

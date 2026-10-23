@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تثبيت تطبيق الرجل العنابي</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7B3F52">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      background: #FAF7F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #FFFFFF;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(123, 63, 82, 0.1);
+      border: 1px solid #F0EAE1;
+    }
+    .logo {
+      width: 110px;
+      height: 110px;
+      border-radius: 22px;
+      margin: 0 auto 20px;
+      object-fit: cover;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h1 { color: #7B3F52; font-size: 22px; margin-bottom: 10px; }
+    p { color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+    .btn-install {
+      background: #7B3F52;
+      color: #FFF;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-install:active { background: #5F2E3E; }
+    .ios-tip {
+      display: none;
+      background: #FFF8E7;
+      border: 1px dashed #E0A938;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #7A5800;
+      margin-top: 15px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <img src="/icon-192.png" alt="الرجل العنابي" class="logo">
+    <h1>تطبيق الرجل العنابي</h1>
+    <p>ثبّت التطبيق الآن على هاتفك للوصول السريع ومتابعة طلباتك بضغطة واحدة وبدون استهلاك مساحة.</p>
+
+    <button id="installBtn" class="btn-install">
+      <span>تثبيت التطبيق الآن</span>
+    </button>
+
+    <div id="iosTip" class="ios-tip">
+      مستخدم آيفون؟ اضغط على زر المشاركة <strong>(Share)</strong> بالأسفل ثم اختر <strong>"إضافة إلى الصفحة الرئيسية"</strong> (Add to Home Screen).
+    </div>
+  </div>
+
+  <script>
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    const iosTip = document.getElementById('iosTip');
+
+    // كشف نظام iOS لإظهار الإرشادات البديلة
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIos) {
+      iosTip.style.display = 'block';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBtn.innerText = 'تم التثبيت بنجاح!';
+        }
+        deferredPrompt = null;
+      } else if (!isIos) {
+        alert('التطبيق مثبت بالفعل أو يمكنك التثبيت من خيارات المتصفح (ثلاث نقاط أعلى الشاشة -> تثبيت التطبيق).');
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
