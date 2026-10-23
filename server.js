@@ -829,7 +829,7 @@ app.post('/api/admin/accounts/sub', requireAdmin('MASTER_ONLY'), async (req, res
 // 11. عزل لوحة الإدارة تماماً بمسار محمي
 // ============================================================================
 
-app.get('/admin-portal-ennaby', async (req, res) => {
+app.get('/admins', async (req, res) => {
   const admin = await getAuthenticatedAdmin(req);
   if (!admin) {
     // عرض شاشة تسجيل دخول احترافية ومدمجة للأدمن لو لم يكن مسجلاً للدخول
