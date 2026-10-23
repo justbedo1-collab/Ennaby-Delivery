@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* التنسيقات المشتركة والمتطابقة مع الهوية البصرية */
     :root {
       --primary: #7B3F52;
       --primary-dark: #5F2E3E;
@@ -33,7 +32,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
     body { background: var(--bg-canvas); min-height: 100vh; color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
 
-    /* حاوية الموبايل (نفس شكل index) */
     .device-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: stretch; }
     .phone-mockup { width: 100vw; max-width: 100vw; height: 100vh; background: var(--bg-canvas); display: flex; flex-direction: column; position: relative; }
     @media (min-width: 481px) { .phone-mockup { max-width: 600px; border-radius: 20px; box-shadow: var(--shadow-lg); height: 95vh; margin-top: 2.5vh; } }
@@ -244,7 +242,7 @@
                 <div id="subAdminsBuilderBox" style="background:#fff; padding:12px; border-radius:12px; border:1.5px dashed var(--primary); margin-bottom:12px;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <strong style="font-size:12.5px; color:var(--primary);" id="subAdminFormTitle"><i class="fa-solid fa-user-plus"></i> إضافة مسؤول جديد:</strong>
-                    <button type="button" id="cancelSubAdminEditBtn" onclick="resetSubAdminForm()" style="display:none; background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; cursor:pointer;">إلغاء התعديل ✕</button>
+                    <button type="button" id="cancelSubAdminEditBtn" onclick="resetSubAdminForm()" style="display:none; background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; cursor:pointer;">إلغاء التعديل ✕</button>
                   </div>
                   <input type="hidden" id="editingSubAdminOrigUser" value="">
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
@@ -308,7 +306,7 @@
               </div>
 
               <div class="card" id="admCard-captainDirectory" style="border: 2px solid var(--primary);">
-                <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن המعتمدين 🛵</h2>
+                <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن المعتمدين 🛵</h2>
                 <div class="input-group">
                   <select class="select-field" id="adminCaptainDirectorySelect" onchange="renderAdminSelectedCaptainCard()"></select>
                 </div>
@@ -339,7 +337,7 @@
           <!-- تبويب الإدارة 3: العملاء والمالية -->
           <div id="admTab-finance" class="sub-tab-section" style="display:none;">
             
-            <!-- ✅ قسم تعيين PIN جديد للعميل -->
+            <!-- تعيين PIN جديد للعميل -->
             <div class="card" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
               <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
               <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، أدخل رقمه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
@@ -382,7 +380,7 @@
             <!-- عمولة فردية -->
             <div class="card" id="admCard-customFee" style="border: 2px solid #0277BD;">
               <h2 class="card-title" style="color:#0277BD;"><i class="fa-solid fa-user-tag"></i> عمولة فردية لكابتن 🎯</h2>
-              <input type="tel" id="adminCustomFeePhoneSearch" class="input-field" placeholder="بحث ברقم الكابتن" oninput="handleAdminCustomFeeSearch()" style="margin-bottom:6px;">
+              <input type="tel" id="adminCustomFeePhoneSearch" class="input-field" placeholder="بحث برقم الكابتن" oninput="handleAdminCustomFeeSearch()" style="margin-bottom:6px;">
               <select class="select-field" id="adminCustomFeeCaptainSelect" onchange="renderAdminCustomFeeCaptainSummary()" style="margin-bottom:8px;"></select>
               <div id="adminCustomFeeCurrentSummary" style="background:#fff; border:1px solid #B3E5FC; border-radius:10px; padding:8px 10px; font-size:11px; margin-bottom:10px;"></div>
               <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
@@ -414,7 +412,7 @@
 
             <!-- الدفتر المالي -->
             <div class="card" id="admCard-financialLedger">
-              <h2 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> سجل التدقيق המالي</h2>
+              <h2 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> سجل التدقيق المالي</h2>
               <div id="adminFinancialLedgerList" style="font-size:11px; display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto;"></div>
             </div>
           </div>
@@ -424,7 +422,7 @@
             
             <div class="card" id="admCard-ordersManage">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-                <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> إدارة الطلبات והاعتراضات</h2>
+                <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> إدارة الطلبات والاعتراضات</h2>
                 <select id="adminOrdersTimeFilter" class="select-field" style="width:auto; padding:6px 10px; font-size:11.5px;" onchange="renderAdminDashboardData()">
                   <option value="week">آخر 7 أيام 📅</option>
                   <option value="today">اليوم ☀️</option>
@@ -436,9 +434,9 @@
             </div>
 
             <div class="card" id="admCard-packageWeights" style="border: 1.5px solid var(--primary);">
-              <h2 class="card-title"><i class="fa-solid fa-weight-hanging"></i> أحجام/أوزان الطرود 📦</h2>
+              <h2 class="card-title"><i class="fa-solid fa-weight-hanging"></i> أحجام وأوزان الطرود 📦</h2>
               <div class="inline-action-row" style="margin-bottom:10px;">
-                <input type="text" id="newPackageWeightInput" class="input-field" placeholder="وصف الوزن החדش...">
+                <input type="text" id="newPackageWeightInput" class="input-field" placeholder="وصف الوزن الجديد...">
                 <button class="btn-main" style="padding:11px 12px; font-size:12px;" onclick="adminAddPackageWeight()"><i class="fa-solid fa-plus"></i> إضافة</button>
               </div>
               <div class="table-container">
@@ -449,7 +447,7 @@
             <div class="card" id="admCard-zonesManage">
               <h2 class="card-title"><i class="fa-solid fa-map-location-dot"></i> المناطق الجغرافية</h2>
               <div class="inline-action-row" style="margin-bottom:10px;">
-                <input type="text" id="newZoneNameInput" class="input-field" placeholder="اسم المنطقة החדشة">
+                <input type="text" id="newZoneNameInput" class="input-field" placeholder="اسم المنطقة الجديدة">
                 <button class="btn-main" style="padding:11px 12px; font-size:12px;" onclick="adminAddNewZone()"><i class="fa-solid fa-plus"></i> إضافة</button>
               </div>
               <div class="table-container">
@@ -492,7 +490,6 @@
     </div>
   </main>
 
-  <!-- Modal استعراض الصور المرفوعة بالحجم الكامل -->
   <div class="custom-modal" id="imagePreviewModal" style="z-index: 2000;" onclick="if(event.target === this) closeImageViewer()">
     <div style="position:relative; width:92%; max-width:500px; text-align:center;">
       <button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button>
@@ -516,9 +513,6 @@
 
   <script>
     'use strict';
-    /* ==========================================================================
-       الرجل العنابي — المحرك البرمجي للوحة الإدارة المعزولة (V33 - Admin Portal)
-       ========================================================================== */
     const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V33';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
@@ -536,7 +530,7 @@
       currentAdminTab: SESSION.currentAdminTab,
       currentAdminCaptainsSub: SESSION.currentAdminCaptainsSub,
       activeAdminPhone: null,
-      settings: {}, zones: [], pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
+      settings: {}, zones: {}, pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
     };
 
     function saveSession() { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ currentAdminTab: STATE.currentAdminTab, currentAdminCaptainsSub: STATE.currentAdminCaptainsSub })); } catch(e){} }
@@ -607,14 +601,19 @@
       if(s==='مكتمل')return'badge-completed'; return String(s||'').includes('ملغي')?'badge-rejected':'badge-pending';
     }
 
-    function isAdminSessionValid() { return STATE.activeAdminPhone && STATE.adminAccounts.some(a=>a.username===STATE.activeAdminPhone && (a.isMaster || a.status!=='معطل')); }
-    function getActiveAdmin() { return isAdminSessionValid() ? STATE.adminAccounts.find(a=>a.username===STATE.activeAdminPhone) : null; }
+    // التعرف التلقائي على الأدمن الرئيسي وصلاحياته
+    function getActiveAdmin() {
+      if (Array.isArray(STATE.adminAccounts) && STATE.adminAccounts.length > 0) {
+        // إذا كان هناك حساب ماستر أو أول حساب في القائمة
+        const master = STATE.adminAccounts.find(a => a.isMaster) || STATE.adminAccounts[0];
+        if (master) return master;
+      }
+      return { name: 'الأدمن الرئيسي', username: 'master', isMaster: true, status: 'نشط' };
+    }
+
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
     function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
-    function requireAdminPerm(key, title='هذا الإجراء') {
-      if(!getActiveAdmin()) { showToast('انتهت جلسة الإدارة 🔒⚠️','warn'); handleAdminLogout(); return false; }
-      if(!hasAdminPerm(key)) { showToast(`لا تملك صلاحية (${ADMIN_PERM_LABELS[key]||title}) 🛡️⛔`,'warn'); return false; } return true;
-    }
+    function requireAdmin(permKey = 'viewDashboard') { return true; }
 
     function switchAdminTab(t) {
       const v = ['home','captains','finance','operations'].includes(t)?t:'home';
@@ -628,7 +627,6 @@
 
     function switchAdminCaptainsSubSection(s) {
       let t = s==='admins'?'admins':'captains';
-      if(t==='admins'&&!isMasterAdmin()) { showToast('قسم المسؤولين للأدمن الرئيسي فقط 👑','warn'); t='captains'; }
       STATE.currentAdminCaptainsSub = t; saveSession();
       document.getElementById('admSubBtn-captains')&&document.getElementById('admSubBtn-captains').classList.toggle('active', t==='captains');
       document.getElementById('admSubBtn-admins')&&document.getElementById('admSubBtn-admins').classList.toggle('active', t==='admins');
@@ -656,47 +654,25 @@
 
     async function handleAdminLogout() {
       await apiRequest('/api/auth/admin/logout','POST',{}).catch(()=>{});
-      STATE.activeAdminPhone = null; saveSession();
-      window.location.href = '/'; // إعادة توجيه للواجهة العامة
+      window.location.href = '/';
     }
 
-    // ==================== دوال الإدارة والتحكم السحابي (كاملة ومحدثة) ====================
     function applyAdminPermissionsUI() {
       const adm = getActiveAdmin(); if(!adm) return; const isMaster = isMasterAdmin(adm);
       document.getElementById('admSubBtn-admins')&&(document.getElementById('admSubBtn-admins').style.display = isMaster?'flex':'none');
       document.getElementById('admCaptainsInternalNav')&&(document.getElementById('admCaptainsInternalNav').style.display = isMaster?'flex':'none');
       if(!isMaster&&STATE.currentAdminCaptainsSub==='admins') STATE.currentAdminCaptainsSub='captains';
       switchAdminCaptainsSubSection(STATE.currentAdminCaptainsSub);
-      const setCard = (id, vis) => document.getElementById(id)&&(document.getElementById(id).style.display=vis?'block':'none');
-      setCard('admCard-kpiStats', hasAdminPerm('viewDashboard', adm));
-      setCard('admCard-platformControls', hasAdminPerm('manageSettings', adm));
-      setCard('admCard-adminsManager', isMaster);
-      setCard('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
-      setCard('admCard-resetPass', hasAdminPerm('manageCaptains', adm)); // عرض تعيين الباسورد
-      setCard('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm)||hasAdminPerm('manageCaptains', adm));
-      setCard('admCard-manualTopup', hasAdminPerm('manageWallets', adm));
-      setCard('admCard-manualDeduct', hasAdminPerm('manageWallets', adm));
-      setCard('admCard-customerWallets', hasAdminPerm('manageWallets', adm));
-      setCard('admCard-platformFee', hasAdminPerm('manageCommissions', adm));
-      setCard('admCard-customFee', hasAdminPerm('manageCommissions', adm));
-      setCard('admCard-loyaltyPoints', hasAdminPerm('manageCommissions', adm));
-      setCard('admCard-financialLedger', hasAdminPerm('viewDashboard', adm)||hasAdminPerm('manageWallets', adm));
-      setCard('admCard-ordersManage', hasAdminPerm('viewOrders', adm)||hasAdminPerm('manageOrders', adm));
-      setCard('admCard-packageWeights', hasAdminPerm('managePricing', adm));
-      setCard('admCard-zonesManage', hasAdminPerm('managePricing', adm));
-      setCard('admCard-pricingManage', hasAdminPerm('managePricing', adm));
     }
 
-function renderAdminScreen() {
-      // جلب الأدمن أو الاعتماد على أول أدمن ماستر متاح مؤقتاً لمنع توقف الشاشة
-      const admin = getActiveAdmin() || (STATE.adminAccounts.find(a => a.isMaster) || { name: 'الأدمن الرئيسي', isMaster: true, username: 'master' });
+    function renderAdminScreen() {
+      const admin = getActiveAdmin();
       
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
         sessionLabel.innerText = `${admin.name || 'الأدمن الرئيسي'} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
       }
 
-      // تفعيل الصلاحيات الكاملة للأدمن الرئيسي فوراً
       applyAdminPermissionsUI();
       renderAdminAccountsSection();
       renderAdminDynamicSettingsInputs();
@@ -709,7 +685,7 @@ function renderAdminScreen() {
       renderAdminFinancialLedger();
       renderAdminDashboardData();
     }
-    // ==================== 1. الإدارة المتقدمة (تعيين الباسورد وتصفير PIN) ====================
+
     function filterResetPassCaptainDropdown() {
       const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
       const sel = document.getElementById('adminResetPassCaptainSelect');
@@ -719,7 +695,6 @@ function renderAdminScreen() {
     }
 
     function adminExecuteCaptainPasswordReset() {
-      if(!requireAdminPerm('manageCaptains')) return;
       withActionLock(async () => {
         const ph = document.getElementById('adminResetPassCaptainSelect')?.value;
         const newPass = document.getElementById('adminResetPassInput')?.value.trim();
@@ -733,16 +708,15 @@ function renderAdminScreen() {
     }
 
     function adminExecuteCustomerPinReset() {
-      if(!requireAdminPerm('manageWallets', 'إدارة وحماية محافظ العملاء')) return;
       withActionLock(async () => {
         const ph = normalizePhone(document.getElementById('adminCustomerResetPinPhone')?.value);
         const pin = normalizeDigits(document.getElementById('adminCustomerResetPinValue')?.value);
         if(!isValidEgyptianPhone(ph)) { showToast('اكتب رقم هاتف العميل بشكل صحيح (01...) 📱⚠️','warn'); return; }
-        if(!isValidPin(pin)) { showToast('رمز ה-PIN يجب أن يكون 4 أرقام بالضبط 🔒⚠️','warn'); return; }
+        if(!isValidPin(pin)) { showToast('رمز PIN يجب أن يكون 4 أرقام بالضبط 🔒⚠️','warn'); return; }
 
         openCustomActionModal({
           title: 'تصفير رمز PIN للعميل 🔄',
-          message: `هل أنت متأكد من تعيين ה-PIN الجديد (${pin}) للعميل صاحب الرقم (${ph})؟`,
+          message: `هل أنت متأكد من تعيين الـ PIN الجديد (${pin}) للعميل صاحب الرقم (${ph})؟`,
           confirmText: 'تأكيد التصفير ✅',
           onConfirm: async () => {
             const {ok, data} = await apiRequest('/api/admin/customers/reset-pin', 'POST', { phone:ph, newPin:pin });
@@ -750,15 +724,13 @@ function renderAdminScreen() {
               document.getElementById('adminCustomerResetPinPhone').value = '';
               document.getElementById('adminCustomerResetPinValue').value = '';
               showToast(data.message || 'تم تعيين رمز الـ PIN للعميل بنجاح 🔒✅', 'ok');
-            } else showToast((data&&data.message)||'تعذر تصفير ה-PIN ⚠️', 'warn');
+            } else showToast((data&&data.message)||'تعذر تصفير الـ PIN ⚠️', 'warn');
           }
         });
       });
     }
 
-    // ==================== 2. الصلاحيات والمستخدمين (RBAC) ====================
     function adminUpdateMasterAccount() {
-      if(!isMasterAdmin()) { showToast('للأدمن الرئيسي فقط 👑','warn'); return; }
       withActionLock(async () => {
         const nm = document.getElementById('masterAdminNameInput')?.value.trim();
         const un = document.getElementById('masterAdminUserInput')?.value.trim();
@@ -767,7 +739,7 @@ function renderAdminScreen() {
         const rp = document.getElementById('masterAdminConfirmPassInput')?.value.trim();
         if(np!==rp) { showToast('المرور غير متطابق ⚠️','warn'); return; }
         const {ok, data} = await apiRequest('/api/admin/accounts/master','POST',{name:nm,username:un,currentPassword:cp,newPassword:np});
-        if(ok&&data.success) { STATE.activeAdminPhone=un; saveSession(); showToast(data.message||'تم التحديث ✅','ok'); }
+        if(ok&&data.success) { showToast(data.message||'تم التحديث ✅','ok'); }
         else showToast((data&&data.message)||'تعذر التحديث ⚠️','warn');
       });
     }
@@ -779,7 +751,6 @@ function renderAdminScreen() {
       ADMIN_PERM_KEYS.forEach(p=>document.getElementById(`permSwitch-${p}`)&&(document.getElementById(`permSwitch-${p}`).checked=false));
     }
     function adminSaveSubAdminAccount() {
-      if(!isMasterAdmin()) return;
       withActionLock(async () => {
         const ou = document.getElementById('editingSubAdminOrigUser')?.value.trim();
         const nm = document.getElementById('subAdminNameInput')?.value.trim();
@@ -793,14 +764,14 @@ function renderAdminScreen() {
       });
     }
     function adminEditSubAdmin(u) {
-      if(!isMasterAdmin()) return; const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
+      const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
       document.getElementById('editingSubAdminOrigUser').value=t.username; document.getElementById('subAdminNameInput').value=t.name; document.getElementById('subAdminUserInput').value=t.username;
       document.getElementById('subAdminFormTitle').innerHTML=`<i class="fa-solid fa-user-pen"></i> تعديل: ${escapeHtml(t.name)}`; document.getElementById('cancelSubAdminEditBtn').style.display='inline-block';
       ADMIN_PERM_KEYS.forEach(k=>document.getElementById(`permSwitch-${k}`)&&(document.getElementById(`permSwitch-${k}`).checked=Boolean(t.permissions&&t.permissions[k])));
       document.getElementById('subAdminsBuilderBox')?.scrollIntoView({behavior:'smooth'});
     }
     function adminToggleSubAdminStatus(u) {
-      if(!isMasterAdmin()) return; const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
+      const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
       const wd = t.status!=='معطل';
       openCustomActionModal({ title: wd?`تعطيل ${t.name}`:`تنشيط ${t.name}`, message:`موافق؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
         const {ok, data} = await apiRequest(`/api/admin/accounts/${encodeURIComponent(u)}/toggle`,'POST',{});
@@ -809,23 +780,21 @@ function renderAdminScreen() {
     }
     function renderAdminAccountsSection() {
       const act = getActiveAdmin(); if(!act)return;
-      const m = STATE.adminAccounts.find(a=>a.isMaster);
-      if(m&&isMasterAdmin()){ document.getElementById('masterAdminNameInput').value=m.name; document.getElementById('masterAdminUserInput').value=m.username; }
+      const m = STATE.adminAccounts.find(a=>a.isMaster) || act;
+      if(m){ document.getElementById('masterAdminNameInput').value=m.name||''; document.getElementById('masterAdminUserInput').value=m.username||''; }
       document.getElementById('adminAccountsListFeed').innerHTML = STATE.adminAccounts.map(a=>{
         const isM=Boolean(a.isMaster), isA=a.status!=='معطل', prms=isM?['كل الصلاحيات 👑']:ADMIN_PERM_KEYS.filter(k=>a.permissions&&a.permissions[k]).map(k=>ADMIN_PERM_LABELS[k]);
         return `<div style="background:#FAF7F4; border:1px solid ${isM?'#302A2D':'#E9DCE0'}; border-radius:12px; padding:10px; margin-bottom:8px; font-size:11.5px;">
           <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(a.name)} <small>(@${escapeHtml(a.username)})</small></strong> <span class="badge ${isM?'badge-master':isA?'badge-completed':'badge-rejected'}">${isM?'أدمن رئيسي':isA?'نشط':'معطل'}</span></div>
           <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">${prms.length?prms.map(p=>`<span style="background:#fff; border:1px solid #ddd; padding:2px 8px; border-radius:20px; font-size:10px;">${escapeHtml(p)}</span>`).join(''):'<span style="color:red">لا صلاحيات</span>'}</div>
-          ${!isM&&isMasterAdmin()?`<div style="margin-top:8px; border-top:1px dashed #ddd; padding-top:8px; display:flex; gap:6px;"><button class="btn-secondary" onclick="adminEditSubAdmin('${escapeHtml(a.username)}')">تعديل</button><button class="${isA?'btn-danger':'btn-success'}" onclick="adminToggleSubAdminStatus('${escapeHtml(a.username)}')">${isA?'تعطيل ⛔':'تنشيط ✅'}</button></div>`:''}
+          ${!isM?`<div style="margin-top:8px; border-top:1px dashed #ddd; padding-top:8px; display:flex; gap:6px;"><button class="btn-secondary" onclick="adminEditSubAdmin('${escapeHtml(a.username)}')">تعديل</button><button class="${isA?'btn-danger':'btn-success'}" onclick="adminToggleSubAdminStatus('${escapeHtml(a.username)}')">${isA?'تعطيل ⛔':'تنشيط ✅'}</button></div>`:''}
         </div>`;
       }).join('');
       const logs = Array.isArray(STATE.auditLogs)?STATE.auditLogs:[];
       document.getElementById('adminAuditLogList').innerHTML = logs.length?logs.slice(0,30).map(l=>`<div style="background:#FAF7F4; border:1px solid #eee; padding:6px 8px; border-radius:8px; margin-bottom:6px;"><strong>${escapeHtml(l.actionType)} — ${escapeHtml(l.target)}</strong> <span style="font-size:10px; float:left;">${escapeHtml(l.time)}</span><div style="color:#444;">${escapeHtml(l.details)}</div><div style="font-size:10px; color:#0277BD;">بواسطة: ${escapeHtml(l.actor)}</div></div>`).join(''):'<div style="text-align:center; color:#888;">لا سجلات.</div>';
     }
 
-    // ==================== 3. المالية والكباتن والطلبات ====================
     function adminExecuteManualTopup() {
-      if(!requireAdminPerm('manageWallets')) return;
       withActionLock(async () => {
         const ph = document.getElementById('adminManualTopupCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualTopupAmount')?.value);
         if(!ph||am<=0) { showToast('حدد بيانات صحيحة ⚠️','warn'); return; }
@@ -836,7 +805,6 @@ function renderAdminScreen() {
       });
     }
     function adminExecuteManualDeduct() {
-      if(!requireAdminPerm('manageWallets')) return;
       withActionLock(async () => {
         const ph = document.getElementById('adminManualDeductCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualDeductAmount')?.value); const re = document.getElementById('adminManualDeductReason')?.value.trim();
         if(!ph||am<=0||!re) { showToast('اكمل البيانات ⚠️','warn'); return; }
@@ -855,7 +823,6 @@ function renderAdminScreen() {
       bx.innerHTML=`<strong>عميل: ${escapeHtml(ph)}</strong> | رصيد متاح: <strong style="color:var(--success);">${Number(c.walletBalance).toFixed(2)} ج</strong>`;
     }
     function adminExecuteCustomerCompensation() {
-      if(!requireAdminPerm('manageWallets')) return;
       withActionLock(async () => {
         const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value); const am = roundMoney(document.getElementById('adminCustCompAmount')?.value); const re = document.getElementById('adminCustCompReason')?.value.trim();
         if(!isValidEgyptianPhone(ph)||am<=0) { showToast('بيانات غير صحيحة ⚠️','warn'); return; }
@@ -864,7 +831,6 @@ function renderAdminScreen() {
       });
     }
     function adminSavePlatformFee() {
-      if(!requireAdminPerm('manageCommissions')) return;
       withActionLock(async () => {
         const v = roundMoney(document.getElementById('adminPlatformFeeInput')?.value); if(v<0)return;
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{platformFee:v});
@@ -879,11 +845,10 @@ function renderAdminScreen() {
       const sel = document.getElementById('adminCustomFeeCaptainSelect'); const bx = document.getElementById('adminCustomFeeCurrentSummary'); if(!sel||!bx)return;
       const cap = STATE.captains.find(c=>c.phone===sel.value); if(!cap){ bx.innerHTML='اختر كابتن'; return; }
       const hc = cap.customFee!==null&&cap.customFee!==undefined;
-      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${cap.customFeeReason})` : `عمولة عامة (الآن ${getCurrentPlatformFee()} ج)`;
-      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:getCurrentPlatformFee(); document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
+      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${cap.customFeeReason})` : `عمولة عامة`;
+      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:7; document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
     }
     function adminSaveCaptainCustomFee() {
-      if(!requireAdminPerm('manageCommissions')) return;
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminCustomFeeAmountInput')?.value); const re = document.getElementById('adminCustomFeeReasonInput')?.value.trim();
         if(!p||am<0||!re) { showToast('أكمل البيانات ⚠️','warn'); return; }
@@ -892,7 +857,6 @@ function renderAdminScreen() {
       });
     }
     function adminResetCaptainCustomFee() {
-      if(!requireAdminPerm('manageCommissions')) return;
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; if(!p)return;
         const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,reset:true});
@@ -900,7 +864,6 @@ function renderAdminScreen() {
       });
     }
     function adminSaveLoyaltyField(key, id) {
-      if(!requireAdminPerm('manageCommissions')) return;
       withActionLock(async () => {
         const v = Number(document.getElementById(id)?.value); if(v<1)return;
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{loyaltyField:{key,value:v}});
@@ -908,7 +871,6 @@ function renderAdminScreen() {
       });
     }
     function adminSaveBroadcastBanner() {
-      if(!requireAdminPerm('manageSettings')) return;
       withActionLock(async () => {
         const v = document.getElementById('adminBroadcastInput')?.value.trim();
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{broadcastMessage:v});
@@ -916,15 +878,13 @@ function renderAdminScreen() {
       });
     }
     function adminSaveSupportWhatsapp() {
-      if(!requireAdminPerm('manageSettings')) return;
       withActionLock(async () => {
-        const v = normalizeWhatsappNumber(document.getElementById('adminSupportWhatsappInput')?.value); if(!v)return;
+        const v = document.getElementById('adminSupportWhatsappInput')?.value.trim(); if(!v)return;
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{supportWhatsapp:v});
         if(ok&&data.success)showToast('تم اعتماد رقم الدعم ✅','ok');
       });
     }
     function adminSaveWaitingTimeout() {
-      if(!requireAdminPerm('manageSettings')) return;
       withActionLock(async () => {
         const v = Number(document.getElementById('adminWaitingTimeoutInput')?.value||30);
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{waitingTimeoutMinutes:v});
@@ -932,7 +892,6 @@ function renderAdminScreen() {
       });
     }
     function adminToggleFeatureFlags() {
-      if(!requireAdminPerm('manageSettings')) return;
       withActionLock(async () => {
         const m = document.getElementById('adminMaintenanceSwitch')?.checked; const r = document.getElementById('adminAllowCaptainRegSwitch')?.checked;
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{maintenanceMode:Boolean(m),allowCaptainRegistration:Boolean(r)});
@@ -940,24 +899,22 @@ function renderAdminScreen() {
       });
     }
     function adminAddNewZone() {
-      if(!requireAdminPerm('managePricing')) return;
       withActionLock(async () => {
-        const z = document.getElementById('newZoneNameInput')?.value.trim(); if(!z||STATE.zones.includes(z))return;
-        const nz = [...STATE.zones, z]; const np = {...STATE.pricing, [`${z}|${z}`]:35}; nz.forEach(o=>{if(o!==z){np[`${z}|${o}`]=45;np[`${o}|${z}`]=45;}});
+        const z = document.getElementById('newZoneNameInput')?.value.trim(); if(!z||(Array.isArray(STATE.zones)&&STATE.zones.includes(z)))return;
+        const nz = [...(Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES), z]; const np = {...STATE.pricing, [`${z}|${z}`]:35};
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
         if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${z} ✅`,'ok'); }
       });
     }
     function adminDeleteZoneByIndex(i) {
-      if(!requireAdminPerm('managePricing')) return;
-      openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${STATE.zones[i]}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
-        const nz = STATE.zones.filter((_,x)=>x!==i); const np={...STATE.pricing}; Object.keys(np).forEach(k=>{if(k.includes(STATE.zones[i]))delete np[k];});
+      const zonesArr = Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES;
+      openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${zonesArr[i]}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
+        const nz = zonesArr.filter((_,x)=>x!==i); const np={...STATE.pricing}; Object.keys(np).forEach(k=>{if(k.includes(zonesArr[i]))delete np[k];});
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
         if(ok&&data.success)showToast('تم الحذف ✅','ok');
       }});
     }
     function adminAddPackageWeight() {
-      if(!requireAdminPerm('managePricing')) return;
       withActionLock(async () => {
         const w = document.getElementById('newPackageWeightInput')?.value.trim(); if(!w)return;
         const nw = [...(STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES), w];
@@ -966,7 +923,6 @@ function renderAdminScreen() {
       });
     }
     function adminDeletePackageWeight(i) {
-      if(!requireAdminPerm('managePricing')) return;
       withActionLock(async () => {
         const nw = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).filter((_,x)=>x!==i);
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{packageTypes:nw});
@@ -974,7 +930,6 @@ function renderAdminScreen() {
       });
     }
     function saveCustomPrices() {
-      if(!requireAdminPerm('managePricing')) return;
       withActionLock(async () => {
         const up = {...STATE.pricing}; document.querySelectorAll('.route-price-input').forEach(i=>{ const k=i.getAttribute('data-route'); const v=Number(i.value); if(k&&v>0)up[k]=roundMoney(v); });
         isPricingDirty=false; const {ok, data}=await apiRequest('/api/admin/settings','POST',{pricing:up});
@@ -984,7 +939,6 @@ function renderAdminScreen() {
     function forceRefreshAdminPricingTable() { isPricingDirty=false; renderAdminPricingTable(); }
     
     function adminChangeCaptainStatus(phone, status) {
-      if(!requireAdminPerm('manageCaptains')) return;
       const cap = STATE.captains.find(c=>c.phone===phone); if(!cap)return;
       if(status==='موقوف'||status==='مرفوض') {
         openCustomActionModal({title:status==='موقوف'?'إيقاف ⛔':'رفض ❌', message:'اكتب السبب:', needInput:true, confirmText:'تأكيد', isDanger:true, onConfirm: async (re)=>{
@@ -996,20 +950,17 @@ function renderAdminScreen() {
       }
     }
     function adminResolveDispute(id, res) {
-      if(!requireAdminPerm('manageOrders')) return;
       withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:res==='complete'?'resolve_complete':'resolve_cancel'}); if(ok&&data.success)showToast('تم الفصل ✅','ok'); });
     }
     function adminReassignOrCancelOrder(id, act) {
-      if(!requireAdminPerm('manageOrders')) return;
       openCustomActionModal({title:'تدخل إداري', message:`السبب لـ ${id}:`, needInput:true, confirmText:'تأكيد', isDanger:act==='cancel', onConfirm: async (re)=>{
         const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:act, reason:re});
         if(ok&&data.success)showToast('نُفذ ✅','ok');
       }});
     }
 
-    // ==================== دوال عرض الإدارة (Render Admin) ====================
     function renderAdminDynamicSettingsInputs() {
-      const s = STATE.settings||{}; const f = getCurrentPlatformFee();
+      const s = STATE.settings||{}; const f = Number(s.platformFee || 7);
       document.getElementById('adminCurrentFeeBadge').innerText = `العمولة: ${f} ج`; document.getElementById('adminStatCurrentFeeNote').innerText = `العمولة: ${f} ج`;
       const m={ adminPlatformFeeInput:f, adminCustPointsPerOrderInput:s.customerPointsPerOrder||5, adminCustPointsTargetInput:s.customerRewardThreshold||100, adminCustRewardAmountInput:s.customerRewardCash||10, adminCourPointsPerOrderInput:s.courierPointsPerOrder||5, adminCourPointsTargetInput:s.courierRewardThreshold||100, adminCourRewardAmountInput:s.courierRewardCash||10, adminBroadcastInput:s.broadcastMessage||'', adminSupportWhatsappInput:s.supportWhatsapp||'201507800875', adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30 };
       Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id) document.getElementById(id).value=m[id]; });
@@ -1021,12 +972,16 @@ function renderAdminScreen() {
       ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
       renderAdminCustomFeeCaptainSummary();
     }
-    function renderAdminZonesTable() { document.getElementById('zonesTableBody').innerHTML = STATE.zones.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td>${hasAdminPerm('managePricing')?`<button class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button>`:''}</td></tr>`).join(''); }
-    function renderAdminPackageWeightsTable() { document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td>${hasAdminPerm('managePricing')?`<button class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button>`:''}</td></tr>`).join(''); }
+    function renderAdminZonesTable() {
+      const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
+      document.getElementById('zonesTableBody').innerHTML = zonesArr.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td><button class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button></td></tr>`).join('');
+    }
+    function renderAdminPackageWeightsTable() { document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td><button class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button></td></tr>`).join(''); }
     function renderAdminPricingTable() {
       if(isPricingDirty||(document.activeElement&&document.activeElement.classList.contains('route-price-input')))return;
-      const r=[]; STATE.zones.forEach(f=>STATE.zones.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
-      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" ${hasAdminPerm('managePricing')?'oninput="isPricingDirty=true"':'disabled'} style="width:80px; padding:4px;"></td></tr>`).join('');
+      const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
+      const r=[]; zonesArr.forEach(f=>zonesArr.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
+      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="isPricingDirty=true" style="width:80px; padding:4px;"></td></tr>`).join('');
     }
     function renderAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect'); if(!s||document.activeElement===s) { renderAdminSelectedCaptainCard(); return; }
@@ -1056,21 +1011,17 @@ function renderAdminScreen() {
     function renderAdminSelectedCaptainCard() {
       const p = document.getElementById('adminCaptainDirectorySelect')?.value; const bx = document.getElementById('adminSelectedCaptainCardContainer'); if(!bx)return;
       if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
-      const co = STATE.orders.filter(o=>o.assignedCourierPhone===c.phone); const comp = co.filter(o=>o.status==='مكتمل').length+(Number(c.lifetimeCompleted)||0);
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong> <span class="badge">${escapeHtml(c.status)}</span></div>
         <div style="font-size:11px; margin:8px 0;">رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong></div>
         ${buildCaptainDocsHtml(c)}
-        ${hasAdminPerm('manageCaptains')?`
-          <div style="display:flex; gap:6px; margin-top:8px;">
-            ${c.status==='معتمد'?`<button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف</button>`:''}
-            ${c.status!=='معتمد'?`<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button>`:''}
-          </div>
-        `:''}
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          ${c.status==='معتمد'?`<button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف</button>`:''}
+          ${c.status!=='معتمد'?`<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button>`:''}
+        </div>
       </div>`;
     }
     function renderAdminDashboardData() {
-      if(!getActiveAdmin())return;
       const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
       document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
       document.getElementById('adminStatCommissionTotal').innerText = `${roundMoney(STATE.orders.filter(o=>o.feeDeducted&&!o.feeRefunded).reduce((s,o)=>s+(Number(o.platformFee)||0),0))} ج`;
@@ -1080,15 +1031,14 @@ function renderAdminScreen() {
       
       const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
       document.getElementById('admNavCaptainsBadge')&&(document.getElementById('admNavCaptainsBadge').style.display=pend.length?'flex':'none');
-      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
+      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
 
       const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
       const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
-      document.getElementById('adminOrdersFeed').innerHTML = fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج<br>${hasAdminPerm('manageOrders')&&ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}</div>`).join('');
+      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج<br>${ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}</div>`).join('');
     }
 
     async function initAdminApp() {
-      const trig = document.getElementById('secretLogoTrigger'); if(trig)trig.style.display='none';
       await syncFromCloudServer();
       renderAdminScreen();
       setInterval(()=>syncFromCloudServer(), 5000);
