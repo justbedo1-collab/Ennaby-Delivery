@@ -153,7 +153,7 @@ app.post('/api/auth/captain/login', async (req, res) => {
 app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   if (!cap.is_available || cap.status !== 'معتمد') return res.status(403).json({ success: false, message: 'حسابك غير مصرح له بقبول الطلبات حالياً ⛔' });
-
+const vehType = req.body.vehicleType || req.body.vehicle_type || req.body.vehicle || 'موتوسيكل';
   // تحديث شرطي يمنع أي كابتن آخر من أخذه في نفس اللحظة
   const { data: accepted, error } = await supabase.from('orders')
     .update({ status: 'تم قبول الطلب', assigned_courier_phone: cap.phone })
