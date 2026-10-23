@@ -154,9 +154,6 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   if (!cap.is_available || cap.status !== 'معتمد') return res.status(403).json({ success: false, message: 'حسابك غير مصرح له بقبول الطلبات حالياً ⛔' });
 
-  // استلام نوع المركبة بأكثر من صيغة لضمان عدم حدوث أخطاء
-const vehicleType = req.body.vehicleType || req.body.vehicle_type || req.body.vehicle || 'موتوسيكل';
-
   // تحديث شرطي يمنع أي كابتن آخر من أخذه في نفس اللحظة
   const { data: accepted, error } = await supabase.from('orders')
     .update({ status: 'تم قبول الطلب', assigned_courier_phone: cap.phone })
@@ -318,3 +315,45 @@ app.get('/api/cron/cleanup-orders', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running securely on port ${PORT}`));
 module.exports = app;
+
+// ==========================================
+// مسار تسجيل كابتن جديد
+// ==========================================
+app.post('/api/captains/register', async (req, res) => {
+  const { phone, password, fullName, nationalId, primaryZone, vehicleType, plateNumber, idFrontPhoto, idBackPhoto, vehiclePhoto } = req.body;
+
+  // التحقق من البيانات الإلزامية الأساسية وعدم ترك نوع المركبة فارغاً
+  if (!phone || !password || !fullName || !nationalId || !vehicleType) {
+    return res.status(400).json({ success: false, message: 'برجاء استكمال جميع البيانات الإجبارية ونوع المركبة ⚠️' });
+  }
+
+  // التحقق مما إذا كان رقم الهاتف مسجلاً مسبقاً
+  const { data: existing } = await supabase.from('captains').select('phone').eq('phone', phone).single();
+  if (existing) {
+    return res.status(400).json({ success: false, message: 'رقم الهاتف مسجل مسبقاً ⚠️' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const { error } = await supabase.from('captains').insert([{
+    phone,
+    password_hash: hashedPassword,
+    full_name: fullName,
+    national_id: nationalId,
+    primary_zone: primaryZone || 'المنصورة',
+    vehicle_type: vehicleType,
+    plate_number: plateNumber || 'بدون لوحة',
+    id_front_photo: idFrontPhoto || null,
+    id_back_photo: idBackPhoto || null,
+    vehicle_photo: vehiclePhoto || null,
+    status: 'قيد المراجعة',
+    is_available: false
+  }]);
+
+  if (error) {
+    console.error('Captain Registration Error:', error.message);
+    return res.status(400).json({ success: false, message: 'فشل إتمام التسجيل.. تأكد من صحة البيانات المدخلة' });
+  }
+
+  res.json({ success: true, message: 'تم إرسال طلبك بنجاح وسيتم مراجعته من الإدارة قريباً ⏳' });
+});
