@@ -1,0 +1,22 @@
+{
+  "name": "الرجل العنابى اكسبريس",
+  "short_name": "العنابى دليفرى",
+  "description": "منصة التوصيل السريع داخل المنصورة",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F4",
+  "theme_color": "#7B3F52",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
