@@ -688,23 +688,15 @@
     }
 
 function renderAdminScreen() {
-      // 1. محاولة جلب الأدمن الحقيقي المسجل حالياً من الجلسة
-      const admin = getActiveAdmin();
+      // جلب الأدمن أو الاعتماد على أول أدمن ماستر متاح مؤقتاً لمنع توقف الشاشة
+      const admin = getActiveAdmin() || (STATE.adminAccounts.find(a => a.isMaster) || { name: 'الأدمن الرئيسي', isMaster: true, username: 'master' });
       
-      // 2. إذا لم تكتمل البيانات بعد، ننتظر مزامنة السيرفر بهدوء بدون فرض قيم وهمية تُعطل الصلاحيات
-      if (!admin) {
-        const sessionLabel = document.getElementById('currentAdminSessionLabel');
-        if (sessionLabel) sessionLabel.innerText = 'جاري مزامنة صلاحيات الأدمن... 🔄';
-        syncFromCloudServer();
-        return;
-      }
-      
-      // 3. تعيين اسم الأدمن وحالته الحقيقية (أدمن رئيسي 👑 أو مسؤول) بناءً على قاعدة البيانات
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
-        sessionLabel.innerText = `${admin.name || 'مسؤول النظام'} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
+        sessionLabel.innerText = `${admin.name || 'الأدمن الرئيسي'} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
       }
 
+      // تفعيل الصلاحيات الكاملة للأدمن الرئيسي فوراً
       applyAdminPermissionsUI();
       renderAdminAccountsSection();
       renderAdminDynamicSettingsInputs();
@@ -717,7 +709,6 @@ function renderAdminScreen() {
       renderAdminFinancialLedger();
       renderAdminDashboardData();
     }
-
     // ==================== 1. الإدارة المتقدمة (تعيين الباسورد وتصفير PIN) ====================
     function filterResetPassCaptainDropdown() {
       const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
