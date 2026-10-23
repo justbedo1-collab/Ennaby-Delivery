@@ -4,66 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>غرفة عمليات الرجل العنابي 🛡️</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <style>
     :root {
-      --primary: #7B3F52;
-      --primary-dark: #5F2E3E;
-      --primary-light: #9B556C;
-      --bg-canvas: #FAF7F4;
-      --card-bg: #FFFFFF;
-      --text-main: #302A2D;
-      --text-muted: #665E62;
-      --accent: #E9DCE0;
-      --success: #2E7D32;
-      --warning: #ED6C02;
-      --danger: #D32F2F;
+      --primary: #7B3F52; --primary-dark: #5F2E3E; --primary-light: #9B556C;
+      --bg-canvas: #FAF7F4; --card-bg: #FFFFFF; --text-main: #302A2D; --text-muted: #665E62;
+      --accent: #E9DCE0; --success: #2E7D32; --warning: #ED6C02; --danger: #D32F2F;
       --font-family: 'Cairo', system-ui, -apple-system, sans-serif;
       --shadow-sm: 0 2px 8px rgba(123, 63, 82, 0.06);
       --shadow-lg: 0 10px 30px rgba(123, 63, 82, 0.15);
       --radius: 18px;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
     body { background: var(--bg-canvas); min-height: 100vh; color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
-
     .device-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: stretch; }
     .phone-mockup { width: 100vw; max-width: 100vw; height: 100vh; background: var(--bg-canvas); display: flex; flex-direction: column; position: relative; }
     @media (min-width: 481px) { .phone-mockup { max-width: 600px; border-radius: 20px; box-shadow: var(--shadow-lg); height: 95vh; margin-top: 2.5vh; } }
-    
     .phone-screen { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; position: relative; padding-bottom: 85px; }
     .phone-screen::-webkit-scrollbar { width: 4px; }
     .phone-screen::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-
     .view-container { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
     .sub-tab-section { display: flex; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
     .brand-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 16px 10px; }
     .brand-title { display: flex; align-items: center; gap: 8px; }
     .brand-logo-badge { width: 44px; height: 44px; background: #302A2D; color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: var(--shadow-sm); }
     .brand-title h1 { font-size: 17px; font-weight: 900; color: var(--primary); line-height: 1.1; }
-
     .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid rgba(123, 63, 82, 0.08); }
     .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-
     .btn-main { background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 12px 18px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.2s; }
     .btn-main:active { transform: scale(0.98); background: var(--primary-dark); }
     .btn-secondary { background: var(--accent); color: var(--primary); border: none; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-danger { background: #FFEBEE; color: var(--danger); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .btn-success { background: #E8F5E9; color: var(--success); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-
     .input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
     .input-label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
     .input-field, .select-field { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 13px; font-weight: 600; outline: none; }
     .input-field:focus, .select-field:focus { border-color: var(--primary); background: #fff; }
     .inline-action-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; align-items: center; }
-
     .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; }
     .badge-pending { background: #FFF3E0; color: #B26A00; }
     .badge-accepted { background: #E1F5FE; color: #0277BD; }
@@ -73,19 +54,16 @@
     .badge-completed { background: #E8F5E9; color: #2E7D32; }
     .badge-rejected { background: #FFEBEE; color: #D32F2F; }
     .badge-master { background: #302A2D; color: #FBC02D; border: 1px solid #FBC02D; }
-
     .admin-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .kpi-card { padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
     .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 700; line-height: 1.3; }
     .kpi-value { font-size: 19px; font-weight: 900; margin-top: 4px; line-height: 1.2; }
     .kpi-sub { font-size: 10px; font-weight: 700; margin-top: 3px; }
-
     .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03); z-index: 60; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 6px; position: relative; flex: 1; }
     .nav-item i { font-size: 16px; }
     .nav-item.active { color: var(--primary); }
     .nav-badge-count { position: absolute; top: 2px; right: calc(50% - 18px); background: var(--primary); color: white; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 50px; display: flex; align-items: center; justify-content: center; }
-
     .switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #FAF7F4; border-radius: 12px; }
     .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -93,39 +71,31 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; right: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(-22px); }
-
     .role-pills { display: flex; background: rgba(123, 63, 82, 0.08); padding: 3px; border-radius: 50px; border: 1px solid rgba(123, 63, 82, 0.14); width: 100%; max-width: 380px; justify-content: space-between; }
     .role-btn { background: transparent; border: none; color: var(--text-muted); padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; transition: all 0.25s; }
     .role-btn.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(123, 63, 82, 0.25); }
-
     table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; }
     table th, table td { padding: 8px 10px; border-bottom: 1px solid #f0e6e9; }
     table th { background: #FAF7F4; color: var(--primary); font-weight: 800; }
-    
     .toast-box { position: absolute; top: 16px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px); transition: all 0.22s ease; pointer-events: none; }
     .toast-box.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .toast-box.toast-warning { background: #3B2326; border-color: #FF8A80; }
-
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); }
   </style>
 </head>
 <body>
-
   <main class="device-container">
     <div class="phone-mockup">
-
       <div id="toast" class="toast-box" onclick="this.classList.remove('show')">
         <div style="display:flex; align-items:center; gap:9px;">
           <i id="toastIcon" class="fa-solid fa-circle-check" style="color: #4CAF50; font-size:18px;"></i>
           <span id="toastMsg">تم</span>
         </div>
       </div>
-
       <div class="phone-screen" id="phoneScreen">
         <section class="view-container active-view" id="adminDashboardContent">
-          
           <header class="brand-header">
             <div class="brand-title">
               <div class="brand-logo-badge"><i class="fa-solid fa-lock"></i></div>
@@ -194,15 +164,11 @@
                 </div>
               </div>
               <div class="switch-wrapper" style="margin-top:10px; border:1px solid #E9DCE0;">
-                <div>
-                  <strong style="font-size:12.5px; display:block; color:var(--danger);">وضع الصيانة الطارئة 🛠️</strong>
-                </div>
+                <div><strong style="font-size:12.5px; display:block; color:var(--danger);">وضع الصيانة الطارئة 🛠️</strong></div>
                 <label class="switch"><input type="checkbox" id="adminMaintenanceSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
               </div>
               <div class="switch-wrapper" style="margin-top:8px; border:1px solid #E9DCE0;">
-                <div>
-                  <strong style="font-size:12.5px; display:block; color:var(--primary);">فتح باب تسجيل كباتن جدد 🛵</strong>
-                </div>
+                <div><strong style="font-size:12.5px; display:block; color:var(--primary);">فتح باب تسجيل كباتن جدد 🛵</strong></div>
                 <label class="switch"><input type="checkbox" id="adminAllowCaptainRegSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
               </div>
             </div>
@@ -222,7 +188,6 @@
                   <h2 class="card-title" style="margin-bottom:0; color:#302A2D;"><i class="fa-solid fa-user-shield"></i> إدارة المسؤولين 🛡️</h2>
                   <span class="badge badge-master" id="adminRoleAccessBadge">الأدمن الرئيسي 👑</span>
                 </div>
-                
                 <div id="masterAdminSelfEditBox" style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:12px;">
                   <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">👑 بيانات حساب الأدمن الرئيسي:</strong>
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
@@ -275,7 +240,6 @@
                   <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;">المسؤولين المسجلين:</strong>
                   <div id="adminAccountsListFeed" style="display:flex; flex-direction:column; gap:8px;"></div>
                 </div>
-
                 <div style="border-top:1px solid #E9DCE0; padding-top:10px;">
                   <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;">سجل النشاطات (Audit Log):</strong>
                   <div id="adminAuditLogList" style="font-size:11px; display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;"></div>
@@ -336,7 +300,6 @@
 
           <!-- تبويب الإدارة 3: العملاء والمالية -->
           <div id="admTab-finance" class="sub-tab-section" style="display:none;">
-            
             <!-- تعيين PIN جديد للعميل -->
             <div class="card" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
               <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
@@ -419,7 +382,6 @@
 
           <!-- تبويب الإدارة 4: الطلبات والعمليات -->
           <div id="admTab-operations" class="sub-tab-section" style="display:none;">
-            
             <div class="card" id="admCard-ordersManage">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                 <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> إدارة الطلبات والاعتراضات</h2>
@@ -486,7 +448,6 @@
           <span class="nav-badge-count" id="admNavDisputesBadge" style="display:none;">0</span>
         </button>
       </nav>
-
     </div>
   </main>
 
@@ -513,6 +474,11 @@
 
   <script>
     'use strict';
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
     const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V33';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
@@ -539,7 +505,6 @@
     function isValidEgyptianPhone(p) { return /^01[0125][0-9]{8}$/.test(normalizePhone(p)); }
     function isValidPin(pin) { return /^[0-9]{4}$/.test(normalizeDigits(pin).trim()); }
     function roundMoney(v) { const n = Number(normalizeDigits(v)); return Number.isFinite(n) ? Math.round((n+Number.EPSILON)*100)/100 : 0; }
-    function escapeHtml(s) { return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
     function safeImageSrc(s) { if(!s||typeof s!=='string')return''; const t=s.trim(); if(t.startsWith('data:image/')||t.startsWith('https://')||t.startsWith('/uploads/'))return t; return''; }
     function formatCairoDateTime(ts) { try { return new Date(Number(ts)||Date.now()).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch(e){ return ''; } }
     function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
@@ -601,10 +566,8 @@
       if(s==='مكتمل')return'badge-completed'; return String(s||'').includes('ملغي')?'badge-rejected':'badge-pending';
     }
 
-    // التعرف التلقائي على الأدمن الرئيسي وصلاحياته
     function getActiveAdmin() {
       if (Array.isArray(STATE.adminAccounts) && STATE.adminAccounts.length > 0) {
-        // إذا كان هناك حساب ماستر أو أول حساب في القائمة
         const master = STATE.adminAccounts.find(a => a.isMaster) || STATE.adminAccounts[0];
         if (master) return master;
       }
@@ -613,7 +576,6 @@
 
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
     function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
-    function requireAdmin(permKey = 'viewDashboard') { return true; }
 
     function switchAdminTab(t) {
       const v = ['home','captains','finance','operations'].includes(t)?t:'home';
@@ -667,12 +629,10 @@
 
     function renderAdminScreen() {
       const admin = getActiveAdmin();
-      
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
-        sessionLabel.innerText = `${admin.name || 'الأدمن الرئيسي'} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
+        sessionLabel.innerText = `${escapeHtml(admin.name)} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
       }
-
       applyAdminPermissionsUI();
       renderAdminAccountsSection();
       renderAdminDynamicSettingsInputs();
@@ -691,7 +651,7 @@
       const sel = document.getElementById('adminResetPassCaptainSelect');
       if(!sel) return;
       const filtered = STATE.captains.filter(c => (c.phone&&c.phone.toLowerCase().includes(q)) || (c.fullName&&c.fullName.toLowerCase().includes(q)));
-      sel.innerHTML = filtered.length===0 ? `<option value="">-- لا يوجد كابتن بهذا البحث --</option>` : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c=>`<option value="${c.phone}">${c.fullName} (${c.phone})</option>`).join('');
+      sel.innerHTML = filtered.length===0 ? `<option value="">-- لا يوجد كابتن بهذا البحث --</option>` : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</option>`).join('');
     }
 
     function adminExecuteCaptainPasswordReset() {
@@ -716,7 +676,7 @@
 
         openCustomActionModal({
           title: 'تصفير رمز PIN للعميل 🔄',
-          message: `هل أنت متأكد من تعيين الـ PIN الجديد (${pin}) للعميل صاحب الرقم (${ph})؟`,
+          message: `هل أنت متأكد من تعيين الـ PIN الجديد (${escapeHtml(pin)}) للعميل صاحب الرقم (${escapeHtml(ph)})؟`,
           confirmText: 'تأكيد التصفير ✅',
           onConfirm: async () => {
             const {ok, data} = await apiRequest('/api/admin/customers/reset-pin', 'POST', { phone:ph, newPin:pin });
@@ -743,6 +703,7 @@
         else showToast((data&&data.message)||'تعذر التحديث ⚠️','warn');
       });
     }
+
     function resetSubAdminForm() {
       const k = ['editingSubAdminOrigUser','subAdminNameInput','subAdminUserInput','subAdminPassInput','subAdminConfirmPassInput'];
       k.forEach(x=>document.getElementById(x)&&(document.getElementById(x).value=''));
@@ -750,6 +711,7 @@
       document.getElementById('cancelSubAdminEditBtn').style.display='none';
       ADMIN_PERM_KEYS.forEach(p=>document.getElementById(`permSwitch-${p}`)&&(document.getElementById(`permSwitch-${p}`).checked=false));
     }
+
     function adminSaveSubAdminAccount() {
       withActionLock(async () => {
         const ou = document.getElementById('editingSubAdminOrigUser')?.value.trim();
@@ -763,6 +725,7 @@
         if(ok&&data.success) { resetSubAdminForm(); showToast('تم حفظ المسؤول ✅','ok'); } else showToast((data&&data.message)||'خطأ ⚠️','warn');
       });
     }
+
     function adminEditSubAdmin(u) {
       const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
       document.getElementById('editingSubAdminOrigUser').value=t.username; document.getElementById('subAdminNameInput').value=t.name; document.getElementById('subAdminUserInput').value=t.username;
@@ -770,14 +733,16 @@
       ADMIN_PERM_KEYS.forEach(k=>document.getElementById(`permSwitch-${k}`)&&(document.getElementById(`permSwitch-${k}`).checked=Boolean(t.permissions&&t.permissions[k])));
       document.getElementById('subAdminsBuilderBox')?.scrollIntoView({behavior:'smooth'});
     }
+
     function adminToggleSubAdminStatus(u) {
       const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
       const wd = t.status!=='معطل';
-      openCustomActionModal({ title: wd?`تعطيل ${t.name}`:`تنشيط ${t.name}`, message:`موافق؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
+      openCustomActionModal({ title: wd?`تعطيل ${escapeHtml(t.name)}`:`تنشيط ${escapeHtml(t.name)}`, message:`موافق؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
         const {ok, data} = await apiRequest(`/api/admin/accounts/${encodeURIComponent(u)}/toggle`,'POST',{});
         if(ok&&data.success) showToast('تم التحديث ✅','ok'); else showToast('تعذر ⚠️','warn');
       }});
     }
+
     function renderAdminAccountsSection() {
       const act = getActiveAdmin(); if(!act)return;
       const m = STATE.adminAccounts.find(a=>a.isMaster) || act;
@@ -804,16 +769,18 @@
         }});
       });
     }
+
     function adminExecuteManualDeduct() {
       withActionLock(async () => {
         const ph = document.getElementById('adminManualDeductCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualDeductAmount')?.value); const re = document.getElementById('adminManualDeductReason')?.value.trim();
         if(!ph||am<=0||!re) { showToast('اكمل البيانات ⚠️','warn'); return; }
-        openCustomActionModal({title:'خصم إداري', message:`خصم ${am} ج بسبب: ${re}؟`, confirmText:'خصم ⛔', isDanger:true, onConfirm: async ()=>{
+        openCustomActionModal({title:'خصم إداري', message:`خصم ${am} ج بسبب: ${escapeHtml(re)}؟`, confirmText:'خصم ⛔', isDanger:true, onConfirm: async ()=>{
           const {ok, data}=await apiRequest('/api/admin/wallets/captain-deduct','POST',{phone:ph, amount:am, reason:re});
           if(ok&&data.success){ document.getElementById('adminManualDeductAmount').value=''; document.getElementById('adminManualDeductReason').value=''; showToast('تم الخصم ✅','ok'); } else showToast('تعذر ⚠️','warn');
         }});
       });
     }
+
     function handleAdminCustomerSelectChange() { const s=document.getElementById('adminCustomerSelect'); if(s) document.getElementById('adminCustomerPhoneInput').value=s.value; renderAdminSelectedCustomerSummary(); }
     function renderAdminSelectedCustomerSummary() {
       const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value);
@@ -822,6 +789,7 @@
       const c = STATE.customers[ph] || { walletBalance:0 };
       bx.innerHTML=`<strong>عميل: ${escapeHtml(ph)}</strong> | رصيد متاح: <strong style="color:var(--success);">${Number(c.walletBalance).toFixed(2)} ج</strong>`;
     }
+
     function adminExecuteCustomerCompensation() {
       withActionLock(async () => {
         const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value); const am = roundMoney(document.getElementById('adminCustCompAmount')?.value); const re = document.getElementById('adminCustCompReason')?.value.trim();
@@ -830,6 +798,7 @@
         if(ok&&data.success){ document.getElementById('adminCustCompAmount').value=''; document.getElementById('adminCustCompReason').value=''; showToast('تم إضافة الرصيد للعميل ✅','ok'); } else showToast('تعذر ⚠️','warn');
       });
     }
+
     function adminSavePlatformFee() {
       withActionLock(async () => {
         const v = roundMoney(document.getElementById('adminPlatformFeeInput')?.value); if(v<0)return;
@@ -837,17 +806,20 @@
         if(ok&&data.success)showToast('تم اعتماد العمولة ✅','ok'); else showToast('تعذر ⚠️','warn');
       });
     }
+
     function handleAdminCustomFeeSearch() {
       const q = normalizePhone(document.getElementById('adminCustomFeePhoneSearch')?.value);
       const m = STATE.captains.find(c=>c.phone.includes(q)); if(m){ document.getElementById('adminCustomFeeCaptainSelect').value=m.phone; renderAdminCustomFeeCaptainSummary(); }
     }
+    
     function renderAdminCustomFeeCaptainSummary() {
       const sel = document.getElementById('adminCustomFeeCaptainSelect'); const bx = document.getElementById('adminCustomFeeCurrentSummary'); if(!sel||!bx)return;
       const cap = STATE.captains.find(c=>c.phone===sel.value); if(!cap){ bx.innerHTML='اختر كابتن'; return; }
       const hc = cap.customFee!==null&&cap.customFee!==undefined;
-      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${cap.customFeeReason})` : `عمولة عامة`;
+      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${escapeHtml(cap.customFeeReason)})` : `عمولة عامة`;
       if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:7; document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
     }
+
     function adminSaveCaptainCustomFee() {
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminCustomFeeAmountInput')?.value); const re = document.getElementById('adminCustomFeeReasonInput')?.value.trim();
@@ -856,6 +828,7 @@
         if(ok&&data.success)showToast('تم الفردي ✅','ok'); else showToast('تعذر ⚠️','warn');
       });
     }
+
     function adminResetCaptainCustomFee() {
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; if(!p)return;
@@ -863,6 +836,7 @@
         if(ok&&data.success)showToast('تم الإرجاع للعامة ✅','ok'); else showToast('تعذر ⚠️','warn');
       });
     }
+
     function adminSaveLoyaltyField(key, id) {
       withActionLock(async () => {
         const v = Number(document.getElementById(id)?.value); if(v<1)return;
@@ -870,6 +844,7 @@
         if(ok&&data.success)showToast('تم حفظ النظام ✅','ok'); else showToast('تعذر ⚠️','warn');
       });
     }
+
     function adminSaveBroadcastBanner() {
       withActionLock(async () => {
         const v = document.getElementById('adminBroadcastInput')?.value.trim();
@@ -877,6 +852,7 @@
         if(ok&&data.success)showToast('تم تحديث الإعلان ✅','ok');
       });
     }
+
     function adminSaveSupportWhatsapp() {
       withActionLock(async () => {
         const v = document.getElementById('adminSupportWhatsappInput')?.value.trim(); if(!v)return;
@@ -884,6 +860,7 @@
         if(ok&&data.success)showToast('تم اعتماد رقم الدعم ✅','ok');
       });
     }
+
     function adminSaveWaitingTimeout() {
       withActionLock(async () => {
         const v = Number(document.getElementById('adminWaitingTimeoutInput')?.value||30);
@@ -891,6 +868,7 @@
         if(ok&&data.success)showToast('تم حفظ المهلة ✅','ok');
       });
     }
+
     function adminToggleFeatureFlags() {
       withActionLock(async () => {
         const m = document.getElementById('adminMaintenanceSwitch')?.checked; const r = document.getElementById('adminAllowCaptainRegSwitch')?.checked;
@@ -898,22 +876,25 @@
         if(ok&&data.success)showToast('تم تحديث التشغيل ✅','ok');
       });
     }
+
     function adminAddNewZone() {
       withActionLock(async () => {
         const z = document.getElementById('newZoneNameInput')?.value.trim(); if(!z||(Array.isArray(STATE.zones)&&STATE.zones.includes(z)))return;
         const nz = [...(Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES), z]; const np = {...STATE.pricing, [`${z}|${z}`]:35};
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
-        if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${z} ✅`,'ok'); }
+        if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${escapeHtml(z)} ✅`,'ok'); }
       });
     }
+
     function adminDeleteZoneByIndex(i) {
       const zonesArr = Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES;
-      openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${zonesArr[i]}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
+      openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${escapeHtml(zonesArr[i])}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
         const nz = zonesArr.filter((_,x)=>x!==i); const np={...STATE.pricing}; Object.keys(np).forEach(k=>{if(k.includes(zonesArr[i]))delete np[k];});
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
         if(ok&&data.success)showToast('تم الحذف ✅','ok');
       }});
     }
+
     function adminAddPackageWeight() {
       withActionLock(async () => {
         const w = document.getElementById('newPackageWeightInput')?.value.trim(); if(!w)return;
@@ -922,6 +903,7 @@
         if(ok&&data.success){ document.getElementById('newPackageWeightInput').value=''; showToast('تمت الإضافة ✅','ok'); }
       });
     }
+
     function adminDeletePackageWeight(i) {
       withActionLock(async () => {
         const nw = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).filter((_,x)=>x!==i);
@@ -929,6 +911,7 @@
         if(ok&&data.success)showToast('تم الحذف ✅','ok');
       });
     }
+
     function saveCustomPrices() {
       withActionLock(async () => {
         const up = {...STATE.pricing}; document.querySelectorAll('.route-price-input').forEach(i=>{ const k=i.getAttribute('data-route'); const v=Number(i.value); if(k&&v>0)up[k]=roundMoney(v); });
@@ -936,6 +919,7 @@
         if(ok&&data.success)showToast('تم اعتماد التسعيرة الجديدة 🛵✅','ok');
       });
     }
+
     function forceRefreshAdminPricingTable() { isPricingDirty=false; renderAdminPricingTable(); }
     
     function adminChangeCaptainStatus(phone, status) {
@@ -949,11 +933,13 @@
         withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status}); if(ok&&data.success)showToast('اعتمد ✅','ok'); });
       }
     }
+
     function adminResolveDispute(id, res) {
       withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:res==='complete'?'resolve_complete':'resolve_cancel'}); if(ok&&data.success)showToast('تم الفصل ✅','ok'); });
     }
+
     function adminReassignOrCancelOrder(id, act) {
-      openCustomActionModal({title:'تدخل إداري', message:`السبب لـ ${id}:`, needInput:true, confirmText:'تأكيد', isDanger:act==='cancel', onConfirm: async (re)=>{
+      openCustomActionModal({title:'تدخل إداري', message:`السبب لـ ${escapeHtml(id)}:`, needInput:true, confirmText:'تأكيد', isDanger:act==='cancel', onConfirm: async (re)=>{
         const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:act, reason:re});
         if(ok&&data.success)showToast('نُفذ ✅','ok');
       }});
@@ -967,39 +953,47 @@
       if(document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
       if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
     }
+
     function renderAdminDropdown() {
       const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.status)}]</option>`).join('');
       ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
       renderAdminCustomFeeCaptainSummary();
     }
+
     function renderAdminZonesTable() {
       const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
       document.getElementById('zonesTableBody').innerHTML = zonesArr.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td><button class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button></td></tr>`).join('');
     }
+
     function renderAdminPackageWeightsTable() { document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td><button class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button></td></tr>`).join(''); }
+
     function renderAdminPricingTable() {
       if(isPricingDirty||(document.activeElement&&document.activeElement.classList.contains('route-price-input')))return;
       const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
       const r=[]; zonesArr.forEach(f=>zonesArr.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
       document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="isPricingDirty=true" style="width:80px; padding:4px;"></td></tr>`).join('');
     }
+
     function renderAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect'); if(!s||document.activeElement===s) { renderAdminSelectedCaptainCard(); return; }
       const p = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</option>`).join('');
       if(p)s.value=p; else if(STATE.captains.length)s.value=STATE.captains[0].phone; renderAdminSelectedCaptainCard();
     }
+
     function renderAdminCustomerDirectory() {
       const s = document.getElementById('adminCustomerSelect'); if(!s||document.activeElement===s)return;
       const p = new Set(Object.keys(STATE.customers).filter(isValidEgyptianPhone)); STATE.orders.forEach(o=>{const c=resolveOrderClientPhone(o); if(isValidEgyptianPhone(c))p.add(c);});
       const pv = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+Array.from(p).map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join(''); if(pv)s.value=pv;
       renderAdminSelectedCustomerSummary();
     }
+
     function renderAdminFinancialLedger() {
       const e=[]; STATE.captains.forEach(c=>(c.walletTransactions||[]).forEach(t=>e.push({a:`كابتن: ${c.fullName}`,...t})));
       Object.keys(STATE.customers).forEach(k=>(STATE.customers[k].walletTransactions||[]).forEach(t=>e.push({a:`عميل: ${k}`,...t})));
       e.sort((x,y)=>(y.at||0)-(x.at||0));
       document.getElementById('adminFinancialLedgerList').innerHTML = e.slice(0,30).map(x=>`<div style="display:flex; justify-content:space-between; background:#FAF7F4; border:1px solid #eee; padding:6px; border-radius:8px;"><div><strong>${escapeHtml(x.a)}</strong> <span>${escapeHtml(x.title)}</span></div><strong style="color:${x.type==='خصم'?'red':'green'};">${x.type==='خصم'?'-':'+'}${x.amount} ج</strong></div>`).join('');
     }
+
     function buildCaptainDocsHtml(c) {
       const fs=safeImageSrc(c.idFrontPhoto), bs=safeImageSrc(c.idBackPhoto), vs=safeImageSrc(c.vehiclePhoto);
       return `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:8px 0;">
@@ -1008,6 +1002,7 @@
         ${vs?`<img src="${vs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${vs}')">`:(c.vehicleType==='دراجة'?'<div style="background:#eee;">عجلة</div>':'<div style="background:#eee;">لا يوجد</div>')}
       </div>`;
     }
+
     function renderAdminSelectedCaptainCard() {
       const p = document.getElementById('adminCaptainDirectorySelect')?.value; const bx = document.getElementById('adminSelectedCaptainCardContainer'); if(!bx)return;
       if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
@@ -1021,6 +1016,7 @@
         </div>
       </div>`;
     }
+
     function renderAdminDashboardData() {
       const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
       document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
