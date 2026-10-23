@@ -2154,24 +2154,6 @@
       }
     }
 
-    // بوابة الإدارة السرية (5 ضغطات على الشعار تفتح نافذة الدخول ثم تحول إلى /admin-portal-ennaby)
-    function handleSecretAdminTrigger(e) {
-      if (e) { e.preventDefault(); e.stopPropagation(); }
-      adminClickCount++;
-      clearTimeout(adminClickTimer);
-      const badge = document.getElementById('secretLogoTrigger');
-      if (badge) {
-        badge.style.transform = 'scale(0.82)';
-        setTimeout(() => { badge.style.transform = 'scale(1)'; }, 120);
-      }
-      if (adminClickCount >= 5) {
-        adminClickCount = 0;
-        switchRole('admin');
-        showToast('أدخل بيانات المسؤول للانتقال إلى لوحة التحكم المستقلة 🛡️', 'ok');
-      } else {
-        adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 3500);
-      }
-    }
 
     function handleAdminLogin() {
       withActionLock(async () => {
