@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>غرفة عمليات الرجل العنابي 🛡️</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* التنسيقات المشتركة والمتطابقة مع الهوية البصرية */
+    :root {
+      --primary: #7B3F52;
+      --primary-dark: #5F2E3E;
+      --primary-light: #9B556C;
+      --bg-canvas: #FAF7F4;
+      --card-bg: #FFFFFF;
+      --text-main: #302A2D;
+      --text-muted: #665E62;
+      --accent: #E9DCE0;
+      --success: #2E7D32;
+      --warning: #ED6C02;
+      --danger: #D32F2F;
+      --font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      --shadow-sm: 0 2px 8px rgba(123, 63, 82, 0.06);
+      --shadow-lg: 0 10px 30px rgba(123, 63, 82, 0.15);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+    body { background: var(--bg-canvas); min-height: 100vh; color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+    /* حاوية الموبايل (نفس شكل index) */
+    .device-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: stretch; }
+    .phone-mockup { width: 100vw; max-width: 100vw; height: 100vh; background: var(--bg-canvas); display: flex; flex-direction: column; position: relative; }
+    @media (min-width: 481px) { .phone-mockup { max-width: 600px; border-radius: 20px; box-shadow: var(--shadow-lg); height: 95vh; margin-top: 2.5vh; } }
+    
+    .phone-screen { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; position: relative; padding-bottom: 85px; }
+    .phone-screen::-webkit-scrollbar { width: 4px; }
+    .phone-screen::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+    .view-container { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+    .sub-tab-section { display: flex; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .brand-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 16px 10px; }
+    .brand-title { display: flex; align-items: center; gap: 8px; }
+    .brand-logo-badge { width: 44px; height: 44px; background: #302A2D; color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: var(--shadow-sm); }
+    .brand-title h1 { font-size: 17px; font-weight: 900; color: var(--primary); line-height: 1.1; }
+
+    .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid rgba(123, 63, 82, 0.08); }
+    .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+    .btn-main { background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 12px 18px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.2s; }
+    .btn-main:active { transform: scale(0.98); background: var(--primary-dark); }
+    .btn-secondary { background: var(--accent); color: var(--primary); border: none; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-danger { background: #FFEBEE; color: var(--danger); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-success { background: #E8F5E9; color: var(--success); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+    .input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+    .input-label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+    .input-field, .select-field { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 13px; font-weight: 600; outline: none; }
+    .input-field:focus, .select-field:focus { border-color: var(--primary); background: #fff; }
+    .inline-action-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; align-items: center; }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; }
+    .badge-pending { background: #FFF3E0; color: #B26A00; }
+    .badge-accepted { background: #E1F5FE; color: #0277BD; }
+    .badge-delivering { background: #F3E5F5; color: #7B1FA2; }
+    .badge-awaiting { background: #FFF8E1; color: #E65100; border: 1px solid #FFE082; }
+    .badge-disputed { background: #FCE4EC; color: #C2185B; border: 1px solid #F8BBD0; }
+    .badge-completed { background: #E8F5E9; color: #2E7D32; }
+    .badge-rejected { background: #FFEBEE; color: #D32F2F; }
+    .badge-master { background: #302A2D; color: #FBC02D; border: 1px solid #FBC02D; }
+
+    .admin-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi-card { padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
+    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 700; line-height: 1.3; }
+    .kpi-value { font-size: 19px; font-weight: 900; margin-top: 4px; line-height: 1.2; }
+    .kpi-sub { font-size: 10px; font-weight: 700; margin-top: 3px; }
+
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03); z-index: 60; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 6px; position: relative; flex: 1; }
+    .nav-item i { font-size: 16px; }
+    .nav-item.active { color: var(--primary); }
+    .nav-badge-count { position: absolute; top: 2px; right: calc(50% - 18px); background: var(--primary); color: white; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 50px; display: flex; align-items: center; justify-content: center; }
+
+    .switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #FAF7F4; border-radius: 12px; }
+    .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; right: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(-22px); }
+
+    .role-pills { display: flex; background: rgba(123, 63, 82, 0.08); padding: 3px; border-radius: 50px; border: 1px solid rgba(123, 63, 82, 0.14); width: 100%; max-width: 380px; justify-content: space-between; }
+    .role-btn { background: transparent; border: none; color: var(--text-muted); padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; transition: all 0.25s; }
+    .role-btn.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(123, 63, 82, 0.25); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; }
+    table th, table td { padding: 8px 10px; border-bottom: 1px solid #f0e6e9; }
+    table th { background: #FAF7F4; color: var(--primary); font-weight: 800; }
+    
+    .toast-box { position: absolute; top: 16px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px); transition: all 0.22s ease; pointer-events: none; }
+    .toast-box.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .toast-box.toast-warning { background: #3B2326; border-color: #FF8A80; }
+
+    .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+    .custom-modal.show { display: flex; }
+    .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); }
+  </style>
+</head>
+<body>
+
+  <main class="device-container">
+    <div class="phone-mockup">
+
+      <div id="toast" class="toast-box" onclick="this.classList.remove('show')">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <i id="toastIcon" class="fa-solid fa-circle-check" style="color: #4CAF50; font-size:18px;"></i>
+          <span id="toastMsg">تم</span>
+        </div>
+      </div>
+
+      <div class="phone-screen" id="phoneScreen">
+        <section class="view-container active-view" id="adminDashboardContent">
+          
+          <header class="brand-header">
+            <div class="brand-title">
+              <div class="brand-logo-badge"><i class="fa-solid fa-lock"></i></div>
+              <div>
+                <h1 style="font-size:17px;">غرفة العمليات المركزية</h1>
+                <span style="color:var(--primary); font-weight:800;" id="currentAdminSessionLabel">جاري التحميل...</span>
+              </div>
+            </div>
+            <button class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#FFEBEE; color:var(--danger);" onclick="handleAdminLogout()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+            </button>
+          </header>
+
+          <!-- تبويب الإدارة 1: الرئيسية -->
+          <div id="admTab-home" class="sub-tab-section">
+            <div class="admin-kpi-grid" id="admCard-kpiStats">
+              <div class="card kpi-card" style="border-right:4px solid var(--primary);">
+                <span class="kpi-label">أجور التوصيل الإجمالية</span>
+                <div class="kpi-value" id="adminStatTotalFares">0 ج</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid var(--success);">
+                <span class="kpi-label">إيراد عمولات المنصة</span>
+                <div class="kpi-value" style="color:var(--success);" id="adminStatCommissionTotal">0 ج</div>
+                <div class="kpi-sub" id="adminStatCurrentFeeNote" style="color:var(--text-muted);">--</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #607D8B;">
+                <span class="kpi-label">الكباتن المسجلين 🛵</span>
+                <div class="kpi-value" style="color:#607D8B;" id="adminStatTotalCaptainsCount">0 كابتن</div>
+                <div class="kpi-sub" id="adminStatCaptainsSub"></div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #0288D1;">
+                <span class="kpi-label">إجمالي محافظ الكباتن 💰</span>
+                <div class="kpi-value" style="color:#0288D1;" id="adminStatTotalCaptainsWallet">0.00 ج</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #2E7D32;">
+                <span class="kpi-label">الطلبات المؤكدة ✅</span>
+                <div class="kpi-value" style="color:#2E7D32;" id="adminStatOrdersCompletedCount">0</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid var(--danger);">
+                <span class="kpi-label">الطلبات الملغية ❌</span>
+                <div class="kpi-value" style="color:var(--danger);" id="adminStatOrdersCancelledCount">0</div>
+              </div>
+            </div>
+
+            <div class="card" id="admCard-platformControls" style="border: 2px solid var(--primary); background: #FFFDFD;">
+              <h2 class="card-title" style="margin-bottom:8px;"><i class="fa-solid fa-bullhorn"></i> الإعلانات العامة وحالة التشغيل 📢</h2>
+              <div class="input-group">
+                <label class="input-label">رسالة شريط الإعلان العام (تظهر للجميع):</label>
+                <div class="inline-action-row">
+                  <input type="text" id="adminBroadcastInput" class="input-field" placeholder="اكتب إعلانك...">
+                  <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveBroadcastBanner()"><i class="fa-solid fa-check"></i> تحديث</button>
+                </div>
+              </div>
+              <div class="input-group" style="margin-top:8px;">
+                <label class="input-label">رقم واتساب الدعم الفني الموحد (مثال 201507800875):</label>
+                <div class="inline-action-row">
+                  <input type="tel" inputmode="numeric" id="adminSupportWhatsappInput" class="input-field" placeholder="201507800875">
+                  <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveSupportWhatsapp()"><i class="fa-solid fa-check"></i> اعتماد</button>
+                </div>
+              </div>
+              <div class="input-group" style="margin-top:8px;">
+                <label class="input-label">مهلة الانتظار للإلغاء التلقائي (بالدقائق):</label>
+                <div class="inline-action-row">
+                  <input type="number" id="adminWaitingTimeoutInput" class="input-field" placeholder="30" min="0">
+                  <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveWaitingTimeout()"><i class="fa-solid fa-clock"></i> حفظ</button>
+                </div>
+              </div>
+              <div class="switch-wrapper" style="margin-top:10px; border:1px solid #E9DCE0;">
+                <div>
+                  <strong style="font-size:12.5px; display:block; color:var(--danger);">وضع الصيانة الطارئة 🛠️</strong>
+                </div>
+                <label class="switch"><input type="checkbox" id="adminMaintenanceSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
+              </div>
+              <div class="switch-wrapper" style="margin-top:8px; border:1px solid #E9DCE0;">
+                <div>
+                  <strong style="font-size:12.5px; display:block; color:var(--primary);">فتح باب تسجيل كباتن جدد 🛵</strong>
+                </div>
+                <label class="switch"><input type="checkbox" id="adminAllowCaptainRegSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- تبويب الإدارة 2: الكباتن والمسؤولين -->
+          <div id="admTab-captains" class="sub-tab-section" style="display:none;">
+            <div class="role-pills" id="admCaptainsInternalNav" style="max-width:100%; margin-bottom:2px;">
+              <button type="button" class="role-btn active" id="admSubBtn-captains" onclick="switchAdminCaptainsSubSection('captains')"><i class="fa-solid fa-motorcycle"></i> إدارة الكباتن</button>
+              <button type="button" class="role-btn" id="admSubBtn-admins" onclick="switchAdminCaptainsSubSection('admins')"><i class="fa-solid fa-user-shield"></i> إدارة المسؤولين</button>
+            </div>
+
+            <!-- قسم المسؤولين -->
+            <div id="admSubSection-admins" class="sub-tab-section" style="display:none;">
+              <div class="card" id="admCard-adminsManager" style="border: 2px solid #302A2D;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <h2 class="card-title" style="margin-bottom:0; color:#302A2D;"><i class="fa-solid fa-user-shield"></i> إدارة المسؤولين 🛡️</h2>
+                  <span class="badge badge-master" id="adminRoleAccessBadge">الأدمن الرئيسي 👑</span>
+                </div>
+                
+                <div id="masterAdminSelfEditBox" style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:12px;">
+                  <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">👑 بيانات حساب الأدمن الرئيسي:</strong>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <input type="text" id="masterAdminNameInput" class="input-field" placeholder="الاسم">
+                    <input type="text" id="masterAdminUserInput" class="input-field" placeholder="اسم المستخدم">
+                  </div>
+                  <input type="password" id="masterAdminCurrentPassInput" class="input-field" placeholder="كلمة المرور الحالية للتأكيد *" style="margin-bottom:8px;">
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+                    <input type="password" id="masterAdminNewPassInput" class="input-field" placeholder="كلمة المرور الجديدة (اختياري)">
+                    <input type="password" id="masterAdminConfirmPassInput" class="input-field" placeholder="تأكيد المرور">
+                  </div>
+                  <button type="button" class="btn-main" style="background:#302A2D; padding:10px; font-size:12px;" onclick="adminUpdateMasterAccount()">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ وتحديث بياناتي
+                  </button>
+                </div>
+
+                <div id="subAdminsBuilderBox" style="background:#fff; padding:12px; border-radius:12px; border:1.5px dashed var(--primary); margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong style="font-size:12.5px; color:var(--primary);" id="subAdminFormTitle"><i class="fa-solid fa-user-plus"></i> إضافة مسؤول جديد:</strong>
+                    <button type="button" id="cancelSubAdminEditBtn" onclick="resetSubAdminForm()" style="display:none; background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; cursor:pointer;">إلغاء התعديل ✕</button>
+                  </div>
+                  <input type="hidden" id="editingSubAdminOrigUser" value="">
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <input type="text" id="subAdminNameInput" class="input-field" placeholder="الاسم المعروض *">
+                    <input type="text" id="subAdminUserInput" class="input-field" placeholder="اسم المستخدم *">
+                  </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+                    <input type="password" id="subAdminPassInput" class="input-field" placeholder="كلمة المرور *">
+                    <input type="password" id="subAdminConfirmPassInput" class="input-field" placeholder="تأكيد المرور *">
+                  </div>
+                  
+                  <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:12px; padding:10px; margin-bottom:10px;">
+                    <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:8px;">صلاحيات المسؤول:</strong>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                      <label><input type="checkbox" id="permSwitch-viewDashboard"> 📊 عرض الإحصائيات</label>
+                      <label><input type="checkbox" id="permSwitch-viewCaptains"> 🛵 عرض الكباتن</label>
+                      <label><input type="checkbox" id="permSwitch-manageCaptains"> ✅ إدارة الكباتن</label>
+                      <label><input type="checkbox" id="permSwitch-viewOrders"> 📦 عرض الطلبات</label>
+                      <label><input type="checkbox" id="permSwitch-manageOrders"> ⚖️ التدخل في الطلبات</label>
+                      <label><input type="checkbox" id="permSwitch-manageWallets"> 💰 إدارة المحافظ</label>
+                      <label><input type="checkbox" id="permSwitch-manageCommissions"> 🎯 إدارة العمولات</label>
+                      <label><input type="checkbox" id="permSwitch-managePricing"> 🗺️ مناطق وأسعار</label>
+                      <label><input type="checkbox" id="permSwitch-manageSettings"> 📢 إعدادات المنصة</label>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-main" id="saveSubAdminBtn" onclick="adminSaveSubAdminAccount()"><i class="fa-solid fa-shield-halved"></i> حفظ واعتماد المسؤول ✅</button>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                  <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;">المسؤولين المسجلين:</strong>
+                  <div id="adminAccountsListFeed" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+
+                <div style="border-top:1px solid #E9DCE0; padding-top:10px;">
+                  <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;">سجل النشاطات (Audit Log):</strong>
+                  <div id="adminAuditLogList" style="font-size:11px; display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- قسم الكباتن -->
+            <div id="admSubSection-captains" class="sub-tab-section">
+              <div class="card" id="admCard-captainReview">
+                <h2 class="card-title"><i class="fa-solid fa-user-check"></i> مراجعة الكباتن الجدد</h2>
+                <div id="adminCaptainReviewFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
+              </div>
+
+              <!-- قسم إعادة تعيين كلمة مرور الكابتن -->
+              <div class="card" id="admCard-resetPass" style="border: 1.5px solid var(--primary); margin-top: 14px;">
+                <h2 class="card-title"><i class="fa-solid fa-key"></i> تعيين كلمة مرور جديدة لكابتن 🔑</h2>
+                <div class="input-group">
+                  <input type="tel" id="adminResetPassSearchInput" class="input-field" placeholder="ابحث بجزء من رقم الهاتف أو الاسم..." oninput="filterResetPassCaptainDropdown()">
+                </div>
+                <div class="input-group">
+                  <select class="select-field" id="adminResetPassCaptainSelect"></select>
+                </div>
+                <div class="input-group">
+                  <input type="text" id="adminResetPassInput" class="input-field" placeholder="اكتب الباسورد الجديد (مثال: cap@2026)">
+                </div>
+                <button class="btn-main" onclick="adminExecuteCaptainPasswordReset()"><i class="fa-solid fa-shield-halved"></i> تحديث كلمة المرور 🔑</button>
+              </div>
+
+              <div class="card" id="admCard-captainDirectory" style="border: 2px solid var(--primary);">
+                <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن המعتمدين 🛵</h2>
+                <div class="input-group">
+                  <select class="select-field" id="adminCaptainDirectorySelect" onchange="renderAdminSelectedCaptainCard()"></select>
+                </div>
+                <div id="adminSelectedCaptainCardContainer" style="margin-top:10px;"></div>
+              </div>
+
+              <div class="card" id="admCard-manualTopup" style="border: 1.5px solid var(--primary);">
+                <h2 class="card-title"><i class="fa-solid fa-hand-holding-dollar"></i> شحن محفظة كابتن</h2>
+                <select class="select-field" id="adminManualTopupCaptainSelect" style="margin-bottom:8px;"></select>
+                <div class="inline-action-row">
+                  <input type="number" id="adminManualTopupAmount" class="input-field" placeholder="المبلغ (ج)">
+                  <button class="btn-main" style="padding:11px 12px; font-size:12.5px;" onclick="adminExecuteManualTopup()"><i class="fa-solid fa-bolt"></i> شحن</button>
+                </div>
+              </div>
+
+              <div class="card" id="admCard-manualDeduct" style="border: 1.5px solid var(--danger);">
+                <h2 class="card-title" style="color:var(--danger);"><i class="fa-solid fa-circle-minus"></i> خصم من محفظة كابتن ⚠️</h2>
+                <select class="select-field" id="adminManualDeductCaptainSelect" style="margin-bottom:8px;"></select>
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
+                  <input type="number" id="adminManualDeductAmount" class="input-field" placeholder="المبلغ">
+                  <input type="text" id="adminManualDeductReason" class="input-field" placeholder="السبب">
+                </div>
+                <button class="btn-main" style="background:var(--danger);" onclick="adminExecuteManualDeduct()">تنفيذ الخصم ⛔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- تبويب الإدارة 3: العملاء والمالية -->
+          <div id="admTab-finance" class="sub-tab-section" style="display:none;">
+            
+            <!-- ✅ قسم تعيين PIN جديد للعميل -->
+            <div class="card" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
+              <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، أدخل رقمه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
+              <div class="input-group">
+                <input type="tel" id="adminCustomerResetPinPhone" class="input-field" placeholder="رقم هاتف العميل (01xxxxxxxxx)" maxlength="15">
+              </div>
+              <div class="input-group">
+                <input type="number" id="adminCustomerResetPinValue" class="input-field" placeholder="رمز PIN الجديد (4 أرقام)" maxlength="4">
+              </div>
+              <button class="btn-main" style="background:var(--warning); color:#fff;" onclick="adminExecuteCustomerPinReset()">
+                <i class="fa-solid fa-rotate"></i> تصفير وتحديث رمز الـ PIN
+              </button>
+            </div>
+
+            <!-- تعويض العملاء -->
+            <div class="card" id="admCard-customerWallets" style="border: 2px solid #2E7D32; background: #FAFFFA;">
+              <h2 class="card-title" style="color:var(--success);"><i class="fa-solid fa-gift"></i> محافظ العملاء والتعويضات 🎁</h2>
+              <select class="select-field" id="adminCustomerSelect" onchange="handleAdminCustomerSelectChange()" style="margin-bottom:8px;"></select>
+              <input type="tel" id="adminCustomerPhoneInput" class="input-field" placeholder="أو اكتب الهاتف مباشرة" oninput="renderAdminSelectedCustomerSummary()" style="margin-bottom:8px;">
+              <div id="adminSelectedCustomerSummary" style="background:#fff; border:1px solid #C8E6C9; border-radius:10px; padding:10px; font-size:11.5px; margin-bottom:10px;"></div>
+              <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
+                <input type="number" id="adminCustCompAmount" class="input-field" placeholder="المبلغ (ج)">
+                <input type="text" id="adminCustCompReason" class="input-field" placeholder="السبب (اختياري)">
+              </div>
+              <button class="btn-main" style="background:var(--success);" onclick="adminExecuteCustomerCompensation()">إضافة رصيد للعميل ✅</button>
+            </div>
+
+            <!-- عمولة المنصة -->
+            <div class="card" id="admCard-platformFee" style="border: 2px solid var(--primary);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> عمولة المنصة ⚙️</h2>
+                <span class="badge badge-verified" id="adminCurrentFeeBadge">--</span>
+              </div>
+              <div class="inline-action-row">
+                <input type="number" id="adminPlatformFeeInput" class="input-field" placeholder="قيمة العمولة (ج)">
+                <button class="btn-main" style="padding:11px 12px; font-size:12.5px;" onclick="adminSavePlatformFee()">اعتماد</button>
+              </div>
+            </div>
+
+            <!-- عمولة فردية -->
+            <div class="card" id="admCard-customFee" style="border: 2px solid #0277BD;">
+              <h2 class="card-title" style="color:#0277BD;"><i class="fa-solid fa-user-tag"></i> عمولة فردية لكابتن 🎯</h2>
+              <input type="tel" id="adminCustomFeePhoneSearch" class="input-field" placeholder="بحث ברقم الكابتن" oninput="handleAdminCustomFeeSearch()" style="margin-bottom:6px;">
+              <select class="select-field" id="adminCustomFeeCaptainSelect" onchange="renderAdminCustomFeeCaptainSummary()" style="margin-bottom:8px;"></select>
+              <div id="adminCustomFeeCurrentSummary" style="background:#fff; border:1px solid #B3E5FC; border-radius:10px; padding:8px 10px; font-size:11px; margin-bottom:10px;"></div>
+              <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
+                <input type="number" id="adminCustomFeeAmountInput" class="input-field" placeholder="العمولة (ج)">
+                <input type="text" id="adminCustomFeeReasonInput" class="input-field" placeholder="السبب">
+              </div>
+              <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
+                <button class="btn-main" style="background:#0277BD; padding:10px; font-size:12px;" onclick="adminSaveCaptainCustomFee()">اعتماد الخاص</button>
+                <button class="btn-secondary" style="font-size:11.5px; padding:10px;" onclick="adminResetCaptainCustomFee()">إرجاع للعامة</button>
+              </div>
+            </div>
+
+            <!-- نظام عنابي بوينتس -->
+            <div class="card" id="admCard-loyaltyPoints" style="border: 2px dashed var(--primary);">
+              <h2 class="card-title">🍇 عنابي بوينتس والمكافآت</h2>
+              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:10px;">
+                <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">👑 مكافآت العملاء:</strong>
+                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCustPointsPerOrderInput" class="input-field" placeholder="النقاط للمشوار"><button class="btn-main" onclick="adminSaveLoyaltyField('customerPointsPerOrder', 'adminCustPointsPerOrderInput')">حفظ</button></div>
+                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCustPointsTargetInput" class="input-field" placeholder="الحد المطلوب للمكافأة"><button class="btn-main" onclick="adminSaveLoyaltyField('customerRewardThreshold', 'adminCustPointsTargetInput')">حفظ</button></div>
+                <div class="inline-action-row"><input type="number" id="adminCustRewardAmountInput" class="input-field" placeholder="قيمة المكافأة النقدية"><button class="btn-main" onclick="adminSaveLoyaltyField('customerRewardCash', 'adminCustRewardAmountInput')">حفظ</button></div>
+              </div>
+              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0;">
+                <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">🛵 مكافآت الكباتن:</strong>
+                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCourPointsPerOrderInput" class="input-field" placeholder="النقاط للمشوار"><button class="btn-main" onclick="adminSaveLoyaltyField('courierPointsPerOrder', 'adminCourPointsPerOrderInput')">حفظ</button></div>
+                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCourPointsTargetInput" class="input-field" placeholder="الحد المطلوب للمكافأة"><button class="btn-main" onclick="adminSaveLoyaltyField('courierRewardThreshold', 'adminCourPointsTargetInput')">حفظ</button></div>
+                <div class="inline-action-row"><input type="number" id="adminCourRewardAmountInput" class="input-field" placeholder="قيمة المكافأة النقدية"><button class="btn-main" onclick="adminSaveLoyaltyField('courierRewardCash', 'adminCourRewardAmountInput')">حفظ</button></div>
+              </div>
+            </div>
+
+            <!-- الدفتر المالي -->
+            <div class="card" id="admCard-financialLedger">
+              <h2 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> سجل التدقيق המالي</h2>
+              <div id="adminFinancialLedgerList" style="font-size:11px; display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto;"></div>
+            </div>
+          </div>
+
+          <!-- تبويب الإدارة 4: الطلبات والعمليات -->
+          <div id="admTab-operations" class="sub-tab-section" style="display:none;">
+            
+            <div class="card" id="admCard-ordersManage">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> إدارة الطلبات והاعتراضات</h2>
+                <select id="adminOrdersTimeFilter" class="select-field" style="width:auto; padding:6px 10px; font-size:11.5px;" onchange="renderAdminDashboardData()">
+                  <option value="week">آخر 7 أيام 📅</option>
+                  <option value="today">اليوم ☀️</option>
+                  <option value="3days">آخر 3 أيام 🕒</option>
+                  <option value="all">كل الطلبات 📂</option>
+                </select>
+              </div>
+              <div id="adminOrdersFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
+
+            <div class="card" id="admCard-packageWeights" style="border: 1.5px solid var(--primary);">
+              <h2 class="card-title"><i class="fa-solid fa-weight-hanging"></i> أحجام/أوزان الطرود 📦</h2>
+              <div class="inline-action-row" style="margin-bottom:10px;">
+                <input type="text" id="newPackageWeightInput" class="input-field" placeholder="وصف الوزن החדش...">
+                <button class="btn-main" style="padding:11px 12px; font-size:12px;" onclick="adminAddPackageWeight()"><i class="fa-solid fa-plus"></i> إضافة</button>
+              </div>
+              <div class="table-container">
+                <table><thead><tr><th>الوصف</th><th>الإجراء</th></tr></thead><tbody id="packageWeightsTableBody"></tbody></table>
+              </div>
+            </div>
+
+            <div class="card" id="admCard-zonesManage">
+              <h2 class="card-title"><i class="fa-solid fa-map-location-dot"></i> المناطق الجغرافية</h2>
+              <div class="inline-action-row" style="margin-bottom:10px;">
+                <input type="text" id="newZoneNameInput" class="input-field" placeholder="اسم المنطقة החדشة">
+                <button class="btn-main" style="padding:11px 12px; font-size:12px;" onclick="adminAddNewZone()"><i class="fa-solid fa-plus"></i> إضافة</button>
+              </div>
+              <div class="table-container">
+                <table id="zonesListTable"><thead><tr><th>المنطقة</th><th>الإجراء</th></tr></thead><tbody id="zonesTableBody"></tbody></table>
+              </div>
+            </div>
+
+            <div class="card" id="admCard-pricingManage">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-tags"></i> تسعير المسارات</h2>
+                <button class="btn-secondary" style="font-size:11px; padding:4px 8px;" onclick="forceRefreshAdminPricingTable()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
+              </div>
+              <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+                <table><thead><tr><th>من</th><th>إلى</th><th>السعر (ج)</th></tr></thead><tbody id="adminPricingTableBody"></tbody></table>
+              </div>
+              <button class="btn-main" style="margin-top:10px;" onclick="saveCustomPrices()"><i class="fa-solid fa-floppy-disk"></i> حفظ واعتماد التسعيرة</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- شريط التنقل السفلي للإدارة -->
+      <nav class="bottom-nav" id="adminBottomNav">
+        <button class="nav-item active" onclick="switchAdminTab('home')" id="navAdm-home">
+          <i class="fa-solid fa-chart-pie"></i><span>الرئيسية</span>
+        </button>
+        <button class="nav-item" onclick="switchAdminTab('captains')" id="navAdm-captains">
+          <i class="fa-solid fa-motorcycle"></i><span>مسؤولين/كباتن</span>
+          <span class="nav-badge-count" id="admNavCaptainsBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-item" onclick="switchAdminTab('finance')" id="navAdm-finance">
+          <i class="fa-solid fa-sack-dollar"></i><span>العملاء والمالية</span>
+        </button>
+        <button class="nav-item" onclick="switchAdminTab('operations')" id="navAdm-operations">
+          <i class="fa-solid fa-gears"></i><span>الطلبات والمسارات</span>
+          <span class="nav-badge-count" id="admNavDisputesBadge" style="display:none;">0</span>
+        </button>
+      </nav>
+
+    </div>
+  </main>
+
+  <!-- Modal استعراض الصور المرفوعة بالحجم الكامل -->
+  <div class="custom-modal" id="imagePreviewModal" style="z-index: 2000;" onclick="if(event.target === this) closeImageViewer()">
+    <div style="position:relative; width:92%; max-width:500px; text-align:center;">
+      <button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button>
+      <img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند">
+    </div>
+  </div>
+
+  <div class="custom-modal" id="customActionModal" style="z-index: 1800;">
+    <div class="modal-content-card">
+      <h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3>
+      <p id="customActionModalMessage" style="font-size:12.5px; line-height:1.6; margin-bottom:12px;"></p>
+      <div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;">
+        <input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب هنا...">
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-main" id="customActionModalConfirmBtn">تأكيد التنفيذ ✅</button>
+        <button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+    /* ==========================================================================
+       الرجل العنابي — المحرك البرمجي للوحة الإدارة المعزولة (V33 - Admin Portal)
+       ========================================================================== */
+    const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V33';
+    const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
+    
+    let adminClickCount = 0, adminClickTimer = null, toastTimer = null, actionLock = false;
+    let isPricingDirty = false, customModalCallback = null, isCloudSyncInFlight = false;
+
+    const ADMIN_PERM_KEYS = ['viewDashboard', 'viewCaptains', 'manageCaptains', 'viewOrders', 'manageOrders', 'manageWallets', 'manageCommissions', 'managePricing', 'manageSettings'];
+    const ADMIN_PERM_LABELS = { viewDashboard: '📊 لوحة المعلومات', viewCaptains: '🛵 عرض الكباتن', manageCaptains: '✅ إدارة الكباتن', viewOrders: '📦 عرض الطلبات', manageOrders: '⚖️ إدارة الطلبات', manageWallets: '💰 المحافظ', manageCommissions: '🎯 العمولات', managePricing: '🗺️ التسعير', manageSettings: '📢 الإعدادات' };
+    const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
+    const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
+
+    let SESSION = (() => { try { const r = localStorage.getItem(SESSION_KEY); return r ? { currentAdminTab:'home', currentAdminCaptainsSub:'captains', ...JSON.parse(r) } : { currentAdminTab:'home', currentAdminCaptainsSub:'captains' }; } catch(e){ return { currentAdminTab:'home', currentAdminCaptainsSub:'captains' }; } })();
+    
+    let STATE = {
+      currentAdminTab: SESSION.currentAdminTab,
+      currentAdminCaptainsSub: SESSION.currentAdminCaptainsSub,
+      activeAdminPhone: null,
+      settings: {}, zones: [], pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
+    };
+
+    function saveSession() { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ currentAdminTab: STATE.currentAdminTab, currentAdminCaptainsSub: STATE.currentAdminCaptainsSub })); } catch(e){} }
+    function normalizeDigits(s) { return s == null ? '' : String(s).replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776)); }
+    function normalizePhone(raw) { let s = normalizeDigits(raw).replace(/[\s\-()]/g, ''); if(s.startsWith('+20'))s='0'+s.slice(3); else if(s.startsWith('0020'))s='0'+s.slice(4); else if(s.startsWith('20')&&s.length===12)s='0'+s.slice(2); return s; }
+    function isValidEgyptianPhone(p) { return /^01[0125][0-9]{8}$/.test(normalizePhone(p)); }
+    function isValidPin(pin) { return /^[0-9]{4}$/.test(normalizeDigits(pin).trim()); }
+    function roundMoney(v) { const n = Number(normalizeDigits(v)); return Number.isFinite(n) ? Math.round((n+Number.EPSILON)*100)/100 : 0; }
+    function escapeHtml(s) { return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function safeImageSrc(s) { if(!s||typeof s!=='string')return''; const t=s.trim(); if(t.startsWith('data:image/')||t.startsWith('https://')||t.startsWith('/uploads/'))return t; return''; }
+    function formatCairoDateTime(ts) { try { return new Date(Number(ts)||Date.now()).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch(e){ return ''; } }
+    function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
+
+    async function apiRequest(ep, meth='POST', bdy=null) {
+      const opts = { method:meth, credentials:'include', headers:{} };
+      if(bdy!==null) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(bdy); }
+      const res = await fetch(`${API_BASE}${ep}`, opts);
+      const data = await res.json().catch(()=>({}));
+      if(data && data.state) applyCloudStateSnapshot(data.state);
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    function applyCloudStateSnapshot(cloud) {
+      if(!cloud || typeof cloud!=='object') return;
+      if(cloud.settings) STATE.settings = { ...STATE.settings, ...cloud.settings };
+      if(Array.isArray(cloud.zones)) STATE.zones = cloud.zones;
+      if(cloud.pricing && typeof cloud.pricing==='object') STATE.pricing = cloud.pricing;
+      if(cloud.customers && typeof cloud.customers==='object') STATE.customers = cloud.customers;
+      if(Array.isArray(cloud.captains)) STATE.captains = cloud.captains;
+      if(Array.isArray(cloud.orders)) STATE.orders = cloud.orders;
+      if(Array.isArray(cloud.adminAccounts)) STATE.adminAccounts = cloud.adminAccounts;
+      if(Array.isArray(cloud.auditLogs)) STATE.auditLogs = cloud.auditLogs;
+
+      if(STATE.activeAdminPhone && !STATE.adminAccounts.some(a=>a.username===STATE.activeAdminPhone)) STATE.activeAdminPhone = null;
+      renderAdminScreen();
+    }
+
+    async function syncFromCloudServer() {
+      if(isCloudSyncInFlight) return; isCloudSyncInFlight = true;
+      try {
+        const res = await fetch(`${API_BASE}/api/bootstrap`, { method: 'GET', credentials: 'include' });
+        if(res.ok) {
+          const data = await res.json();
+          if(data && data.success && data.state) applyCloudStateSnapshot(data.state);
+        }
+      } catch(e) {} finally { isCloudSyncInFlight = false; }
+    }
+
+    function withActionLock(fn) {
+      if(actionLock) return; actionLock = true;
+      Promise.resolve(fn()).finally(() => { setTimeout(()=>actionLock=false, 260); });
+    }
+
+    function showToast(msg, type='auto') {
+      const toast = document.getElementById('toast'), tMsg = document.getElementById('toastMsg'), tIcon = document.getElementById('toastIcon');
+      if(!toast) return; tMsg.innerText = msg;
+      const isWarn = type==='warn' || /(غير|أقل|عفواً|برجاء|اكتب|إجباري|موقوف|مرفوض|خطأ|تعذر|صيانة|⚠️|⛔|❌)/.test(msg);
+      toast.className = `toast-box ${isWarn?'toast-warning':'toast-success'} show`;
+      if(tIcon) { tIcon.className = isWarn?'fa-solid fa-circle-exclamation':'fa-solid fa-circle-check'; tIcon.style.color = isWarn?'#FF8A80':'#4CAF50'; }
+      if(toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>toast.classList.remove('show'), 3600);
+    }
+
+    function getStatusBadgeClass(s) {
+      if(s==='في انتظار كابتن')return'badge-pending'; if(s==='تم قبول الطلب')return'badge-accepted';
+      if(s==='الكابتن وصل للاستلام'||s==='استلم الطرد وفي السكة')return'badge-delivering';
+      if(s==='الكابتن وصل للتسليم')return'badge-awaiting'; if(s==='قيد مراجعة الاعتراض')return'badge-disputed';
+      if(s==='مكتمل')return'badge-completed'; return String(s||'').includes('ملغي')?'badge-rejected':'badge-pending';
+    }
+
+    function isAdminSessionValid() { return STATE.activeAdminPhone && STATE.adminAccounts.some(a=>a.username===STATE.activeAdminPhone && (a.isMaster || a.status!=='معطل')); }
+    function getActiveAdmin() { return isAdminSessionValid() ? STATE.adminAccounts.find(a=>a.username===STATE.activeAdminPhone) : null; }
+    function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
+    function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
+    function requireAdminPerm(key, title='هذا الإجراء') {
+      if(!getActiveAdmin()) { showToast('انتهت جلسة الإدارة 🔒⚠️','warn'); handleAdminLogout(); return false; }
+      if(!hasAdminPerm(key)) { showToast(`لا تملك صلاحية (${ADMIN_PERM_LABELS[key]||title}) 🛡️⛔`,'warn'); return false; } return true;
+    }
+
+    function switchAdminTab(t) {
+      const v = ['home','captains','finance','operations'].includes(t)?t:'home';
+      STATE.currentAdminTab = v; saveSession();
+      ['home','captains','finance','operations'].forEach(x => {
+        document.getElementById(`admTab-${x}`)&&(document.getElementById(`admTab-${x}`).style.display = (x===v)?'flex':'none');
+        document.getElementById(`navAdm-${x}`)&&document.getElementById(`navAdm-${x}`).classList.toggle('active', x===v);
+      });
+      document.getElementById('phoneScreen')&&(document.getElementById('phoneScreen').scrollTop=0);
+    }
+
+    function switchAdminCaptainsSubSection(s) {
+      let t = s==='admins'?'admins':'captains';
+      if(t==='admins'&&!isMasterAdmin()) { showToast('قسم المسؤولين للأدمن الرئيسي فقط 👑','warn'); t='captains'; }
+      STATE.currentAdminCaptainsSub = t; saveSession();
+      document.getElementById('admSubBtn-captains')&&document.getElementById('admSubBtn-captains').classList.toggle('active', t==='captains');
+      document.getElementById('admSubBtn-admins')&&document.getElementById('admSubBtn-admins').classList.toggle('active', t==='admins');
+      document.getElementById('admSubSection-captains')&&(document.getElementById('admSubSection-captains').style.display = (t==='captains')?'flex':'none');
+      document.getElementById('admSubSection-admins')&&(document.getElementById('admSubSection-admins').style.display = (t==='admins')?'flex':'none');
+    }
+
+    function openCustomActionModal({title, message, needInput=false, inputPlaceholder='', defaultValue='', confirmText='تأكيد ✅', isDanger=false, onConfirm}) {
+      document.getElementById('customActionModalTitle').innerText = title;
+      document.getElementById('customActionModalTitle').style.color = isDanger?'var(--danger)':'var(--primary)';
+      document.getElementById('customActionModalMessage').innerText = message;
+      document.getElementById('customActionModalInputWrap').style.display = needInput?'block':'none';
+      if(needInput) { const inp=document.getElementById('customActionModalInput'); inp.value=defaultValue; inp.placeholder=inputPlaceholder; setTimeout(()=>inp.focus(),80); }
+      const b=document.getElementById('customActionModalConfirmBtn'); b.innerText=confirmText; b.style.background=isDanger?'var(--danger)':'var(--primary)';
+      customModalCallback = function() {
+        const v = document.getElementById('customActionModalInput').value.trim();
+        if(needInput&&!v){ showToast('اكتب السبب ⚠️','warn'); return; }
+        closeCustomActionModal(); if(typeof onConfirm==='function') onConfirm(v);
+      };
+      b.onclick = customModalCallback; document.getElementById('customActionModal').classList.add('show');
+    }
+    function closeCustomActionModal() { document.getElementById('customActionModal').classList.remove('show'); }
+    function openImageViewer(src) { const s=safeImageSrc(src); if(!s)return; document.getElementById('imagePreviewFull').src=s; document.getElementById('imagePreviewModal').classList.add('show'); }
+    function closeImageViewer() { document.getElementById('imagePreviewModal').classList.remove('show'); document.getElementById('imagePreviewFull').src=''; }
+
+    async function handleAdminLogout() {
+      await apiRequest('/api/auth/admin/logout','POST',{}).catch(()=>{});
+      STATE.activeAdminPhone = null; saveSession();
+      window.location.href = '/'; // إعادة توجيه للواجهة العامة
+    }
+
+    // ==================== دوال الإدارة والتحكم السحابي (كاملة ومحدثة) ====================
+    function applyAdminPermissionsUI() {
+      const adm = getActiveAdmin(); if(!adm) return; const isMaster = isMasterAdmin(adm);
+      document.getElementById('admSubBtn-admins')&&(document.getElementById('admSubBtn-admins').style.display = isMaster?'flex':'none');
+      document.getElementById('admCaptainsInternalNav')&&(document.getElementById('admCaptainsInternalNav').style.display = isMaster?'flex':'none');
+      if(!isMaster&&STATE.currentAdminCaptainsSub==='admins') STATE.currentAdminCaptainsSub='captains';
+      switchAdminCaptainsSubSection(STATE.currentAdminCaptainsSub);
+      const setCard = (id, vis) => document.getElementById(id)&&(document.getElementById(id).style.display=vis?'block':'none');
+      setCard('admCard-kpiStats', hasAdminPerm('viewDashboard', adm));
+      setCard('admCard-platformControls', hasAdminPerm('manageSettings', adm));
+      setCard('admCard-adminsManager', isMaster);
+      setCard('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
+      setCard('admCard-resetPass', hasAdminPerm('manageCaptains', adm)); // عرض تعيين الباسورد
+      setCard('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm)||hasAdminPerm('manageCaptains', adm));
+      setCard('admCard-manualTopup', hasAdminPerm('manageWallets', adm));
+      setCard('admCard-manualDeduct', hasAdminPerm('manageWallets', adm));
+      setCard('admCard-customerWallets', hasAdminPerm('manageWallets', adm));
+      setCard('admCard-platformFee', hasAdminPerm('manageCommissions', adm));
+      setCard('admCard-customFee', hasAdminPerm('manageCommissions', adm));
+      setCard('admCard-loyaltyPoints', hasAdminPerm('manageCommissions', adm));
+      setCard('admCard-financialLedger', hasAdminPerm('viewDashboard', adm)||hasAdminPerm('manageWallets', adm));
+      setCard('admCard-ordersManage', hasAdminPerm('viewOrders', adm)||hasAdminPerm('manageOrders', adm));
+      setCard('admCard-packageWeights', hasAdminPerm('managePricing', adm));
+      setCard('admCard-zonesManage', hasAdminPerm('managePricing', adm));
+      setCard('admCard-pricingManage', hasAdminPerm('managePricing', adm));
+    }
+
+    function renderAdminScreen() {
+      const admin = getActiveAdmin();
+      if (!admin && !isCloudSyncInFlight) {
+        showToast('يجب تسجيل الدخول أولاً للوصول للوحة التحكم 🔒', 'warn');
+        setTimeout(() => window.location.href = '/', 1500);
+        return;
+      }
+      
+      if(admin) {
+        document.getElementById('currentAdminSessionLabel').innerText = `${admin.name} (${admin.isMaster?'أدمن رئيسي':'مسؤول'})`;
+        applyAdminPermissionsUI();
+        renderAdminAccountsSection();
+        renderAdminDynamicSettingsInputs();
+        renderAdminDropdown();
+        renderAdminZonesTable();
+        renderAdminPackageWeightsTable();
+        renderAdminPricingTable();
+        renderAdminCaptainDirectoryDropdown();
+        renderAdminCustomerDirectory();
+        renderAdminFinancialLedger();
+        renderAdminDashboardData();
+      }
+    }
+
+    // ==================== 1. الإدارة المتقدمة (تعيين الباسورد وتصفير PIN) ====================
+    function filterResetPassCaptainDropdown() {
+      const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
+      const sel = document.getElementById('adminResetPassCaptainSelect');
+      if(!sel) return;
+      const filtered = STATE.captains.filter(c => (c.phone&&c.phone.toLowerCase().includes(q)) || (c.fullName&&c.fullName.toLowerCase().includes(q)));
+      sel.innerHTML = filtered.length===0 ? `<option value="">-- لا يوجد كابتن بهذا البحث --</option>` : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c=>`<option value="${c.phone}">${c.fullName} (${c.phone})</option>`).join('');
+    }
+
+    function adminExecuteCaptainPasswordReset() {
+      if(!requireAdminPerm('manageCaptains')) return;
+      withActionLock(async () => {
+        const ph = document.getElementById('adminResetPassCaptainSelect')?.value;
+        const newPass = document.getElementById('adminResetPassInput')?.value.trim();
+        if(!ph || !newPass || newPass.length<4) { showToast('اختر كابتن واكتب كلمة مرور صالحة لا تقل عن 4 حروف ⚠️','warn'); return; }
+        const {ok, data} = await apiRequest('/api/admin/captains/reset-password', 'POST', { phone:ph, newPass });
+        if(ok && data.success) {
+          document.getElementById('adminResetPassInput').value = '';
+          showToast(data.message || 'تم تحديث كلمة مرور الكابتن 🔑✅', 'ok');
+        } else showToast((data&&data.message)||'تعذر تحديث الباسورد ⚠️', 'warn');
+      });
+    }
+
+    function adminExecuteCustomerPinReset() {
+      if(!requireAdminPerm('manageWallets', 'إدارة وحماية محافظ العملاء')) return;
+      withActionLock(async () => {
+        const ph = normalizePhone(document.getElementById('adminCustomerResetPinPhone')?.value);
+        const pin = normalizeDigits(document.getElementById('adminCustomerResetPinValue')?.value);
+        if(!isValidEgyptianPhone(ph)) { showToast('اكتب رقم هاتف العميل بشكل صحيح (01...) 📱⚠️','warn'); return; }
+        if(!isValidPin(pin)) { showToast('رمز ה-PIN يجب أن يكون 4 أرقام بالضبط 🔒⚠️','warn'); return; }
+
+        openCustomActionModal({
+          title: 'تصفير رمز PIN للعميل 🔄',
+          message: `هل أنت متأكد من تعيين ה-PIN الجديد (${pin}) للعميل صاحب الرقم (${ph})؟`,
+          confirmText: 'تأكيد التصفير ✅',
+          onConfirm: async () => {
+            const {ok, data} = await apiRequest('/api/admin/customers/reset-pin', 'POST', { phone:ph, newPin:pin });
+            if(ok && data.success) {
+              document.getElementById('adminCustomerResetPinPhone').value = '';
+              document.getElementById('adminCustomerResetPinValue').value = '';
+              showToast(data.message || 'تم تعيين رمز الـ PIN للعميل بنجاح 🔒✅', 'ok');
+            } else showToast((data&&data.message)||'تعذر تصفير ה-PIN ⚠️', 'warn');
+          }
+        });
+      });
+    }
+
+    // ==================== 2. الصلاحيات والمستخدمين (RBAC) ====================
+    function adminUpdateMasterAccount() {
+      if(!isMasterAdmin()) { showToast('للأدمن الرئيسي فقط 👑','warn'); return; }
+      withActionLock(async () => {
+        const nm = document.getElementById('masterAdminNameInput')?.value.trim();
+        const un = document.getElementById('masterAdminUserInput')?.value.trim();
+        const cp = document.getElementById('masterAdminCurrentPassInput')?.value;
+        const np = document.getElementById('masterAdminNewPassInput')?.value.trim();
+        const rp = document.getElementById('masterAdminConfirmPassInput')?.value.trim();
+        if(np!==rp) { showToast('المرور غير متطابق ⚠️','warn'); return; }
+        const {ok, data} = await apiRequest('/api/admin/accounts/master','POST',{name:nm,username:un,currentPassword:cp,newPassword:np});
+        if(ok&&data.success) { STATE.activeAdminPhone=un; saveSession(); showToast(data.message||'تم التحديث ✅','ok'); }
+        else showToast((data&&data.message)||'تعذر التحديث ⚠️','warn');
+      });
+    }
+    function resetSubAdminForm() {
+      const k = ['editingSubAdminOrigUser','subAdminNameInput','subAdminUserInput','subAdminPassInput','subAdminConfirmPassInput'];
+      k.forEach(x=>document.getElementById(x)&&(document.getElementById(x).value=''));
+      document.getElementById('subAdminFormTitle').innerHTML='<i class="fa-solid fa-user-plus"></i> إضافة مسؤول جديد:';
+      document.getElementById('cancelSubAdminEditBtn').style.display='none';
+      ADMIN_PERM_KEYS.forEach(p=>document.getElementById(`permSwitch-${p}`)&&(document.getElementById(`permSwitch-${p}`).checked=false));
+    }
+    function adminSaveSubAdminAccount() {
+      if(!isMasterAdmin()) return;
+      withActionLock(async () => {
+        const ou = document.getElementById('editingSubAdminOrigUser')?.value.trim();
+        const nm = document.getElementById('subAdminNameInput')?.value.trim();
+        const un = document.getElementById('subAdminUserInput')?.value.trim();
+        const pa = document.getElementById('subAdminPassInput')?.value.trim();
+        const cp = document.getElementById('subAdminConfirmPassInput')?.value.trim();
+        if(pa!==cp) { showToast('كلمة المرور غير متطابقة ⚠️','warn'); return; }
+        const prms = {}; ADMIN_PERM_KEYS.forEach(k=>prms[k]=Boolean(document.getElementById(`permSwitch-${k}`)?.checked));
+        const {ok, data} = await apiRequest('/api/admin/accounts/sub','POST',{origUsername:ou,name:nm,username:un,password:pa,permissions:prms});
+        if(ok&&data.success) { resetSubAdminForm(); showToast('تم حفظ المسؤول ✅','ok'); } else showToast((data&&data.message)||'خطأ ⚠️','warn');
+      });
+    }
+    function adminEditSubAdmin(u) {
+      if(!isMasterAdmin()) return; const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
+      document.getElementById('editingSubAdminOrigUser').value=t.username; document.getElementById('subAdminNameInput').value=t.name; document.getElementById('subAdminUserInput').value=t.username;
+      document.getElementById('subAdminFormTitle').innerHTML=`<i class="fa-solid fa-user-pen"></i> تعديل: ${escapeHtml(t.name)}`; document.getElementById('cancelSubAdminEditBtn').style.display='inline-block';
+      ADMIN_PERM_KEYS.forEach(k=>document.getElementById(`permSwitch-${k}`)&&(document.getElementById(`permSwitch-${k}`).checked=Boolean(t.permissions&&t.permissions[k])));
+      document.getElementById('subAdminsBuilderBox')?.scrollIntoView({behavior:'smooth'});
+    }
+    function adminToggleSubAdminStatus(u) {
+      if(!isMasterAdmin()) return; const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
+      const wd = t.status!=='معطل';
+      openCustomActionModal({ title: wd?`تعطيل ${t.name}`:`تنشيط ${t.name}`, message:`موافق؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
+        const {ok, data} = await apiRequest(`/api/admin/accounts/${encodeURIComponent(u)}/toggle`,'POST',{});
+        if(ok&&data.success) showToast('تم التحديث ✅','ok'); else showToast('تعذر ⚠️','warn');
+      }});
+    }
+    function renderAdminAccountsSection() {
+      const act = getActiveAdmin(); if(!act)return;
+      const m = STATE.adminAccounts.find(a=>a.isMaster);
+      if(m&&isMasterAdmin()){ document.getElementById('masterAdminNameInput').value=m.name; document.getElementById('masterAdminUserInput').value=m.username; }
+      document.getElementById('adminAccountsListFeed').innerHTML = STATE.adminAccounts.map(a=>{
+        const isM=Boolean(a.isMaster), isA=a.status!=='معطل', prms=isM?['كل الصلاحيات 👑']:ADMIN_PERM_KEYS.filter(k=>a.permissions&&a.permissions[k]).map(k=>ADMIN_PERM_LABELS[k]);
+        return `<div style="background:#FAF7F4; border:1px solid ${isM?'#302A2D':'#E9DCE0'}; border-radius:12px; padding:10px; margin-bottom:8px; font-size:11.5px;">
+          <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(a.name)} <small>(@${escapeHtml(a.username)})</small></strong> <span class="badge ${isM?'badge-master':isA?'badge-completed':'badge-rejected'}">${isM?'أدمن رئيسي':isA?'نشط':'معطل'}</span></div>
+          <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">${prms.length?prms.map(p=>`<span style="background:#fff; border:1px solid #ddd; padding:2px 8px; border-radius:20px; font-size:10px;">${escapeHtml(p)}</span>`).join(''):'<span style="color:red">لا صلاحيات</span>'}</div>
+          ${!isM&&isMasterAdmin()?`<div style="margin-top:8px; border-top:1px dashed #ddd; padding-top:8px; display:flex; gap:6px;"><button class="btn-secondary" onclick="adminEditSubAdmin('${escapeHtml(a.username)}')">تعديل</button><button class="${isA?'btn-danger':'btn-success'}" onclick="adminToggleSubAdminStatus('${escapeHtml(a.username)}')">${isA?'تعطيل ⛔':'تنشيط ✅'}</button></div>`:''}
+        </div>`;
+      }).join('');
+      const logs = Array.isArray(STATE.auditLogs)?STATE.auditLogs:[];
+      document.getElementById('adminAuditLogList').innerHTML = logs.length?logs.slice(0,30).map(l=>`<div style="background:#FAF7F4; border:1px solid #eee; padding:6px 8px; border-radius:8px; margin-bottom:6px;"><strong>${escapeHtml(l.actionType)} — ${escapeHtml(l.target)}</strong> <span style="font-size:10px; float:left;">${escapeHtml(l.time)}</span><div style="color:#444;">${escapeHtml(l.details)}</div><div style="font-size:10px; color:#0277BD;">بواسطة: ${escapeHtml(l.actor)}</div></div>`).join(''):'<div style="text-align:center; color:#888;">لا سجلات.</div>';
+    }
+
+    // ==================== 3. المالية والكباتن والطلبات ====================
+    function adminExecuteManualTopup() {
+      if(!requireAdminPerm('manageWallets')) return;
+      withActionLock(async () => {
+        const ph = document.getElementById('adminManualTopupCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualTopupAmount')?.value);
+        if(!ph||am<=0) { showToast('حدد بيانات صحيحة ⚠️','warn'); return; }
+        openCustomActionModal({title:'شحن كابتن', message:`تأكيد شحن ${am} ج للكابتن؟`, confirmText:'شحن ✅', onConfirm: async ()=>{
+          const {ok, data}=await apiRequest('/api/admin/wallets/captain-topup','POST',{phone:ph, amount:am});
+          if(ok&&data.success){ document.getElementById('adminManualTopupAmount').value=''; showToast('تم الشحن ✅','ok'); } else showToast('تعذر ⚠️','warn');
+        }});
+      });
+    }
+    function adminExecuteManualDeduct() {
+      if(!requireAdminPerm('manageWallets')) return;
+      withActionLock(async () => {
+        const ph = document.getElementById('adminManualDeductCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualDeductAmount')?.value); const re = document.getElementById('adminManualDeductReason')?.value.trim();
+        if(!ph||am<=0||!re) { showToast('اكمل البيانات ⚠️','warn'); return; }
+        openCustomActionModal({title:'خصم إداري', message:`خصم ${am} ج بسبب: ${re}؟`, confirmText:'خصم ⛔', isDanger:true, onConfirm: async ()=>{
+          const {ok, data}=await apiRequest('/api/admin/wallets/captain-deduct','POST',{phone:ph, amount:am, reason:re});
+          if(ok&&data.success){ document.getElementById('adminManualDeductAmount').value=''; document.getElementById('adminManualDeductReason').value=''; showToast('تم الخصم ✅','ok'); } else showToast('تعذر ⚠️','warn');
+        }});
+      });
+    }
+    function handleAdminCustomerSelectChange() { const s=document.getElementById('adminCustomerSelect'); if(s) document.getElementById('adminCustomerPhoneInput').value=s.value; renderAdminSelectedCustomerSummary(); }
+    function renderAdminSelectedCustomerSummary() {
+      const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value);
+      const bx = document.getElementById('adminSelectedCustomerSummary'); if(!bx)return;
+      if(!isValidEgyptianPhone(ph)){ bx.innerHTML='اكتب رقم عميل صالح.'; return; }
+      const c = STATE.customers[ph] || { walletBalance:0 };
+      bx.innerHTML=`<strong>عميل: ${escapeHtml(ph)}</strong> | رصيد متاح: <strong style="color:var(--success);">${Number(c.walletBalance).toFixed(2)} ج</strong>`;
+    }
+    function adminExecuteCustomerCompensation() {
+      if(!requireAdminPerm('manageWallets')) return;
+      withActionLock(async () => {
+        const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value); const am = roundMoney(document.getElementById('adminCustCompAmount')?.value); const re = document.getElementById('adminCustCompReason')?.value.trim();
+        if(!isValidEgyptianPhone(ph)||am<=0) { showToast('بيانات غير صحيحة ⚠️','warn'); return; }
+        const {ok, data} = await apiRequest('/api/admin/wallets/customer-compensate','POST',{phone:ph,amount:am,reason:re});
+        if(ok&&data.success){ document.getElementById('adminCustCompAmount').value=''; document.getElementById('adminCustCompReason').value=''; showToast('تم إضافة الرصيد للعميل ✅','ok'); } else showToast('تعذر ⚠️','warn');
+      });
+    }
+    function adminSavePlatformFee() {
+      if(!requireAdminPerm('manageCommissions')) return;
+      withActionLock(async () => {
+        const v = roundMoney(document.getElementById('adminPlatformFeeInput')?.value); if(v<0)return;
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{platformFee:v});
+        if(ok&&data.success)showToast('تم اعتماد العمولة ✅','ok'); else showToast('تعذر ⚠️','warn');
+      });
+    }
+    function handleAdminCustomFeeSearch() {
+      const q = normalizePhone(document.getElementById('adminCustomFeePhoneSearch')?.value);
+      const m = STATE.captains.find(c=>c.phone.includes(q)); if(m){ document.getElementById('adminCustomFeeCaptainSelect').value=m.phone; renderAdminCustomFeeCaptainSummary(); }
+    }
+    function renderAdminCustomFeeCaptainSummary() {
+      const sel = document.getElementById('adminCustomFeeCaptainSelect'); const bx = document.getElementById('adminCustomFeeCurrentSummary'); if(!sel||!bx)return;
+      const cap = STATE.captains.find(c=>c.phone===sel.value); if(!cap){ bx.innerHTML='اختر كابتن'; return; }
+      const hc = cap.customFee!==null&&cap.customFee!==undefined;
+      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${cap.customFeeReason})` : `عمولة عامة (الآن ${getCurrentPlatformFee()} ج)`;
+      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:getCurrentPlatformFee(); document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
+    }
+    function adminSaveCaptainCustomFee() {
+      if(!requireAdminPerm('manageCommissions')) return;
+      withActionLock(async () => {
+        const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminCustomFeeAmountInput')?.value); const re = document.getElementById('adminCustomFeeReasonInput')?.value.trim();
+        if(!p||am<0||!re) { showToast('أكمل البيانات ⚠️','warn'); return; }
+        const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,customFee:am,reason:re,reset:false});
+        if(ok&&data.success)showToast('تم الفردي ✅','ok'); else showToast('تعذر ⚠️','warn');
+      });
+    }
+    function adminResetCaptainCustomFee() {
+      if(!requireAdminPerm('manageCommissions')) return;
+      withActionLock(async () => {
+        const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; if(!p)return;
+        const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,reset:true});
+        if(ok&&data.success)showToast('تم الإرجاع للعامة ✅','ok'); else showToast('تعذر ⚠️','warn');
+      });
+    }
+    function adminSaveLoyaltyField(key, id) {
+      if(!requireAdminPerm('manageCommissions')) return;
+      withActionLock(async () => {
+        const v = Number(document.getElementById(id)?.value); if(v<1)return;
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{loyaltyField:{key,value:v}});
+        if(ok&&data.success)showToast('تم حفظ النظام ✅','ok'); else showToast('تعذر ⚠️','warn');
+      });
+    }
+    function adminSaveBroadcastBanner() {
+      if(!requireAdminPerm('manageSettings')) return;
+      withActionLock(async () => {
+        const v = document.getElementById('adminBroadcastInput')?.value.trim();
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{broadcastMessage:v});
+        if(ok&&data.success)showToast('تم تحديث الإعلان ✅','ok');
+      });
+    }
+    function adminSaveSupportWhatsapp() {
+      if(!requireAdminPerm('manageSettings')) return;
+      withActionLock(async () => {
+        const v = normalizeWhatsappNumber(document.getElementById('adminSupportWhatsappInput')?.value); if(!v)return;
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{supportWhatsapp:v});
+        if(ok&&data.success)showToast('تم اعتماد رقم الدعم ✅','ok');
+      });
+    }
+    function adminSaveWaitingTimeout() {
+      if(!requireAdminPerm('manageSettings')) return;
+      withActionLock(async () => {
+        const v = Number(document.getElementById('adminWaitingTimeoutInput')?.value||30);
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{waitingTimeoutMinutes:v});
+        if(ok&&data.success)showToast('تم حفظ المهلة ✅','ok');
+      });
+    }
+    function adminToggleFeatureFlags() {
+      if(!requireAdminPerm('manageSettings')) return;
+      withActionLock(async () => {
+        const m = document.getElementById('adminMaintenanceSwitch')?.checked; const r = document.getElementById('adminAllowCaptainRegSwitch')?.checked;
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{maintenanceMode:Boolean(m),allowCaptainRegistration:Boolean(r)});
+        if(ok&&data.success)showToast('تم تحديث التشغيل ✅','ok');
+      });
+    }
+    function adminAddNewZone() {
+      if(!requireAdminPerm('managePricing')) return;
+      withActionLock(async () => {
+        const z = document.getElementById('newZoneNameInput')?.value.trim(); if(!z||STATE.zones.includes(z))return;
+        const nz = [...STATE.zones, z]; const np = {...STATE.pricing, [`${z}|${z}`]:35}; nz.forEach(o=>{if(o!==z){np[`${z}|${o}`]=45;np[`${o}|${z}`]=45;}});
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
+        if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${z} ✅`,'ok'); }
+      });
+    }
+    function adminDeleteZoneByIndex(i) {
+      if(!requireAdminPerm('managePricing')) return;
+      openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${STATE.zones[i]}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
+        const nz = STATE.zones.filter((_,x)=>x!==i); const np={...STATE.pricing}; Object.keys(np).forEach(k=>{if(k.includes(STATE.zones[i]))delete np[k];});
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
+        if(ok&&data.success)showToast('تم الحذف ✅','ok');
+      }});
+    }
+    function adminAddPackageWeight() {
+      if(!requireAdminPerm('managePricing')) return;
+      withActionLock(async () => {
+        const w = document.getElementById('newPackageWeightInput')?.value.trim(); if(!w)return;
+        const nw = [...(STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES), w];
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{packageTypes:nw});
+        if(ok&&data.success){ document.getElementById('newPackageWeightInput').value=''; showToast('تمت الإضافة ✅','ok'); }
+      });
+    }
+    function adminDeletePackageWeight(i) {
+      if(!requireAdminPerm('managePricing')) return;
+      withActionLock(async () => {
+        const nw = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).filter((_,x)=>x!==i);
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{packageTypes:nw});
+        if(ok&&data.success)showToast('تم الحذف ✅','ok');
+      });
+    }
+    function saveCustomPrices() {
+      if(!requireAdminPerm('managePricing')) return;
+      withActionLock(async () => {
+        const up = {...STATE.pricing}; document.querySelectorAll('.route-price-input').forEach(i=>{ const k=i.getAttribute('data-route'); const v=Number(i.value); if(k&&v>0)up[k]=roundMoney(v); });
+        isPricingDirty=false; const {ok, data}=await apiRequest('/api/admin/settings','POST',{pricing:up});
+        if(ok&&data.success)showToast('تم اعتماد التسعيرة الجديدة 🛵✅','ok');
+      });
+    }
+    function forceRefreshAdminPricingTable() { isPricingDirty=false; renderAdminPricingTable(); }
+    
+    function adminChangeCaptainStatus(phone, status) {
+      if(!requireAdminPerm('manageCaptains')) return;
+      const cap = STATE.captains.find(c=>c.phone===phone); if(!cap)return;
+      if(status==='موقوف'||status==='مرفوض') {
+        openCustomActionModal({title:status==='موقوف'?'إيقاف ⛔':'رفض ❌', message:'اكتب السبب:', needInput:true, confirmText:'تأكيد', isDanger:true, onConfirm: async (re)=>{
+          const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status, reason:re});
+          if(ok&&data.success)showToast('تم التحديث ✅','ok');
+        }});
+      } else {
+        withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status}); if(ok&&data.success)showToast('اعتمد ✅','ok'); });
+      }
+    }
+    function adminResolveDispute(id, res) {
+      if(!requireAdminPerm('manageOrders')) return;
+      withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:res==='complete'?'resolve_complete':'resolve_cancel'}); if(ok&&data.success)showToast('تم الفصل ✅','ok'); });
+    }
+    function adminReassignOrCancelOrder(id, act) {
+      if(!requireAdminPerm('manageOrders')) return;
+      openCustomActionModal({title:'تدخل إداري', message:`السبب لـ ${id}:`, needInput:true, confirmText:'تأكيد', isDanger:act==='cancel', onConfirm: async (re)=>{
+        const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:act, reason:re});
+        if(ok&&data.success)showToast('نُفذ ✅','ok');
+      }});
+    }
+
+    // ==================== دوال عرض الإدارة (Render Admin) ====================
+    function renderAdminDynamicSettingsInputs() {
+      const s = STATE.settings||{}; const f = getCurrentPlatformFee();
+      document.getElementById('adminCurrentFeeBadge').innerText = `العمولة: ${f} ج`; document.getElementById('adminStatCurrentFeeNote').innerText = `العمولة: ${f} ج`;
+      const m={ adminPlatformFeeInput:f, adminCustPointsPerOrderInput:s.customerPointsPerOrder||5, adminCustPointsTargetInput:s.customerRewardThreshold||100, adminCustRewardAmountInput:s.customerRewardCash||10, adminCourPointsPerOrderInput:s.courierPointsPerOrder||5, adminCourPointsTargetInput:s.courierRewardThreshold||100, adminCourRewardAmountInput:s.courierRewardCash||10, adminBroadcastInput:s.broadcastMessage||'', adminSupportWhatsappInput:s.supportWhatsapp||'201507800875', adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30 };
+      Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id) document.getElementById(id).value=m[id]; });
+      if(document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
+      if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
+    }
+    function renderAdminDropdown() {
+      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.status)}]</option>`).join('');
+      ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
+      renderAdminCustomFeeCaptainSummary();
+    }
+    function renderAdminZonesTable() { document.getElementById('zonesTableBody').innerHTML = STATE.zones.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td>${hasAdminPerm('managePricing')?`<button class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button>`:''}</td></tr>`).join(''); }
+    function renderAdminPackageWeightsTable() { document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td>${hasAdminPerm('managePricing')?`<button class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button>`:''}</td></tr>`).join(''); }
+    function renderAdminPricingTable() {
+      if(isPricingDirty||(document.activeElement&&document.activeElement.classList.contains('route-price-input')))return;
+      const r=[]; STATE.zones.forEach(f=>STATE.zones.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
+      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" ${hasAdminPerm('managePricing')?'oninput="isPricingDirty=true"':'disabled'} style="width:80px; padding:4px;"></td></tr>`).join('');
+    }
+    function renderAdminCaptainDirectoryDropdown() {
+      const s = document.getElementById('adminCaptainDirectorySelect'); if(!s||document.activeElement===s) { renderAdminSelectedCaptainCard(); return; }
+      const p = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</option>`).join('');
+      if(p)s.value=p; else if(STATE.captains.length)s.value=STATE.captains[0].phone; renderAdminSelectedCaptainCard();
+    }
+    function renderAdminCustomerDirectory() {
+      const s = document.getElementById('adminCustomerSelect'); if(!s||document.activeElement===s)return;
+      const p = new Set(Object.keys(STATE.customers).filter(isValidEgyptianPhone)); STATE.orders.forEach(o=>{const c=resolveOrderClientPhone(o); if(isValidEgyptianPhone(c))p.add(c);});
+      const pv = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+Array.from(p).map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join(''); if(pv)s.value=pv;
+      renderAdminSelectedCustomerSummary();
+    }
+    function renderAdminFinancialLedger() {
+      const e=[]; STATE.captains.forEach(c=>(c.walletTransactions||[]).forEach(t=>e.push({a:`كابتن: ${c.fullName}`,...t})));
+      Object.keys(STATE.customers).forEach(k=>(STATE.customers[k].walletTransactions||[]).forEach(t=>e.push({a:`عميل: ${k}`,...t})));
+      e.sort((x,y)=>(y.at||0)-(x.at||0));
+      document.getElementById('adminFinancialLedgerList').innerHTML = e.slice(0,30).map(x=>`<div style="display:flex; justify-content:space-between; background:#FAF7F4; border:1px solid #eee; padding:6px; border-radius:8px;"><div><strong>${escapeHtml(x.a)}</strong> <span>${escapeHtml(x.title)}</span></div><strong style="color:${x.type==='خصم'?'red':'green'};">${x.type==='خصم'?'-':'+'}${x.amount} ج</strong></div>`).join('');
+    }
+    function buildCaptainDocsHtml(c) {
+      const fs=safeImageSrc(c.idFrontPhoto), bs=safeImageSrc(c.idBackPhoto), vs=safeImageSrc(c.vehiclePhoto);
+      return `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:8px 0;">
+        ${fs?`<img src="${fs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${fs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
+        ${bs?`<img src="${bs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${bs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
+        ${vs?`<img src="${vs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${vs}')">`:(c.vehicleType==='دراجة'?'<div style="background:#eee;">عجلة</div>':'<div style="background:#eee;">لا يوجد</div>')}
+      </div>`;
+    }
+    function renderAdminSelectedCaptainCard() {
+      const p = document.getElementById('adminCaptainDirectorySelect')?.value; const bx = document.getElementById('adminSelectedCaptainCardContainer'); if(!bx)return;
+      if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
+      const co = STATE.orders.filter(o=>o.assignedCourierPhone===c.phone); const comp = co.filter(o=>o.status==='مكتمل').length+(Number(c.lifetimeCompleted)||0);
+      bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong> <span class="badge">${escapeHtml(c.status)}</span></div>
+        <div style="font-size:11px; margin:8px 0;">رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong></div>
+        ${buildCaptainDocsHtml(c)}
+        ${hasAdminPerm('manageCaptains')?`
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            ${c.status==='معتمد'?`<button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف</button>`:''}
+            ${c.status!=='معتمد'?`<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button>`:''}
+          </div>
+        `:''}
+      </div>`;
+    }
+    function renderAdminDashboardData() {
+      if(!getActiveAdmin())return;
+      const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
+      document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
+      document.getElementById('adminStatCommissionTotal').innerText = `${roundMoney(STATE.orders.filter(o=>o.feeDeducted&&!o.feeRefunded).reduce((s,o)=>s+(Number(o.platformFee)||0),0))} ج`;
+      document.getElementById('adminStatTotalCaptainsWallet').innerText = `${roundMoney(STATE.captains.reduce((s,c)=>s+(Number(c.walletBalance)||0),0))} ج`;
+      document.getElementById('adminStatOrdersCompletedCount').innerText = comp.length; document.getElementById('adminStatOrdersCancelledCount').innerText = canc.length;
+      document.getElementById('adminStatTotalCaptainsCount').innerText = `${STATE.captains.length} كابتن`;
+      
+      const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
+      document.getElementById('admNavCaptainsBadge')&&(document.getElementById('admNavCaptainsBadge').style.display=pend.length?'flex':'none');
+      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
+
+      const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
+      const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
+      document.getElementById('adminOrdersFeed').innerHTML = fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج<br>${hasAdminPerm('manageOrders')&&ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}</div>`).join('');
+    }
+
+    async function initAdminApp() {
+      const trig = document.getElementById('secretLogoTrigger'); if(trig)trig.style.display='none';
+      await syncFromCloudServer();
+      renderAdminScreen();
+      setInterval(()=>syncFromCloudServer(), 5000);
+    }
+    
+    document.addEventListener('DOMContentLoaded', initAdminApp);
+  </script>
+</body>
+</html>
