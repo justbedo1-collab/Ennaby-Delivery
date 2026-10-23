@@ -687,15 +687,20 @@
       setCard('admCard-pricingManage', hasAdminPerm('managePricing', adm));
     }
 
-    function renderAdminScreen() {
+function renderAdminScreen() {
       const admin = getActiveAdmin();
-      // لو لسه الجلسة بتحمل أو بتعمل sync من السيرفر، متطردش الأدمن برا الصفحة فوراً
       if (!admin) {
+        // لو لسه بيانات الأدمن مبسطتش، حاول تعمل مزامنة مرة كمان بهدوء
         syncFromCloudServer();
         return;
       }
       
-      document.getElementById('currentAdminSessionLabel').innerText = `${admin.name} (${admin.isMaster?'أدمن رئيسي':'مسؤول'})`;
+      // تعيين اسم الأدمن وحالته فوراً بدون انتظار
+      const sessionLabel = document.getElementById('currentAdminSessionLabel');
+      if (sessionLabel) {
+        sessionLabel.innerText = `${admin.name || 'مسؤول النظام'} (${admin.isMaster ? 'أدمن رئيسي' : 'مسؤول'})`;
+      }
+
       applyAdminPermissionsUI();
       renderAdminAccountsSection();
       renderAdminDynamicSettingsInputs();
@@ -708,23 +713,6 @@
       renderAdminFinancialLedger();
       renderAdminDashboardData();
     }
-      
-      if(admin) {
-        document.getElementById('currentAdminSessionLabel').innerText = `${admin.name} (${admin.isMaster?'أدمن رئيسي':'مسؤول'})`;
-        applyAdminPermissionsUI();
-        renderAdminAccountsSection();
-        renderAdminDynamicSettingsInputs();
-        renderAdminDropdown();
-        renderAdminZonesTable();
-        renderAdminPackageWeightsTable();
-        renderAdminPricingTable();
-        renderAdminCaptainDirectoryDropdown();
-        renderAdminCustomerDirectory();
-        renderAdminFinancialLedger();
-        renderAdminDashboardData();
-      }
-    }
-
     // ==================== 1. الإدارة المتقدمة (تعيين الباسورد وتصفير PIN) ====================
     function filterResetPassCaptainDropdown() {
       const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
