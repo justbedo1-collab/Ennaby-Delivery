@@ -832,12 +832,78 @@ app.post('/api/admin/accounts/sub', requireAdmin('MASTER_ONLY'), async (req, res
 app.get('/admin-portal-ennaby', async (req, res) => {
   const admin = await getAuthenticatedAdmin(req);
   if (!admin) {
-    return res.status(401).send(`
-      <div style="text-align:center; font-family:sans-serif; margin-top:100px;">
-        <h2 style="color:#d9534f;">عفواً، الدخول غير مصرح 🔒</h2>
-        <p>يجب تسجيل الدخول كمسؤول أولاً من الصفحة الرئيسية لتتمكن من الوصول للوحة التحكم.</p>
-        <script>setTimeout(() => window.location.href = '/', 3000);</script>
-      </div>
+    // عرض شاشة تسجيل دخول احترافية ومدمجة للأدمن لو لم يكن مسجلاً للدخول
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>دخول غرفة العمليات | الرجل العنابي 🛡️</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Cairo', sans-serif; background: #FAF7F4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+          .login-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(123,63,82,0.15); width: 100%; max-width: 380px; text-align: center; border: 1px solid rgba(123,63,82,0.1); }
+          .badge { width: 55px; height: 55px; background: #302A2D; color: #FBC02D; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 15px; }
+          h2 { color: #7B3F52; font-size: 20px; font-weight: 900; margin-bottom: 5px; }
+          p { color: #665E62; font-size: 12px; margin-bottom: 20px; }
+          .input-group { margin-bottom: 12px; text-align: right; }
+          label { font-size: 11px; font-weight: 700; color: #665E62; display: block; margin-bottom: 4px; }
+          input { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 13px; font-weight: 600; outline: none; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+          input:focus { border-color: #7B3F52; background: #fff; }
+          button { background: #7B3F52; color: #fff; border: none; border-radius: 12px; padding: 12px; width: 100%; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; font-family: 'Cairo', sans-serif; box-shadow: 0 4px 12px rgba(123,63,82,0.25); }
+          button:active { background: #5F2E3E; }
+          .msg { font-size: 12px; font-weight: 700; margin-top: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="login-card">
+          <div class="badge">🛡️</div>
+          <h2>غرفة العمليات المركزية</h2>
+          <p>سجّل الدخول بحساب المسؤول للمتابعة</p>
+          <form id="adminLoginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+              <label>اسم المستخدم</label>
+              <input type="text" id="username" required placeholder="اسم المستخدم الإداري">
+            </div>
+            <div class="input-group">
+              <label>كلمة المرور السرية</label>
+              <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <button type="submit">تسجيل الدخول 🚀</button>
+          </form>
+          <div id="errorMsg" class="msg" style="color: #D32F2F; display: none;"></div>
+        </div>
+
+        <script>
+          async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+            const errEl = document.getElementById('errorMsg');
+            errEl.style.display = 'none';
+
+            try {
+              const res = await fetch('/api/auth/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+              });
+              const data = await res.json();
+              if(res.ok && data.success) {
+                window.location.reload(); // تحديث الصفحة لفتح اللوحة مباشرة بعد حفظ الكوكي
+              } else {
+                errEl.innerText = data.message || 'بيانات الدخول غير صحيحة!';
+                errEl.style.display = 'block';
+              }
+            } catch (err) {
+              errEl.innerText = 'حدث خطأ في الاتصال بالخادم';
+              errEl.style.display = 'block';
+            }
+          }
+        </script>
+      </body>
+      </html>
     `);
   }
   res.sendFile(path.join(__dirname, 'private', 'admin.html'));
