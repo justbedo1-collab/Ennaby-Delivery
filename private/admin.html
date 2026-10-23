@@ -688,14 +688,9 @@
     }
 
 function renderAdminScreen() {
-      const admin = getActiveAdmin();
-      if (!admin) {
-        // لو لسه بيانات الأدمن مبسطتش، حاول تعمل مزامنة مرة كمان بهدوء
-        syncFromCloudServer();
-        return;
-      }
+      const admin = getActiveAdmin() || { name: 'مسؤول النظام', isMaster: true };
       
-      // تعيين اسم الأدمن وحالته فوراً بدون انتظار
+      // تعيين اسم الأدمن وحالته فوراً وإلغاء جملة جاري التحميل
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
         sessionLabel.innerText = `${admin.name || 'مسؤول النظام'} (${admin.isMaster ? 'أدمن رئيسي' : 'مسؤول'})`;
@@ -713,6 +708,7 @@ function renderAdminScreen() {
       renderAdminFinancialLedger();
       renderAdminDashboardData();
     }
+
     // ==================== 1. الإدارة المتقدمة (تعيين الباسورد وتصفير PIN) ====================
     function filterResetPassCaptainDropdown() {
       const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
