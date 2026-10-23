@@ -689,11 +689,25 @@
 
     function renderAdminScreen() {
       const admin = getActiveAdmin();
-      if (!admin && !isCloudSyncInFlight) {
-        showToast('يجب تسجيل الدخول أولاً للوصول للوحة التحكم 🔒', 'warn');
-        setTimeout(() => window.location.href = '/', 1500);
+      // لو لسه الجلسة بتحمل أو بتعمل sync من السيرفر، متطردش الأدمن برا الصفحة فوراً
+      if (!admin) {
+        syncFromCloudServer();
         return;
       }
+      
+      document.getElementById('currentAdminSessionLabel').innerText = `${admin.name} (${admin.isMaster?'أدمن رئيسي':'مسؤول'})`;
+      applyAdminPermissionsUI();
+      renderAdminAccountsSection();
+      renderAdminDynamicSettingsInputs();
+      renderAdminDropdown();
+      renderAdminZonesTable();
+      renderAdminPackageWeightsTable();
+      renderAdminPricingTable();
+      renderAdminCaptainDirectoryDropdown();
+      renderAdminCustomerDirectory();
+      renderAdminFinancialLedger();
+      renderAdminDashboardData();
+    }
       
       if(admin) {
         document.getElementById('currentAdminSessionLabel').innerText = `${admin.name} (${admin.isMaster?'أدمن رئيسي':'مسؤول'})`;
