@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -44,10 +45,25 @@ app.use(cors({
 app.use(express.json({ limit: '25mb' }));
 app.use(cookieParser());
 
-// تقديم الملفات الثابتة وصفحات التطبيق
+function resolveHtmlFilePath(filename) {
+  const rootFile = path.join(__dirname, filename);
+  if (fs.existsSync(rootFile)) return rootFile;
+  const publicFile = path.join(__dirname, 'public', filename);
+  if (fs.existsSync(publicFile)) return publicFile;
+  return rootFile;
+}
+
+// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمجلد الرئيسي ثم public
+app.get('/', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
+app.get('/index.html', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
+app.get('/admin', (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
+app.get('/admin.html', (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
+app.get('/install', (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
+app.get('/install.html', (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
 app.use(express.static(path.join(__dirname)));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
-app.get('/install', (req, res) => res.sendFile(path.join(__dirname, 'install.html')));
+if (fs.existsSync(path.join(__dirname, 'public'))) {
+  app.use(express.static(path.join(__dirname, 'public')));
+}
 
 // ==========================================
 // 3. دوال مساعدة وتخزين مؤقت لتوفير الاستضافة
@@ -85,12 +101,13 @@ function formatCairoTime(dateInput = Date.now()) {
   }
 }
 
-// الكاش الذكي لتقليل استهلاك Supabase و Vercel
 let stateCache = {
   raw: null,
   lastFetched: 0,
-  ttlMs: 4000 // تحديث من قاعدة البيانات بحد أقصى مرة كل 4 ثوانٍ عند القراءة فقط
+  ttlMs: 4000
 };
+
+let lastLazyCleanupRun = 0;
 
 function invalidateStateCache() {
   stateCache.raw = null;
@@ -99,16 +116,14 @@ function invalidateStateCache() {
 
 async function ensureMasterAdminSeeded() {
   try {
-    const initUser = process.env.INITIAL_ADMIN_USER || 'ennaby1';
-    const initPass = process.env.INITIAL_ADMIN_PASS || '01023024988';
+    const initUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
+    const initPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
     const hashed = await bcrypt.hash(String(initPass), 10);
-    
-    // التحقق مما إذا كان هناك أدمن رئيسي مسجل مسبقاً
+
     const { data: existing } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
-    
+
     if (!existing) {
-      // إذا لم يوجد، نقوم بإنشائه
-      await supabase.from('admins').insert([{
+      await supabase.from('admins').upsert([{
         username: initUser,
         name: 'الأدمن الرئيسي',
         password_hash: hashed,
@@ -117,20 +132,11 @@ async function ensureMasterAdminSeeded() {
         permissions: {}
       }]);
       console.log('✅ تم إنشاء حساب الأدمن الرئيسي لأول مرة بنجاح.');
-    } else {
-      // إذا وجد، نقوم بتحديث ومزامنة بياناته وكلمة المرور لتتطابق دائماً مع .env
-      await supabase.from('admins').update({
-        username: initUser,
-        password_hash: hashed,
-        status: 'نشط'
-      }).eq('is_master', true);
-      console.log('🔄 تم تحديث ومزامنة بيانات الأدمن الرئيسي مع ملف .env بنجاح.');
     }
   } catch (err) {
     console.warn('Admin seed/sync warning:', err.message);
   }
 }
-
 ensureMasterAdminSeeded();
 
 async function logAdminAudit(actionType, target, details, actor = 'الأدمن الرئيسي') {
@@ -152,7 +158,21 @@ function isRequestFromAdminView(req) {
   return ref.includes('/admin');
 }
 
+function getAuthenticatedAdminFromCookie(req) {
+  try {
+    const token = req.cookies && req.cookies.admin_session;
+    if (!token) return null;
+    return jwt.verify(token, JWT_SECRET);
+  } catch (e) {
+    return null;
+  }
+}
+
 function mapCaptainRow(c, includePhotos = false) {
+  const frontPhoto = c.id_front_photo || c.id_front_url || null;
+  const backPhoto = c.id_back_photo || c.id_back_url || null;
+  const vehPhoto = c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || null;
+
   return {
     phone: c.phone,
     fullName: c.full_name || '',
@@ -160,9 +180,9 @@ function mapCaptainRow(c, includePhotos = false) {
     primaryZone: c.primary_zone || 'المنصورة',
     vehicleType: c.vehicle_type || 'موتوسيكل',
     plateNumber: c.plate_number || 'بدون لوحة',
-    idFrontPhoto: includePhotos ? (c.id_front_photo || null) : null,
-    idBackPhoto: includePhotos ? (c.id_back_photo || null) : null,
-    vehiclePhoto: includePhotos ? (c.vehicle_photo || null) : null,
+    idFrontPhoto: includePhotos ? frontPhoto : null,
+    idBackPhoto: includePhotos ? backPhoto : null,
+    vehiclePhoto: includePhotos ? vehPhoto : null,
     status: c.status || 'قيد المراجعة',
     suspendReason: c.suspend_reason || null,
     isAvailable: Boolean(c.is_available),
@@ -212,6 +232,41 @@ function mapOrderRow(o) {
   };
 }
 
+// تنظيف تلقائي ذكي للطلبات التي تجاوزت المهلة كل دقيقتين بدون الحاجة لـ Vercel Pro Cron
+async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
+  const now = Date.now();
+  if (now - lastLazyCleanupRun < 120000) return 0; // يعمل بحد أقصى مرة كل دقيقتين
+  lastLazyCleanupRun = now;
+
+  try {
+    const mins = Number(timeoutMinutes || process.env.WAITING_TIMEOUT_MINUTES || 30);
+    if (mins <= 0) return 0;
+
+    const cutoff = new Date(now - mins * 60000).toISOString();
+    const { data: expired } = await supabase.from('orders')
+      .update({ status: 'ملغي (تجاوز مهلة الانتظار)' })
+      .eq('status', 'في انتظار كابتن')
+      .lt('created_at', cutoff)
+      .select();
+
+    if (expired && expired.length > 0) {
+      for (const order of expired) {
+        const custPhone = order.customer_phone || order.client_phone;
+        if (order.discount_applied > 0 && custPhone) {
+          await supabase.rpc('adjust_customer_wallet_atomic', {
+            p_phone: custPhone,
+            p_amount: roundMoney(order.discount_applied),
+            p_reason: `رد تعويض مهلة طلب ${order.id}`
+          });
+        }
+      }
+      invalidateStateCache();
+      return expired.length;
+    }
+  } catch (e) {}
+  return 0;
+}
+
 async function fetchRawDatabaseState(forceRefresh = false) {
   const now = Date.now();
   if (!forceRefresh && stateCache.raw && (now - stateCache.lastFetched < stateCache.ttlMs)) {
@@ -243,6 +298,9 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     allowCaptainRegistration: sRow.allow_captain_registration !== false,
     packageTypes: Array.isArray(sRow.package_types) && sRow.package_types.length > 0 ? sRow.package_types : DEFAULT_PACKAGE_TYPES
   };
+
+  // تشغيل الفحص الذاتي للطلبات المعلقة في الخلفية دون تعطيل الطلب الحالي
+  runLazyExpiredOrdersCleanup(settings.waitingTimeoutMinutes);
 
   const zones = Array.isArray(sRow.zones) && sRow.zones.length > 0 ? sRow.zones : DEFAULT_ZONES;
   const pricing = (sRow.pricing && typeof sRow.pricing === 'object') ? sRow.pricing : DEFAULT_PRICING;
@@ -287,17 +345,18 @@ async function fetchRawDatabaseState(forceRefresh = false) {
 async function buildClientState(req, forceRefresh = false) {
   const raw = await fetchRawDatabaseState(forceRefresh);
   const isAdmin = isRequestFromAdminView(req);
+  const adminToken = getAuthenticatedAdminFromCookie(req);
 
   return {
     settings: raw.settings,
     zones: raw.zones,
     pricing: raw.pricing,
     customers: raw.customers,
-    // عزل صور البطاقات والمركبات عن الزوار لتوفير الباندويث والاستضافة، وإرسالها للأدمن فقط
     captains: raw.rawCaptains.map(c => mapCaptainRow(c, isAdmin)),
     orders: raw.orders,
     adminAccounts: isAdmin ? raw.adminAccounts : [],
-    auditLogs: isAdmin ? raw.auditLogs : []
+    auditLogs: isAdmin ? raw.auditLogs : [],
+    authenticatedAdminUsername: adminToken ? adminToken.username : null
   };
 }
 
@@ -344,7 +403,6 @@ async function broadcastPushToAvailableCaptains(payloadObj) {
   } catch (e) {}
 }
 
-// حفظ اشتراك الإشعارات
 app.post('/api/push/subscribe', async (req, res) => {
   const { phone, subscription } = req.body || {};
   if (!phone || !subscription) {
@@ -425,25 +483,107 @@ async function authenticateAdmin(req, res, next) {
         return next();
       }
     }
-    // دعم غرفة العمليات الافتراضية (الأدمن الرئيسي)
     const { data: masterAdmin } = await supabase.from('admins').select('*').eq('is_master', true).limit(1).maybeSingle();
     if (masterAdmin) {
-      const newToken = jwt.sign({ username: masterAdmin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
-      res.cookie('admin_session', newToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
       req.admin = masterAdmin;
       return next();
     }
-    req.admin = { username: 'master', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
+    req.admin = { username: process.env.INITIAL_ADMIN_USER || 'ennaby1', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
     next();
   } catch (err) {
-    req.admin = { username: 'master', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
+    req.admin = { username: process.env.INITIAL_ADMIN_USER || 'ennaby1', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
     next();
   }
 }
 
 // ==========================================
-// 7. مسارات مصادقة وتسجيل العملاء والكباتن
+// 7. مسارات مصادقة وتسجيل العملاء والكباتن والأدمن
 // ==========================================
+
+// مسار تسجيل دخول الأدمن (غرفة العمليات المركزية)
+app.post('/api/auth/admin/login', async (req, res) => {
+  try {
+    const rawUser = req.body.username || req.body.user || req.body.phone || '';
+    const rawPass = req.body.password || req.body.pass || '';
+    const username = String(rawUser).trim();
+    const password = String(rawPass).trim();
+
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'برجاء إدخال اسم المستخدم وكلمة المرور ⚠️' });
+    }
+
+    const envUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
+    const envPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
+
+    let { data: admin } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
+
+    // إذا دخل الأدمن ببيانات ملف .env مباشرة
+    if (username.toLowerCase() === envUser.toLowerCase() && password === envPass) {
+      const hashed = await bcrypt.hash(String(envPass), 10);
+      if (!admin) {
+        const { data: masterRow } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
+        if (masterRow) {
+          const { data: updatedMaster } = await supabase.from('admins').update({
+            username: envUser,
+            password_hash: hashed,
+            status: 'نشط'
+          }).eq('is_master', true).select().maybeSingle();
+          admin = updatedMaster || masterRow;
+        } else {
+          const { data: createdMaster } = await supabase.from('admins').insert([{
+            username: envUser,
+            name: 'الأدمن الرئيسي',
+            password_hash: hashed,
+            is_master: true,
+            status: 'نشط',
+            permissions: {}
+          }]).select().maybeSingle();
+          admin = createdMaster;
+        }
+      }
+      if (!admin) {
+        admin = { username: envUser, name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
+      }
+    } else {
+      if (!admin) {
+        return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة! ⚠️' });
+      }
+      if (admin.status === 'معطل') {
+        return res.status(403).json({ success: false, message: 'حساب المسؤول معطل من الإدارة ⛔' });
+      }
+      const valid = await bcrypt.compare(String(password), admin.password_hash || '');
+      const isMasterWithEnvPass = Boolean(admin.is_master) && password === envPass;
+      if (!valid && !isMasterWithEnvPass) {
+        return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة! ⚠️' });
+      }
+    }
+
+    const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
+    res.cookie('admin_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
+    req.query = { ...req.query, role: 'admin' };
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    state.authenticatedAdminUsername = admin.username;
+
+    res.json({
+      success: true,
+      message: `أهلاً بك يا ${admin.name || 'باشا'} في غرفة العمليات المركزية 🛡️`,
+      admin: {
+        username: admin.username,
+        name: admin.name || 'الأدمن الرئيسي',
+        isMaster: Boolean(admin.is_master),
+        status: admin.status || 'نشط',
+        permissions: admin.permissions || {}
+      },
+      state
+    });
+  } catch (err) {
+    console.error('Admin login error:', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ في السيرفر أثناء تسجيل الدخول ⚠️' });
+  }
+});
+
 app.post('/api/auth/customer/login', async (req, res) => {
   const { phone, pin } = req.body || {};
   if (!phone || !pin) return res.status(400).json({ success: false, message: 'بيانات غير مكتملة' });
@@ -499,7 +639,6 @@ app.post('/api/captains/register', async (req, res) => {
     const { data: existing } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
-    // إذا كان الكابتن مرفوضاً مسبقاً ويعيد رفع مستنداته
     if (existing) {
       if (existing.status !== 'مرفوض') {
         return res.status(400).json({ success: false, message: 'رقم الهاتف مسجل مسبقاً ⚠️' });
@@ -527,14 +666,12 @@ app.post('/api/captains/register', async (req, res) => {
       return res.json({ success: true, message: 'تم إعادة إرسال مستنداتك للمراجعة بنجاح ⏳', state });
     }
 
-    // التحقق من رقم صديق الإحالة إن وجد
     let validReferrer = null;
     if (referredByPhone && referredByPhone !== phone) {
       const { data: refCap } = await supabase.from('captains').select('phone').eq('phone', referredByPhone).maybeSingle();
       if (refCap) validReferrer = refCap.phone;
     }
 
-    // رصيد ترحيبي 7 جنيه لتجربة أول مشوار مجاناً بدون عمولة
     const welcomeBonus = 7.00;
     const initialTransactions = [{
       title: 'هدية التسجيل (أول مشوار مجاناً بدون عمولة) 🎁',
@@ -649,7 +786,6 @@ app.post('/api/orders', async (req, res) => {
       return res.status(403).json({ success: false, message: 'المنصة في وضع الصيانة الطارئة حالياً 🛠️' });
     }
 
-    // التحقق من حساب العميل أو إنشاؤه
     let { data: cust } = await supabase.from('customers').select('*').eq('phone', clientPhone).maybeSingle();
     if (!cust) {
       const hashedPin = await bcrypt.hash(String(pin), 10);
@@ -668,7 +804,6 @@ app.post('/api/orders', async (req, res) => {
       }
     }
 
-    // ضبط كوكي جلسة العميل
     const custToken = jwt.sign({ phone: clientPhone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('customer_session', custToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
@@ -680,7 +815,6 @@ app.post('/api/orders', async (req, res) => {
     const platformFee = roundMoney(rawState.settings.platformFee ?? 7);
     const courierNet = Math.max(0, roundMoney(originalFare - platformFee));
 
-    // توليد رقم طلب فريد مع ضمان عدم التكرار
     const existingIds = new Set((rawState.orders || []).map(o => o.id));
     let orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`;
     while (existingIds.has(orderId)) {
@@ -724,7 +858,6 @@ app.post('/api/orders', async (req, res) => {
     }
 
     invalidateStateCache();
-    // إرسال إشعار فوري للكباتن المتاحين
     broadcastPushToAvailableCaptains({
       title: 'أوردر جديد على الرادار 📡🛵',
       body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج`
@@ -745,7 +878,6 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     return res.status(403).json({ success: false, message: 'حسابك غير مصرح له بقبول الطلبات حالياً ⛔' });
   }
 
-  // التأكد من عدم وجود مشوار نشط آخر مع الكابتن
   const { data: activeOrders } = await supabase.from('orders')
     .select('id')
     .eq('assigned_courier_phone', cap.phone)
@@ -799,7 +931,6 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     });
   }
 
-  // تعويض الكابتن فوراً في محفظته لو العميل كان لديه خصم محفظة
   const discount = roundMoney(targetOrder.discount_applied || 0);
   if (discount > 0) {
     await supabase.rpc('adjust_captain_wallet_atomic', {
@@ -819,7 +950,6 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: 'تم قبول الطلب.. توكل على الله 🛵', state });
 });
 
-// تحديث حالة المشوار من الكابتن
 app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   const { nextStatus } = req.body || {};
   const { data, error } = await supabase.from('orders')
@@ -843,7 +973,6 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: `تم التحديث: ${nextStatus} 🛵✅`, state });
 });
 
-// إتمام التسليم + حساب نقاط عنابي بوينتس + مكافأة الـ 50 جنيه للإحالة
 app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   const { data, error } = await supabase.from('orders')
@@ -861,7 +990,6 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   const rawState = await fetchRawDatabaseState(false);
   const s = rawState.settings;
 
-  // 1. نقاط ومكافآت العميل
   const custPhone = order.customer_phone || order.client_phone;
   if (custPhone) {
     const { data: cust } = await supabase.from('customers').select('*').eq('phone', custPhone).maybeSingle();
@@ -881,7 +1009,6 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     }
   }
 
-  // 2. نقاط ومكافآت الكابتن + التحقق من إحالة الأصدقاء (50 جنيه بعد مشوارين)
   const { data: freshCap } = await supabase.from('captains').select('*').eq('phone', cap.phone).maybeSingle();
   if (freshCap) {
     let newCapPts = Number(freshCap.points || 0) + Number(s.courierPointsPerOrder || 5);
@@ -938,7 +1065,6 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: 'تسلم إيدك يا بطل! تم التسليم 🛵💨', state });
 });
 
-// تنازل الكابتن عن الطلب وإعادته للرادار
 app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
   const { data: order } = await supabase.from('orders')
     .select('*')
@@ -994,7 +1120,6 @@ app.post('/api/captain/notices/:noticeId/dismiss', authenticateCaptain, async (r
   res.json({ success: true, state });
 });
 
-// مسارات العميل على الطلب (إلغاء، تقييم، شكوى)
 app.post('/api/orders/:id/cancel', async (req, res) => {
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
   if (!existing || !['في انتظار كابتن', 'تم قبول الطلب'].includes(existing.status)) {
@@ -1363,15 +1488,13 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
   res.json({ success: true, state });
 });
 
-// إدارة حسابات المسؤولين
 app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
   const { name, username, currentPassword, newPassword } = req.body || {};
-  const { data: master } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
+  const { data: master } = await supabase.from('admins').select('*').eq('is_master', true).limit(1).maybeSingle();
 
   if (master && currentPassword) {
     const valid = await bcrypt.compare(String(currentPassword), master.password_hash);
-    const envPass = process.env.INITIAL_ADMIN_PASS || '01023024988';
-    // السماح بالمرور إذا طابقت التشفير أو تطابقت مباشرة مع كلمة المرور في ملف .env كضمان أمان تام
+    const envPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
     if (!valid && currentPassword !== envPass) {
       return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة ⚠️' });
     }
@@ -1451,31 +1574,10 @@ app.get('/api/cron/cleanup-orders', async (req, res) => {
   if (req.headers['x-vercel-cron'] !== '1' && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ success: false });
   }
+  lastLazyCleanupRun = 0; // السماح بالتنفيذ الفوري
   const rawState = await fetchRawDatabaseState(false);
-  const timeoutMinutes = Number(rawState.settings.waitingTimeoutMinutes || process.env.WAITING_TIMEOUT_MINUTES || 30);
-  if (timeoutMinutes <= 0) return res.json({ success: true, canceled: 0 });
-
-  const cutoff = new Date(Date.now() - timeoutMinutes * 60000).toISOString();
-  const { data: expired } = await supabase.from('orders')
-    .update({ status: 'ملغي (تجاوز مهلة الانتظار)' })
-    .eq('status', 'في انتظار كابتن')
-    .lt('created_at', cutoff)
-    .select();
-
-  if (expired && expired.length > 0) {
-    for (const order of expired) {
-      const custPhone = order.customer_phone || order.client_phone;
-      if (order.discount_applied > 0 && custPhone) {
-        await supabase.rpc('adjust_customer_wallet_atomic', {
-          p_phone: custPhone,
-          p_amount: roundMoney(order.discount_applied),
-          p_reason: `رد تعويض مهلة طلب #${order.id}`
-        });
-      }
-    }
-    invalidateStateCache();
-  }
-  res.json({ success: true, canceled: expired ? expired.length : 0 });
+  const canceledCount = await runLazyExpiredOrdersCleanup(rawState.settings.waitingTimeoutMinutes);
+  res.json({ success: true, canceled: canceledCount });
 });
 
 const PORT = process.env.PORT || 3000;

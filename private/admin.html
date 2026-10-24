@@ -94,8 +94,38 @@
           <span id="toastMsg">تم</span>
         </div>
       </div>
+
       <div class="phone-screen" id="phoneScreen">
-        <section class="view-container active-view" id="adminDashboardContent">
+
+        <!-- شاشة تسجيل دخول غرفة العمليات المركزية -->
+        <section id="adminLoginSection" class="view-container" style="min-height:85vh; justify-content:center;">
+          <div class="card" style="padding:28px 20px; text-align:center;">
+            <div class="brand-logo-badge" style="width:56px; height:56px; font-size:26px; margin:0 auto 14px;">🛡️</div>
+            <h2 style="font-size:20px; font-weight:900; color:var(--primary); margin-bottom:4px;">غرفة العمليات المركزية</h2>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">سجّل الدخول بحساب المسؤول للمتابعة</p>
+
+            <div class="input-group" style="text-align:right;">
+              <label class="input-label" for="adminLoginUser">اسم المستخدم</label>
+              <input type="text" id="adminLoginUser" class="input-field" placeholder="اسم المستخدم (مثال: ennaby1)" autocomplete="username">
+            </div>
+
+            <div class="input-group" style="text-align:right; margin-bottom:18px;">
+              <label class="input-label" for="adminLoginPass">كلمة المرور السرية</label>
+              <input type="password" id="adminLoginPass" class="input-field" placeholder="••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') handleAdminLoginSubmit()">
+            </div>
+
+            <button type="button" class="btn-main" onclick="handleAdminLoginSubmit()">
+              <span>تسجيل الدخول</span> 🚀
+            </button>
+
+            <div id="adminLoginErrorMsg" style="display:none; margin-top:14px; color:var(--danger); font-size:12.5px; font-weight:800;">
+              ⚠️ بيانات الدخول غير صحيحة!
+            </div>
+          </div>
+        </section>
+
+        <!-- لوحة تحكم غرفة العمليات المركزية -->
+        <section class="view-container" id="adminDashboardContent" style="display:none;">
           <header class="brand-header">
             <div class="brand-title">
               <div class="brand-logo-badge"><i class="fa-solid fa-lock"></i></div>
@@ -254,7 +284,6 @@
                 <div id="adminCaptainReviewFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
               </div>
 
-              <!-- قسم إعادة تعيين كلمة مرور الكابتن -->
               <div class="card" id="admCard-resetPass" style="border: 1.5px solid var(--primary); margin-top: 14px;">
                 <h2 class="card-title"><i class="fa-solid fa-key"></i> تعيين كلمة مرور جديدة لكابتن 🔑</h2>
                 <div class="input-group">
@@ -300,7 +329,6 @@
 
           <!-- تبويب الإدارة 3: العملاء والمالية -->
           <div id="admTab-finance" class="sub-tab-section" style="display:none;">
-            <!-- تعيين PIN جديد للعميل -->
             <div class="card" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
               <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
               <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، أدخل رقمه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
@@ -315,7 +343,6 @@
               </button>
             </div>
 
-            <!-- تعويض العملاء -->
             <div class="card" id="admCard-customerWallets" style="border: 2px solid #2E7D32; background: #FAFFFA;">
               <h2 class="card-title" style="color:var(--success);"><i class="fa-solid fa-gift"></i> محافظ العملاء والتعويضات 🎁</h2>
               <select class="select-field" id="adminCustomerSelect" onchange="handleAdminCustomerSelectChange()" style="margin-bottom:8px;"></select>
@@ -328,11 +355,10 @@
               <button class="btn-main" style="background:var(--success);" onclick="adminExecuteCustomerCompensation()">إضافة رصيد للعميل ✅</button>
             </div>
 
-            <!-- عمولة المنصة -->
             <div class="card" id="admCard-platformFee" style="border: 2px solid var(--primary);">
               <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> عمولة المنصة ⚙️</h2>
-                <span class="badge badge-verified" id="adminCurrentFeeBadge">--</span>
+                <span class="badge badge-completed" id="adminCurrentFeeBadge">--</span>
               </div>
               <div class="inline-action-row">
                 <input type="number" id="adminPlatformFeeInput" class="input-field" placeholder="قيمة العمولة (ج)">
@@ -340,7 +366,6 @@
               </div>
             </div>
 
-            <!-- عمولة فردية -->
             <div class="card" id="admCard-customFee" style="border: 2px solid #0277BD;">
               <h2 class="card-title" style="color:#0277BD;"><i class="fa-solid fa-user-tag"></i> عمولة فردية لكابتن 🎯</h2>
               <input type="tel" id="adminCustomFeePhoneSearch" class="input-field" placeholder="بحث برقم الكابتن" oninput="handleAdminCustomFeeSearch()" style="margin-bottom:6px;">
@@ -356,7 +381,6 @@
               </div>
             </div>
 
-            <!-- نظام عنابي بوينتس -->
             <div class="card" id="admCard-loyaltyPoints" style="border: 2px dashed var(--primary);">
               <h2 class="card-title">🍇 عنابي بوينتس والمكافآت</h2>
               <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:10px;">
@@ -373,7 +397,6 @@
               </div>
             </div>
 
-            <!-- الدفتر المالي -->
             <div class="card" id="admCard-financialLedger">
               <h2 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> سجل التدقيق المالي</h2>
               <div id="adminFinancialLedgerList" style="font-size:11px; display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto;"></div>
@@ -432,7 +455,7 @@
       </div>
 
       <!-- شريط التنقل السفلي للإدارة -->
-      <nav class="bottom-nav" id="adminBottomNav">
+      <nav class="bottom-nav" id="adminBottomNav" style="display:none;">
         <button class="nav-item active" onclick="switchAdminTab('home')" id="navAdm-home">
           <i class="fa-solid fa-chart-pie"></i><span>الرئيسية</span>
         </button>
@@ -479,7 +502,7 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
-    const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V33';
+    const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V35';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
     let toastTimer = null, actionLock = false;
@@ -491,23 +514,38 @@
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
     const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
 
-    let SESSION = (() => { try { const r = localStorage.getItem(SESSION_KEY); return r ? { currentAdminTab:'home', currentAdminCaptainsSub:'captains', ...JSON.parse(r) } : { currentAdminTab:'home', currentAdminCaptainsSub:'captains' }; } catch(e){ return { currentAdminTab:'home', currentAdminCaptainsSub:'captains' }; } })();
+    let SESSION = (() => {
+      try {
+        const r = localStorage.getItem(SESSION_KEY);
+        return r ? { currentAdminTab: 'home', currentAdminCaptainsSub: 'captains', activeAdminUser: null, ...JSON.parse(r) } : { currentAdminTab: 'home', currentAdminCaptainsSub: 'captains', activeAdminUser: null };
+      } catch(e) {
+        return { currentAdminTab: 'home', currentAdminCaptainsSub: 'captains', activeAdminUser: null };
+      }
+    })();
     
     let STATE = {
       currentAdminTab: SESSION.currentAdminTab,
       currentAdminCaptainsSub: SESSION.currentAdminCaptainsSub,
-      activeAdminPhone: null,
+      activeAdminUser: SESSION.activeAdminUser,
       settings: {}, zones: [...DEFAULT_ZONES], pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
     };
 
-    function saveSession() { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ currentAdminTab: STATE.currentAdminTab, currentAdminCaptainsSub: STATE.currentAdminCaptainsSub })); } catch(e){} }
+    function saveSession() {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          currentAdminTab: STATE.currentAdminTab,
+          currentAdminCaptainsSub: STATE.currentAdminCaptainsSub,
+          activeAdminUser: STATE.activeAdminUser
+        }));
+      } catch(e){}
+    }
+
     function normalizeDigits(s) { return s == null ? '' : String(s).replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776)); }
     function normalizePhone(raw) { let s = normalizeDigits(raw).replace(/[\s\-()]/g, ''); if(s.startsWith('+20'))s='0'+s.slice(3); else if(s.startsWith('0020'))s='0'+s.slice(4); else if(s.startsWith('20')&&s.length===12)s='0'+s.slice(2); return s; }
     function isValidEgyptianPhone(p) { return /^01[0125][0-9]{8}$/.test(normalizePhone(p)); }
     function isValidPin(pin) { return /^[0-9]{4}$/.test(normalizeDigits(pin).trim()); }
     function roundMoney(v) { const n = Number(normalizeDigits(v)); return Number.isFinite(n) ? Math.round((n+Number.EPSILON)*100)/100 : 0; }
     function safeImageSrc(s) { if(!s||typeof s!=='string')return''; const t=s.trim(); if(t.startsWith('data:image/')||t.startsWith('https://')||t.startsWith('/uploads/'))return t; return''; }
-    function formatCairoDateTime(ts) { try { return new Date(Number(ts)||Date.now()).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch(e){ return ''; } }
     function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
 
     async function apiRequest(ep, meth='POST', bdy=null) {
@@ -532,8 +570,10 @@
       if(Array.isArray(cloud.orders)) STATE.orders = cloud.orders;
       if(Array.isArray(cloud.adminAccounts)) STATE.adminAccounts = cloud.adminAccounts;
       if(Array.isArray(cloud.auditLogs)) STATE.auditLogs = cloud.auditLogs;
-
-      if(STATE.activeAdminPhone && !STATE.adminAccounts.some(a=>a.username===STATE.activeAdminPhone)) STATE.activeAdminPhone = null;
+      if(cloud.authenticatedAdminUsername) {
+        STATE.activeAdminUser = cloud.authenticatedAdminUsername;
+        saveSession();
+      }
       renderAdminScreen();
     }
 
@@ -577,15 +617,57 @@
     }
 
     function getActiveAdmin() {
+      if (!STATE.activeAdminUser) return null;
       if (Array.isArray(STATE.adminAccounts) && STATE.adminAccounts.length > 0) {
-        const master = STATE.adminAccounts.find(a => a.isMaster) || STATE.adminAccounts[0];
-        if (master) return master;
+        const found = STATE.adminAccounts.find(a => a.username.toLowerCase() === String(STATE.activeAdminUser).toLowerCase());
+        if (found) return found;
       }
-      return { name: 'الأدمن الرئيسي', username: 'master', isMaster: true, status: 'نشط' };
+      return { name: 'الأدمن الرئيسي', username: STATE.activeAdminUser, isMaster: true, status: 'نشط', permissions: {} };
     }
 
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
-    function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
+
+    function handleAdminLoginSubmit() {
+      withActionLock(async () => {
+        const username = (document.getElementById('adminLoginUser')?.value || '').trim();
+        const password = (document.getElementById('adminLoginPass')?.value || '').trim();
+        const errBox = document.getElementById('adminLoginErrorMsg');
+        if (errBox) errBox.style.display = 'none';
+
+        if (!username || !password) {
+          if (errBox) { errBox.innerText = '⚠️ برجاء إدخال اسم المستخدم وكلمة المرور!'; errBox.style.display = 'block'; }
+          return;
+        }
+
+        try {
+          const { ok, data } = await apiRequest('/api/auth/admin/login', 'POST', { username, password });
+          if (ok && data && data.success) {
+            STATE.activeAdminUser = (data.admin && data.admin.username) ? data.admin.username : username;
+            saveSession();
+            document.getElementById('adminLoginPass').value = '';
+            renderAdminScreen();
+            switchAdminTab(STATE.currentAdminTab || 'home');
+            showToast(data.message || 'تم تسجيل الدخول بنجاح 🛡️✅', 'ok');
+          } else {
+            if (errBox) {
+              errBox.innerText = (data && data.message) ? data.message : '⚠️ بيانات الدخول غير صحيحة!';
+              errBox.style.display = 'block';
+            }
+            showToast((data && data.message) || 'بيانات الدخول غير صحيحة! ⚠️', 'warn');
+          }
+        } catch (err) {
+          if (errBox) { errBox.innerText = '⚠️ تعذر الاتصال بالسيرفر، حاول مرة أخرى!'; errBox.style.display = 'block'; }
+        }
+      });
+    }
+
+    async function handleAdminLogout() {
+      await apiRequest('/api/auth/admin/logout', 'POST', {}).catch(()=>{});
+      STATE.activeAdminUser = null;
+      saveSession();
+      renderAdminScreen();
+      showToast('تم تسجيل خروج المسؤول بنجاح 👋', 'ok');
+    }
 
     function switchAdminTab(t) {
       const v = ['home','captains','finance','operations'].includes(t)?t:'home';
@@ -624,11 +706,6 @@
     function openImageViewer(src) { const s=safeImageSrc(src); if(!s)return; document.getElementById('imagePreviewFull').src=s; document.getElementById('imagePreviewModal').classList.add('show'); }
     function closeImageViewer() { document.getElementById('imagePreviewModal').classList.remove('show'); document.getElementById('imagePreviewFull').src=''; }
 
-    async function handleAdminLogout() {
-      await apiRequest('/api/auth/admin/logout','POST',{}).catch(()=>{});
-      window.location.href = '/';
-    }
-
     function applyAdminPermissionsUI() {
       const adm = getActiveAdmin(); if(!adm) return; const isMaster = isMasterAdmin(adm);
       document.getElementById('admSubBtn-admins')&&(document.getElementById('admSubBtn-admins').style.display = isMaster?'flex':'none');
@@ -639,6 +716,21 @@
 
     function renderAdminScreen() {
       const admin = getActiveAdmin();
+      const loginSec = document.getElementById('adminLoginSection');
+      const dashSec = document.getElementById('adminDashboardContent');
+      const bottomNav = document.getElementById('adminBottomNav');
+
+      if (!admin) {
+        if (loginSec) loginSec.style.display = 'flex';
+        if (dashSec) dashSec.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        return;
+      }
+
+      if (loginSec) loginSec.style.display = 'none';
+      if (dashSec) dashSec.style.display = 'flex';
+      if (bottomNav) bottomNav.style.display = 'flex';
+
       const sessionLabel = document.getElementById('currentAdminSessionLabel');
       if (sessionLabel) {
         sessionLabel.innerText = `${escapeHtml(admin.name)} (${admin.isMaster ? 'أدمن رئيسي 👑' : 'مسؤول'})`;
@@ -712,6 +804,7 @@
         if(np!==rp) { showToast('المرور غير متطابق ⚠️','warn'); return; }
         const {ok, data} = await apiRequest('/api/admin/accounts/master','POST',{name:nm,username:un,currentPassword:cp,newPassword:np});
         if(ok&&data.success) {
+          if (un) { STATE.activeAdminUser = un; saveSession(); }
           document.getElementById('masterAdminCurrentPassInput').value = '';
           document.getElementById('masterAdminNewPassInput').value = '';
           document.getElementById('masterAdminConfirmPassInput').value = '';
@@ -1067,8 +1160,8 @@
       switchAdminTab(STATE.currentAdminTab || 'home');
       await syncFromCloudServer();
       renderAdminScreen();
-      setInterval(() => { if (!document.hidden) syncFromCloudServer(); }, 8000);
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromCloudServer(); });
+      setInterval(() => { if (!document.hidden && getActiveAdmin()) syncFromCloudServer(); }, 8000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && getActiveAdmin()) syncFromCloudServer(); });
     }
     
     document.addEventListener('DOMContentLoaded', initAdminApp);

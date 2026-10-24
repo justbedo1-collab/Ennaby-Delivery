@@ -1,8 +1,9 @@
 {
+  "version": 2,
   "crons": [
     {
       "path": "/api/cron/cleanup-orders",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
