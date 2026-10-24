@@ -700,14 +700,23 @@
     </div>
   </main>
 
-  <!-- Modals -->
+<!-- Modals -->
   <div class="custom-modal" id="imagePreviewModal" style="z-index: 2000;" onclick="if(event.target === this) closeImageViewer()">
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
   <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> تحويل للدعم والشحن</button></div></div>
   <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">إبلاغ عن مشكلة في الطلب ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكي لنا إيه المشكلة بالتفصيل..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">إرسال الشكوى</button><button class="btn-secondary" onclick="closeDisputeModal()">تراجع</button></div></div></div>
   <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">تقييم خدمة الكابتن 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:24px; color:#FFB300; margin-bottom:12px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><button class="btn-main" onclick="submitOrderRating()">حفظ التقييم الجميل</button></div></div>
-  <div class="custom-modal" id="captainSuccessModal"><div class="modal-content-card" style="text-align:center; padding:24px 16px;"><i class="fa-solid fa-circle-check" style="color:var(--success); font-size:36px; margin-bottom:10px;"></i><h3 style="font-size:16px; font-weight:900; color:var(--primary); margin-bottom:8px;">تم إرسال طلبك بنجاح!</h3><p style="font-size:13px; line-height:1.6; color:#444;">كدا يانجم انت سجلت معانا وباقى بس الإدارة هتراجع بياناتك والصور اللي انت رفعتها ✌️♥️</p><button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام، في الانتظار 🛵</button></div></div>
+  
+  <div class="custom-modal" id="captainSuccessModal">
+    <div class="modal-content-card" style="text-align:center; padding:24px 16px;">
+      <i class="fa-solid fa-circle-check" style="color:var(--success); font-size:36px; margin-bottom:10px;"></i>
+      <h3 style="font-size:16px; font-weight:900; color:var(--primary); margin-bottom:8px;">كدا إنت سجلت معانا يا بطل! 🛵🎉</h3>
+      <p style="font-size:13px; line-height:1.6; color:#444;">كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك عمولة أول مشوار هدية فوراً 😎🍇</p>
+      <button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام يا باشا، في انتظار الإدارة 💪</button>
+    </div>
+  </div>
+
   <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">تأكيد التنفيذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
 
   <script>
@@ -1277,7 +1286,7 @@
         if (!tempCaptainFiles.idFront || !tempCaptainFiles.idBack) { showToast('رفع وجه وظهر البطاقة إجباري ⚠️', 'warn'); return; }
         if (vehicle !== 'دراجة' && (!plate || !tempCaptainFiles.vehicle)) { showToast('رقم اللوحة وصورة المركبة إجباري ⚠️', 'warn'); return; }
         try {
-          showToast('جاري رفع المستندات وتسجيل حسابك بأمان... ⏳', 'auto');
+          showToast('جاري رفع المستندات وتسجيل حسابك بأمان... ⏳', 'ok');
           const { ok, data } = await apiRequest('/api/captains/register', 'POST', { phone, password: pass, fullName: name, nationalId, primaryZone: zone, vehicleType: vehicle, plateNumber: vehicle === 'دراجة' ? 'دراجة معفية' : plate, idFrontPhoto: tempCaptainFiles.idFront, idBackPhoto: tempCaptainFiles.idBack, vehiclePhoto: vehicle === 'دراجة' ? null : tempCaptainFiles.vehicle, referredByPhone: refPhone });
           if (!ok || !data.success) { showToast((data && data.message) || 'تعذر إتمام التسجيل ⚠️', 'warn'); return; }
           reuploadPhoneTarget = null; rejectedCaptainCache = null; document.getElementById('regFullName').value = ''; document.getElementById('regPhone').value = ''; document.getElementById('regNationalId').value = ''; if (document.getElementById('regReferredByPhone')) document.getElementById('regReferredByPhone').value = ''; document.getElementById('regPassword').value = ''; if (passConfirmEl) passConfirmEl.value = ''; document.getElementById('regPlateNumber').value = ''; removeUploadedFile('idFront'); removeUploadedFile('idBack'); removeUploadedFile('vehicle'); document.getElementById('captainSuccessModal')?.classList.add('show');
