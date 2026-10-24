@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ennaby-cache-v34';
+const CACHE_NAME = 'ennaby-cache-v35';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
@@ -15,7 +16,43 @@ self.addEventListener('install', event => {
   );
 });
 
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
 self.addEventListener('fetch', event => {
+  const reqUrl = new URL(event.request.url);
+
+  // عدم تخزين طلبات الـ API أو طلبات POST نهائياً لضمان المزامنة اللحظية
+  if (event.request.method !== 'GET' || reqUrl.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // استراتيجية Network-First لصفحات HTML لضمان ظهور أي تحديث فوراً
+  if (event.request.mode === 'navigate' || reqUrl.pathname.endsWith('.html') || reqUrl.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then(networkRes => {
+          const resClone = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
+          return networkRes;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // استراتيجية Cache-First للأيقونات والملفات الثابتة لتوفير الاستهلاك
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);

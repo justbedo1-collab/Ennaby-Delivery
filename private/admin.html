@@ -482,9 +482,10 @@
     const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V33';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
-    let adminClickCount = 0, adminClickTimer = null, toastTimer = null, actionLock = false;
-    let isPricingDirty = false, customModalCallback = null, isCloudSyncInFlight = false;
+    let toastTimer = null, actionLock = false;
+    let isPricingDirty = false, customModalCallback = null, isCloudSyncInFlight = false, lastCloudStateFingerprint = '';
 
+    const DEFAULT_ZONES = ['المنصورة', 'طلخا', 'سندوب', 'جديلة'];
     const ADMIN_PERM_KEYS = ['viewDashboard', 'viewCaptains', 'manageCaptains', 'viewOrders', 'manageOrders', 'manageWallets', 'manageCommissions', 'managePricing', 'manageSettings'];
     const ADMIN_PERM_LABELS = { viewDashboard: '📊 لوحة المعلومات', viewCaptains: '🛵 عرض الكباتن', manageCaptains: '✅ إدارة الكباتن', viewOrders: '📦 عرض الطلبات', manageOrders: '⚖️ إدارة الطلبات', manageWallets: '💰 المحافظ', manageCommissions: '🎯 العمولات', managePricing: '🗺️ التسعير', manageSettings: '📢 الإعدادات' };
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
@@ -496,7 +497,7 @@
       currentAdminTab: SESSION.currentAdminTab,
       currentAdminCaptainsSub: SESSION.currentAdminCaptainsSub,
       activeAdminPhone: null,
-      settings: {}, zones: {}, pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
+      settings: {}, zones: [...DEFAULT_ZONES], pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
     };
 
     function saveSession() { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ currentAdminTab: STATE.currentAdminTab, currentAdminCaptainsSub: STATE.currentAdminCaptainsSub })); } catch(e){} }
@@ -514,14 +515,17 @@
       if(bdy!==null) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(bdy); }
       const res = await fetch(`${API_BASE}${ep}`, opts);
       const data = await res.json().catch(()=>({}));
-      if(data && data.state) applyCloudStateSnapshot(data.state);
+      if(data && data.state) {
+        try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch(e){}
+        applyCloudStateSnapshot(data.state);
+      }
       return { ok: res.ok, status: res.status, data };
     }
 
     function applyCloudStateSnapshot(cloud) {
       if(!cloud || typeof cloud!=='object') return;
       if(cloud.settings) STATE.settings = { ...STATE.settings, ...cloud.settings };
-      if(Array.isArray(cloud.zones)) STATE.zones = cloud.zones;
+      if(Array.isArray(cloud.zones) && cloud.zones.length > 0) STATE.zones = cloud.zones;
       if(cloud.pricing && typeof cloud.pricing==='object') STATE.pricing = cloud.pricing;
       if(cloud.customers && typeof cloud.customers==='object') STATE.customers = cloud.customers;
       if(Array.isArray(cloud.captains)) STATE.captains = cloud.captains;
@@ -536,10 +540,16 @@
     async function syncFromCloudServer() {
       if(isCloudSyncInFlight) return; isCloudSyncInFlight = true;
       try {
-        const res = await fetch(`${API_BASE}/api/bootstrap`, { method: 'GET', credentials: 'include' });
+        const res = await fetch(`${API_BASE}/api/bootstrap?role=admin`, { method: 'GET', credentials: 'include' });
         if(res.ok) {
           const data = await res.json();
-          if(data && data.success && data.state) applyCloudStateSnapshot(data.state);
+          if(data && data.success && data.state) {
+            const fp = JSON.stringify(data.state);
+            if(fp !== lastCloudStateFingerprint) {
+              lastCloudStateFingerprint = fp;
+              applyCloudStateSnapshot(data.state);
+            }
+          }
         }
       } catch(e) {} finally { isCloudSyncInFlight = false; }
     }
@@ -650,8 +660,10 @@
       const q = document.getElementById('adminResetPassSearchInput')?.value.trim().toLowerCase() || '';
       const sel = document.getElementById('adminResetPassCaptainSelect');
       if(!sel) return;
+      const prevVal = sel.value;
       const filtered = STATE.captains.filter(c => (c.phone&&c.phone.toLowerCase().includes(q)) || (c.fullName&&c.fullName.toLowerCase().includes(q)));
       sel.innerHTML = filtered.length===0 ? `<option value="">-- لا يوجد كابتن بهذا البحث --</option>` : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</option>`).join('');
+      if (prevVal && filtered.some(c => c.phone === prevVal)) sel.value = prevVal;
     }
 
     function adminExecuteCaptainPasswordReset() {
@@ -699,7 +711,12 @@
         const rp = document.getElementById('masterAdminConfirmPassInput')?.value.trim();
         if(np!==rp) { showToast('المرور غير متطابق ⚠️','warn'); return; }
         const {ok, data} = await apiRequest('/api/admin/accounts/master','POST',{name:nm,username:un,currentPassword:cp,newPassword:np});
-        if(ok&&data.success) { showToast(data.message||'تم التحديث ✅','ok'); }
+        if(ok&&data.success) {
+          document.getElementById('masterAdminCurrentPassInput').value = '';
+          document.getElementById('masterAdminNewPassInput').value = '';
+          document.getElementById('masterAdminConfirmPassInput').value = '';
+          showToast(data.message||'تم التحديث ✅','ok');
+        }
         else showToast((data&&data.message)||'تعذر التحديث ⚠️','warn');
       });
     }
@@ -746,7 +763,12 @@
     function renderAdminAccountsSection() {
       const act = getActiveAdmin(); if(!act)return;
       const m = STATE.adminAccounts.find(a=>a.isMaster) || act;
-      if(m){ document.getElementById('masterAdminNameInput').value=m.name||''; document.getElementById('masterAdminUserInput').value=m.username||''; }
+      if(m){
+        const nameInp = document.getElementById('masterAdminNameInput');
+        const userInp = document.getElementById('masterAdminUserInput');
+        if(nameInp && document.activeElement !== nameInp) nameInp.value = m.name || '';
+        if(userInp && document.activeElement !== userInp) userInp.value = m.username || '';
+      }
       document.getElementById('adminAccountsListFeed').innerHTML = STATE.adminAccounts.map(a=>{
         const isM=Boolean(a.isMaster), isA=a.status!=='معطل', prms=isM?['كل الصلاحيات 👑']:ADMIN_PERM_KEYS.filter(k=>a.permissions&&a.permissions[k]).map(k=>ADMIN_PERM_LABELS[k]);
         return `<div style="background:#FAF7F4; border:1px solid ${isM?'#302A2D':'#E9DCE0'}; border-radius:12px; padding:10px; margin-bottom:8px; font-size:11.5px;">
@@ -887,7 +909,7 @@
     }
 
     function adminDeleteZoneByIndex(i) {
-      const zonesArr = Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES;
+      const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
       openCustomActionModal({title:'حذف منطقة', message:`متأكد من حذف ${escapeHtml(zonesArr[i])}؟`, confirmText:'حذف ⛔', isDanger:true, onConfirm:async ()=>{
         const nz = zonesArr.filter((_,x)=>x!==i); const np={...STATE.pricing}; Object.keys(np).forEach(k=>{if(k.includes(zonesArr[i]))delete np[k];});
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
@@ -946,7 +968,7 @@
     }
 
     function renderAdminDynamicSettingsInputs() {
-      const s = STATE.settings||{}; const f = Number(s.platformFee || 7);
+      const s = STATE.settings||{}; const f = Number(s.platformFee ?? 7);
       document.getElementById('adminCurrentFeeBadge').innerText = `العمولة: ${f} ج`; document.getElementById('adminStatCurrentFeeNote').innerText = `العمولة: ${f} ج`;
       const m={ adminPlatformFeeInput:f, adminCustPointsPerOrderInput:s.customerPointsPerOrder||5, adminCustPointsTargetInput:s.customerRewardThreshold||100, adminCustRewardAmountInput:s.customerRewardCash||10, adminCourPointsPerOrderInput:s.courierPointsPerOrder||5, adminCourPointsTargetInput:s.courierRewardThreshold||100, adminCourRewardAmountInput:s.courierRewardCash||10, adminBroadcastInput:s.broadcastMessage||'', adminSupportWhatsappInput:s.supportWhatsapp||'201507800875', adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30 };
       Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id) document.getElementById(id).value=m[id]; });
@@ -957,6 +979,7 @@
     function renderAdminDropdown() {
       const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.status)}]</option>`).join('');
       ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
+      if(document.activeElement !== document.getElementById('adminResetPassCaptainSelect')) filterResetPassCaptainDropdown();
       renderAdminCustomFeeCaptainSummary();
     }
 
@@ -997,9 +1020,9 @@
     function buildCaptainDocsHtml(c) {
       const fs=safeImageSrc(c.idFrontPhoto), bs=safeImageSrc(c.idBackPhoto), vs=safeImageSrc(c.vehiclePhoto);
       return `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:8px 0;">
-        ${fs?`<img src="${fs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${fs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
-        ${bs?`<img src="${bs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${bs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
-        ${vs?`<img src="${vs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px;" onclick="openImageViewer('${vs}')">`:(c.vehicleType==='دراجة'?'<div style="background:#eee;">عجلة</div>':'<div style="background:#eee;">لا يوجد</div>')}
+        ${fs?`<img src="${fs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${fs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
+        ${bs?`<img src="${bs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${bs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
+        ${vs?`<img src="${vs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${vs}')">`:(c.vehicleType==='دراجة'?'<div style="background:#eee;">عجلة</div>':'<div style="background:#eee;">لا يوجد</div>')}
       </div>`;
     }
 
@@ -1019,6 +1042,7 @@
 
     function renderAdminDashboardData() {
       const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
+      const disputed=STATE.orders.filter(o=>o.status==='قيد مراجعة الاعتراض');
       document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
       document.getElementById('adminStatCommissionTotal').innerText = `${roundMoney(STATE.orders.filter(o=>o.feeDeducted&&!o.feeRefunded).reduce((s,o)=>s+(Number(o.platformFee)||0),0))} ج`;
       document.getElementById('adminStatTotalCaptainsWallet').innerText = `${roundMoney(STATE.captains.reduce((s,c)=>s+(Number(c.walletBalance)||0),0))} ج`;
@@ -1026,18 +1050,25 @@
       document.getElementById('adminStatTotalCaptainsCount').innerText = `${STATE.captains.length} كابتن`;
       
       const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
-      document.getElementById('admNavCaptainsBadge')&&(document.getElementById('admNavCaptainsBadge').style.display=pend.length?'flex':'none');
+      const capBadge = document.getElementById('admNavCaptainsBadge');
+      if(capBadge) { capBadge.innerText = pend.length; capBadge.style.display = pend.length ? 'flex' : 'none'; }
+
+      const dispBadge = document.getElementById('admNavDisputesBadge');
+      if(dispBadge) { dispBadge.innerText = disputed.length; dispBadge.style.display = disputed.length ? 'flex' : 'none'; }
+
       document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
 
       const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
       const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
-      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج<br>${ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}</div>`).join('');
+      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}<br>${ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}${o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}</div>`).join('');
     }
 
     async function initAdminApp() {
+      switchAdminTab(STATE.currentAdminTab || 'home');
       await syncFromCloudServer();
       renderAdminScreen();
-      setInterval(()=>syncFromCloudServer(), 5000);
+      setInterval(() => { if (!document.hidden) syncFromCloudServer(); }, 8000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromCloudServer(); });
     }
     
     document.addEventListener('DOMContentLoaded', initAdminApp);

@@ -730,17 +730,20 @@
 
     // ==================== Web Push Notifications ====================
     async function subscribeUserToPush(userPhone) {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      if (!userPhone || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
       try {
         const registration = await navigator.serviceWorker.ready;
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
         
         const publicVapidKey = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-        });
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+          });
+        }
         await apiRequest('/api/push/subscribe', 'POST', { phone: userPhone, subscription });
       } catch (e) {
         console.error('Push subscription error:', e);
@@ -884,7 +887,16 @@
       if (bodyObj !== null) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(bodyObj); }
       const res = await fetch(`${API_BASE}${endpoint}`, opts);
       const data = await res.json().catch(() => ({}));
-      if (data && data.state) applyCloudStateSnapshot(data.state);
+      if (res.status === 401 && STATE.currentRole === 'courier' && STATE.activeCourierPhone && !endpoint.includes('/auth/captain/login')) {
+        STATE.activeCourierPhone = null;
+        saveSession();
+        renderCourierScreen();
+        updateBottomNavVisibility();
+      }
+      if (data && data.state) {
+        try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch (e) {}
+        applyCloudStateSnapshot(data.state);
+      }
       return { ok: res.ok, status: res.status, data };
     }
 
@@ -943,7 +955,7 @@
 
     document.addEventListener('pointerdown', function(e) {
       unlockAudioEngine();
-      const target = e.target.closest('button, a, select, input, label, .upload-card-box, .brand-logo-badge');
+      const target = e.target.closest('button, a, select, input, label, .upload-card-box');
       if (target && !target.closest('#toast')) lastInteractedElement = target;
     }, true);
 
@@ -1025,7 +1037,7 @@
     }
 
     function switchRole(role) {
-      const validRole = ['customer', 'courier'].includes(role) ? role : 'customer'; // إزالة دور الأدمن
+      const validRole = ['customer', 'courier'].includes(role) ? role : 'customer';
       STATE.currentRole = validRole; saveSession();
       document.querySelectorAll('.in-app-role-bar .role-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(`roleBtn-${validRole}`)?.classList.add('active');
@@ -1171,7 +1183,7 @@
       openCustomActionModal({ title: 'إلغاء الطلب ❌', message: `هل أنت متأكد من رغبتك في إلغاء الطلب (${orderId})؟`, confirmText: 'نعم، إلغاء الطلب', isDanger: true,
         onConfirm: () => {
           withActionLock(async () => {
-            const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/cancel`, 'POST', {});
+            const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/cancel`, 'POST', { clientPhone: STATE.customerProfile.savedPhone || '' });
             if (ok && data.success) { showToast(data.message || `تم إلغاء طلبك (${orderId}) بنجاح ✅`, 'ok'); } 
             else { showToast((data && data.message) || 'تعذر إلغاء الطلب ⚠️', 'warn'); }
           });
@@ -1285,11 +1297,11 @@
 
     function openRatingModal(orderId) { const order = STATE.orders.find(o => o.id === orderId); if (!order || order.rating !== null) { showToast('تم تقييم هذا المشوار مسبقاً ولا يمكن تعديله ⭐', 'warn'); return; } const hid = document.getElementById('ratingOrderIdHidden'); if (hid) hid.value = orderId; setRatingStars(5); document.getElementById('ratingModal')?.classList.add('show'); }
     function setRatingStars(cnt) { currentSelectedStars = cnt; const container = document.getElementById('starRatingContainer'); if (!container) return; const stars = container.children; for (let i = 0; i < 5; i++) { if (stars[i]) stars[i].className = i < cnt ? 'fa-solid fa-star' : 'fa-regular fa-star'; } }
-    function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('شكراً لتقييمك الجميل! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'تعذر حفظ التقييم ⚠️', 'warn'); } }); }
+    function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars, clientPhone: STATE.customerProfile.savedPhone || '' }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('شكراً لتقييمك الجميل! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'تعذر حفظ التقييم ⚠️', 'warn'); } }); }
 
     function customerOpenDispute(orderId) { const hid = document.getElementById('disputeOrderIdHidden'); const inp = document.getElementById('disputeReasonInput'); if (hid) hid.value = orderId; if (inp) inp.value = ''; document.getElementById('disputeModal')?.classList.add('show'); }
     function closeDisputeModal() { document.getElementById('disputeModal')?.classList.remove('show'); }
-    function confirmCustomerDispute() { withActionLock(async () => { const orderId = document.getElementById('disputeOrderIdHidden')?.value; const reason = (document.getElementById('disputeReasonInput')?.value || '').trim(); if (!reason) { showToast('اكتب سبب الاعتراض ⚠️', 'warn'); return; } const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/dispute`, 'POST', { reason }); closeDisputeModal(); if (ok && data.success) { showToast('تم رفع الاعتراض للإدارة لبحثه وحسمه 🛡️', 'ok'); } else { showToast((data && data.message) || 'تعذر رفع الاعتراض ⚠️', 'warn'); } }); }
+    function confirmCustomerDispute() { withActionLock(async () => { const orderId = document.getElementById('disputeOrderIdHidden')?.value; const reason = (document.getElementById('disputeReasonInput')?.value || '').trim(); if (!reason) { showToast('اكتب سبب الاعتراض ⚠️', 'warn'); return; } const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/dispute`, 'POST', { reason, clientPhone: STATE.customerProfile.savedPhone || '' }); closeDisputeModal(); if (ok && data.success) { showToast('تم رفع الاعتراض للإدارة لبحثه وحسمه 🛡️', 'ok'); } else { showToast((data && data.message) || 'تعذر رفع الاعتراض ⚠️', 'warn'); } }); }
 
     function renderCourierScreen() {
       const courier = getActiveCourier(); const loginSec = document.getElementById('courierLoginSection'); const dashSec = document.getElementById('courierDashboardContent'); const regSec = document.getElementById('courierSubView-register');
@@ -1444,9 +1456,15 @@
       await syncFromCloudServer(true);
       switchRole(STATE.currentRole === 'courier' ? 'courier' : 'customer');
       switchCustTab(STATE.currentCustTab || 'home');
-      if (getActiveCourier()) switchCourierTab(STATE.currentCourTab || 'home');
+      if (getActiveCourier()) {
+        switchCourierTab(STATE.currentCourTab || 'home');
+        subscribeUserToPush(STATE.activeCourierPhone);
+      } else if (STATE.customerProfile && STATE.customerProfile.savedPhone) {
+        subscribeUserToPush(STATE.customerProfile.savedPhone);
+      }
       updateBottomNavVisibility();
-      setInterval(() => { syncFromCloudServer(true); }, 5000);
+      setInterval(() => { if (!document.hidden) syncFromCloudServer(true); }, 8000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromCloudServer(true); });
     }
 
     document.addEventListener('DOMContentLoaded', initApp);
