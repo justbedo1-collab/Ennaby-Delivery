@@ -105,7 +105,7 @@
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">سجّل الدخول بحساب المسؤول للمتابعة</p>
 
             <div class="input-group" style="text-align:right;">
-              <label class="input-label" for="adminLoginUser">اسم المسؤول/label>
+              <label class="input-label" for="adminLoginUser">اسم المسؤول</label>
               <input type="text" id="adminLoginUser" class="input-field" placeholder="اكتب اسم المسؤول هنا" autocomplete="username">
             </div>
 
@@ -545,7 +545,13 @@
     function isValidEgyptianPhone(p) { return /^01[0125][0-9]{8}$/.test(normalizePhone(p)); }
     function isValidPin(pin) { return /^[0-9]{4}$/.test(normalizeDigits(pin).trim()); }
     function roundMoney(v) { const n = Number(normalizeDigits(v)); return Number.isFinite(n) ? Math.round((n+Number.EPSILON)*100)/100 : 0; }
-    function safeImageSrc(s) { if(!s||typeof s!=='string')return''; const t=s.trim(); if(t.startsWith('data:image/')||t.startsWith('https://')||t.startsWith('/uploads/'))return t; return''; }
+    function safeImageSrc(s) {
+      if (!s || typeof s !== 'string') return '';
+      const t = s.trim();
+      if (!t) return '';
+      if (t.startsWith('data:image/') || t.startsWith('https://') || t.startsWith('http://') || t.startsWith('/uploads/') || t.startsWith('/api/')) return t;
+      return '';
+    }
     function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
 
     async function apiRequest(ep, meth='POST', bdy=null) {
@@ -613,7 +619,7 @@
       if(s==='في انتظار كابتن')return'badge-pending'; if(s==='تم قبول الطلب')return'badge-accepted';
       if(s==='الكابتن وصل للاستلام'||s==='استلم الطرد وفي السكة')return'badge-delivering';
       if(s==='الكابتن وصل للتسليم')return'badge-awaiting'; if(s==='قيد مراجعة الاعتراض')return'badge-disputed';
-      if(s==='مكتمل')return'badge-completed'; return String(s||'').includes('ملغي')?'badge-rejected':'badge-pending';
+      if(s==='مكتمل' || s==='معتمد')return'badge-completed'; return String(s||'').includes('ملغي') || s==='مرفوض' || s==='موقوف' ?'badge-rejected':'badge-pending';
     }
 
     function getActiveAdmin() {
@@ -698,7 +704,7 @@
       const b=document.getElementById('customActionModalConfirmBtn'); b.innerText=confirmText; b.style.background=isDanger?'var(--danger)':'var(--primary)';
       customModalCallback = function() {
         const v = document.getElementById('customActionModalInput').value.trim();
-        if(needInput&&!v){ showToast('اكتب السبب ⚠️','warn'); return; }
+        if(needInput&&!v){ showToast('اكتب السبب أولاً ⚠️','warn'); return; }
         closeCustomActionModal(); if(typeof onConfirm==='function') onConfirm(v);
       };
       b.onclick = customModalCallback; document.getElementById('customActionModal').classList.add('show');
@@ -1064,12 +1070,27 @@
     function adminChangeCaptainStatus(phone, status) {
       const cap = STATE.captains.find(c=>c.phone===phone); if(!cap)return;
       if(status==='موقوف'||status==='مرفوض') {
-        openCustomActionModal({title:status==='موقوف'?'إيقاف ⛔':'رفض ❌', message:'اكتب السبب:', needInput:true, confirmText:'تأكيد', isDanger:true, onConfirm: async (re)=>{
-          const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status, reason:re});
-          if(ok&&data.success)showToast('تم التحديث ✅','ok');
-        }});
+        const isReject = status === 'مرفوض';
+        openCustomActionModal({
+          title: isReject ? 'رفض الكابتن ومستنداته ❌' : 'إيقاف حساب الكابتن ⛔',
+          message: isReject
+            ? `اكتب سبب رفض الكابتن (${cap.fullName}) ليظهر له ويتمكن من تصحيح أوراقه:`
+            : `اكتب سبب إيقاف الكابتن (${cap.fullName}):`,
+          needInput: true,
+          inputPlaceholder: isReject ? 'مثال: صور البطاقة غير واضحة أو البيانات غير مستوفاة...' : 'اكتب سبب الإيقاف هنا...',
+          defaultValue: cap.suspendReason || '',
+          confirmText: isReject ? 'تأكيد الرفض ❌' : 'تأكيد الإيقاف ⛔',
+          isDanger: true,
+          onConfirm: async (re)=>{
+            const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status, reason:re});
+            if(ok&&data.success)showToast(isReject ? 'تم رفض الكابتن وإرسال السبب ❌' : 'تم إيقاف الكابتن ⛔','ok');
+          }
+        });
       } else {
-        withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status}); if(ok&&data.success)showToast('اعتمد ✅','ok'); });
+        withActionLock(async () => {
+          const {ok, data}=await apiRequest(`/api/admin/captains/${encodeURIComponent(phone)}/status`,'POST',{status});
+          if(ok&&data.success)showToast('تم اعتماد الكابتن بنجاح ✅','ok');
+        });
       }
     }
 
@@ -1135,11 +1156,19 @@
     }
 
     function buildCaptainDocsHtml(c) {
-      const fs=safeImageSrc(c.idFrontPhoto), bs=safeImageSrc(c.idBackPhoto), vs=safeImageSrc(c.vehiclePhoto);
+      const fs = safeImageSrc(c.idFrontPhoto);
+      const bs = safeImageSrc(c.idBackPhoto);
+      const vs = safeImageSrc(c.vehiclePhoto);
+      const emptyBox = (label) => `<div style="background:#eee; height:74px; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10.5px; color:#777; border:1px dashed #ccc;"><span>${label}</span><strong>لا يوجد</strong></div>`;
+      const imgBox = (src, label) => `<div style="position:relative; height:74px; border-radius:8px; overflow:hidden; border:1px solid #ddd; background:#fff; cursor:pointer;" onclick="openImageViewer('${escapeHtml(src)}')">
+        <img src="${escapeHtml(src)}" alt="${escapeHtml(label)}" style="height:100%; width:100%; object-fit:cover; display:block;" loading="lazy">
+        <span style="position:absolute; bottom:0; right:0; left:0; background:rgba(0,0,0,0.6); color:#fff; font-size:9.5px; text-align:center; padding:1px 3px;">${label} 🔍</span>
+      </div>`;
+
       return `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:8px 0;">
-        ${fs?`<img src="${fs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${fs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
-        ${bs?`<img src="${bs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${bs}')">`:'<div style="background:#eee;">لا يوجد</div>'}
-        ${vs?`<img src="${vs}" style="height:70px; width:100%; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="openImageViewer('${vs}')">`:(c.vehicleType==='دراجة'?'<div style="background:#eee;">عجلة</div>':'<div style="background:#eee;">لا يوجد</div>')}
+        ${fs ? imgBox(fs, 'وش البطاقة') : emptyBox('وش البطاقة')}
+        ${bs ? imgBox(bs, 'ضهر البطاقة') : emptyBox('ضهر البطاقة')}
+        ${vs ? imgBox(vs, 'المركبة') : (c.vehicleType==='دراجة' ? `<div style="background:#E8F5E9; height:74px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#2E7D32; font-weight:800;">🚲 عجلة معفية</div>` : emptyBox('المركبة'))}
       </div>`;
     }
 
@@ -1148,12 +1177,19 @@
       if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
       const canManageCap = hasAdminPerm('manageCaptains');
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong> <span class="badge">${escapeHtml(c.status)}</span></div>
-        <div style="font-size:11px; margin:8px 0;">رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
+          <span class="badge ${getStatusBadgeClass(c.status)}">${escapeHtml(c.status)}</span>
+        </div>
+        <div style="font-size:11px; margin:8px 0; line-height:1.6;">
+          رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong>
+          ${c.suspendReason ? `<div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; padding:4px 8px; border-radius:6px;">⚠️ سبب الرفض/الإيقاف: ${escapeHtml(c.suspendReason)}</div>` : ''}
+        </div>
         ${buildCaptainDocsHtml(c)}
-        ${canManageCap ? `<div style="display:flex; gap:6px; margin-top:8px;">
-          ${c.status==='معتمد'?`<button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف</button>`:''}
-          ${c.status!=='معتمد'?`<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button>`:''}
+        ${canManageCap ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+          ${c.status!=='معتمد'?`<button type="button" class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد ✅</button>`:''}
+          ${c.status==='معتمد'?`<button type="button" class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف ⛔</button>`:''}
+          <button type="button" class="btn-danger" style="background:#FCE4EC; color:#C2185B; border:1px solid #F8BBD0;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض ❌</button>
         </div>` : ''}
       </div>`;
     }
@@ -1174,7 +1210,18 @@
       const dispBadge = document.getElementById('admNavDisputesBadge');
       if(dispBadge) { dispBadge.innerText = disputed.length; dispBadge.style.display = disputed.length ? 'flex' : 'none'; }
 
-      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
+      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:10px; border-radius:10px; border:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
+          <span class="badge badge-pending">${escapeHtml(c.vehicleType)}</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">الرقم القومي: ${escapeHtml(c.nationalId)} | المنطقة: ${escapeHtml(c.primaryZone)}</div>
+        ${buildCaptainDocsHtml(c)}
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button type="button" class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد ✅</button>
+          <button type="button" class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض ❌</button>
+        </div>
+      </div>`).join('');
 
       const canManageOrd = hasAdminPerm('manageOrders');
       const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();

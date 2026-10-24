@@ -17,6 +17,7 @@ const app = express();
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 const JWT_SECRET = process.env.JWT_SECRET || 'ENNABY_SUPER_SECRET_KEY_V31_2026';
+const CAPTAIN_DOCS_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'captain-docs';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -129,6 +130,59 @@ function formatCairoTime(dateInput = Date.now()) {
   }
 }
 
+// تحويل مسار الصورة النسبي المخزن في قاعدة البيانات أو Storage إلى رابط عام كامل
+function resolveCaptainPhotoUrl(rawVal) {
+  if (!rawVal || typeof rawVal !== 'string') return null;
+  const s = rawVal.trim();
+  if (!s) return null;
+  if (s.startsWith('data:image/') || s.startsWith('https://') || s.startsWith('http://') || s.startsWith('/uploads/')) {
+    return s;
+  }
+  const cleanBase = String(SUPABASE_URL || '').replace(/\/+$/, '');
+  if (!cleanBase) return s;
+
+  let cleanPath = s.replace(/^\/+/, '');
+  if (cleanPath.startsWith(`storage/v1/object/public/`)) {
+    return `${cleanBase}/${cleanPath}`;
+  }
+  if (cleanPath.startsWith(`${CAPTAIN_DOCS_BUCKET}/`)) {
+    cleanPath = cleanPath.slice(CAPTAIN_DOCS_BUCKET.length + 1);
+  }
+  if (!cleanPath.includes('/')) {
+    cleanPath = `captains/${cleanPath}`;
+  }
+  return `${cleanBase}/storage/v1/object/public/${CAPTAIN_DOCS_BUCKET}/${cleanPath}`;
+}
+
+// رفع صورة Base64 إلى Supabase Storage (captain-docs/captains) وإرجاع الرابط العام
+async function uploadCaptainDocToStorage(phone, docKey, dataUrl) {
+  if (!dataUrl || typeof dataUrl !== 'string') return null;
+  if (!dataUrl.startsWith('data:image/')) {
+    return resolveCaptainPhotoUrl(dataUrl);
+  }
+  try {
+    const matches = dataUrl.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (!matches) return dataUrl;
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const ext = mimeType.includes('png') ? 'png' : 'jpg';
+    const filePath = `captains/${phone}_${docKey}_${Date.now()}.${ext}`;
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const { error } = await supabase.storage
+      .from(CAPTAIN_DOCS_BUCKET)
+      .upload(filePath, buffer, { contentType: mimeType, upsert: true });
+
+    if (error) {
+      console.warn(`Storage upload fallback (${docKey}):`, error.message);
+      return dataUrl;
+    }
+    return resolveCaptainPhotoUrl(filePath);
+  } catch (err) {
+    return dataUrl;
+  }
+}
+
 let stateCache = {
   raw: null,
   lastFetched: 0,
@@ -203,10 +257,11 @@ function getAuthenticatedAdminFromCookie(req) {
   }
 }
 
-function mapCaptainRow(c, includePhotos = false) {
-  const frontPhoto = c.id_front_photo || c.id_front_url || c.doc_id_front_path || null;
-  const backPhoto = c.id_back_photo || c.id_back_url || c.doc_id_back_path || null;
-  const vehPhoto = c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || c.doc_vehicle_path || null;
+function mapCaptainRow(c, includePhotos = false, storageMap = {}) {
+  const phoneFiles = storageMap[c.phone] || {};
+  const frontPhoto = resolveCaptainPhotoUrl(c.id_front_photo || c.id_front_url || c.doc_id_front_path) || phoneFiles.idFront || null;
+  const backPhoto = resolveCaptainPhotoUrl(c.id_back_photo || c.id_back_url || c.doc_id_back_path) || phoneFiles.idBack || null;
+  const vehPhoto = resolveCaptainPhotoUrl(c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || c.doc_vehicle_path) || phoneFiles.vehicle || null;
 
   return {
     phone: c.phone,
@@ -270,7 +325,7 @@ function mapOrderRow(o) {
 // تنظيف تلقائي ذكي للطلبات التي تجاوزت المهلة كل دقيقتين بدون الحاجة لـ Vercel Pro Cron
 async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
   const now = Date.now();
-  if (now - lastLazyCleanupRun < 120000) return 0; // يعمل بحد أقصى مرة كل دقيقتين
+  if (now - lastLazyCleanupRun < 120000) return 0;
   lastLazyCleanupRun = now;
 
   try {
@@ -302,19 +357,48 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
   return 0;
 }
 
+// فهرسة ملفات الكباتن الموجودة في Supabase Storage (captain-docs/captains) لضمان ظهورها دائماً
+async function fetchCaptainStorageFilesMap() {
+  const storageMap = {};
+  try {
+    const { data: files } = await supabase.storage
+      .from(CAPTAIN_DOCS_BUCKET)
+      .list('captains', { limit: 1000, sortBy: { column: 'name', order: 'desc' } });
+
+    if (Array.isArray(files)) {
+      for (const f of files) {
+        if (!f || !f.name) continue;
+        // مطابقة صيغة اسم الملف: 01507800875_idFront_17... أو 01507800875_idBack_... أو 01507800875_vehicle_...
+        const match = f.name.match(/^(01[0-9]{9})_(idFront|idBack|vehicle)/i);
+        if (match) {
+          const phone = match[1];
+          const rawType = match[2].toLowerCase();
+          if (!storageMap[phone]) storageMap[phone] = {};
+          const fullUrl = resolveCaptainPhotoUrl(`captains/${f.name}`);
+          if (rawType === 'idfront' && !storageMap[phone].idFront) storageMap[phone].idFront = fullUrl;
+          else if (rawType === 'idback' && !storageMap[phone].idBack) storageMap[phone].idBack = fullUrl;
+          else if (rawType === 'vehicle' && !storageMap[phone].vehicle) storageMap[phone].vehicle = fullUrl;
+        }
+      }
+    }
+  } catch (e) {}
+  return storageMap;
+}
+
 async function fetchRawDatabaseState(forceRefresh = false) {
   const now = Date.now();
   if (!forceRefresh && stateCache.raw && (now - stateCache.lastFetched < stateCache.ttlMs)) {
     return stateCache.raw;
   }
 
-  const [settingsRes, customersRes, captainsRes, ordersRes, adminsRes, logsRes] = await Promise.all([
+  const [settingsRes, customersRes, captainsRes, ordersRes, adminsRes, logsRes, storageFilesMap] = await Promise.all([
     supabase.from('settings').select('*').eq('id', 1).maybeSingle(),
     supabase.from('customers').select('*'),
     supabase.from('captains').select('*').order('created_at', { ascending: false }),
     supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(250),
     supabase.from('admins').select('*').order('created_at', { ascending: true }),
-    supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
+    supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50),
+    fetchCaptainStorageFilesMap()
   ]);
 
   const sRow = settingsRes.data || {};
@@ -334,7 +418,6 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     packageTypes: Array.isArray(sRow.package_types) && sRow.package_types.length > 0 ? sRow.package_types : DEFAULT_PACKAGE_TYPES
   };
 
-  // تشغيل الفحص الذاتي للطلبات المعلقة في الخلفية دون تعطيل الطلب الحالي
   runLazyExpiredOrdersCleanup(settings.waitingTimeoutMinutes);
 
   const zones = Array.isArray(sRow.zones) && sRow.zones.length > 0 ? sRow.zones : DEFAULT_ZONES;
@@ -355,6 +438,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     pricing,
     customers: customersMap,
     rawCaptains: captainsRes.data || [],
+    storageFilesMap: storageFilesMap || {},
     orders: (ordersRes.data || []).map(mapOrderRow),
     adminAccounts: (adminsRes.data || []).map(a => ({
       username: a.username,
@@ -387,7 +471,7 @@ async function buildClientState(req, forceRefresh = false) {
     zones: raw.zones,
     pricing: raw.pricing,
     customers: raw.customers,
-    captains: raw.rawCaptains.map(c => mapCaptainRow(c, isAdmin)),
+    captains: raw.rawCaptains.map(c => mapCaptainRow(c, isAdmin, raw.storageFilesMap)),
     orders: raw.orders,
     adminAccounts: isAdmin ? raw.adminAccounts : [],
     auditLogs: isAdmin ? raw.auditLogs : [],
@@ -552,7 +636,6 @@ app.post('/api/auth/admin/login', async (req, res) => {
 
     let { data: admin } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
 
-    // إذا دخل الأدمن ببيانات ملف .env مباشرة
     if (username.toLowerCase() === envUser.toLowerCase() && password === envPass) {
       const hashed = await bcrypt.hash(String(envPass), 10);
       if (!admin) {
@@ -658,7 +741,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
   res.json({ success: true, message: 'تم تسجيل الدخول بنجاح 👑', state });
 });
 
-// تسجيل كابتن جديد + إضافة 7 جنيه رصيد ترحيبي لأول مشوار مجاناً
+// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage + إضافة 7 جنيه رصيد ترحيبي لأول مشوار مجاناً
 app.post('/api/captains/register', async (req, res) => {
   try {
     const {
@@ -674,6 +757,13 @@ app.post('/api/captains/register', async (req, res) => {
     const { data: existing } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
+    // رفع الصور إلى حاوية captain-docs/captains في Supabase Storage
+    const [uploadedFrontUrl, uploadedBackUrl, uploadedVehicleUrl] = await Promise.all([
+      idFrontPhoto ? uploadCaptainDocToStorage(phone, 'idFront', idFrontPhoto) : Promise.resolve(null),
+      idBackPhoto ? uploadCaptainDocToStorage(phone, 'idBack', idBackPhoto) : Promise.resolve(null),
+      vehiclePhoto ? uploadCaptainDocToStorage(phone, 'vehicle', vehiclePhoto) : Promise.resolve(null)
+    ]);
+
     if (existing) {
       if (existing.status !== 'مرفوض') {
         return res.status(400).json({ success: false, message: 'رقم الهاتف مسجل مسبقاً ⚠️' });
@@ -685,11 +775,12 @@ app.post('/api/captains/register', async (req, res) => {
         primary_zone: primaryZone || 'المنصورة',
         vehicle_type: vehicleType,
         plate_number: plateNumber || 'بدون لوحة',
-        id_front_photo: idFrontPhoto || existing.id_front_photo,
-        id_back_photo: idBackPhoto || existing.id_back_photo,
-        vehicle_photo: vehiclePhoto || existing.vehicle_photo,
+        id_front_photo: uploadedFrontUrl || existing.id_front_photo,
+        id_back_photo: uploadedBackUrl || existing.id_back_photo,
+        vehicle_photo: uploadedVehicleUrl || existing.vehicle_photo,
         status: 'قيد المراجعة',
         suspend_reason: null,
+        reject_reason: null,
         is_available: false
       }).eq('phone', phone);
 
@@ -730,9 +821,9 @@ app.post('/api/captains/register', async (req, res) => {
       primary_zone: primaryZone || 'المنصورة',
       vehicle_type: vehicleType,
       plate_number: plateNumber || 'بدون لوحة',
-      id_front_photo: idFrontPhoto || null,
-      id_back_photo: idBackPhoto || null,
-      vehicle_photo: vehiclePhoto || null,
+      id_front_photo: uploadedFrontUrl || null,
+      id_back_photo: uploadedBackUrl || null,
+      vehicle_photo: uploadedVehicleUrl || null,
       status: 'قيد المراجعة',
       is_available: false,
       wallet_balance: welcomeBonus,
@@ -1388,11 +1479,16 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
     is_available: status === 'معتمد' ? true : false
   }).eq('phone', phone);
 
-  await logAdminAudit('حالة كابتن', phone, `تغيير الحالة إلى ${status}`, req.admin.name);
+  await logAdminAudit('حالة كابتن', phone, `تغيير الحالة إلى ${status}${reason ? ' - السبب: ' + reason : ''}`, req.admin.name);
   if (status === 'معتمد') {
     sendPushNotificationToPhone(phone, {
       title: 'تم اعتماد حسابك يا بطل! 🛵🎉',
       body: 'أهلاً بك في رجالة العنابي! حسابك معتمد الآن ومعاك 7 جنيه هدية لأول مشوار مجاناً.'
+    });
+  } else if (status === 'مرفوض') {
+    sendPushNotificationToPhone(phone, {
+      title: 'يرجى تحديث مستنداتك 📄⚠️',
+      body: `سبب الملاحظة: ${reason || 'يرجى رفع صور واضحة للمستندات'}`
     });
   }
 
@@ -1610,7 +1706,7 @@ app.get('/api/cron/cleanup-orders', async (req, res) => {
   if (req.headers['x-vercel-cron'] !== '1' && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ success: false });
   }
-  lastLazyCleanupRun = 0; // السماح بالتنفيذ الفوري
+  lastLazyCleanupRun = 0;
   const rawState = await fetchRawDatabaseState(false);
   const canceledCount = await runLazyExpiredOrdersCleanup(rawState.settings.waitingTimeoutMinutes);
   res.json({ success: true, canceled: canceledCount });
