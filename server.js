@@ -1730,6 +1730,118 @@ app.post('/api/admin/accounts/:username/toggle', authenticateAdmin, async (req, 
   res.json({ success: true, state });
 });
 
+// إرسال إشعار عام للهواتف (Web Push Broadcast) - حصرياً للأدمن الرئيسي فقط
+app.post('/api/admin/push-broadcast', authenticateAdmin, async (req, res) => {
+  try {
+    if (!req.admin || !req.admin.is_master) {
+      return res.status(403).json({
+        success: false,
+        message: 'عفواً، إرسال الإشعارات العامة للهواتف متاح للأدمن الرئيسي فقط 👑⛔'
+      });
+    }
+
+    const { target = 'all', title = 'الرجل العنابي 🛵', body = '' } = req.body || {};
+    const cleanTitle = String(title || 'الرجل العنابي 🛵').trim();
+    const cleanBody = String(body || '').trim();
+
+    if (!cleanBody) {
+      return res.status(400).json({ success: false, message: 'برجاء كتابة نص الإشعار أولاً ⚠️' });
+    }
+
+    const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+    if (!allSubs || allSubs.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لا توجد هواتف مشتركة في الإشعارات حالياً ⚠️'
+      });
+    }
+
+    let targetSubs = allSubs;
+    if (target === 'captains' || target === 'customers') {
+      const { data: captainsRows } = await supabase.from('captains').select('phone');
+      const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
+      if (target === 'captains') {
+        targetSubs = allSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+      } else if (target === 'customers') {
+        targetSubs = allSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+      }
+    }
+
+    if (targetSubs.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لا توجد هواتف مسجلة لهذه الفئة حالياً ⚠️'
+      });
+    }
+
+    const payloadStr = JSON.stringify({
+      title: cleanTitle,
+      body: cleanBody,
+      url: '/'
+    });
+
+    let sentCount = 0;
+    const expiredPhones = [];
+
+    await Promise.allSettled(
+      targetSubs.map(async (subRow) => {
+        if (!subRow || !subRow.subscription) return;
+        try {
+          await webpush.sendNotification(subRow.subscription, payloadStr);
+          sentCount++;
+        } catch (err) {
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            expiredPhones.push(subRow.phone);
+          }
+        }
+      })
+    );
+
+    if (expiredPhones.length > 0) {
+      await supabase.from('push_subscriptions').delete().in('phone', expiredPhones);
+    }
+
+    const targetLabels = { all: 'الجميع', customers: 'العملاء', captains: 'الكباتن' };
+    await logAdminAudit(
+      'إشعار موبايل عام',
+      targetLabels[target] || 'الجميع',
+      `العنوان: ${cleanTitle} | النص: ${cleanBody} (وصل إلى ${sentCount} جهاز)`,
+      req.admin.name
+    );
+
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    res.json({
+      success: true,
+      sentCount,
+      message: `تم إرسال الإشعار بنجاح إلى ${sentCount} هاتف 📲✅`,
+      state
+    });
+  } catch (err) {
+    console.error('Push broadcast error:', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ أثناء إرسال الإشعارات ⚠️' });
+  }
+});
+
+// ==========================================
+// 10. المهام المجدولة (Vercel Cron) لتنظيف الطلبات المنتهية
+// ==========================================
+app.get('/api/cron/cleanup-orders', async (req, res) => {
+  if (req.headers['x-vercel-cron'] !== '1' && process.env.NODE_ENV === 'production') {
+    return res.status(401).json({ success: false });
+  }
+  lastLazyCleanupRun = 0;
+  const rawState = await fetchRawDatabaseState(false);
+  const canceledCount = await runLazyExpiredOrdersCleanup(rawState.settings.waitingTimeoutMinutes);
+  res.json({ success: true, canceled: canceledCount });
+});
+
+const PORT = process.env.PORT || 3000;
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`🚀 Server running securely on http://localhost:${PORT}`));
+}
+module.exports = app;
+
 // ==========================================
 // 10. المهام المجدولة (Vercel Cron) لتنظيف الطلبات المنتهية
 // ==========================================

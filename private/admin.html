@@ -202,6 +202,36 @@
                 <label class="switch"><input type="checkbox" id="adminAllowCaptainRegSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
               </div>
             </div>
+
+            <!-- كارت إرسال إشعارات Push للهواتف (حصرياً للأدمن الرئيسي فقط) -->
+            <div class="card" id="admCard-pushBroadcast" style="border: 2px solid #302A2D; background: #FFFDF9; display: none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h2 class="card-title" style="margin-bottom:0; color:#302A2D;"><i class="fa-solid fa-bell"></i> إرسال إشعار للهواتف (Push) 📲</h2>
+                <span class="badge badge-master">الأدمن الرئيسي فقط 👑</span>
+              </div>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
+                أرسل إشعاراً فورياً يظهر في قائمة إشعارات الهاتف الخارجية للمستخدمين (حتى لو كان التطبيق مغلقاً).
+              </p>
+              <div class="input-group">
+                <label class="input-label" for="adminPushTargetSelect">الفئة المستهدفة بالإشعار:</label>
+                <select id="adminPushTargetSelect" class="select-field">
+                  <option value="all">📢 الجميع (كل العملاء والكباتن)</option>
+                  <option value="customers">👑 العملاء فقط</option>
+                  <option value="captains">🛵 الكباتن فقط</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label class="input-label" for="adminPushTitleInput">عنوان الإشعار:</label>
+                <input type="text" id="adminPushTitleInput" class="input-field" placeholder="مثال: الرجل العنابي 🛵🔥" value="الرجل العنابي 🛵">
+              </div>
+              <div class="input-group">
+                <label class="input-label" for="adminPushBodyInput">نص رسالة الإشعار *:</label>
+                <textarea id="adminPushBodyInput" class="input-field" rows="3" placeholder="اكتب نص الإشعار الذي سيظهر في قائمة إشعارات الهواتف..." style="resize:vertical; min-height:72px;"></textarea>
+              </div>
+              <button type="button" class="btn-main" style="background:#302A2D;" onclick="adminSendPushBroadcast()">
+                <i class="fa-solid fa-paper-plane"></i> إرسال الإشعار للهواتف الآن 🚀
+              </button>
+            </div>
           </div>
 
           <!-- تبويب الإدارة 2: الكباتن والمسؤولين -->
@@ -727,6 +757,8 @@
 
       toggleEl('admCard-kpiStats', hasAdminPerm('viewDashboard', adm), 'grid');
       toggleEl('admCard-platformControls', hasAdminPerm('manageSettings', adm));
+      // إظهار كارت إشعارات الهواتف للأدمن الرئيسي فقط
+      toggleEl('admCard-pushBroadcast', isMaster);
       toggleEl('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-resetPass', hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm));
@@ -776,6 +808,44 @@
       renderAdminCustomerDirectory();
       renderAdminFinancialLedger();
       renderAdminDashboardData();
+    }
+
+    function adminSendPushBroadcast() {
+      if (!isMasterAdmin()) {
+        showToast('عفواً، هذه الخاصية متاحة للأدمن الرئيسي فقط 👑⛔', 'warn');
+        return;
+      }
+      const target = document.getElementById('adminPushTargetSelect')?.value || 'all';
+      const title = (document.getElementById('adminPushTitleInput')?.value || '').trim() || 'الرجل العنابي 🛵';
+      const body = (document.getElementById('adminPushBodyInput')?.value || '').trim();
+
+      if (!body) {
+        showToast('برجاء كتابة نص رسالة الإشعار أولاً ⚠️', 'warn');
+        return;
+      }
+
+      const targetLabels = {
+        all: 'الجميع (كل العملاء والكباتن)',
+        customers: 'العملاء فقط 👑',
+        captains: 'الكباتن فقط 🛵'
+      };
+
+      openCustomActionModal({
+        title: 'تأكيد إرسال إشعار للهواتف 📲',
+        message: `سيتم إرسال الإشعار بعنوان "${title}" إلى (${targetLabels[target] || 'الجميع'}).\nهل أنت متأكد من الإرسال الفوري؟`,
+        confirmText: 'إرسال الآن 🚀',
+        onConfirm: async () => {
+          withActionLock(async () => {
+            const { ok, data } = await apiRequest('/api/admin/push-broadcast', 'POST', { target, title, body });
+            if (ok && data && data.success) {
+              document.getElementById('adminPushBodyInput').value = '';
+              showToast(data.message || 'تم إرسال الإشعار للهواتف بنجاح 🚀✅', 'ok');
+            } else {
+              showToast((data && data.message) || 'تعذر إرسال الإشعار ⚠️', 'warn');
+            }
+          });
+        }
+      });
     }
 
     function filterResetPassCaptainDropdown() {
