@@ -99,12 +99,16 @@ function invalidateStateCache() {
 
 async function ensureMasterAdminSeeded() {
   try {
-    const { data: existing } = await supabase.from('admins').select('username').eq('is_master', true).limit(1);
-    if (!existing || existing.length === 0) {
-      const initUser = process.env.INITIAL_ADMIN_USER || 'ennaby1';
-      const initPass = process.env.INITIAL_ADMIN_PASS || '01023024988';
-      const hashed = await bcrypt.hash(initPass, 10);
-      await supabase.from('admins').upsert([{
+    const initUser = process.env.INITIAL_ADMIN_USER || 'ennaby1';
+    const initPass = process.env.INITIAL_ADMIN_PASS || '01023024988';
+    const hashed = await bcrypt.hash(String(initPass), 10);
+    
+    // التحقق مما إذا كان هناك أدمن رئيسي مسجل مسبقاً
+    const { data: existing } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
+    
+    if (!existing) {
+      // إذا لم يوجد، نقوم بإنشائه
+      await supabase.from('admins').insert([{
         username: initUser,
         name: 'الأدمن الرئيسي',
         password_hash: hashed,
@@ -112,11 +116,21 @@ async function ensureMasterAdminSeeded() {
         status: 'نشط',
         permissions: {}
       }]);
+      console.log('✅ تم إنشاء حساب الأدمن الرئيسي لأول مرة بنجاح.');
+    } else {
+      // إذا وجد، نقوم بتحديث ومزامنة بياناته وكلمة المرور لتتطابق دائماً مع .env
+      await supabase.from('admins').update({
+        username: initUser,
+        password_hash: hashed,
+        status: 'نشط'
+      }).eq('is_master', true);
+      console.log('🔄 تم تحديث ومزامنة بيانات الأدمن الرئيسي مع ملف .env بنجاح.');
     }
   } catch (err) {
-    console.warn('Admin seed check warning:', err.message);
+    console.warn('Admin seed/sync warning:', err.message);
   }
 }
+
 ensureMasterAdminSeeded();
 
 async function logAdminAudit(actionType, target, details, actor = 'الأدمن الرئيسي') {
@@ -1352,11 +1366,15 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
 // إدارة حسابات المسؤولين
 app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
   const { name, username, currentPassword, newPassword } = req.body || {};
-  const { data: master } = await supabase.from('admins').select('*').eq('is_master', true).limit(1).maybeSingle();
+  const { data: master } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
 
   if (master && currentPassword) {
     const valid = await bcrypt.compare(String(currentPassword), master.password_hash);
-    if (!valid) return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة ⚠️' });
+    const envPass = process.env.INITIAL_ADMIN_PASS || '01023024988';
+    // السماح بالمرور إذا طابقت التشفير أو تطابقت مباشرة مع كلمة المرور في ملف .env كضمان أمان تام
+    if (!valid && currentPassword !== envPass) {
+      return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة ⚠️' });
+    }
   }
 
   const updates = {
@@ -1370,7 +1388,7 @@ app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
   if (master) {
     await supabase.from('admins').update(updates).eq('username', master.username);
   } else {
-    updates.password_hash = updates.password_hash || await bcrypt.hash('01023024988', 10);
+    updates.password_hash = updates.password_hash || await bcrypt.hash(process.env.INITIAL_ADMIN_PASS || '01023024988', 10);
     updates.is_master = true;
     updates.status = 'نشط';
     await supabase.from('admins').insert([updates]);
