@@ -368,7 +368,6 @@ async function fetchCaptainStorageFilesMap() {
     if (Array.isArray(files)) {
       for (const f of files) {
         if (!f || !f.name) continue;
-        // مطابقة صيغة اسم الملف: 01507800875_idFront_17... أو 01507800875_idBack_... أو 01507800875_vehicle_...
         const match = f.name.match(/^(01[0-9]{9})_(idFront|idBack|vehicle)/i);
         if (match) {
           const phone = match[1];
@@ -741,7 +740,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
   res.json({ success: true, message: 'تم تسجيل الدخول بنجاح 👑', state });
 });
 
-// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage + إضافة 7 جنيه رصيد ترحيبي لأول مشوار مجاناً
+// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage (تُصرف هدية الـ 7 جنيه بعد اعتماد الإدارة فقط)
 app.post('/api/captains/register', async (req, res) => {
   try {
     const {
@@ -798,21 +797,6 @@ app.post('/api/captains/register', async (req, res) => {
       if (refCap) validReferrer = refCap.phone;
     }
 
-    const welcomeBonus = 7.00;
-    const initialTransactions = [{
-      title: 'هدية التسجيل (أول مشوار مجاناً بدون عمولة) 🎁',
-      amount: welcomeBonus,
-      type: 'إضافة',
-      at: Date.now()
-    }];
-
-    const initialNotices = [{
-      id: 'welcome-' + Date.now(),
-      text: '🎁 مبروك يا بطل! نزل في محفظتك 7 جنيه هدية تسجيل عشان تجرب أول مشوار مجاناً بدون عمولة المنصة 🛵💪',
-      type: 'reward',
-      at: Date.now()
-    }];
-
     const { error } = await supabase.from('captains').insert([{
       phone,
       password_hash: hashedPassword,
@@ -826,13 +810,13 @@ app.post('/api/captains/register', async (req, res) => {
       vehicle_photo: uploadedVehicleUrl || null,
       status: 'قيد المراجعة',
       is_available: false,
-      wallet_balance: welcomeBonus,
+      wallet_balance: 0.00,
       points: 0,
       referred_by_phone: validReferrer,
       referral_reward_claimed: false,
       referrals_count: 0,
-      wallet_transactions: initialTransactions,
-      admin_notices: initialNotices,
+      wallet_transactions: [],
+      admin_notices: [],
       session_version: 1
     }]);
 
@@ -1230,7 +1214,20 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: 'تم إعادة الطلب للرادار 🔄', state });
 });
 
+// تحديث حالة الاستعداد (مسموح فقط للكابتن المعتمد، وإظهار إشعار المراجعة إذا كان قيد المراجعة)
 app.post('/api/captain/availability', authenticateCaptain, async (req, res) => {
+  if (req.user.status === 'قيد المراجعة') {
+    return res.status(403).json({
+      success: false,
+      message: 'حسابك لسة بيتراجع يانجم الطيارين 😎'
+    });
+  }
+  if (req.user.status !== 'معتمد') {
+    return res.status(403).json({
+      success: false,
+      message: 'حسابك غير معتمد حالياً لتفعيل الاستعداد ⚠️'
+    });
+  }
   await supabase.from('captains').update({ is_available: Boolean(req.body.isAvailable) }).eq('phone', req.user.phone);
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -1469,9 +1466,16 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
   res.json({ success: true, state });
 });
 
+// اعتماد أو إيقاف أو رفض الكابتن + صرف الـ 7 جنيه وإشعار الترحيب فور الاعتماد لأول مرة
 app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res) => {
   const { status, reason } = req.body || {};
   const phone = req.params.phone;
+
+  const { data: currentCap } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
+  if (!currentCap) {
+    return res.status(404).json({ success: false, message: 'الكابتن غير موجود ⚠️' });
+  }
+
   await supabase.from('captains').update({
     status,
     suspend_reason: reason || null,
@@ -1479,11 +1483,36 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
     is_available: status === 'معتمد' ? true : false
   }).eq('phone', phone);
 
-  await logAdminAudit('حالة كابتن', phone, `تغيير الحالة إلى ${status}${reason ? ' - السبب: ' + reason : ''}`, req.admin.name);
   if (status === 'معتمد') {
+    const txList = Array.isArray(currentCap.wallet_transactions) ? currentCap.wallet_transactions : [];
+    const notices = Array.isArray(currentCap.admin_notices) ? currentCap.admin_notices : [];
+
+    // التحقق مما إذا كان الكابتن قد حصل على هدية الـ 7 جنيه مسبقاً حتى لا تتكرر
+    const alreadyReceivedWelcome = txList.some(t => t && String(t.title || '').includes('هدية التسجيل'));
+    const welcomeBonus = 7.00;
+
+    if (!alreadyReceivedWelcome) {
+      await supabase.rpc('adjust_captain_wallet_atomic', {
+        p_phone: phone,
+        p_amount: welcomeBonus,
+        p_reason: 'هدية التسجيل (أول مشوار مجاناً بدون عمولة) 🎁'
+      });
+    }
+
+    const hasWelcomeNotice = notices.some(n => n && String(n.id || '').startsWith('welcome-'));
+    if (!hasWelcomeNotice) {
+      notices.unshift({
+        id: 'welcome-' + Date.now(),
+        text: '🎁 مبروك يا بطل! نزل في محفظتك 7 جنيه هدية تسجيل عشان تجرب أول مشوار مجاناً بدون عمولة المنصة 🛵💪',
+        type: 'reward',
+        at: Date.now()
+      });
+      await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', phone);
+    }
+
     sendPushNotificationToPhone(phone, {
       title: 'تم اعتماد حسابك يا بطل! 🛵🎉',
-      body: 'أهلاً بك في رجالة العنابي! حسابك معتمد الآن ومعاك 7 جنيه هدية لأول مشوار مجاناً.'
+      body: '🎁 مبروك يا بطل! نزل في محفظتك 7 جنيه هدية تسجيل عشان تجرب أول مشوار مجاناً بدون عمولة المنصة 🛵💪'
     });
   } else if (status === 'مرفوض') {
     sendPushNotificationToPhone(phone, {
@@ -1491,6 +1520,8 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
       body: `سبب الملاحظة: ${reason || 'يرجى رفع صور واضحة للمستندات'}`
     });
   }
+
+  await logAdminAudit('حالة كابتن', phone, `تغيير الحالة إلى ${status}${reason ? ' - السبب: ' + reason : ''}`, req.admin.name);
 
   invalidateStateCache();
   const state = await buildClientState(req, true);

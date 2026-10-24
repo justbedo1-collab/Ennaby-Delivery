@@ -1288,9 +1288,57 @@
     function closeCaptainSuccessModal() { document.getElementById('captainSuccessModal')?.classList.remove('show'); switchCourierSubView('login'); }
     function copyCourierReferralPhone() { const courier = getActiveCourier(); if (!courier) return; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(courier.phone).then(() => { showToast(`تم نسخ رقمك (${courier.phone}).. ابعته لصاحبك الكابتن دلوقتي! 😎🛵`, 'ok'); }).catch(() => {}); } else { showToast(`رقمك للدعوة: ${courier.phone} 📋`, 'ok'); } }
     async function dismissCourierNotice(noticeId) { await apiRequest(`/api/captain/notices/${encodeURIComponent(noticeId)}/dismiss`, 'POST', {}).catch(() => {}); }
-    function toggleCourierAvailability() { const courier = getActiveCourier(); const sw = document.getElementById('courierAvailabilitySwitch'); if (!courier || !sw) return; withActionLock(async () => { const { ok, data } = await apiRequest('/api/captain/availability', 'POST', { isAvailable: Boolean(sw.checked) }); if (ok && data.success) { showToast(data.message || 'تم تحديث حالة الاستعداد 📡✅', 'ok'); } else { sw.checked = Boolean(courier.isAvailable); showToast((data && data.message) || 'تعذر تغيير حالة الاستعداد ⚠️', 'warn'); } }); }
 
-    function courierAcceptOrder(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/accept`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'عاش يا بطل! تم قبول الطلب 🚀', 'ok'); } else { triggerDeviceAlert('warning'); showToast((data && data.message) || 'تعذر قبول الطلب ⚠️', 'warn'); } }); }
+    function toggleCourierAvailability() {
+      const courier = getActiveCourier();
+      const sw = document.getElementById('courierAvailabilitySwitch');
+      if (!courier || !sw) return;
+
+      // إذا كان حساب الكابتن قيد المراجعة، نرجع المفتاح لوضع الإيقاف ونظهر إشعار المراجعة فقط
+      if (courier.status === 'قيد المراجعة') {
+        sw.checked = false;
+        triggerDeviceAlert('warning');
+        showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
+        return;
+      }
+
+      // إذا كان الحساب غير معتمد (موقوف أو غيره)، نمنع التفعيل ونظهر تنبيهاً
+      if (courier.status !== 'معتمد') {
+        sw.checked = false;
+        triggerDeviceAlert('warning');
+        showToast(`حسابك ${courier.status} حالياً.. راجع الإدارة ⛔`, 'warn');
+        return;
+      }
+
+      // يظهر إشعار تحديث حالة الاستعداد فقط والحساب معتمد
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest('/api/captain/availability', 'POST', { isAvailable: Boolean(sw.checked) });
+        if (ok && data.success) {
+          showToast(data.message || 'تم تحديث حالة الاستعداد 📡✅', 'ok');
+        } else {
+          sw.checked = Boolean(courier.isAvailable);
+          showToast((data && data.message) || 'تعذر تغيير حالة الاستعداد ⚠️', 'warn');
+        }
+      });
+    }
+
+    function courierAcceptOrder(orderId) {
+      const courier = getActiveCourier();
+      if (courier && courier.status === 'قيد المراجعة') {
+        triggerDeviceAlert('warning');
+        showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
+        return;
+      }
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/accept`, 'POST', {});
+        if (ok && data.success) {
+          showToast(data.message || 'عاش يا بطل! تم قبول الطلب 🚀', 'ok');
+        } else {
+          triggerDeviceAlert('warning');
+          showToast((data && data.message) || 'تعذر قبول الطلب ⚠️', 'warn');
+        }
+      });
+    }
     function courierReleaseOrder(orderId) { openCustomActionModal({ title: 'التنازل عن الطلب وإعادته للرادار 🔄', message: `اكتب سبب اعتذارك عن الطلب (${orderId}) ليتم إعادته للرادار ورد العمولة لمحفظتك:`, needInput: true, inputPlaceholder: 'مثال: عطل مفاجئ في المركبة أو ظرف طارئ...', confirmText: 'تأكيد التنازل', isDanger: true, onConfirm: (reason) => { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/release`, 'POST', { reason }); if (ok && data.success) { showToast(data.message || 'تم التنازل عن الطلب وإعادته للرادار 🔄', 'ok'); } else { showToast((data && data.message) || 'تعذر التنازل عن الطلب ⚠️', 'warn'); } }); } }); }
     function courierAdvanceOrderStatus(orderId, nextStatus) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/advance`, 'POST', { nextStatus }); if (ok && data.success) { showToast(data.message || `تم تحديث حالة المشوار: ${nextStatus} 🛵✅`, 'ok'); } else { showToast((data && data.message) || 'تعذر تحديث حالة الطلب ⚠️', 'warn'); } }); }
     function courierCompleteDeliveryInstantly(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'تسلم إيدك يا بطل! تم تسليم الأوردر 🛵💨', 'ok'); } else { showToast((data && data.message) || 'تعذر إنهاء الطلب ⚠️', 'warn'); } }); }
@@ -1311,10 +1359,17 @@
         document.getElementById('courierNameHeading').innerText = `كابتن: ${courier.fullName}`; document.getElementById('courierIdHeading').innerText = `#${courier.phone.slice(-4)}`; document.getElementById('courierWalletBalanceDisplay').innerHTML = `${roundMoney(courier.walletBalance).toFixed(2)} <span>جنيه</span>`; document.getElementById('courierPointsDisplay').innerText = `${courier.points || 0} نقطة`; const progPct = Math.min(100, Math.round(((courier.points || 0) / courThreshold) * 100)); document.getElementById('courierPointsProgress').style.width = `${progPct}%`;
         const availSw = document.getElementById('courierAvailabilitySwitch'); const statusTxt = document.getElementById('courierStatusText');
         if (availSw) { availSw.checked = courier.status === 'قيد المراجعة' ? false : Boolean(courier.isAvailable); }
-        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسة بيتراجع ياطيااار 😎 (المعاينة متاحة فقط)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يرجى التواصل مع الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'أنت جاهز ومتاح حاليًا لاستقبال طلبات الزباين' : 'أنت في وضع التوقف المؤقت عن استقبال الطلبات'; }
+        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسة بيتراجع يانجم الطيارين 😎 (المعاينة متاحة فقط)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يرجى التواصل مع الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'أنت جاهز ومتاح حاليًا لاستقبال طلبات الزباين' : 'أنت في وضع التوقف المؤقت عن استقبال الطلبات'; }
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
-          const notices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
+          const rawNotices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
+          // إخفاء إشعار هدية الترحيب "مبروك يا بطل" طالما الحساب لم يُعتمد بعد
+          const notices = rawNotices.filter(n => {
+            if (courier.status !== 'معتمد' && n && (String(n.id || '').startsWith('welcome-') || String(n.text || '').includes('مبروك يا بطل'))) {
+              return false;
+            }
+            return true;
+          });
           const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined) ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 انت شغال على عمولة "${courier.customFee} جنيه" دلوقتى — السبب: ${escapeHtml(courier.customFeeReason || 'تخصيص من الإدارة')} 🛵</div>` : '';
           const dynamicNoticesHtml = notices.slice(0, 5).map(n => { const bg = n.type === 'deduct' ? '#FFEBEE' : (n.type === 'reward' ? '#E8F5E9' : '#FFFDE7'); const brd = n.type === 'deduct' ? '#EF5350' : (n.type === 'reward' ? '#2E7D32' : '#FBC02D'); return `<div style="background:${bg}; border:1.5px solid ${brd}; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800; display:flex; justify-content:space-between; align-items:center; gap:8px;"><span>${escapeHtml(n.text)}</span><button type="button" onclick="dismissCourierNotice('${escapeHtml(n.id)}')" style="border:none; background:none; font-size:14px; cursor:pointer; color:#555;">✕</button></div>`; }).join('');
           const combinedHtml = customFeeBanner + dynamicNoticesHtml; noticesBox.innerHTML = combinedHtml; noticesBox.style.display = combinedHtml ? 'flex' : 'none';
@@ -1413,7 +1468,7 @@
     }
 
     function renderAllData() { renderGlobalBannersAndSettings(); renderCustomerProfileView(); renderCustomerOrdersList(); renderCourierScreen(); renderCourierFeed(); updateBottomNavVisibility(); }
-    function isWarningMessage(msg) { return /(طماع|غير|أقل|عفواً|عذراً|برجاء|اكتب|حدد|إجباري|موقوف|مرفوض|بيتراجع|خطأ|لا يمكن|مسجل بالفعل|تعذر|ممتلئة|صيانة|مغلق|⚠️|⛔|❌|✋)/.test(msg); }
+    function isWarningMessage(msg) { return /(طماع|غير|أقل|عفواً|عذراً|برجاء|اكتب|حدد|إجباري|موقوف|مرفوض|بيتراجع|خطأ|لا يمكن|مسجل بالفعل|تعذر|ممتلئة|صيانة|مغلق|⚠️|⛔|❌|✋|⏳)/.test(msg); }
     function hideToast() { const toast = document.getElementById('toast'); if (toast) toast.classList.remove('show'); if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; } }
     function showToast(msg, type = 'auto') {
       const toast = document.getElementById('toast'); const toastIcon = document.getElementById('toastIcon'); const toastMsg = document.getElementById('toastMsg'); const mockup = document.getElementById('phoneMockup');
