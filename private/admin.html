@@ -329,7 +329,7 @@
 
           <!-- تبويب الإدارة 3: العملاء والمالية -->
           <div id="admTab-finance" class="sub-tab-section" style="display:none;">
-            <div class="card" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
+            <div class="card" id="admCard-customerResetPin" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
               <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
               <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، أدخل رقمه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
               <div class="input-group">
@@ -626,6 +626,7 @@
     }
 
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
+    function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
 
     function handleAdminLoginSubmit() {
       withActionLock(async () => {
@@ -712,6 +713,29 @@
       document.getElementById('admCaptainsInternalNav')&&(document.getElementById('admCaptainsInternalNav').style.display = isMaster?'flex':'none');
       if(!isMaster&&STATE.currentAdminCaptainsSub==='admins') STATE.currentAdminCaptainsSub='captains';
       switchAdminCaptainsSubSection(STATE.currentAdminCaptainsSub);
+
+      const toggleEl = (id, show, displayType = 'block') => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? displayType : 'none';
+      };
+
+      toggleEl('admCard-kpiStats', hasAdminPerm('viewDashboard', adm), 'grid');
+      toggleEl('admCard-platformControls', hasAdminPerm('manageSettings', adm));
+      toggleEl('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
+      toggleEl('admCard-resetPass', hasAdminPerm('manageCaptains', adm));
+      toggleEl('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm));
+      toggleEl('admCard-manualTopup', hasAdminPerm('manageWallets', adm));
+      toggleEl('admCard-manualDeduct', hasAdminPerm('manageWallets', adm));
+      toggleEl('admCard-customerResetPin', hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageSettings', adm));
+      toggleEl('admCard-customerWallets', hasAdminPerm('manageWallets', adm));
+      toggleEl('admCard-platformFee', hasAdminPerm('manageCommissions', adm));
+      toggleEl('admCard-customFee', hasAdminPerm('manageCommissions', adm));
+      toggleEl('admCard-loyaltyPoints', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
+      toggleEl('admCard-financialLedger', hasAdminPerm('manageWallets', adm) || hasAdminPerm('viewDashboard', adm));
+      toggleEl('admCard-ordersManage', hasAdminPerm('viewOrders', adm) || hasAdminPerm('manageOrders', adm));
+      toggleEl('admCard-packageWeights', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));
+      toggleEl('admCard-zonesManage', hasAdminPerm('managePricing', adm));
+      toggleEl('admCard-pricingManage', hasAdminPerm('managePricing', adm));
     }
 
     function renderAdminScreen() {
@@ -1122,14 +1146,15 @@
     function renderAdminSelectedCaptainCard() {
       const p = document.getElementById('adminCaptainDirectorySelect')?.value; const bx = document.getElementById('adminSelectedCaptainCardContainer'); if(!bx)return;
       if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
+      const canManageCap = hasAdminPerm('manageCaptains');
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong> <span class="badge">${escapeHtml(c.status)}</span></div>
         <div style="font-size:11px; margin:8px 0;">رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong></div>
         ${buildCaptainDocsHtml(c)}
-        <div style="display:flex; gap:6px; margin-top:8px;">
+        ${canManageCap ? `<div style="display:flex; gap:6px; margin-top:8px;">
           ${c.status==='معتمد'?`<button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف</button>`:''}
           ${c.status!=='معتمد'?`<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button>`:''}
-        </div>
+        </div>` : ''}
       </div>`;
     }
 
@@ -1151,9 +1176,10 @@
 
       document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee;"><strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>${buildCaptainDocsHtml(c)}<button class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد</button> <button class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض</button></div>`).join('');
 
+      const canManageOrd = hasAdminPerm('manageOrders');
       const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
       const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
-      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}<br>${ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}${o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}</div>`).join('');
+      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}<br>${canManageOrd && ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}</div>`).join('');
     }
 
     async function initAdminApp() {

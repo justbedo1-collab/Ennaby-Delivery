@@ -45,21 +45,49 @@ app.use(cors({
 app.use(express.json({ limit: '25mb' }));
 app.use(cookieParser());
 
+// مسارات صريحة لضمان قيام Vercel Node File Tracer بتضمين ملفات مجلد private و public
+const EXPLICIT_HTML_PATHS = {
+  'index.html': [
+    path.join(__dirname, 'index.html'),
+    path.join(__dirname, 'public', 'index.html'),
+    path.join(process.cwd(), 'index.html'),
+    path.join(process.cwd(), 'public', 'index.html')
+  ],
+  'admin.html': [
+    path.join(__dirname, 'private', 'admin.html'),
+    path.join(process.cwd(), 'private', 'admin.html'),
+    path.join(__dirname, 'admin.html'),
+    path.join(__dirname, 'public', 'admin.html'),
+    path.join(process.cwd(), 'admin.html'),
+    path.join(process.cwd(), 'public', 'admin.html')
+  ],
+  'install.html': [
+    path.join(__dirname, 'install.html'),
+    path.join(__dirname, 'public', 'install.html'),
+    path.join(__dirname, 'private', 'install.html'),
+    path.join(process.cwd(), 'install.html'),
+    path.join(process.cwd(), 'public', 'install.html')
+  ]
+};
+
 function resolveHtmlFilePath(filename) {
-  const rootFile = path.join(__dirname, filename);
-  if (fs.existsSync(rootFile)) return rootFile;
-  const publicFile = path.join(__dirname, 'public', filename);
-  if (fs.existsSync(publicFile)) return publicFile;
-  return rootFile;
+  const candidates = EXPLICIT_HTML_PATHS[filename] || [
+    path.join(__dirname, filename),
+    path.join(__dirname, 'private', filename),
+    path.join(__dirname, 'public', filename)
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return candidates[0];
 }
 
-// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمجلد الرئيسي ثم public
+// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمسارات المحددة (شاملاً مجلد private)
 app.get('/', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
 app.get('/index.html', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
-app.get('/admin', (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
-app.get('/admin.html', (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
-app.get('/install', (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
-app.get('/install.html', (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
+app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
+app.get(['/install', '/install.html'], (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
+
 app.use(express.static(path.join(__dirname)));
 if (fs.existsSync(path.join(__dirname, 'public'))) {
   app.use(express.static(path.join(__dirname, 'public')));
@@ -132,6 +160,13 @@ async function ensureMasterAdminSeeded() {
         permissions: {}
       }]);
       console.log('✅ تم إنشاء حساب الأدمن الرئيسي لأول مرة بنجاح.');
+    } else {
+      await supabase.from('admins').update({
+        username: initUser,
+        password_hash: hashed,
+        status: 'نشط'
+      }).eq('is_master', true);
+      console.log('🔄 تم تحديث ومزامنة بيانات الأدمن الرئيسي مع ملف .env بنجاح.');
     }
   } catch (err) {
     console.warn('Admin seed/sync warning:', err.message);
@@ -169,9 +204,9 @@ function getAuthenticatedAdminFromCookie(req) {
 }
 
 function mapCaptainRow(c, includePhotos = false) {
-  const frontPhoto = c.id_front_photo || c.id_front_url || null;
-  const backPhoto = c.id_back_photo || c.id_back_url || null;
-  const vehPhoto = c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || null;
+  const frontPhoto = c.id_front_photo || c.id_front_url || c.doc_id_front_path || null;
+  const backPhoto = c.id_back_photo || c.id_back_url || c.doc_id_back_path || null;
+  const vehPhoto = c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || c.doc_vehicle_path || null;
 
   return {
     phone: c.phone,
@@ -184,7 +219,7 @@ function mapCaptainRow(c, includePhotos = false) {
     idBackPhoto: includePhotos ? backPhoto : null,
     vehiclePhoto: includePhotos ? vehPhoto : null,
     status: c.status || 'قيد المراجعة',
-    suspendReason: c.suspend_reason || null,
+    suspendReason: c.suspend_reason || c.reject_reason || null,
     isAvailable: Boolean(c.is_available),
     walletBalance: roundMoney(c.wallet_balance ?? 0),
     points: Number(c.points || 0),
@@ -196,7 +231,7 @@ function mapCaptainRow(c, includePhotos = false) {
     lifetimeCancelled: Number(c.lifetime_cancelled || 0),
     lifetimeNetEarnings: roundMoney(c.lifetime_net_earnings || 0),
     walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 40) : [],
-    adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : []
+    adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : [])
   };
 }
 
@@ -744,7 +779,7 @@ app.post('/api/auth/captain/login', async (req, res) => {
     return res.status(403).json({
       success: false,
       status: 'مرفوض',
-      rejectReason: cap.suspend_reason || 'يرجى رفع صور واضحة للمستندات',
+      rejectReason: cap.suspend_reason || cap.reject_reason || 'يرجى رفع صور واضحة للمستندات',
       captainProfile: mapCaptainRow(cap, false),
       message: 'تم رفض المستندات، يمكنك إعادة رفع صور واضحة الآن 📄⚠️'
     });
@@ -1349,6 +1384,7 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
   await supabase.from('captains').update({
     status,
     suspend_reason: reason || null,
+    reject_reason: status === 'مرفوض' ? (reason || null) : null,
     is_available: status === 'معتمد' ? true : false
   }).eq('phone', phone);
 
