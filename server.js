@@ -16,6 +16,7 @@ const app = express();
 // ==========================================
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
 const JWT_SECRET = process.env.JWT_SECRET || 'ENNABY_SUPER_SECRET_KEY_V31_2026';
 const CAPTAIN_DOCS_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'captain-docs';
 
@@ -95,7 +96,7 @@ if (fs.existsSync(path.join(__dirname, 'public'))) {
 }
 
 // ==========================================
-// 3. دوال مساعدة وتخزين مؤقت لتوفير الاستضافة
+// 3. دوال مساعدة، تتبع المتواجدين، ومستويات الكباتن
 // ==========================================
 const DEFAULT_ZONES = ['المنصورة', 'طلخا', 'سندوب', 'جديلة'];
 const DEFAULT_PACKAGE_TYPES = [
@@ -110,10 +111,57 @@ const DEFAULT_PRICING = {
   'طلخا|جديلة': 70, 'جديلة|طلخا': 70, 'سندوب|جديلة': 70, 'جديلة|سندوب': 70
 };
 
+// خريطة تتبع العملاء المتواجدين حالياً على المنصة (Presence Heartbeat)
+const customerPresenceMap = new Map();
+const PRESENCE_TTL_MS = 45000; // 45 ثانية
+
+function touchCustomerPresence(req, explicitClientId = null) {
+  try {
+    if (isRequestFromAdminView(req)) return;
+    const roleParam = String((req.query && req.query.role) || (req.body && req.body.role) || '').toLowerCase();
+    if (roleParam === 'courier' || roleParam === 'admin') return;
+
+    let key = explicitClientId || (req.query && req.query.clientId) || (req.body && req.body.clientId) || '';
+    if (!key && req.cookies && req.cookies.customer_session) {
+      try {
+        const dec = jwt.verify(req.cookies.customer_session, JWT_SECRET);
+        if (dec && dec.phone) key = `cust_${dec.phone}`;
+      } catch (e) {}
+    }
+    if (!key) {
+      const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'anon').split(',')[0].trim();
+      const ua = String(req.headers['user-agent'] || '').slice(0, 48);
+      key = `anon_${ip}_${ua}`;
+    }
+    customerPresenceMap.set(String(key), Date.now());
+  } catch (e) {}
+}
+
+function getOnlineCustomersCount() {
+  const now = Date.now();
+  let count = 0;
+  for (const [k, ts] of customerPresenceMap.entries()) {
+    if (now - ts <= PRESENCE_TTL_MS) {
+      count++;
+    } else {
+      customerPresenceMap.delete(k);
+    }
+  }
+  return count;
+}
+
 function roundMoney(val) {
   const num = Number(val);
   if (!Number.isFinite(num)) return 0;
   return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+function formatArabicTripsText(count) {
+  const n = Math.max(1, Number(count) || 2);
+  if (n === 1) return 'مشوار واحد';
+  if (n === 2) return 'مشوارين';
+  if (n >= 3 && n <= 10) return `${n} مشاوير`;
+  return `${n} مشوار`;
 }
 
 function formatCairoTime(dateInput = Date.now()) {
@@ -128,6 +176,151 @@ function formatCairoTime(dateInput = Date.now()) {
   } catch (e) {
     return new Date(dateInput).toLocaleTimeString('ar-EG');
   }
+}
+
+// دوال ترميز وفك ترميز إحداثيات الخريطة والكوبون داخل ملاحظات الطلب لضمان التوافق التام مع جدول orders
+function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
+  const cleanNotes = String(rawNotes || '').replace(/\s*\[META:[^\]]+\]/g, '').trim();
+  const payload = {};
+  if (Number.isFinite(Number(meta.pickupLat)) && Number.isFinite(Number(meta.pickupLng))) {
+    payload.p = [Number(Number(meta.pickupLat).toFixed(6)), Number(Number(meta.pickupLng).toFixed(6))];
+  }
+  if (Number.isFinite(Number(meta.dropoffLat)) && Number.isFinite(Number(meta.dropoffLng))) {
+    payload.d = [Number(Number(meta.dropoffLat).toFixed(6)), Number(Number(meta.dropoffLng).toFixed(6))];
+  }
+  if (meta.promoCode) payload.c = String(meta.promoCode).trim().toUpperCase();
+  if (meta.promoDiscount > 0) payload.cd = roundMoney(meta.promoDiscount);
+  if (meta.walletDiscount > 0) payload.wd = roundMoney(meta.walletDiscount);
+  if (meta.surgePercent > 0) payload.sp = Number(meta.surgePercent);
+
+  if (Object.keys(payload).length === 0) return cleanNotes;
+  return `${cleanNotes} [META:${JSON.stringify(payload)}]`.trim();
+}
+
+function decodeOrderMetaFromNotes(storedNotes) {
+  const raw = String(storedNotes || '');
+  const match = raw.match(/\[META:(\{[^\]]+\})\]/);
+  let meta = {};
+  if (match && match[1]) {
+    try { meta = JSON.parse(match[1]); } catch (e) {}
+  }
+  const cleanNotes = raw.replace(/\s*\[META:\{[^\]]+\}\]/g, '').trim();
+  return {
+    cleanNotes,
+    pickupLat: Array.isArray(meta.p) ? Number(meta.p[0]) : null,
+    pickupLng: Array.isArray(meta.p) ? Number(meta.p[1]) : null,
+    dropoffLat: Array.isArray(meta.d) ? Number(meta.d[0]) : null,
+    dropoffLng: Array.isArray(meta.d) ? Number(meta.d[1]) : null,
+    promoCode: meta.c || null,
+    promoDiscount: roundMoney(meta.cd || 0),
+    walletDiscount: roundMoney(meta.wd || 0),
+    surgePercent: Number(meta.sp || 0)
+  };
+}
+
+// فحص حالة وقت الذروة (Surge Pricing)
+function getActiveSurgeInfo(settings) {
+  const now = Date.now();
+  const endTime = Number(settings?.surgeEndTime || 0);
+  const percent = Math.max(0, Number(settings?.surgePercent || 0));
+  const isActive = Boolean(endTime > now && percent > 0);
+  return {
+    isActive,
+    surgePercent: isActive ? percent : 0,
+    surgeEndTime: isActive ? endTime : 0,
+    remainingMinutes: isActive ? Math.max(1, Math.ceil((endTime - now) / 60000)) : 0
+  };
+}
+
+// حساب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) وعمولته الفعلية أوتوماتيكياً
+function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
+  const s = settings || {};
+  const weeklyTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
+  const diamondWeeksTarget = Math.max(1, Number(s.tierWeeksForDiamond ?? 4));
+  const platDiscount = Math.max(0, roundMoney(s.tierPlatinumDiscount ?? 1));
+  const diaDiscount = Math.max(0, roundMoney(s.tierDiamondDiscount ?? 2));
+
+  const now = Date.now();
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+  const capCompletedOrders = (mappedOrders || []).filter(
+    o => o.assignedCourierPhone === captainRow.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض')
+  );
+
+  // حساب عدد الطلبات في الأسابيع المتتالية (الأسبوع الحالي = 0، الأسبوع الماضي = 1، وهكذا)
+  const weeklyCounts = [];
+  for (let w = 0; w < Math.max(diamondWeeksTarget + 1, 6); w++) {
+    const startWindow = now - (w + 1) * weekMs;
+    const endWindow = now - w * weekMs;
+    const cnt = capCompletedOrders.filter(o => o.createdAt >= startWindow && o.createdAt <= endWindow).length;
+    weeklyCounts.push(cnt);
+  }
+
+  const currentWeekOrders = weeklyCounts[0] || 0;
+  let consecutiveQualifiedWeeks = 0;
+  for (let w = 0; w < weeklyCounts.length; w++) {
+    if (weeklyCounts[w] >= weeklyTarget) {
+      consecutiveQualifiedWeeks++;
+    } else {
+      break;
+    }
+  }
+
+  // تحديد المستوى الأوتوماتيكي بناءً على شروط المنصة
+  let autoTier = 'bronze';
+  if (currentWeekOrders >= weeklyTarget) {
+    if (consecutiveQualifiedWeeks >= diamondWeeksTarget) {
+      autoTier = 'diamond';
+    } else {
+      autoTier = 'platinum';
+    }
+  } else {
+    autoTier = 'bronze';
+  }
+
+  const manualOverrides = (s.tierManualOverrides && typeof s.tierManualOverrides === 'object') ? s.tierManualOverrides : {};
+  const manualTier = manualOverrides[captainRow.phone];
+  const finalTier = ['bronze', 'platinum', 'diamond'].includes(manualTier) ? manualTier : autoTier;
+
+  const tierMetaMap = {
+    bronze: { key: 'bronze', name: 'كابتن برونزي', emoji: '🥉', badgeText: 'كابتن برونزي 🥉', discount: 0, color: '#CD7F32' },
+    platinum: { key: 'platinum', name: 'كابتن بلاتيني', emoji: '🥈', badgeText: 'كابتن بلاتيني 🥈', discount: platDiscount, color: '#37474F' },
+    diamond: { key: 'diamond', name: 'كابتن ماسي', emoji: '💎', badgeText: 'كابتن ماسي 💎', discount: diaDiscount, color: '#0288D1' }
+  };
+
+  const tierInfo = tierMetaMap[finalTier] || tierMetaMap.bronze;
+
+  // حساب عمولة المنصة الفعلية (شاملة وقت الذروة إن وجد، ثم خصم المستوى أو العمولة الفردية)
+  const surgeInfo = getActiveSurgeInfo(s);
+  const basePlatformFee = roundMoney(s.platformFee ?? 7);
+  const surgedPlatformFee = surgeInfo.isActive
+    ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
+    : basePlatformFee;
+
+  let effectiveFee = Math.max(0, roundMoney(surgedPlatformFee - tierInfo.discount));
+  if (captainRow.custom_fee !== null && captainRow.custom_fee !== undefined) {
+    const baseCustom = roundMoney(captainRow.custom_fee);
+    effectiveFee = surgeInfo.isActive
+      ? roundMoney(baseCustom * (1 + surgeInfo.surgePercent / 100))
+      : baseCustom;
+  }
+
+  return {
+    tier: finalTier,
+    autoTier,
+    isManualTier: ['bronze', 'platinum', 'diamond'].includes(manualTier),
+    tierName: tierInfo.name,
+    tierEmoji: tierInfo.emoji,
+    tierBadgeText: tierInfo.badgeText,
+    tierDiscount: tierInfo.discount,
+    tierColor: tierInfo.color,
+    weeklyCompletedOrders: currentWeekOrders,
+    consecutiveQualifiedWeeks,
+    weeklyTarget,
+    diamondWeeksTarget,
+    effectiveFee,
+    surgedPlatformFee
+  };
 }
 
 // تحويل مسار الصورة النسبي المخزن في قاعدة البيانات أو Storage إلى رابط عام كامل
@@ -186,7 +379,7 @@ async function uploadCaptainDocToStorage(phone, docKey, dataUrl) {
 let stateCache = {
   raw: null,
   lastFetched: 0,
-  ttlMs: 4000
+  ttlMs: 3000
 };
 
 let lastLazyCleanupRun = 0;
@@ -257,11 +450,13 @@ function getAuthenticatedAdminFromCookie(req) {
   }
 }
 
-function mapCaptainRow(c, includePhotos = false, storageMap = {}) {
+function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders = [], settings = {}) {
   const phoneFiles = storageMap[c.phone] || {};
   const frontPhoto = resolveCaptainPhotoUrl(c.id_front_photo || c.id_front_url || c.doc_id_front_path) || phoneFiles.idFront || null;
   const backPhoto = resolveCaptainPhotoUrl(c.id_back_photo || c.id_back_url || c.doc_id_back_path) || phoneFiles.idBack || null;
   const vehPhoto = resolveCaptainPhotoUrl(c.vehicle_photo || c.vehicle_photo_url || c.vehicle_url || c.doc_vehicle_path) || phoneFiles.vehicle || null;
+
+  const tierData = computeCaptainTierAndFee(c, mappedOrders, settings);
 
   return {
     phone: c.phone,
@@ -286,12 +481,25 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}) {
     lifetimeCancelled: Number(c.lifetime_cancelled || 0),
     lifetimeNetEarnings: roundMoney(c.lifetime_net_earnings || 0),
     walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 40) : [],
-    adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : [])
+    adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : []),
+    // بيانات مستوى الكابتن والعمولة الديناميكية
+    tier: tierData.tier,
+    autoTier: tierData.autoTier,
+    isManualTier: tierData.isManualTier,
+    tierName: tierData.tierName,
+    tierEmoji: tierData.tierEmoji,
+    tierBadgeText: tierData.tierBadgeText,
+    tierDiscount: tierData.tierDiscount,
+    tierColor: tierData.tierColor,
+    weeklyCompletedOrders: tierData.weeklyCompletedOrders,
+    consecutiveQualifiedWeeks: tierData.consecutiveQualifiedWeeks,
+    effectiveFee: tierData.effectiveFee
   };
 }
 
 function mapOrderRow(o) {
   const createdMs = o.created_at ? new Date(o.created_at).getTime() : Date.now();
+  const parsedMeta = decodeOrderMetaFromNotes(o.customer_notes || '');
   return {
     id: o.id,
     customerPhone: o.customer_phone || o.client_phone || '',
@@ -301,7 +509,15 @@ function mapOrderRow(o) {
     pickupAddress: o.pickup_address || '',
     dropoffZone: o.dropoff_zone || 'المنصورة',
     dropoffAddress: o.dropoff_address || '',
-    customerNotes: o.customer_notes || '',
+    customerNotes: parsedMeta.cleanNotes,
+    pickupLat: parsedMeta.pickupLat,
+    pickupLng: parsedMeta.pickupLng,
+    dropoffLat: parsedMeta.dropoffLat,
+    dropoffLng: parsedMeta.dropoffLng,
+    promoCode: parsedMeta.promoCode,
+    promoDiscount: parsedMeta.promoDiscount,
+    walletDiscount: parsedMeta.walletDiscount || roundMoney(o.discount_applied ?? 0),
+    surgePercent: parsedMeta.surgePercent,
     packageType: o.package_type || DEFAULT_PACKAGE_TYPES[0],
     payer: o.payer || 'الراسل',
     senderPhone: o.sender_phone || '',
@@ -342,10 +558,15 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
     if (expired && expired.length > 0) {
       for (const order of expired) {
         const custPhone = order.customer_phone || order.client_phone;
-        if (order.discount_applied > 0 && custPhone) {
+        const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
+        const refundWalletAmt = meta.walletDiscount > 0
+          ? meta.walletDiscount
+          : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
+
+        if (refundWalletAmt > 0 && custPhone) {
           await supabase.rpc('adjust_customer_wallet_atomic', {
             p_phone: custPhone,
-            p_amount: roundMoney(order.discount_applied),
+            p_amount: roundMoney(refundWalletAmt),
             p_reason: `رد تعويض مهلة طلب ${order.id}`
           });
         }
@@ -394,7 +615,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     supabase.from('settings').select('*').eq('id', 1).maybeSingle(),
     supabase.from('customers').select('*'),
     supabase.from('captains').select('*').order('created_at', { ascending: false }),
-    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(250),
+    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(350),
     supabase.from('admins').select('*').order('created_at', { ascending: true }),
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50),
     fetchCaptainStorageFilesMap()
@@ -421,7 +642,25 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     ? Math.max(0, roundMoney(sRow.referral_reward_amount))
     : (storedIncentives.referralRewardAmount !== undefined ? Math.max(0, roundMoney(storedIncentives.referralRewardAmount)) : 50);
 
+  const referralRequiredOrders = Math.max(1, Number(storedIncentives.referralRequiredOrders ?? 2));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
+
+  // إعدادات مستويات الكباتن (Captain Tiers)
+  const tierWeeklyOrdersTarget = Math.max(1, Number(storedIncentives.tierWeeklyOrdersTarget ?? 25));
+  const tierWeeksForDiamond = Math.max(1, Number(storedIncentives.tierWeeksForDiamond ?? 4));
+  const tierPlatinumDiscount = Math.max(0, roundMoney(storedIncentives.tierPlatinumDiscount ?? 1));
+  const tierDiamondDiscount = Math.max(0, roundMoney(storedIncentives.tierDiamondDiscount ?? 2));
+  const tierManualOverrides = (storedIncentives.tierManualOverrides && typeof storedIncentives.tierManualOverrides === 'object')
+    ? storedIncentives.tierManualOverrides
+    : {};
+
+  // إعدادات وقت الذروة (Surge Pricing)
+  const surgePercent = Math.max(0, Number(storedIncentives.surgePercent ?? 0));
+  const surgeEndTime = Math.max(0, Number(storedIncentives.surgeEndTime ?? 0));
+  const surgeDurationMinutes = Math.max(1, Number(storedIncentives.surgeDurationMinutes ?? 30));
+
+  // قائمة كوبونات الخصم الديناميكية (Promo Codes)
+  const promoCodes = Array.isArray(storedIncentives.promoCodes) ? storedIncentives.promoCodes : [];
 
   const settings = {
     platformFee: roundMoney(sRow.platform_fee ?? 7),
@@ -435,6 +674,16 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     welcomeBonusAmount,
     referralRewardActive,
     referralRewardAmount,
+    referralRequiredOrders,
+    tierWeeklyOrdersTarget,
+    tierWeeksForDiamond,
+    tierPlatinumDiscount,
+    tierDiamondDiscount,
+    tierManualOverrides,
+    surgePercent,
+    surgeEndTime,
+    surgeDurationMinutes,
+    promoCodes,
     supportWhatsapp: sRow.support_whatsapp || '201507800875',
     broadcastMessage: sRow.broadcast_message || '',
     broadcastTarget,
@@ -443,6 +692,13 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     allowCaptainRegistration: sRow.allow_captain_registration !== false,
     packageTypes: Array.isArray(sRow.package_types) && sRow.package_types.length > 0 ? sRow.package_types : DEFAULT_PACKAGE_TYPES
   };
+
+  const surgeInfo = getActiveSurgeInfo(settings);
+  settings.surgeActive = surgeInfo.isActive;
+  settings.surgeRemainingMinutes = surgeInfo.remainingMinutes;
+  settings.effectivePlatformFee = surgeInfo.isActive
+    ? roundMoney(settings.platformFee * (1 + surgeInfo.surgePercent / 100))
+    : settings.platformFee;
 
   runLazyExpiredOrdersCleanup(settings.waitingTimeoutMinutes);
 
@@ -458,14 +714,17 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     };
   });
 
+  const mappedOrders = (ordersRes.data || []).map(mapOrderRow);
+
   const rawData = {
     settings,
+    storedIncentives,
     zones,
     pricing,
     customers: customersMap,
     rawCaptains: captainsRes.data || [],
     storageFilesMap: storageFilesMap || {},
-    orders: (ordersRes.data || []).map(mapOrderRow),
+    orders: mappedOrders,
     adminAccounts: (adminsRes.data || []).map(a => ({
       username: a.username,
       name: a.name,
@@ -487,18 +746,76 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   return rawData;
 }
 
+// دالة مساعدة لحفظ الكائن __incentives داخل جدول settings بأمان تام
+async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraSettingsColumns = {}, customBasePricing = null) {
+  const prevSettings = rawState.settings || {};
+  const mergedIncentives = {
+    welcomeBonusActive: prevSettings.welcomeBonusActive !== false,
+    welcomeBonusAmount: roundMoney(prevSettings.welcomeBonusAmount ?? 7),
+    referralRewardActive: prevSettings.referralRewardActive !== false,
+    referralRewardAmount: roundMoney(prevSettings.referralRewardAmount ?? 50),
+    referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
+    broadcastTarget: prevSettings.broadcastTarget || 'all',
+    tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
+    tierWeeksForDiamond: Math.max(1, Number(prevSettings.tierWeeksForDiamond ?? 4)),
+    tierPlatinumDiscount: Math.max(0, roundMoney(prevSettings.tierPlatinumDiscount ?? 1)),
+    tierDiamondDiscount: Math.max(0, roundMoney(prevSettings.tierDiamondDiscount ?? 2)),
+    tierManualOverrides: prevSettings.tierManualOverrides || {},
+    surgePercent: Math.max(0, Number(prevSettings.surgePercent ?? 0)),
+    surgeEndTime: Math.max(0, Number(prevSettings.surgeEndTime ?? 0)),
+    surgeDurationMinutes: Math.max(1, Number(prevSettings.surgeDurationMinutes ?? 30)),
+    promoCodes: Array.isArray(prevSettings.promoCodes) ? prevSettings.promoCodes : [],
+    ...partialIncentives
+  };
+
+  const basePricing = customBasePricing ? { ...customBasePricing } : { ...(rawState.pricing || DEFAULT_PRICING) };
+  basePricing.__incentives = mergedIncentives;
+
+  await supabase.from('settings').upsert({
+    id: 1,
+    ...extraSettingsColumns,
+    pricing: basePricing
+  });
+
+  return mergedIncentives;
+}
+
 async function buildClientState(req, forceRefresh = false) {
+  touchCustomerPresence(req);
   const raw = await fetchRawDatabaseState(forceRefresh);
   const isAdmin = isRequestFromAdminView(req);
   const adminToken = getAuthenticatedAdminFromCookie(req);
 
+  const surgeInfo = getActiveSurgeInfo(raw.settings);
+  const clientSettings = {
+    ...raw.settings,
+    surgeActive: surgeInfo.isActive,
+    surgeRemainingMinutes: surgeInfo.remainingMinutes,
+    effectivePlatformFee: surgeInfo.isActive
+      ? roundMoney(raw.settings.platformFee * (1 + surgeInfo.surgePercent / 100))
+      : raw.settings.platformFee
+  };
+
+  const mappedCaptains = raw.rawCaptains.map(c =>
+    mapCaptainRow(c, isAdmin, raw.storageFilesMap, raw.orders, clientSettings)
+  );
+
+  const availableCaptainsCount = mappedCaptains.filter(c => c.status === 'معتمد' && c.isAvailable).length;
+  const onlineCustomersCount = getOnlineCustomersCount();
+
   return {
-    settings: raw.settings,
+    settings: clientSettings,
     zones: raw.zones,
     pricing: raw.pricing,
     customers: raw.customers,
-    captains: raw.rawCaptains.map(c => mapCaptainRow(c, isAdmin, raw.storageFilesMap)),
+    captains: mappedCaptains,
     orders: raw.orders,
+    availableCaptainsCount,
+    onlineCustomersCount,
+    realtimeConfig: {
+      supabaseUrl: SUPABASE_URL || '',
+      supabaseAnonKey: SUPABASE_ANON_KEY || ''
+    },
     adminAccounts: isAdmin ? raw.adminAccounts : [],
     auditLogs: isAdmin ? raw.auditLogs : [],
     authenticatedAdminUsername: adminToken ? adminToken.username : null
@@ -548,6 +865,42 @@ async function broadcastPushToAvailableCaptains(payloadObj) {
   } catch (e) {}
 }
 
+async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
+  try {
+    const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+    if (!allSubs || allSubs.length === 0) return 0;
+
+    let targetSubs = allSubs;
+    if (target === 'captains' || target === 'customers') {
+      const { data: captainsRows } = await supabase.from('captains').select('phone');
+      const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
+      if (target === 'captains') {
+        targetSubs = allSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+      } else if (target === 'customers') {
+        targetSubs = allSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+      }
+    }
+
+    const payloadStr = JSON.stringify({
+      title: payloadObj.title || 'الرجل العنابي 🛵',
+      body: payloadObj.body || '',
+      url: payloadObj.url || '/'
+    });
+
+    let sent = 0;
+    await Promise.allSettled(
+      targetSubs.map(async s => {
+        if (!s || !s.subscription) return;
+        await webpush.sendNotification(s.subscription, payloadStr);
+        sent++;
+      })
+    );
+    return sent;
+  } catch (e) {
+    return 0;
+  }
+}
+
 app.post('/api/push/subscribe', async (req, res) => {
   const { phone, subscription } = req.body || {};
   if (!phone || !subscription) {
@@ -561,8 +914,14 @@ app.post('/api/push/subscribe', async (req, res) => {
   res.json({ success: true });
 });
 
+// نبضة اتصال العميل لتحديث عداد العملاء المتواجدين حالياً
+app.post('/api/presence/ping', (req, res) => {
+  touchCustomerPresence(req, req.body && req.body.clientId);
+  res.json({ success: true, onlineCustomersCount: getOnlineCustomersCount() });
+});
+
 // ==========================================
-// 5. مسار المزامنة الرئيسي (Bootstrap)
+// 5. مسار المزامنة الرئيسي (Bootstrap) والتحقق من الكوبونات
 // ==========================================
 app.get('/api/bootstrap', async (req, res) => {
   try {
@@ -571,6 +930,58 @@ app.get('/api/bootstrap', async (req, res) => {
   } catch (err) {
     console.error('Bootstrap error:', err.message);
     res.status(500).json({ success: false, message: 'تعذر جلب البيانات' });
+  }
+});
+
+// التحقق من كود الخصم للعميل قبل الطلب أو لحفظه في محفظة الكوبونات
+app.post('/api/promo-codes/validate', async (req, res) => {
+  try {
+    const { code, clientPhone } = req.body || {};
+    const cleanCode = String(code || '').trim().toUpperCase();
+    const cleanPhone = String(clientPhone || '').trim();
+
+    if (!cleanCode) {
+      return res.status(400).json({ success: false, message: 'اكتب كود الخصم الأول يا باشا! 🎟️⚠️' });
+    }
+
+    const rawState = await fetchRawDatabaseState(false);
+    const promoCodes = Array.isArray(rawState.settings.promoCodes) ? rawState.settings.promoCodes : [];
+    const promo = promoCodes.find(p => p && String(p.code).toUpperCase() === cleanCode && p.active !== false);
+
+    if (!promo) {
+      return res.status(404).json({ success: false, message: 'كود الخصم ده غير صحيح أو انتهى يا نجم 🧐⚠️' });
+    }
+
+    if (promo.expiresAt && Date.now() > Number(promo.expiresAt)) {
+      return res.status(400).json({ success: false, message: 'يا خسارة! فترة سماح الكود ده خلصت خلاص ⏳❌' });
+    }
+
+    if (promo.targetPhone && promo.targetPhone !== 'all') {
+      if (!cleanPhone) {
+        return res.status(400).json({ success: false, message: 'اكتب رقم تليفونك في خانة الراسل الأول عشان نتحقق من الكود 📱⚠️' });
+      }
+      if (promo.targetPhone !== cleanPhone) {
+        return res.status(403).json({ success: false, message: 'الكود ده مخصوص لعميل تاني بالاسم يا باشا 😅🔒' });
+      }
+    }
+
+    const usedBy = Array.isArray(promo.usedBy) ? promo.usedBy : [];
+    if (cleanPhone && usedBy.includes(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'أنت استخدمت الكود ده قبل كده في مشوار سابق يا باشا 😎✅' });
+    }
+
+    res.json({
+      success: true,
+      promo: {
+        code: promo.code,
+        discountAmount: roundMoney(promo.discountAmount),
+        targetPhone: promo.targetPhone || 'all',
+        expiresAt: promo.expiresAt || null
+      },
+      message: `مبروك يا باشا! 🎉 الكود (${promo.code}) شغال وهيديك خصم ${promo.discountAmount} جنيه وتقدر تحتفظ بيه لحد انتهاء فترة السماح 🛵💸`
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'تعذر التحقق من الكود حالياً ⚠️' });
   }
 });
 
@@ -645,7 +1056,6 @@ async function authenticateAdmin(req, res, next) {
 // 7. مسارات مصادقة وتسجيل العملاء والكباتن والأدمن
 // ==========================================
 
-// مسار تسجيل دخول الأدمن (غرفة العمليات المركزية)
 app.post('/api/auth/admin/login', async (req, res) => {
   try {
     const rawUser = req.body.username || req.body.user || req.body.phone || '';
@@ -747,6 +1157,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
       wallet_transactions: []
     }]).select().single();
 
+    touchCustomerPresence(req, `cust_${phone}`);
     invalidateStateCache();
     const token = jwt.sign({ phone: newUser.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
@@ -761,13 +1172,13 @@ app.post('/api/auth/customer/login', async (req, res) => {
   }
 
   await clearFailedAttempts(phone);
+  touchCustomerPresence(req, `cust_${phone}`);
   const token = jwt.sign({ phone: user.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
   res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
   const state = await buildClientState(req, false);
   res.json({ success: true, message: 'تم تسجيل الدخول بنجاح 👑', state });
 });
 
-// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage (تُصرف الهدية الترحيبية بعد اعتماد الإدارة فقط إذا كانت مفعلة)
 app.post('/api/captains/register', async (req, res) => {
   try {
     const {
@@ -784,7 +1195,6 @@ app.post('/api/captains/register', async (req, res) => {
     const { data: existing } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
-    // رفع الصور إلى حاوية captain-docs/captains في Supabase Storage
     const [uploadedFrontUrl, uploadedBackUrl, uploadedVehicleUrl] = await Promise.all([
       idFrontPhoto ? uploadCaptainDocToStorage(phone, 'idFront', idFrontPhoto) : Promise.resolve(null),
       idBackPhoto ? uploadCaptainDocToStorage(phone, 'idBack', idBackPhoto) : Promise.resolve(null),
@@ -879,11 +1289,12 @@ app.post('/api/auth/captain/login', async (req, res) => {
   await clearFailedAttempts(phone);
 
   if (cap.status === 'مرفوض') {
+    const raw = await fetchRawDatabaseState(false);
     return res.status(403).json({
       success: false,
       status: 'مرفوض',
       rejectReason: cap.suspend_reason || cap.reject_reason || 'يرجى رفع صور واضحة للمستندات',
-      captainProfile: mapCaptainRow(cap, false),
+      captainProfile: mapCaptainRow(cap, false, {}, raw.orders, raw.settings),
       message: 'تم رفض المستندات، يمكنك إعادة رفع صور واضحة الآن 📄⚠️'
     });
   }
@@ -912,14 +1323,15 @@ app.post('/api/orders', async (req, res) => {
     const {
       clientPhone, pin, tripType, pickupZone, pickupAddress,
       dropoffZone, dropoffAddress, customerNotes, packageType,
-      payer, senderPhone, recipientPhone
+      payer, senderPhone, recipientPhone,
+      pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode
     } = req.body || {};
 
     if (!clientPhone || !pin || !pickupAddress || !dropoffAddress) {
       return res.status(400).json({ success: false, message: 'برجاء استكمال كافة بيانات وعناوين الطلب ⚠️' });
     }
 
-    const rawState = await fetchRawDatabaseState(false);
+    const rawState = await fetchRawDatabaseState(true);
     if (rawState.settings.maintenanceMode) {
       return res.status(403).json({ success: false, message: 'المنصة في وضع الصيانة الطارئة حالياً 🛠️' });
     }
@@ -942,15 +1354,57 @@ app.post('/api/orders', async (req, res) => {
       }
     }
 
+    touchCustomerPresence(req, `cust_${clientPhone}`);
     const custToken = jwt.sign({ phone: clientPhone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('customer_session', custToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
     const routeKey = `${pickupZone}|${dropoffZone}`;
-    const originalFare = roundMoney(rawState.pricing[routeKey] ?? 40);
+    const baseRouteFare = roundMoney(rawState.pricing[routeKey] ?? 40);
+
+    // تطبيق زيادة وقت الذروة (Surge Pricing) على أجرة المشوار وعمولة المنصة تلقائياً
+    const surgeInfo = getActiveSurgeInfo(rawState.settings);
+    const originalFare = surgeInfo.isActive
+      ? roundMoney(baseRouteFare * (1 + surgeInfo.surgePercent / 100))
+      : baseRouteFare;
+
+    const basePlatformFee = roundMoney(rawState.settings.platformFee ?? 7);
+    const platformFee = surgeInfo.isActive
+      ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
+      : basePlatformFee;
+
+    // 1. خصم المحفظة التلقائي
     const availableWallet = Math.max(0, roundMoney(cust.wallet_balance || 0));
-    const discountApplied = availableWallet > 0 ? roundMoney(Math.min(availableWallet, originalFare)) : 0;
+    const walletDiscount = availableWallet > 0 ? roundMoney(Math.min(availableWallet, originalFare)) : 0;
+
+    // 2. خصم الكوبون (Promo Code) إن وجد وكان صالحاً
+    let promoDiscount = 0;
+    let appliedPromoCode = null;
+    const cleanPromo = String(promoCode || '').trim().toUpperCase();
+
+    if (cleanPromo) {
+      const promoList = Array.isArray(rawState.settings.promoCodes) ? rawState.settings.promoCodes : [];
+      const promoIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === cleanPromo && p.active !== false);
+      if (promoIdx !== -1) {
+        const promoObj = promoList[promoIdx];
+        const notExpired = !promoObj.expiresAt || Date.now() <= Number(promoObj.expiresAt);
+        const matchesTarget = !promoObj.targetPhone || promoObj.targetPhone === 'all' || promoObj.targetPhone === clientPhone;
+        const usedBy = Array.isArray(promoObj.usedBy) ? promoObj.usedBy : [];
+        const notUsedYet = !usedBy.includes(clientPhone);
+
+        if (notExpired && matchesTarget && notUsedYet) {
+          const remainingFareAfterWallet = Math.max(0, roundMoney(originalFare - walletDiscount));
+          promoDiscount = roundMoney(Math.min(roundMoney(promoObj.discountAmount || 0), remainingFareAfterWallet));
+          if (promoDiscount > 0) {
+            appliedPromoCode = promoObj.code;
+            promoList[promoIdx].usedBy = [...usedBy, clientPhone];
+            await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
+          }
+        }
+      }
+    }
+
+    const discountApplied = roundMoney(walletDiscount + promoDiscount);
     const finalFare = Math.max(0, roundMoney(originalFare - discountApplied));
-    const platformFee = roundMoney(rawState.settings.platformFee ?? 7);
     const courierNet = Math.max(0, roundMoney(originalFare - platformFee));
 
     const existingIds = new Set((rawState.orders || []).map(o => o.id));
@@ -959,13 +1413,24 @@ app.post('/api/orders', async (req, res) => {
       orderId = `#ORD-${Math.floor(10000 + Math.random() * 90000)}`;
     }
 
-    if (discountApplied > 0) {
+    if (walletDiscount > 0) {
       await supabase.rpc('adjust_customer_wallet_atomic', {
         p_phone: clientPhone,
-        p_amount: -Math.abs(discountApplied),
-        p_reason: `خصم رصيد هدية على طلب ${orderId}`
+        p_amount: -Math.abs(walletDiscount),
+        p_reason: `خصم رصيد محفظة على طلب ${orderId}`
       });
     }
+
+    const storedNotesWithMeta = encodeOrderMetaIntoNotes(customerNotes || '', {
+      pickupLat,
+      pickupLng,
+      dropoffLat,
+      dropoffLng,
+      promoCode: appliedPromoCode,
+      promoDiscount,
+      walletDiscount,
+      surgePercent: surgeInfo.surgePercent
+    });
 
     const { error: ordErr } = await supabase.from('orders').insert([{
       id: orderId,
@@ -976,7 +1441,7 @@ app.post('/api/orders', async (req, res) => {
       pickup_address: pickupAddress,
       dropoff_zone: dropoffZone,
       dropoff_address: dropoffAddress,
-      customer_notes: customerNotes || '',
+      customer_notes: storedNotesWithMeta,
       package_type: packageType || DEFAULT_PACKAGE_TYPES[0],
       payer: payer || 'الراسل',
       sender_phone: senderPhone || clientPhone,
@@ -997,19 +1462,25 @@ app.post('/api/orders', async (req, res) => {
 
     invalidateStateCache();
     broadcastPushToAvailableCaptains({
-      title: 'أوردر جديد على الرادار 📡🛵',
-      body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج`
+      title: 'أوردر جديد على الرادار يانجم! 📡🛵',
+      body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج.. الحق اقبله قبل ما يطير! 🚀`
     });
 
     const state = await buildClientState(req, true);
-    res.json({ success: true, message: 'تم إرسال طلبك بنجاح 🚀', state });
+    res.json({
+      success: true,
+      message: appliedPromoCode
+        ? `تم إرسال طلبك بنجاح وتطبيق كود الخصم (${appliedPromoCode}) يا باشا! 🚀🎁`
+        : 'تم إرسال طلبك بنجاح 🚀',
+      state
+    });
   } catch (err) {
     console.error('Create order error:', err);
     res.status(500).json({ success: false, message: 'حدث خطأ أثناء تأكيد الطلب ⚠️' });
   }
 });
 
-// قبول الكابتن للطلب
+// قبول الكابتن للطلب (مع تطبيق خصم مستوى الكابتن + نسبة وقت الذروة أوتوماتيكياً)
 app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   if (!cap.is_available || cap.status !== 'معتمد') {
@@ -1026,9 +1497,8 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   }
 
   const rawState = await fetchRawDatabaseState(false);
-  const fee = cap.custom_fee !== null && cap.custom_fee !== undefined
-    ? roundMoney(cap.custom_fee)
-    : roundMoney(rawState.settings.platformFee ?? 7);
+  const tierData = computeCaptainTierAndFee(cap, rawState.orders, rawState.settings);
+  const fee = tierData.effectiveFee;
 
   if (roundMoney(cap.wallet_balance || 0) < fee) {
     return res.status(400).json({
@@ -1065,7 +1535,7 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     await supabase.rpc('adjust_captain_wallet_atomic', {
       p_phone: cap.phone,
       p_amount: -Math.abs(fee),
-      p_reason: `عمولة منصة لطلب ${req.params.id}`
+      p_reason: `عمولة منصة (${tierData.tierBadgeText}) لطلب ${req.params.id}`
     });
   }
 
@@ -1074,14 +1544,14 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     await supabase.rpc('adjust_captain_wallet_atomic', {
       p_phone: cap.phone,
       p_amount: discount,
-      p_reason: `تعويض خصم عميل لطلب ${req.params.id}`
+      p_reason: `تعويض خصم/كوبون عميل لطلب ${req.params.id}`
     });
   }
 
   invalidateStateCache();
   sendPushNotificationToPhone(targetOrder.customer_phone || targetOrder.client_phone, {
-    title: 'تم قبول طلبك 🛵✅',
-    body: `الكابتن ${cap.full_name} قبل طلبك (${req.params.id}) وفي طريقه إليك!`
+    title: 'تم قبول طلبك يا باشا! 🛵✅',
+    body: `الكابتن ${cap.full_name} (${tierData.tierBadgeText}) لقط الأوردر (${req.params.id}) وطاير عليك فوراً! 🚀`
   });
 
   const state = await buildClientState(req, true);
@@ -1102,9 +1572,14 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
 
   invalidateStateCache();
   const order = data[0];
+  let funnyBody = nextStatus;
+  if (nextStatus === 'الكابتن وصل للاستلام') funnyBody = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو! 🛵📍';
+  else if (nextStatus === 'استلم الطرد وفي السكة') funnyBody = 'الكابتن استلم الأوردر يانجم العالم وطاير بيه في السكة ليك! 🚀💨';
+  else if (nextStatus === 'الكابتن وصل للتسليم') funnyBody = 'الكابتن وصل بالسلامة تحت الباب وجاهز للتسليم.. افتح يا باشا! 🔔😎';
+
   sendPushNotificationToPhone(order.customer_phone || order.client_phone, {
     title: `تحديث في طلبك ${order.id} 🛵`,
-    body: nextStatus
+    body: funnyBody
   });
 
   const state = await buildClientState(req, true);
@@ -1113,6 +1588,9 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
 
 app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   const cap = req.user;
+  const rawBefore = await fetchRawDatabaseState(false);
+  const oldTierData = computeCaptainTierAndFee(cap, rawBefore.orders, rawBefore.settings);
+
   const { data, error } = await supabase.from('orders')
     .update({ status: 'مكتمل' })
     .eq('id', req.params.id)
@@ -1125,7 +1603,7 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   }
 
   const order = data[0];
-  const rawState = await fetchRawDatabaseState(false);
+  const rawState = await fetchRawDatabaseState(true);
   const s = rawState.settings;
 
   const custPhone = order.customer_phone || order.client_phone;
@@ -1141,6 +1619,10 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
           p_phone: custPhone,
           p_amount: custCash,
           p_reason: 'مكافأة نقاط عنابي بوينتس 🍇🎁'
+        });
+        sendPushNotificationToPhone(custPhone, {
+          title: 'مبروك يا باشا مصر! 🍇💸',
+          body: `جمعت نقاط عنابي ونزلك ${custCash} جنيه كاش هدية في محفظتك تتخصم أوتوماتيك من مشوارك الجاي! 😍🎉`
         });
       }
       await supabase.from('customers').update({ points: newCustPts }).eq('phone', custPhone);
@@ -1159,10 +1641,39 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
         p_amount: capCash,
         p_reason: 'مكافأة نقاط عنابي بوينتس للكباتن 🍇🛵'
       });
+      sendPushNotificationToPhone(cap.phone, {
+        title: 'عاش يا وحش الميدان! 🍇💸',
+        body: `قفلت تارجت نقاط عنابي بوينتس ونزلك ${capCash} جنيه كاش فوري في محفظتك هدية! 🛵🔥`
+      });
     }
 
+    // التحقق من ترقية مستوى الكابتن بعد إتمام هذا الطلب
+    const newTierData = computeCaptainTierAndFee(freshCap, rawState.orders, s);
+    const capNotices = Array.isArray(freshCap.admin_notices) ? freshCap.admin_notices : [];
+
+    if (newTierData.tier !== oldTierData.tier && (newTierData.tier === 'platinum' || newTierData.tier === 'diamond')) {
+      const upgradeMsg = newTierData.tier === 'diamond'
+        ? `💎 وسّع للكابتن الماسي! مبروك يا بطل، حافظت على مستواك ووصلت لـ (${newTierData.tierBadgeText}) وعمولتك نزلت بخصم ${newTierData.tierDiscount} جنيه على كل أوردر! 🚀🔥`
+        : `🥈 عاش يا نجم الطيارين! كملت التارجت الأسبوعي واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة بـ ${newTierData.tierDiscount} جنيه! حافظ على مستواك عشان توصل للماسي 💎🛵`;
+
+      capNotices.unshift({
+        id: 'tier-up-' + Date.now(),
+        text: upgradeMsg,
+        type: 'reward',
+        at: Date.now()
+      });
+
+      sendPushNotificationToPhone(cap.phone, {
+        title: `ترقية جديدة: ${newTierData.tierBadgeText} 🎉`,
+        body: upgradeMsg
+      });
+    }
+
+    // التحقق من مكافأة دعوة الأصدقاء بعدد المشاوير الديناميكي
     const referralActive = s.referralRewardActive !== false;
     const referralRewardAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
+    const requiredReferralTrips = Math.max(1, Number(s.referralRequiredOrders ?? 2));
+    const tripsTextAr = formatArabicTripsText(requiredReferralTrips);
 
     let claimReferralNow = false;
     if (referralActive && referralRewardAmt > 0 && freshCap.referred_by_phone && !freshCap.referral_reward_claimed) {
@@ -1171,13 +1682,14 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
         .eq('assigned_courier_phone', cap.phone)
         .eq('status', 'مكتمل');
 
-      if ((count || 0) >= 2) {
+      if ((count || 0) >= requiredReferralTrips) {
         claimReferralNow = true;
       }
     }
 
     await supabase.from('captains').update({
       points: newCapPts,
+      admin_notices: capNotices.slice(0, 10),
       referral_reward_claimed: freshCap.referral_reward_claimed || claimReferralNow
     }).eq('phone', cap.phone);
 
@@ -1187,13 +1699,13 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
         await supabase.rpc('adjust_captain_wallet_atomic', {
           p_phone: refCaptain.phone,
           p_amount: referralRewardAmt,
-          p_reason: `هدية دعوة الكابتن ${freshCap.full_name} بعد إتمام مشوارين 🎁`
+          p_reason: `هدية دعوة الكابتن ${freshCap.full_name} بعد إتمام ${tripsTextAr} 🎁`
         });
 
         const refNotices = Array.isArray(refCaptain.admin_notices) ? refCaptain.admin_notices : [];
         refNotices.unshift({
           id: 'ref-reward-' + Date.now(),
-          text: `🎁 مبروك يا بطل! نزل في محفظتك ${referralRewardAmt} جنيه هدية دعوة الكابتن (${freshCap.full_name}) بعد إتمامه مشوارين بنجاح 🛵💸`,
+          text: `🎁 مبروك يا بطل! نزل في محفظتك ${referralRewardAmt} جنيه هدية دعوة الكابتن (${freshCap.full_name}) بعد إتمامه ${tripsTextAr} بنجاح 🛵💸`,
           type: 'reward',
           at: Date.now()
         });
@@ -1204,8 +1716,8 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
         }).eq('phone', refCaptain.phone);
 
         sendPushNotificationToPhone(refCaptain.phone, {
-          title: 'مكافأة دعوة صديق 🎁💸',
-          body: `مبروك يا بطل! نزل في محفظتك ${referralRewardAmt} جنيه هدية دعوة الكابتن ${freshCap.full_name} 🛵`
+          title: 'مكافأة دعوة صديق نزلتلك! 🎁💸',
+          body: `مبروك يا بطل! صاحبك الكابتن ${freshCap.full_name} كمل ${tripsTextAr} ونزل في محفظتك ${referralRewardAmt} جنيه هدية حلال عليك 😎🛵`
         });
       }
     }
@@ -1214,7 +1726,7 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   invalidateStateCache();
   sendPushNotificationToPhone(custPhone, {
     title: 'تم تسليم طلبك بنجاح 🎉',
-    body: `الحمد لله الأوردر (${order.id}) اتسلم.. شكراً لثقتك في الرجل العنابي 🛵❤️`
+    body: `عدينا على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر (${order.id}) اتسلم يا باشا! متنساش تقيم الكابتن الجدع ⭐🛵`
   });
 
   const state = await buildClientState(req, true);
@@ -1260,7 +1772,6 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: 'تم إعادة الطلب للرادار 🔄', state });
 });
 
-// تحديث حالة الاستعداد (مسموح فقط للكابتن المعتمد، وإظهار إشعار المراجعة إذا كان قيد المراجعة)
 app.post('/api/captain/availability', authenticateCaptain, async (req, res) => {
   if (req.user.status === 'قيد المراجعة') {
     return res.status(403).json({
@@ -1307,13 +1818,29 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
 
   const order = updated[0];
   const custPhone = order.customer_phone || order.client_phone;
+  const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
 
-  if (order.discount_applied > 0 && custPhone) {
+  // رد رصيد المحفظة فقط، وإتاحة كود الخصم للعميل مرة أخرى طالما لم تنتهِ فترة السماح
+  const refundWalletAmt = meta.walletDiscount > 0
+    ? meta.walletDiscount
+    : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
+
+  if (refundWalletAmt > 0 && custPhone) {
     await supabase.rpc('adjust_customer_wallet_atomic', {
       p_phone: custPhone,
-      p_amount: roundMoney(order.discount_applied),
-      p_reason: `استرداد خصم لطلب ملغي ${order.id}`
+      p_amount: roundMoney(refundWalletAmt),
+      p_reason: `استرداد خصم محفظة لطلب ملغي ${order.id}`
     });
+  }
+
+  if (meta.promoCode && custPhone) {
+    const rawState = await fetchRawDatabaseState(true);
+    const promoList = Array.isArray(rawState.settings.promoCodes) ? rawState.settings.promoCodes : [];
+    const pIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === String(meta.promoCode).toUpperCase());
+    if (pIdx !== -1 && Array.isArray(promoList[pIdx].usedBy)) {
+      promoList[pIdx].usedBy = promoList[pIdx].usedBy.filter(ph => ph !== custPhone);
+      await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
+    }
   }
 
   if (order.assigned_courier_phone) {
@@ -1333,13 +1860,13 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
     }
     sendPushNotificationToPhone(order.assigned_courier_phone, {
       title: `تم إلغاء الطلب ${order.id} ❌`,
-      body: 'قام العميل بإلغاء الطلب وتم رد العمولة لمحفظتك فوراً.'
+      body: 'قام العميل بإلغاء الطلب وتم رد العمولة لمحفظتك فوراً ولا يهمك يا بطل 🛵💪'
     });
   }
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, message: 'تم الإلغاء ورصيدك محفوظ يا نجم ✅', state });
+  res.json({ success: true, message: 'تم الإلغاء ورصيدك وكودك محفوظين يا نجم ✅', state });
 });
 
 app.post('/api/orders/:id/rate', async (req, res) => {
@@ -1394,52 +1921,150 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     if (dbCol) updates[dbCol] = Number(body.loyaltyField.value);
   }
 
-  // إدارة إعدادات الحوافز الديناميكية + الفئة المستهدفة لشريط الإعلان العام
-  const hasIncentiveUpdate =
-    body.welcomeBonusActive !== undefined ||
-    body.welcomeBonusAmount !== undefined ||
-    body.referralRewardActive !== undefined ||
-    body.referralRewardAmount !== undefined ||
-    body.broadcastTarget !== undefined;
+  const partialIncentives = {};
+  if (body.welcomeBonusActive !== undefined) partialIncentives.welcomeBonusActive = Boolean(body.welcomeBonusActive);
+  if (body.welcomeBonusAmount !== undefined) partialIncentives.welcomeBonusAmount = Math.max(0, roundMoney(body.welcomeBonusAmount));
+  if (body.referralRewardActive !== undefined) partialIncentives.referralRewardActive = Boolean(body.referralRewardActive);
+  if (body.referralRewardAmount !== undefined) partialIncentives.referralRewardAmount = Math.max(0, roundMoney(body.referralRewardAmount));
+  if (body.referralRequiredOrders !== undefined) partialIncentives.referralRequiredOrders = Math.max(1, Number(body.referralRequiredOrders));
+  if (body.broadcastTarget !== undefined) partialIncentives.broadcastTarget = String(body.broadcastTarget).trim();
 
-  const updatedIncentives = {
-    welcomeBonusActive: body.welcomeBonusActive !== undefined ? Boolean(body.welcomeBonusActive) : (prevSettings.welcomeBonusActive !== false),
-    welcomeBonusAmount: body.welcomeBonusAmount !== undefined ? Math.max(0, roundMoney(body.welcomeBonusAmount)) : roundMoney(prevSettings.welcomeBonusAmount ?? 7),
-    referralRewardActive: body.referralRewardActive !== undefined ? Boolean(body.referralRewardActive) : (prevSettings.referralRewardActive !== false),
-    referralRewardAmount: body.referralRewardAmount !== undefined ? Math.max(0, roundMoney(body.referralRewardAmount)) : roundMoney(prevSettings.referralRewardAmount ?? 50),
-    broadcastTarget: body.broadcastTarget !== undefined ? String(body.broadcastTarget).trim() : (prevSettings.broadcastTarget || 'all')
-  };
-
-  if (body.pricing && typeof body.pricing === 'object') {
-    const cleanP = { ...body.pricing };
-    cleanP.__incentives = updatedIncentives;
-    updates.pricing = cleanP;
-  } else if (hasIncentiveUpdate) {
-    const cleanP = { ...(rawState.pricing || DEFAULT_PRICING) };
-    cleanP.__incentives = updatedIncentives;
-    updates.pricing = cleanP;
+  // تحديثات مستويات الكباتن الديناميكية
+  if (body.tierWeeklyOrdersTarget !== undefined) partialIncentives.tierWeeklyOrdersTarget = Math.max(1, Number(body.tierWeeklyOrdersTarget));
+  if (body.tierWeeksForDiamond !== undefined) partialIncentives.tierWeeksForDiamond = Math.max(1, Number(body.tierWeeksForDiamond));
+  if (body.tierPlatinumDiscount !== undefined) partialIncentives.tierPlatinumDiscount = Math.max(0, roundMoney(body.tierPlatinumDiscount));
+  if (body.tierDiamondDiscount !== undefined) partialIncentives.tierDiamondDiscount = Math.max(0, roundMoney(body.tierDiamondDiscount));
+  if (body.tierManualOverride && body.tierManualOverride.phone) {
+    const curOverrides = { ...(prevSettings.tierManualOverrides || {}) };
+    const tVal = body.tierManualOverride.tier;
+    if (!tVal || tVal === 'auto') {
+      delete curOverrides[body.tierManualOverride.phone];
+    } else {
+      curOverrides[body.tierManualOverride.phone] = tVal;
+    }
+    partialIncentives.tierManualOverrides = curOverrides;
   }
 
-  await supabase.from('settings').upsert({ id: 1, ...updates });
+  // تحديثات وقت الذروة (Surge Pricing) بالعداد التنازلي
+  if (body.surgeAction === 'start') {
+    const pct = Math.max(1, Number(body.surgePercent ?? 20));
+    const mins = Math.max(1, Number(body.surgeDurationMinutes ?? 30));
+    partialIncentives.surgePercent = pct;
+    partialIncentives.surgeDurationMinutes = mins;
+    partialIncentives.surgeEndTime = Date.now() + mins * 60000;
+
+    broadcastPushByTargetGroup('captains', {
+      title: 'وقت الذروة اشتغل يارجالة! ⚡🔥',
+      body: `الأوردرات دلوقتي عليها زيادة ذروة +${pct}% لمدة ${mins} دقيقة.. افتح الرادار واكسب أكتر! 🛵💸`
+    });
+  } else if (body.surgeAction === 'stop') {
+    partialIncentives.surgeEndTime = 0;
+  }
+
+  const customBasePricing = (body.pricing && typeof body.pricing === 'object') ? body.pricing : null;
+  const updatedIncentives = await saveIncentivesToDatabase(rawState, partialIncentives, updates, customBasePricing);
 
   let auditDetails = 'تعديل في إعدادات التشغيل أو التسعير';
-  if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
+  if (body.surgeAction === 'start') {
+    auditDetails = `تفعيل وقت الذروة (+${partialIncentives.surgePercent}%) لمدة ${partialIncentives.surgeDurationMinutes} دقيقة`;
+  } else if (body.surgeAction === 'stop') {
+    auditDetails = 'إيقاف وقت الذروة والعودة للتسعير الطبيعي';
+  } else if (body.tierWeeklyOrdersTarget !== undefined || body.tierPlatinumDiscount !== undefined) {
+    auditDetails = `تحديث نظام مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب/أسبوع - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
+  } else if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
     const targetNames = { all: 'الجميع', customers: 'العملاء فقط', captains: 'الكباتن فقط', admins: 'المسؤولين فقط', public: 'العملاء والكباتن' };
     const msgTxt = body.broadcastMessage !== undefined ? body.broadcastMessage : (prevSettings.broadcastMessage || '');
     auditDetails = `تحديث الإعلان العام (${targetNames[updatedIncentives.broadcastTarget] || 'الجميع'}): ${msgTxt || 'إخفاء الإعلان'}`;
-  } else if (
-    body.welcomeBonusActive !== undefined ||
-    body.welcomeBonusAmount !== undefined ||
-    body.referralRewardActive !== undefined ||
-    body.referralRewardAmount !== undefined
-  ) {
-    auditDetails = `تحديث الحوافز — الترحيب: ${updatedIncentives.welcomeBonusActive ? updatedIncentives.welcomeBonusAmount + ' ج' : 'متوقف'} | الإحالة: ${updatedIncentives.referralRewardActive ? updatedIncentives.referralRewardAmount + ' ج' : 'متوقف'}`;
+  } else if (body.welcomeBonusAmount !== undefined || body.referralRewardAmount !== undefined || body.referralRequiredOrders !== undefined) {
+    auditDetails = `تحديث الحوافز — الترحيب: ${updatedIncentives.welcomeBonusActive ? updatedIncentives.welcomeBonusAmount + ' ج' : 'متوقف'} | الإحالة: ${updatedIncentives.referralRewardActive ? updatedIncentives.referralRewardAmount + ' ج بعد ' + updatedIncentives.referralRequiredOrders + ' مشاوير' : 'متوقف'}`;
   }
   await logAdminAudit('تحديث إعدادات', 'المنصة', auditDetails, req.admin.name);
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
+});
+
+// إدارة كوبونات الخصم الديناميكية (إضافة / تعميم أو تخصيص لعميل / إرسال إشعارات Push)
+app.post('/api/admin/promo-codes', authenticateAdmin, async (req, res) => {
+  try {
+    const { code, discountAmount, targetPhone = 'all', validHours = 48 } = req.body || {};
+    const cleanCode = String(code || '').trim().toUpperCase().replace(/\s+/g, '');
+    const amt = roundMoney(discountAmount);
+    const hours = Math.max(1, Number(validHours) || 48);
+    const cleanTarget = (!targetPhone || targetPhone === 'all') ? 'all' : String(targetPhone).trim();
+
+    if (!cleanCode || amt <= 0) {
+      return res.status(400).json({ success: false, message: 'اكتب اسم الكود وقيمة الخصم بشكل صحيح يا باشا ⚠️' });
+    }
+
+    const rawState = await fetchRawDatabaseState(true);
+    const promoList = Array.isArray(rawState.settings.promoCodes) ? [...rawState.settings.promoCodes] : [];
+    const existingIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === cleanCode);
+
+    const expiresAt = Date.now() + hours * 3600000;
+    const newPromoObj = {
+      code: cleanCode,
+      discountAmount: amt,
+      targetPhone: cleanTarget,
+      validHours: hours,
+      expiresAt,
+      usedBy: existingIdx !== -1 ? (promoList[existingIdx].usedBy || []) : [],
+      active: true,
+      createdAt: Date.now()
+    };
+
+    if (existingIdx !== -1) {
+      promoList[existingIdx] = newPromoObj;
+    } else {
+      promoList.unshift(newPromoObj);
+    }
+
+    await saveIncentivesToDatabase(rawState, { promoCodes: promoList.slice(0, 50) });
+
+    if (cleanTarget === 'all') {
+      broadcastPushByTargetGroup('customers', {
+        title: 'كود خصم عنابي جديد لكل البشوات! 🎟️😍',
+        body: `استخدم كود (${cleanCode}) واكسب خصم فوري ${amt} جنيه على مشوارك! الكود شغال معاك لمدة ${hours} ساعة 🛵💨`
+      });
+    } else {
+      sendPushNotificationToPhone(cleanTarget, {
+        title: 'هدية خاصة ليك يا باشا مصر! 🎟️👑',
+        body: `إدارة الرجل العنابي عملتلك كود خصم مخصوص (${cleanCode}) بقيمة ${amt} جنيه! تقدر تستخدمه خلال ${hours} ساعة 😎🛵`
+      });
+    }
+
+    await logAdminAudit(
+      'إصدار كود خصم',
+      cleanCode,
+      `خصم ${amt} ج — المستهدف: ${cleanTarget === 'all' ? 'جميع العملاء' : cleanTarget} (صالح لـ ${hours} ساعة)`,
+      req.admin.name
+    );
+
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    res.json({
+      success: true,
+      message: `تم تفعيل كود الخصم (${cleanCode}) وإرسال الإشعارات بنجاح 🎟️✅`,
+      state
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'تعذر حفظ كود الخصم ⚠️' });
+  }
+});
+
+app.post('/api/admin/promo-codes/delete', authenticateAdmin, async (req, res) => {
+  const { code } = req.body || {};
+  const cleanCode = String(code || '').trim().toUpperCase();
+  const rawState = await fetchRawDatabaseState(true);
+  const promoList = (rawState.settings.promoCodes || []).filter(p => p && String(p.code).toUpperCase() !== cleanCode);
+
+  await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
+  await logAdminAudit('حذف كود خصم', cleanCode, 'إلغاء وحذف كود الخصم', req.admin.name);
+
+  invalidateStateCache();
+  const state = await buildClientState(req, true);
+  res.json({ success: true, message: 'تم حذف كود الخصم بنجاح 🗑️✅', state });
 });
 
 app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res) => {
@@ -1458,7 +2083,7 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
     const notices = Array.isArray(cap.admin_notices) ? cap.admin_notices : [];
     notices.unshift({
       id: 'topup-' + Date.now(),
-      text: `⚡ تم شحن محفظتك بمبلغ ${amt} جنيه من الإدارة بنجاح!`,
+      text: `⚡ تم شحن محفظتك بمبلغ ${amt} جنيه من الإدارة بنجاح.. طير في الميدان يا بطل! 🛵`,
       type: 'reward',
       at: Date.now()
     });
@@ -1467,8 +2092,8 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
 
   await logAdminAudit('شحن محفظة كابتن', phone, `شحن مبلغ ${amt} ج`, req.admin.name);
   sendPushNotificationToPhone(phone, {
-    title: 'تم شحن محفظتك 💰✅',
-    body: `تم إضافة ${amt} جنيه إلى محفظتك من إدارة الرجل العنابي 🛵`
+    title: 'تم شحن محفظتك يانجم! 💰✅',
+    body: `نزل في محفظتك ${amt} جنيه من إدارة الرجل العنابي.. ربنا يرزقك يا بطل 🛵💪`
   });
 
   invalidateStateCache();
@@ -1498,6 +2123,11 @@ app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res
     });
     await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', phone);
   }
+
+  sendPushNotificationToPhone(phone, {
+    title: 'تنبيه خصم من المحفظة ⚠️',
+    body: `تم خصم ${amt} ج من محفظتك — السبب: ${reason}`
+  });
 
   await logAdminAudit('خصم من كابتن', phone, `خصم ${amt} ج - السبب: ${reason}`, req.admin.name);
   invalidateStateCache();
@@ -1530,8 +2160,8 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req
 
   await logAdminAudit('تعويض عميل', phone, `إضافة ${amt} ج - ${reason || 'هدية'}`, req.admin.name);
   sendPushNotificationToPhone(phone, {
-    title: 'هدية في محفظتك 🎁👑',
-    body: `تم إضافة ${amt} جنيه رصيد هدية في محفظتك تتخصم تلقائياً من مشوارك القادم!`
+    title: 'هدية في محفظتك يا باشا! 🎁👑',
+    body: `نزل في محفظتك ${amt} جنيه رصيد هدية من الرجل العنابي هيتخصم أوتوماتيك في طلبك الجاي فوراً! 😍🛵`
   });
 
   invalidateStateCache();
@@ -1546,14 +2176,20 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
     : { custom_fee: roundMoney(customFee), custom_fee_reason: reason || 'تخصيص من الإدارة' };
 
   await supabase.from('captains').update(updates).eq('phone', phone);
-  await logAdminAudit('عمولة خاصة', phone, reset ? 'إرجاع للعمولة العامة' : `تحديد عمولة ${customFee} ج`, req.admin.name);
+  await logAdminAudit('عمولة خاصة', phone, reset ? 'إرجاع للعمولة العامة/المستويات' : `تحديد عمولة ${customFee} ج`, req.admin.name);
+
+  if (!reset) {
+    sendPushNotificationToPhone(phone, {
+      title: 'تحديث عمولتك الخاصة 🎯🛵',
+      body: `الإدارة خصصت لك عمولة (${roundMoney(customFee)} ج) — السبب: ${reason || 'تقديراً لمجهودك يا بطل!'}`
+    });
+  }
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
-// اعتماد أو إيقاف أو رفض الكابتن + صرف المبلغ الترحيبي الديناميكي وإشعار الترحيب فور الاعتماد لأول مرة
 app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res) => {
   const { status, reason } = req.body || {};
   const phone = req.params.phone;
@@ -1580,7 +2216,6 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
     const notices = Array.isArray(currentCap.admin_notices) ? currentCap.admin_notices : [];
 
     if (welcomeActive && welcomeBonus > 0) {
-      // التحقق مما إذا كان الكابتن قد حصل على هدية التسجيل مسبقاً حتى لا تتكرر
       const alreadyReceivedWelcome = txList.some(t => t && String(t.title || '').includes('هدية التسجيل'));
 
       if (!alreadyReceivedWelcome) {
@@ -1620,6 +2255,11 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
     sendPushNotificationToPhone(phone, {
       title: 'يرجى تحديث مستنداتك 📄⚠️',
       body: `سبب الملاحظة: ${reason || 'يرجى رفع صور واضحة للمستندات'}`
+    });
+  } else if (status === 'موقوف') {
+    sendPushNotificationToPhone(phone, {
+      title: 'تنبيه إيقاف الحساب مؤقتاً ⛔',
+      body: `السبب: ${reason || 'يرجى مراجعة إدارة الرجل العنابي'}`
     });
   }
 
@@ -1687,6 +2327,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
   if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
 
   const custPhone = order.customer_phone || order.client_phone;
+  const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
 
   if (action === 'radar') {
     if (order.assigned_courier_phone) {
@@ -1712,10 +2353,14 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
       admin_resolution_note: reason ? `إعادة للرادار: ${reason}` : null
     }).eq('id', orderId);
   } else if (action === 'cancel' || action === 'resolve_cancel') {
-    if (order.discount_applied > 0 && custPhone) {
+    const refundWalletAmt = meta.walletDiscount > 0
+      ? meta.walletDiscount
+      : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
+
+    if (refundWalletAmt > 0 && custPhone) {
       await supabase.rpc('adjust_customer_wallet_atomic', {
         p_phone: custPhone,
-        p_amount: roundMoney(order.discount_applied),
+        p_amount: roundMoney(refundWalletAmt),
         p_reason: `رد خصم لطلب ملغي إدارياً ${order.id}`
       });
     }

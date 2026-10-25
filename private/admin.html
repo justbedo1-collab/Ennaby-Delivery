@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- مكتبة الخرائط المجانية Leaflet + محرك Supabase Realtime -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --primary: #7B3F52; --primary-dark: #5F2E3E; --primary-light: #9B556C;
@@ -55,6 +59,10 @@
     .badge-completed { background: #E8F5E9; color: #2E7D32; }
     .badge-rejected { background: #FFEBEE; color: #D32F2F; }
     .badge-master { background: #302A2D; color: #FBC02D; border: 1px solid #FBC02D; }
+    /* شارات مستويات الكباتن المميزة */
+    .tier-badge-bronze { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); color: #8D4E15; border: 1px solid #FFB74D; }
+    .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
+    .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 6px rgba(2,136,209,0.2); }
     .admin-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .kpi-card { padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
     .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 700; line-height: 1.3; }
@@ -166,6 +174,14 @@
               <div class="card kpi-card" style="border-right:4px solid #0288D1;">
                 <span class="kpi-label">إجمالي محافظ الكباتن 💰</span>
                 <div class="kpi-value" style="color:#0288D1;" id="adminStatTotalCaptainsWallet">0.00 ج</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #00897B;">
+                <span class="kpi-label">كباتن في وضع الاستعداد 📡</span>
+                <div class="kpi-value" style="color:#00897B;" id="adminStatAvailableCaptainsCount">0 كابتن</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #43A047;">
+                <span class="kpi-label">العملاء المتواجدين حالياً 🟢</span>
+                <div class="kpi-value" style="color:#43A047;" id="adminStatOnlineCustomersCount">0 عميل</div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid #E65100;">
                 <span class="kpi-label">عدد العملاء الحاليين 👑</span>
@@ -337,6 +353,41 @@
                 <div id="adminCaptainReviewFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
               </div>
 
+              <!-- لوحة التحكم الديناميكية في مستويات الكباتن وعمولاتها (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
+              <div class="card" id="admCard-captainTiers" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F5FBFF);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <h2 class="card-title" style="margin:0; color:#01579B;"><i class="fa-solid fa-Ranking-star"></i> مستويات الكباتن والترقية الأوتوماتيكية 💎</h2>
+                  <span class="badge tier-badge-diamond">ديناميكي ⚡</span>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+                  تحكم في شروط انتقال الكابتن من <strong>برونزي 🥉</strong> إلى <strong>بلاتيني 🥈</strong> ثم <strong>ماسي 💎</strong> وقيمة خصم العمولة لكل مستوى.
+                </p>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">طلبات الأسبوع للبلاتيني 🥈:</label>
+                    <input type="number" id="adminTierWeeklyOrdersInput" class="input-field" placeholder="25" min="1" oninput="updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">عدد الأسابيع للماسي 💎:</label>
+                    <input type="number" id="adminTierDiamondWeeksInput" class="input-field" placeholder="4" min="1" oninput="updateAdminTiersLiveNote()">
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">خصم عمولة البلاتيني (ج) 🥈:</label>
+                    <input type="number" id="adminTierPlatDiscountInput" class="input-field" placeholder="1" min="0" step="0.5" oninput="updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">خصم عمولة الماسي (ج) 💎:</label>
+                    <input type="number" id="adminTierDiaDiscountInput" class="input-field" placeholder="2" min="0" step="0.5" oninput="updateAdminTiersLiveNote()">
+                  </div>
+                </div>
+                <div id="adminTiersLiveRuleNote" style="background:#E1F5FE; border:1px dashed #0288D1; border-radius:10px; padding:8px 10px; font-size:11px; color:#01579B; font-weight:700; margin-bottom:10px; line-height:1.6;"></div>
+                <button type="button" class="btn-main" style="background:#0288D1;" onclick="adminSaveCaptainTiersConfig()">
+                  <i class="fa-solid fa-floppy-disk"></i> حفظ واعتماد قواعد المستويات ✅
+                </button>
+              </div>
+
               <div class="card" id="admCard-resetPass" style="border: 1.5px solid var(--primary); margin-top: 14px;">
                 <h2 class="card-title"><i class="fa-solid fa-key"></i> تعيين كلمة مرور جديدة لكابتن 🔑</h2>
                 <div class="input-group">
@@ -408,9 +459,54 @@
               <button class="btn-main" style="background:var(--success);" onclick="adminExecuteCustomerCompensation()">إضافة رصيد للعميل ✅</button>
             </div>
 
+            <!-- كارت نظام كوبونات الخصم الديناميكي (للكل أو لعميل محدد) -->
+            <div class="card" id="admCard-promoCodes" style="border: 2px solid #8E24AA; background: #FCF8FF;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h2 class="card-title" style="margin:0; color:#6A1B9A;"><i class="fa-solid fa-ticket"></i> كوبونات وأكواد الخصم 🎟️</h2>
+                <span class="badge badge-delivering">إشعار فوري 📲</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+                أنشئ كود خصم عام لكل العملاء أو مخصص لعميل بعينه، ويقدر العميل يحتفظ بالكود لحد انتهاء فترة السماح!
+              </p>
+              <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">كود الخصم (مثال ENNABY15):</label>
+                  <input type="text" id="adminPromoCodeInput" class="input-field" placeholder="ENNABY15" style="text-transform:uppercase; font-weight:800;">
+                </div>
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">قيمة الخصم (بالجنيه):</label>
+                  <input type="number" id="adminPromoAmountInput" class="input-field" placeholder="15" min="1">
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">لمن يُتاح هذا الكود؟</label>
+                  <select id="adminPromoTargetSelect" class="select-field" onchange="toggleAdminPromoTargetPhone()">
+                    <option value="all">📢 تعميم لجميع العملاء</option>
+                    <option value="custom">👑 عميل محدد برقم هاتفه</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">فترة السماح (بالساعات):</label>
+                  <input type="number" id="adminPromoValidHoursInput" class="input-field" placeholder="48" value="48" min="1">
+                </div>
+              </div>
+              <div id="adminPromoCustomPhoneWrap" style="display:none; margin-bottom:10px;">
+                <label class="input-label" style="font-size:10.5px;">رقم هاتف العميل المخصوص 📱:</label>
+                <input type="tel" id="adminPromoTargetPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
+              </div>
+              <button type="button" class="btn-main" style="background:#6A1B9A; margin-bottom:12px;" onclick="adminCreatePromoCode()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> تفعيل الكود وإرسال إشعار للعملاء 🚀
+              </button>
+              <div style="border-top:1px dashed #E1BEE7; padding-top:8px;">
+                <strong style="font-size:11.5px; color:#6A1B9A; display:block; margin-bottom:6px;">الأكواد النشطة حالياً:</strong>
+                <div id="adminPromoCodesList" style="display:flex; flex-direction:column; gap:6px;"></div>
+              </div>
+            </div>
+
             <div class="card" id="admCard-platformFee" style="border: 2px solid var(--primary);">
               <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> عمولة المنصة ⚙️</h2>
+                <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> عمولة المنصة الأساسية ⚙️</h2>
                 <span class="badge badge-completed" id="adminCurrentFeeBadge">--</span>
               </div>
               <div class="inline-action-row">
@@ -434,7 +530,7 @@
               </div>
             </div>
 
-            <!-- كارت التحكم الديناميكي في المبلغ الترحيبي وبرنامج دعوة الأصدقاء -->
+            <!-- كارت التحكم الديناميكي في المبلغ الترحيبي وبرنامج دعوة الأصدقاء (شاملاً عدد المشاوير الديناميكي) -->
             <div class="card" id="admCard-incentivesManage" style="border: 2px solid #2E7D32; background: #FAFFFA;">
               <h2 class="card-title" style="color:var(--success);"><i class="fa-solid fa-hand-holding-heart"></i> الحوافز الترحيبية ودعوة الأصدقاء 🎁</h2>
 
@@ -460,25 +556,31 @@
                 <div id="adminWelcomePreviewNotice" style="margin-top:8px; background:#E8F5E9; border:1px dashed #2E7D32; padding:8px 10px; border-radius:10px; font-size:11px; color:#1B5E20; font-weight:700; line-height:1.5;"></div>
               </div>
 
-              <!-- 2. التحكم في برنامج دعوة الأصدقاء (الإحالات) -->
+              <!-- 2. التحكم في برنامج دعوة الأصدقاء (الإحالات + عدد المشاوير المطلوبة ديناميكياً) -->
               <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #C8E6C9;">
                 <div class="switch-wrapper" style="padding:0 0 8px 0; background:transparent; border-bottom:1px dashed #C8E6C9; margin-bottom:10px;">
                   <div>
                     <strong style="font-size:12.5px; color:#1B5E20; display:block;">🤝 برنامج دعوة الأصدقاء (الإحالات)</strong>
-                    <small style="font-size:10.5px; color:var(--text-muted);">مكافأة تُصرف للداعي بعد إتمام صديقه الجديد مشوارين</small>
+                    <small style="font-size:10.5px; color:var(--text-muted);">تحكم في قيمة المكافأة وعدد المشاوير المطلوبة من الكابتن الجديد</small>
                   </div>
                   <label class="switch">
                     <input type="checkbox" id="adminReferralRewardSwitch" checked onchange="adminSaveIncentivesSettings('referral')">
                     <span class="slider"></span>
                   </label>
                 </div>
-                <label class="input-label" style="margin-bottom:4px; display:block;">قيمة هدية دعوة الصديق (بالجنيه):</label>
-                <div class="inline-action-row">
-                  <input type="number" id="adminReferralRewardAmountInput" class="input-field" placeholder="50" min="0" oninput="updateIncentivesLivePreview()">
-                  <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('referral')">
-                    <i class="fa-solid fa-check"></i> حفظ المكافأة
-                  </button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                  <div>
+                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">قيمة الهدية (بالجنيه) 💸:</label>
+                    <input type="number" id="adminReferralRewardAmountInput" class="input-field" placeholder="50" min="0" oninput="updateIncentivesLivePreview()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">عدد المشاوير المطلوبة 🛵:</label>
+                    <input type="number" id="adminReferralRequiredOrdersInput" class="input-field" placeholder="2" min="1" oninput="updateIncentivesLivePreview()">
+                  </div>
                 </div>
+                <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('referral')">
+                  <i class="fa-solid fa-check"></i> حفظ المكافأة وعدد المشاوير
+                </button>
                 <div id="adminReferralPreviewNotice" style="margin-top:8px; background:#FFFDE7; border:1px dashed #FBC02D; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; font-weight:700; line-height:1.5;"></div>
               </div>
             </div>
@@ -518,6 +620,36 @@
                 </select>
               </div>
               <div id="adminOrdersFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
+
+            <!-- كارت تسعير وقت الذروة المؤقت بالعداد التنازلي (Surge Pricing) -->
+            <div class="card" id="admCard-surgePricing" style="border: 2px solid #ED6C02; background: #FFFDF7;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h2 class="card-title" style="margin:0; color:#E65100;"><i class="fa-solid fa-bolt"></i> تسعير وقت الذروة المؤقت (Surge) ⚡</h2>
+                <span class="badge badge-pending" id="adminSurgeStatusBadge">غير مفعل</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+                حدد نسبة الزيادة وفترة التشغيل بالدقائق، وسيتم تطبيق نفس النسبة أوتوماتيكياً على <strong>أجرة التوصيل</strong> وعلى <strong>عمولة المنصة الحالية</strong> وينتهي وقت الذروة تلقائياً بانتهاء الوقت!
+              </p>
+              <div id="adminSurgeLiveBanner" style="display:none; background:#FFF3E0; border:1.5px solid #FFB74D; border-radius:10px; padding:10px; margin-bottom:10px; font-size:11.5px; color:#E65100; font-weight:800; line-height:1.6;"></div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">نسبة الزيادة (%) 📈:</label>
+                  <input type="number" id="adminSurgePercentInput" class="input-field" placeholder="20" value="20" min="1" max="200">
+                </div>
+                <div>
+                  <label class="input-label" style="font-size:10.5px;">فترة التشغيل (بالدقائق) ⏱️:</label>
+                  <input type="number" id="adminSurgeDurationInput" class="input-field" placeholder="30" value="30" min="1">
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
+                <button type="button" class="btn-main" style="background:#E65100; padding:10px; font-size:12px;" onclick="adminTriggerSurgePricing('start')">
+                  <i class="fa-solid fa-fire"></i> تفعيل الذروة الآن ⚡
+                </button>
+                <button type="button" class="btn-danger" style="padding:10px; font-size:12px;" onclick="adminTriggerSurgePricing('stop')">
+                  <i class="fa-solid fa-stop"></i> إيقاف فوري ⏹️
+                </button>
+              </div>
             </div>
 
             <div class="card" id="admCard-packageWeights" style="border: 1.5px solid var(--primary);">
@@ -583,6 +715,18 @@
     </div>
   </div>
 
+  <!-- نافذة معاينة خريطة الطلب في الإدارة (Leaflet GPS Map) -->
+  <div class="custom-modal" id="adminOrderMapModal" style="z-index: 1950;" onclick="if(event.target === this) closeAdminOrderMapModal()">
+    <div class="modal-content-card" style="max-width:440px; padding:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 id="adminOrderMapModalTitle" style="font-size:14.5px; font-weight:900; color:var(--primary); margin:0;">🗺️ موقع الطلب على الخريطة</h3>
+        <button type="button" onclick="closeAdminOrderMapModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <div id="adminLeafletMapContainer" style="width:100%; height:280px; border-radius:14px; border:1.5px solid var(--primary); overflow:hidden;"></div>
+      <div id="adminOrderMapLinksBox" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
   <div class="custom-modal" id="customActionModal" style="z-index: 1800;">
     <div class="modal-content-card">
       <h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3>
@@ -609,6 +753,8 @@
     
     let toastTimer = null, actionLock = false;
     let isPricingDirty = false, customModalCallback = null, isCloudSyncInFlight = false, lastCloudStateFingerprint = '';
+    let adminRealtimeClient = null, adminRealtimeInitialized = false, adminRealtimeDebounce = null;
+    let adminLeafletMap = null, adminLeafletMarkers = [];
 
     const DEFAULT_ZONES = ['المنصورة', 'طلخا', 'سندوب', 'جديلة'];
     const ADMIN_PERM_KEYS = ['viewDashboard', 'viewCaptains', 'manageCaptains', 'viewOrders', 'manageOrders', 'manageWallets', 'manageCommissions', 'managePricing', 'manageSettings'];
@@ -629,6 +775,9 @@
       currentAdminTab: SESSION.currentAdminTab,
       currentAdminCaptainsSub: SESSION.currentAdminCaptainsSub,
       activeAdminUser: SESSION.activeAdminUser,
+      availableCaptainsCount: 0,
+      onlineCustomersCount: 0,
+      realtimeConfig: null,
       settings: {}, zones: [...DEFAULT_ZONES], pricing: {}, customers: {}, captains: [], orders: [], adminAccounts: [], auditLogs: []
     };
 
@@ -647,6 +796,18 @@
     function isValidEgyptianPhone(p) { return /^01[0125][0-9]{8}$/.test(normalizePhone(p)); }
     function isValidPin(pin) { return /^[0-9]{4}$/.test(normalizeDigits(pin).trim()); }
     function roundMoney(v) { const n = Number(normalizeDigits(v)); return Number.isFinite(n) ? Math.round((n+Number.EPSILON)*100)/100 : 0; }
+    function formatArabicTripsCount(cnt) {
+      const n = Math.max(1, Number(cnt) || 2);
+      if (n === 1) return 'مشوار واحد';
+      if (n === 2) return 'مشوارين';
+      if (n >= 3 && n <= 10) return `${n} مشاوير`;
+      return `${n} مشوار`;
+    }
+    function getCaptainTierBadgeClass(tier) {
+      if (tier === 'diamond') return 'tier-badge-diamond';
+      if (tier === 'platinum') return 'tier-badge-platinum';
+      return 'tier-badge-bronze';
+    }
     function safeImageSrc(s) {
       if (!s || typeof s !== 'string') return '';
       const t = s.trim();
@@ -655,6 +816,26 @@
       return '';
     }
     function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
+
+    // تفعيل Supabase Realtime WebSockets للتحديث الفوري في لوحة الإدارة
+    function setupAdminSupabaseRealtime(cfg) {
+      if (adminRealtimeInitialized || !cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') return;
+      try {
+        adminRealtimeInitialized = true;
+        adminRealtimeClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+        adminRealtimeClient.channel('ennaby-admin-realtime')
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+            if (adminRealtimeDebounce) clearTimeout(adminRealtimeDebounce);
+            adminRealtimeDebounce = setTimeout(() => {
+              if (getActiveAdmin()) syncFromCloudServer();
+            }, 350);
+          })
+          .subscribe();
+      } catch (e) {
+        adminRealtimeInitialized = false;
+      }
+    }
 
     async function apiRequest(ep, meth='POST', bdy=null) {
       const opts = { method:meth, credentials:'include', headers:{} };
@@ -678,6 +859,12 @@
       if(Array.isArray(cloud.orders)) STATE.orders = cloud.orders;
       if(Array.isArray(cloud.adminAccounts)) STATE.adminAccounts = cloud.adminAccounts;
       if(Array.isArray(cloud.auditLogs)) STATE.auditLogs = cloud.auditLogs;
+      if(cloud.availableCaptainsCount !== undefined) STATE.availableCaptainsCount = Number(cloud.availableCaptainsCount) || 0;
+      if(cloud.onlineCustomersCount !== undefined) STATE.onlineCustomersCount = Number(cloud.onlineCustomersCount) || 0;
+      if(cloud.realtimeConfig) {
+        STATE.realtimeConfig = cloud.realtimeConfig;
+        setupAdminSupabaseRealtime(cloud.realtimeConfig);
+      }
       if(cloud.authenticatedAdminUsername) {
         STATE.activeAdminUser = cloud.authenticatedAdminUsername;
         saveSession();
@@ -829,21 +1016,23 @@
 
       toggleEl('admCard-kpiStats', hasAdminPerm('viewDashboard', adm), 'grid');
       toggleEl('admCard-platformControls', hasAdminPerm('manageSettings', adm));
-      // إظهار كارت إشعارات الهواتف للأدمن الرئيسي فقط
       toggleEl('admCard-pushBroadcast', isMaster);
       toggleEl('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
+      toggleEl('admCard-captainTiers', hasAdminPerm('manageCaptains', adm) || hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-resetPass', hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-manualTopup', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-manualDeduct', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-customerResetPin', hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-customerWallets', hasAdminPerm('manageWallets', adm));
+      toggleEl('admCard-promoCodes', hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-platformFee', hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-customFee', hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-incentivesManage', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-loyaltyPoints', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-financialLedger', hasAdminPerm('manageWallets', adm) || hasAdminPerm('viewDashboard', adm));
       toggleEl('admCard-ordersManage', hasAdminPerm('viewOrders', adm) || hasAdminPerm('manageOrders', adm));
+      toggleEl('admCard-surgePricing', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-packageWeights', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-zonesManage', hasAdminPerm('managePricing', adm));
       toggleEl('admCard-pricingManage', hasAdminPerm('managePricing', adm));
@@ -873,6 +1062,7 @@
       applyAdminPermissionsUI();
       renderAdminAccountsSection();
       renderAdminDynamicSettingsInputs();
+      renderAdminPromoCodesList();
       renderAdminDropdown();
       renderAdminZonesTable();
       renderAdminPackageWeightsTable();
@@ -881,6 +1071,218 @@
       renderAdminCustomerDirectory();
       renderAdminFinancialLedger();
       renderAdminDashboardData();
+    }
+
+    // ==================== مستويات الكباتن الديناميكية ====================
+    function updateAdminTiersLiveNote() {
+      const wOrd = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
+      const dWks = Math.max(1, Number(document.getElementById('adminTierDiamondWeeksInput')?.value || 4));
+      const pDisc = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
+      const dDisc = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
+      const baseFee = roundMoney(STATE.settings.platformFee ?? 7);
+      const box = document.getElementById('adminTiersLiveRuleNote');
+      if (!box) return;
+      box.innerHTML = `
+        🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب/أسبوع — العمولة الأساسية (${baseFee} ج).<br>
+        🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب في 7 أيام — خصم <strong>${pDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - pDisc))} ج).<br>
+        💎 <strong>كابتن ماسي:</strong> الحفاظ على ${wOrd} طلب/أسبوع لمدة ${dWks} أسابيع — خصم <strong>${dDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - dDisc))} ج).
+      `;
+    }
+
+    function adminSaveCaptainTiersConfig() {
+      withActionLock(async () => {
+        const tierWeeklyOrdersTarget = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
+        const tierWeeksForDiamond = Math.max(1, Number(document.getElementById('adminTierDiamondWeeksInput')?.value || 4));
+        const tierPlatinumDiscount = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
+        const tierDiamondDiscount = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
+
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          tierWeeklyOrdersTarget,
+          tierWeeksForDiamond,
+          tierPlatinumDiscount,
+          tierDiamondDiscount
+        });
+        if (ok && data && data.success) {
+          showToast('تم حفظ واعتماد نظام مستويات الكباتن بنجاح 💎✅', 'ok');
+        } else {
+          showToast('تعذر حفظ إعدادات المستويات ⚠️', 'warn');
+        }
+      });
+    }
+
+    function adminChangeCaptainTierOverride(phone, tierValue) {
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          tierManualOverride: { phone, tier: tierValue }
+        });
+        if (ok && data && data.success) {
+          showToast('تم تحديث مستوى الكابتن وعمولته بنجاح 🛵💎', 'ok');
+        } else {
+          showToast('تعذر تحديث مستوى الكابتن ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== كوبونات الخصم الديناميكية ====================
+    function toggleAdminPromoTargetPhone() {
+      const sel = document.getElementById('adminPromoTargetSelect')?.value || 'all';
+      const wrap = document.getElementById('adminPromoCustomPhoneWrap');
+      if (wrap) wrap.style.display = sel === 'custom' ? 'block' : 'none';
+    }
+
+    function adminCreatePromoCode() {
+      withActionLock(async () => {
+        const code = (document.getElementById('adminPromoCodeInput')?.value || '').trim().toUpperCase();
+        const discountAmount = roundMoney(document.getElementById('adminPromoAmountInput')?.value || 0);
+        const targetMode = document.getElementById('adminPromoTargetSelect')?.value || 'all';
+        const customPhone = normalizePhone(document.getElementById('adminPromoTargetPhoneInput')?.value || '');
+        const validHours = Math.max(1, Number(document.getElementById('adminPromoValidHoursInput')?.value || 48));
+
+        if (!code || discountAmount <= 0) {
+          showToast('اكتب اسم الكود وقيمة الخصم بالجنيه الأول يا باشا! 🎟️⚠️', 'warn');
+          return;
+        }
+        if (targetMode === 'custom' && !isValidEgyptianPhone(customPhone)) {
+          showToast('اكتب رقم موبايل العميل المخصوص بشكل صحيح (01...) 📱⚠️', 'warn');
+          return;
+        }
+
+        const targetPhone = targetMode === 'custom' ? customPhone : 'all';
+        const { ok, data } = await apiRequest('/api/admin/promo-codes', 'POST', {
+          code,
+          discountAmount,
+          targetPhone,
+          validHours
+        });
+
+        if (ok && data && data.success) {
+          document.getElementById('adminPromoCodeInput').value = '';
+          document.getElementById('adminPromoAmountInput').value = '';
+          showToast(data.message || 'تم تفعيل الكود وإرسال الإشعارات بنجاح 🎟️✅', 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر إنشاء كود الخصم ⚠️', 'warn');
+        }
+      });
+    }
+
+    function adminDeletePromoCode(code) {
+      openCustomActionModal({
+        title: `حذف كود الخصم (${code}) 🗑️`,
+        message: `هل أنت متأكد من إلغاء وحذف كود الخصم (${code})؟`,
+        confirmText: 'نعم، حذف الكود ⛔',
+        isDanger: true,
+        onConfirm: async () => {
+          withActionLock(async () => {
+            const { ok, data } = await apiRequest('/api/admin/promo-codes/delete', 'POST', { code });
+            if (ok && data && data.success) {
+              showToast('تم حذف كود الخصم بنجاح 🗑️✅', 'ok');
+            }
+          });
+        }
+      });
+    }
+
+    function renderAdminPromoCodesList() {
+      const box = document.getElementById('adminPromoCodesList');
+      if (!box) return;
+      const list = Array.isArray(STATE.settings.promoCodes) ? STATE.settings.promoCodes : [];
+      if (list.length === 0) {
+        box.innerHTML = `<div style="color:#888; font-size:11px; text-align:center; padding:6px;">لا توجد أكواد خصم نشطة حالياً.</div>`;
+        return;
+      }
+      const now = Date.now();
+      box.innerHTML = list.map(p => {
+        const isExpired = p.expiresAt && now > Number(p.expiresAt);
+        const remHours = p.expiresAt ? Math.max(0, Math.ceil((Number(p.expiresAt) - now) / 3600000)) : 0;
+        const usedCnt = Array.isArray(p.usedBy) ? p.usedBy.length : 0;
+        const targetLabel = (!p.targetPhone || p.targetPhone === 'all') ? '📢 لكل العملاء' : `👑 عميل: ${escapeHtml(p.targetPhone)}`;
+        return `<div style="background:#fff; border:1px solid ${isExpired ? '#FFCDD2' : '#CE93D8'}; border-radius:10px; padding:8px 10px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="color:#6A1B9A; font-size:12.5px;">🎟️ ${escapeHtml(p.code)}</strong>
+            <span class="badge ${isExpired ? 'badge-rejected' : 'badge-completed'}" style="margin-right:4px;">خصم ${p.discountAmount} ج</span>
+            <div style="color:#555; margin-top:3px;">${targetLabel} | استُخدم: <strong>${usedCnt} مرة</strong> | ${isExpired ? '<span style="color:var(--danger);">منتهي ⌛</span>' : `متبقي: <strong>${remHours} ساعة</strong>`}</div>
+          </div>
+          <button type="button" class="btn-danger" style="padding:5px 8px; font-size:11px;" onclick="adminDeletePromoCode('${escapeHtml(p.code)}')">حذف ✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    // ==================== تسعير وقت الذروة (Surge Pricing) ====================
+    function adminTriggerSurgePricing(action) {
+      withActionLock(async () => {
+        const surgePercent = Math.max(1, Number(document.getElementById('adminSurgePercentInput')?.value || 20));
+        const surgeDurationMinutes = Math.max(1, Number(document.getElementById('adminSurgeDurationInput')?.value || 30));
+
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          surgeAction: action,
+          surgePercent,
+          surgeDurationMinutes
+        });
+
+        if (ok && data && data.success) {
+          if (action === 'start') {
+            showToast(`تم تفعيل وقت الذروة (+${surgePercent}%) لمدة ${surgeDurationMinutes} دقيقة بنجاح ⚡🔥`, 'ok');
+          } else {
+            showToast('تم إيقاف وقت الذروة والعودة للتسعير الطبيعي ✅', 'ok');
+          }
+        } else {
+          showToast('تعذر تحديث وقت الذروة ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== عرض خريطة الطلب في الإدارة (Leaflet GPS) ====================
+    function openAdminOrderMapModal(orderId) {
+      const o = STATE.orders.find(x => x.id === orderId);
+      if (!o) return;
+      const modal = document.getElementById('adminOrderMapModal');
+      const titleEl = document.getElementById('adminOrderMapModalTitle');
+      const linksBox = document.getElementById('adminOrderMapLinksBox');
+      if (!modal) return;
+      if (titleEl) titleEl.innerText = `🗺️ خريطة المشوار (${o.id})`;
+      modal.classList.add('show');
+
+      setTimeout(() => {
+        if (!window.L) return;
+        if (!adminLeafletMap) {
+          adminLeafletMap = L.map('adminLeafletMapContainer').setView([31.0409, 31.3785], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(adminLeafletMap);
+        }
+        adminLeafletMap.invalidateSize();
+        adminLeafletMarkers.forEach(m => adminLeafletMap.removeLayer(m));
+        adminLeafletMarkers = [];
+
+        const bounds = [];
+        let linksHtml = '';
+
+        if (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) {
+          const m1 = L.marker([o.pickupLat, o.pickupLng]).addTo(adminLeafletMap)
+            .bindPopup(`📦 <b>مكان الاستلام:</b><br>${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}`).openPopup();
+          adminLeafletMarkers.push(m1);
+          bounds.push([o.pickupLat, o.pickupLng]);
+          linksHtml += `<a href="https://www.google.com/maps?q=${o.pickupLat},${o.pickupLng}" target="_blank" class="btn-secondary" style="flex:1; text-decoration:none; font-size:11.5px;">📍 فتح الاستلام في Maps</a>`;
+        }
+        if (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng)) {
+          const m2 = L.marker([o.dropoffLat, o.dropoffLng]).addTo(adminLeafletMap)
+            .bindPopup(`🏁 <b>مكان التسليم:</b><br>${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}`);
+          adminLeafletMarkers.push(m2);
+          bounds.push([o.dropoffLat, o.dropoffLng]);
+          linksHtml += `<a href="https://www.google.com/maps?q=${o.dropoffLat},${o.dropoffLng}" target="_blank" class="btn-main" style="flex:1; text-decoration:none; font-size:11.5px;">🏁 فتح التسليم في Maps</a>`;
+        }
+
+        if (bounds.length === 1) {
+          adminLeafletMap.setView(bounds[0], 15);
+        } else if (bounds.length > 1) {
+          adminLeafletMap.fitBounds(bounds, { padding: [30, 30] });
+        }
+        if (linksBox) linksBox.innerHTML = linksHtml;
+      }, 120);
+    }
+
+    function closeAdminOrderMapModal() {
+      document.getElementById('adminOrderMapModal')?.classList.remove('show');
     }
 
     function adminSendPushBroadcast() {
@@ -1104,8 +1506,10 @@
       const sel = document.getElementById('adminCustomFeeCaptainSelect'); const bx = document.getElementById('adminCustomFeeCurrentSummary'); if(!sel||!bx)return;
       const cap = STATE.captains.find(c=>c.phone===sel.value); if(!cap){ bx.innerHTML='اختر كابتن'; return; }
       const hc = cap.customFee!==null&&cap.customFee!==undefined;
-      bx.innerHTML = hc ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${escapeHtml(cap.customFeeReason)})` : `عمولة عامة`;
-      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:7; document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
+      bx.innerHTML = hc
+        ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${escapeHtml(cap.customFeeReason)})`
+        : `يتبع نظام المستويات (${escapeHtml(cap.tierBadgeText || 'كابتن برونزي 🥉')} — العمولة الفعلية: <strong>${cap.effectiveFee ?? 7} ج</strong>)`;
+      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:(cap.effectiveFee??7); document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
     }
 
     function adminSaveCaptainCustomFee() {
@@ -1121,7 +1525,7 @@
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; if(!p)return;
         const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,reset:true});
-        if(ok&&data.success)showToast('تم الإرجاع للعامة ✅','ok'); else showToast('تعذر ⚠️','warn');
+        if(ok&&data.success)showToast('تم الإرجاع للعامة/المستويات ✅','ok'); else showToast('تعذر ⚠️','warn');
       });
     }
 
@@ -1130,6 +1534,8 @@
       const wAmt = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
       const rActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
       const rAmt = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
+      const rReqTrips = Math.max(1, Number(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2));
+      const tripsTextAr = formatArabicTripsCount(rReqTrips);
 
       const wPreview = document.getElementById('adminWelcomePreviewNotice');
       if (wPreview) {
@@ -1152,7 +1558,7 @@
           rPreview.style.background = '#FFFDE7';
           rPreview.style.color = '#5D4037';
           rPreview.style.borderColor = '#FBC02D';
-          rPreview.innerText = `📢 معاينة الإشعار في حساب الكابتن: «ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل مشوارين هيجيلك ${rAmt} جنيه هدية في محفظتك 😎🛵»`;
+          rPreview.innerText = `📢 معاينة الإشعار في حساب الكابتن: «ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل ${tripsTextAr} هيجيلك ${rAmt} جنيه هدية في محفظتك 😎🛵»`;
         } else {
           rPreview.style.background = '#FFEBEE';
           rPreview.style.color = '#B71C1C';
@@ -1168,6 +1574,7 @@
         const welcomeBonusAmount = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
         const referralRewardActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
         const referralRewardAmount = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
+        const referralRequiredOrders = Math.max(1, Number(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2));
 
         updateIncentivesLivePreview();
 
@@ -1175,14 +1582,15 @@
           welcomeBonusActive,
           welcomeBonusAmount,
           referralRewardActive,
-          referralRewardAmount
+          referralRewardAmount,
+          referralRequiredOrders
         });
 
         if (ok && data && data.success) {
           if (type === 'welcome') {
             showToast(welcomeBonusActive ? `تم اعتماد الهدية الترحيبية (${welcomeBonusAmount} ج) بنجاح 🎁✅` : 'تم إيقاف الهدية الترحيبية للكباتن الجدد ⛔', 'ok');
           } else {
-            showToast(referralRewardActive ? `تم اعتماد مكافأة دعوة الأصدقاء (${referralRewardAmount} ج) بنجاح 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
+            showToast(referralRewardActive ? `تم اعتماد مكافأة الدعوة (${referralRewardAmount} ج بعد ${formatArabicTripsCount(referralRequiredOrders)}) 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
           }
         } else {
           showToast('تعذر حفظ إعدادات الحوافز ⚠️', 'warn');
@@ -1316,7 +1724,9 @@
 
     function renderAdminDynamicSettingsInputs() {
       const s = STATE.settings||{}; const f = Number(s.platformFee ?? 7);
-      document.getElementById('adminCurrentFeeBadge').innerText = `العمولة: ${f} ج`; document.getElementById('adminStatCurrentFeeNote').innerText = `العمولة: ${f} ج`;
+      const effFee = Number(s.effectivePlatformFee ?? f);
+      document.getElementById('adminCurrentFeeBadge').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج` : `العمولة: ${f} ج`;
+      document.getElementById('adminStatCurrentFeeNote').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج ⚡` : `العمولة: ${f} ج`;
       const m={
         adminPlatformFeeInput:f,
         adminCustPointsPerOrderInput:s.customerPointsPerOrder||5,
@@ -1327,6 +1737,13 @@
         adminCourRewardAmountInput:s.courierRewardCash||10,
         adminWelcomeBonusAmountInput:s.welcomeBonusAmount!==undefined?s.welcomeBonusAmount:7,
         adminReferralRewardAmountInput:s.referralRewardAmount!==undefined?s.referralRewardAmount:50,
+        adminReferralRequiredOrdersInput:s.referralRequiredOrders!==undefined?s.referralRequiredOrders:2,
+        adminTierWeeklyOrdersInput:s.tierWeeklyOrdersTarget!==undefined?s.tierWeeklyOrdersTarget:25,
+        adminTierDiamondWeeksInput:s.tierWeeksForDiamond!==undefined?s.tierWeeksForDiamond:4,
+        adminTierPlatDiscountInput:s.tierPlatinumDiscount!==undefined?s.tierPlatinumDiscount:1,
+        adminTierDiaDiscountInput:s.tierDiamondDiscount!==undefined?s.tierDiamondDiscount:2,
+        adminSurgePercentInput:s.surgePercent||20,
+        adminSurgeDurationInput:s.surgeDurationMinutes||30,
         adminBroadcastInput:s.broadcastMessage||'',
         adminSupportWhatsappInput:s.supportWhatsapp||'201507800875',
         adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30
@@ -1351,15 +1768,32 @@
         }
       }
 
+      // تحديث عرض حالة تسعير وقت الذروة (Surge Pricing)
+      const surgeBadge = document.getElementById('adminSurgeStatusBadge');
+      const surgeBanner = document.getElementById('adminSurgeLiveBanner');
+      if (surgeBadge && surgeBanner) {
+        if (s.surgeActive) {
+          surgeBadge.className = 'badge badge-completed';
+          surgeBadge.innerText = `نشط (+${s.surgePercent}%) ⚡`;
+          surgeBanner.style.display = 'block';
+          surgeBanner.innerHTML = `🔥 <strong>وقت الذروة شغال دلوقتي!</strong> زيادة <strong>+${s.surgePercent}%</strong> على أجرة المشاوير وعمولة المنصة (أصبحت ${effFee} ج بدلاً من ${f} ج) — ينتهي أوتوماتيكياً بعد <strong>${s.surgeRemainingMinutes} دقيقة</strong> ⏱️`;
+        } else {
+          surgeBadge.className = 'badge badge-pending';
+          surgeBadge.innerText = 'غير مفعل';
+          surgeBanner.style.display = 'none';
+        }
+      }
+
       if(document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
       if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
       if(document.getElementById('adminWelcomeBonusSwitch')) document.getElementById('adminWelcomeBonusSwitch').checked = s.welcomeBonusActive!==false;
       if(document.getElementById('adminReferralRewardSwitch')) document.getElementById('adminReferralRewardSwitch').checked = s.referralRewardActive!==false;
       updateIncentivesLivePreview();
+      updateAdminTiersLiveNote();
     }
 
     function renderAdminDropdown() {
-      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.status)}]</option>`).join('');
+      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.tierBadgeText || c.status)}]</option>`).join('');
       ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
       if(document.activeElement !== document.getElementById('adminResetPassCaptainSelect')) filterResetPassCaptainDropdown();
       renderAdminCustomFeeCaptainSummary();
@@ -1381,7 +1815,7 @@
 
     function renderAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect'); if(!s||document.activeElement===s) { renderAdminSelectedCaptainCard(); return; }
-      const p = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</option>`).join('');
+      const p = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}</option>`).join('');
       if(p)s.value=p; else if(STATE.captains.length)s.value=STATE.captains[0].phone; renderAdminSelectedCaptainCard();
     }
 
@@ -1420,15 +1854,31 @@
       const p = document.getElementById('adminCaptainDirectorySelect')?.value; const bx = document.getElementById('adminSelectedCaptainCardContainer'); if(!bx)return;
       if(!p){ bx.innerHTML='اختر كابتن.'; return; } const c = STATE.captains.find(x=>x.phone===p); if(!c)return;
       const canManageCap = hasAdminPerm('manageCaptains');
+      const tierBadgeCls = getCaptainTierBadgeClass(c.tier);
+      const currentOverride = (STATE.settings.tierManualOverrides && STATE.settings.tierManualOverrides[c.phone]) || 'auto';
+
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
           <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
-          <span class="badge ${getStatusBadgeClass(c.status)}">${escapeHtml(c.status)}</span>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <span class="badge ${tierBadgeCls}">${escapeHtml(c.tierBadgeText || 'كابتن برونزي 🥉')}</span>
+            <span class="badge ${getStatusBadgeClass(c.status)}">${escapeHtml(c.status)}</span>
+          </div>
         </div>
-        <div style="font-size:11px; margin:8px 0; line-height:1.6;">
-          رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong>
+        <div style="font-size:11px; margin:8px 0; line-height:1.7;">
+          رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong><br>
+          📊 مشاوير آخر 7 أيام: <strong>${c.weeklyCompletedOrders || 0} طلب</strong> | أسابيع التميز المتتالية: <strong>${c.consecutiveQualifiedWeeks || 0} أسبوع</strong> | العمولة الحالية: <strong style="color:var(--success);">${c.effectiveFee ?? 7} ج</strong>
           ${c.suspendReason ? `<div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; padding:4px 8px; border-radius:6px;">⚠️ سبب الرفض/الإيقاف: ${escapeHtml(c.suspendReason)}</div>` : ''}
         </div>
+        ${canManageCap ? `<div style="background:#fff; padding:8px; border-radius:10px; border:1px dashed #0288D1; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span style="font-size:11px; font-weight:800; color:#01579B;">تخصيص المستوى:</span>
+          <select class="select-field" style="width:auto; padding:5px 10px; font-size:11px;" onchange="adminChangeCaptainTierOverride('${escapeHtml(c.phone)}', this.value)">
+            <option value="auto" ${currentOverride==='auto'?'selected':''}>⚡ أوتوماتيكي حسب المشاوير</option>
+            <option value="bronze" ${currentOverride==='bronze'?'selected':''}>🥉 كابتن برونزي</option>
+            <option value="platinum" ${currentOverride==='platinum'?'selected':''}>🥈 كابتن بلاتيني</option>
+            <option value="diamond" ${currentOverride==='diamond'?'selected':''}>💎 كابتن ماسي</option>
+          </select>
+        </div>` : ''}
         ${buildCaptainDocsHtml(c)}
         ${canManageCap ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
           ${c.status!=='معتمد'?`<button type="button" class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد ✅</button>`:''}
@@ -1442,6 +1892,7 @@
       const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
       const disputed=STATE.orders.filter(o=>o.status==='قيد مراجعة الاعتراض');
       const activeOrders=STATE.orders.filter(o=>ACTIVE_COURIER_STATUSES.includes(o.status));
+      const availCaps=STATE.captains.filter(c=>c.status==='معتمد'&&c.isAvailable);
       const custPhonesSet=new Set(Object.keys(STATE.customers||{}).filter(isValidEgyptianPhone));
       STATE.orders.forEach(o=>{const cp=resolveOrderClientPhone(o); if(isValidEgyptianPhone(cp))custPhonesSet.add(cp);});
 
@@ -1450,6 +1901,8 @@
       document.getElementById('adminStatTotalCaptainsWallet').innerText = `${roundMoney(STATE.captains.reduce((s,c)=>s+(Number(c.walletBalance)||0),0))} ج`;
       document.getElementById('adminStatOrdersCompletedCount').innerText = comp.length; document.getElementById('adminStatOrdersCancelledCount').innerText = canc.length;
       document.getElementById('adminStatTotalCaptainsCount').innerText = `${STATE.captains.length} كابتن`;
+      if(document.getElementById('adminStatAvailableCaptainsCount')) document.getElementById('adminStatAvailableCaptainsCount').innerText = `${availCaps.length} كابتن`;
+      if(document.getElementById('adminStatOnlineCustomersCount')) document.getElementById('adminStatOnlineCustomersCount').innerText = `${STATE.onlineCustomersCount || 0} عميل`;
       if(document.getElementById('adminStatTotalCustomersCount')) document.getElementById('adminStatTotalCustomersCount').innerText = `${custPhonesSet.size} عميل`;
       if(document.getElementById('adminStatActiveOrdersCount')) document.getElementById('adminStatActiveOrdersCount').innerText = activeOrders.length;
       
@@ -1476,7 +1929,22 @@
       const canManageOrd = hasAdminPerm('manageOrders');
       const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
       const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
-      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>`<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;"><strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span><br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}<br>${canManageOrd && ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}</div>`).join('');
+      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>{
+        const hasGps = (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) || (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng));
+        return `<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;">
+          <strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
+          ${o.promoCode ? `<span class="badge badge-delivering" style="margin-right:4px;">🎟️ ${escapeHtml(o.promoCode)} (-${o.promoDiscount}ج)</span>` : ''}
+          ${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-right:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}
+          <br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>
+          الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج
+          ${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="padding:5px 10px; font-size:11px; background:#E1F5FE; color:#0277BD;" onclick="openAdminOrderMapModal('${escapeHtml(o.id)}')"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
+            ${canManageOrd && ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}
+            ${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}
+          </div>
+        </div>`;
+      }).join('');
     }
 
     async function initAdminApp() {
