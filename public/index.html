@@ -581,7 +581,7 @@
                 </div>
               </div>
 
-              <!-- عدادات التراكمية، الإحالات، النقاط، التفاصيل كما هي -->
+              <!-- عدادات التراكمية، الإحالات، النقاط، التفاصيل -->
               <div class="card" style="padding:14px;">
                 <h3 class="card-title" style="font-size:13px; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> عداداتك التراكمية (منذ أول مشوار) 🚀</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;">
@@ -591,12 +591,12 @@
                 </div>
               </div>
 
-              <div class="card" style="border: 2px solid #25D366; background: linear-gradient(135deg, #F1F8E9, #FFFDE7); padding: 14px;">
+              <div class="card" id="courierReferralProgramCard" style="border: 2px solid #25D366; background: linear-gradient(135deg, #F1F8E9, #FFFDE7); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#1B5E20; margin:0;"><i class="fa-solid fa-user-group"></i> برنامج دعوة أصدقاء الكابتن 🎁💸</h3>
                   <span class="badge badge-completed" id="courierReferralsCountBadge">0 أصدقاء</span>
                 </div>
-                <p style="font-size:11.5px; font-weight:800; color:#33691E; line-height:1.6; margin-bottom:10px;">ابعت رقمك لصاحبك الى هيسجل جديد واول مايكمل مشوارين هيجيلك <strong>50 جنيه هدية</strong> فى محفظتك 😎🛵</p>
+                <p style="font-size:11.5px; font-weight:800; color:#33691E; line-height:1.6; margin-bottom:10px;">ابعت رقمك لصاحبك الى هيسجل جديد واول مايكمل مشوارين هيجيلك <strong id="courierReferralRewardAmountDisplay">50 جنيه هدية</strong> فى محفظتك 😎🛵</p>
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border-radius:10px; border:1px dashed #2E7D32;">
                   <div>
                     <span style="font-size:10px; color:var(--text-muted); display:block;">رقمك لدعوة صحابك الكباتن:</span>
@@ -631,19 +631,24 @@
             </div>
           </div>
 
-          <!-- شاشة تسجيل كابتن جديد (كما هي) -->
+          <!-- شاشة تسجيل كابتن جديد -->
           <div id="courierSubView-register" style="display:none;">
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h2 class="card-title" style="margin-bottom:0;" id="regFormHeadingTitle"><i class="fa-solid fa-user-plus"></i> انضم لرجالة العنابي 🛵💨</h2>
                 <button onclick="switchCourierSubView('login')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right"></i> أنا مسجل بالفعل</button>
               </div>
-              <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;" id="regFormSubNote">سجل بياناتك ومستنداتك الرسمية بوضوح عشان الإدارة تعتمد حسابك فوراً.</p>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">سجل بياناتك ومستنداتك الرسمية بوضوح عشان الإدارة تعتمد حسابك فوراً.</p>
+
+              <!-- إشعار ديناميكي بالمبلغ الترحيبي للكباتن الجدد -->
+              <div id="regWelcomeBonusBanner" style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:12px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; font-weight:800; color:#1B5E20; line-height:1.6;">
+                🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong id="regWelcomeBonusAmountSpan">7</strong> جنيه هدية ترحيبية في محفظتك فوراً! 🛵💸
+              </div>
               
               <div class="input-group"><label class="input-label">الاسم ثلاثي من واقع البطاقة *</label><input type="text" id="regFullName" class="input-field" placeholder="اكتب اسمك الثلاثي كاملاً"></div>
               <div class="input-group"><label class="input-label">رقم الهاتف الشخصي الشغال *</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15"></div>
               <div class="input-group"><label class="input-label">الرقم القومي (الـ 14 رقم) *</label><input type="text" inputmode="numeric" id="regNationalId" class="input-field" maxlength="14" placeholder="اكتب الـ 14 رقم بالكامل"></div>
-              <div class="input-group" id="regReferralGroupBox"><label class="input-label" style="color:var(--success); font-weight:800;">ادخل رقم موبايل صاحبك الى قالك علينا (اختياري) 🎁</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15"><small style="font-size:10px; color:var(--text-muted);">لو مفيش حد متكتبش حاجة هنا (مينفعش تكتب رقمك الشخصي)</small></div>
+              <div class="input-group" id="regReferralGroupBox"><label class="input-label" id="regReferralLabelText" style="color:var(--success); font-weight:800;">ادخل رقم موبايل صاحبك الى قالك علينا (اختياري) 🎁</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15"><small id="regReferralSubHint" style="font-size:10px; color:var(--text-muted);">لو مفيش حد متكتبش حاجة هنا (مينفعش تكتب رقمك الشخصي)</small></div>
               
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                 <div class="input-group"><label class="input-label" for="regPassword">كلمة مرور للحساب *</label><div style="position:relative;"><input type="password" id="regPassword" class="input-field" placeholder="اكتب كلمة مرور"><button type="button" onclick="togglePasswordVisibility('regPassword', 'toggleRegPassIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassIcon"></i></button></div></div>
@@ -712,7 +717,7 @@
     <div class="modal-content-card" style="text-align:center; padding:24px 16px;">
       <i class="fa-solid fa-circle-check" style="color:var(--success); font-size:36px; margin-bottom:10px;"></i>
       <h3 style="font-size:16px; font-weight:900; color:var(--primary); margin-bottom:8px;">كدا إنت سجلت معانا يا بطل! 🛵🎉</h3>
-      <p style="font-size:13px; line-height:1.6; color:#444;">كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك عمولة أول مشوار هدية فوراً 😎🍇</p>
+      <p id="captainSuccessModalText" style="font-size:13px; line-height:1.6; color:#444;">كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك 7 جنيه هدية ترحيبية فوراً 😎🍇</p>
       <button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام يا باشا، في انتظار الإدارة 💪</button>
     </div>
   </div>
@@ -871,7 +876,25 @@
       currentRole: SESSION.currentRole === 'courier' ? 'courier' : 'customer',
       currentCustTab: SESSION.currentCustTab || 'home', currentCourTab: SESSION.currentCourTab || 'home',
       isAppInstalled: SESSION.isAppInstalled, activeCourierPhone: SESSION.activeCourierPhone, currentTripType: SESSION.currentTripType || 'send',
-      settings: { platformFee: DEFAULT_PLATFORM_FEE, customerPointsPerOrder: DEFAULT_POINTS_PER_ORDER, customerRewardThreshold: DEFAULT_POINTS_THRESHOLD, customerRewardCash: DEFAULT_REWARD_CASH, courierPointsPerOrder: DEFAULT_POINTS_PER_ORDER, courierRewardThreshold: DEFAULT_POINTS_THRESHOLD, courierRewardCash: DEFAULT_REWARD_CASH, supportWhatsapp: DEFAULT_SUPPORT_WHATSAPP, broadcastMessage: '', maintenanceMode: false, allowCaptainRegistration: true, packageTypes: [...DEFAULT_PACKAGE_TYPES] },
+      settings: {
+        platformFee: DEFAULT_PLATFORM_FEE,
+        customerPointsPerOrder: DEFAULT_POINTS_PER_ORDER,
+        customerRewardThreshold: DEFAULT_POINTS_THRESHOLD,
+        customerRewardCash: DEFAULT_REWARD_CASH,
+        courierPointsPerOrder: DEFAULT_POINTS_PER_ORDER,
+        courierRewardThreshold: DEFAULT_POINTS_THRESHOLD,
+        courierRewardCash: DEFAULT_REWARD_CASH,
+        welcomeBonusActive: true,
+        welcomeBonusAmount: 7,
+        referralRewardActive: true,
+        referralRewardAmount: 50,
+        supportWhatsapp: DEFAULT_SUPPORT_WHATSAPP,
+        broadcastMessage: '',
+        broadcastTarget: 'all',
+        maintenanceMode: false,
+        allowCaptainRegistration: true,
+        packageTypes: [...DEFAULT_PACKAGE_TYPES]
+      },
       zones: ['المنصورة', 'طلخا', 'سندوب', 'جديلة'],
       pricing: { 'المنصورة|المنصورة': 40, 'طلخا|طلخا': 35, 'سندوب|سندوب': 35, 'جديلة|جديلة': 35, 'المنصورة|طلخا': 50, 'طلخا|المنصورة': 50, 'المنصورة|سندوب': 50, 'سندوب|المنصورة': 50, 'المنصورة|جديلة': 50, 'جديلة|المنصورة': 50, 'طلخا|سندوب': 70, 'سندوب|طلخا': 70, 'طلخا|جديلة': 70, 'جديلة|طلخا': 70, 'سندوب|جديلة': 70, 'جديلة|سندوب': 70 },
       customerProfile: { title: 'باشا مصر اللي منورنا 👑', savedPhone: SESSION.savedCustomerPhone || '', points: 0, walletBalance: 0.00, walletTransactions: [] },
@@ -1089,7 +1112,21 @@
       const installBanner = document.getElementById('globalInstallBanner'); if (installBanner) installBanner.style.display = STATE.isAppInstalled ? 'none' : 'flex';
       const broadcastBanner = document.getElementById('globalBroadcastBanner'); const broadcastText = document.getElementById('globalBroadcastText');
       const msg = (STATE.settings && STATE.settings.broadcastMessage) ? STATE.settings.broadcastMessage.trim() : '';
-      if (broadcastBanner && broadcastText) { if (msg) { broadcastText.innerText = msg; broadcastBanner.style.display = 'flex'; } else { broadcastBanner.style.display = 'none'; } }
+      const bTarget = (STATE.settings && STATE.settings.broadcastTarget) ? STATE.settings.broadcastTarget : 'all';
+      const shouldShowBroadcast = Boolean(msg) && (
+        bTarget === 'all' ||
+        bTarget === 'public' ||
+        (bTarget === 'customers' && STATE.currentRole === 'customer') ||
+        (bTarget === 'captains' && STATE.currentRole === 'courier')
+      );
+      if (broadcastBanner && broadcastText) {
+        if (shouldShowBroadcast) {
+          broadcastText.innerText = msg;
+          broadcastBanner.style.display = 'flex';
+        } else {
+          broadcastBanner.style.display = 'none';
+        }
+      }
       const waNum = getSupportWhatsapp();
       const custWaLink = document.getElementById('custSupportWhatsappLink'); const courWaLink = document.getElementById('courierSupportWhatsappLink');
       if (custWaLink) custWaLink.href = `https://wa.me/${waNum}`; if (courWaLink) courWaLink.href = `https://wa.me/${waNum}`;
@@ -1103,6 +1140,45 @@
       if (courRadarWrap) { courRadarWrap.style.opacity = isMaint ? '0.55' : '1'; courRadarWrap.style.pointerEvents = isMaint ? 'none' : 'auto'; }
       const allowReg = STATE.settings ? Boolean(STATE.settings.allowCaptainRegistration) : true;
       const regLinkBox = document.getElementById('courierNewRegLinkBox'); if (regLinkBox) regLinkBox.style.display = allowReg ? 'block' : 'none';
+
+      // تحديث ديناميكي للمبلغ الترحيبي وبرنامج دعوة الأصدقاء في استمارة التسجيل ونافذة النجاح
+      const s = STATE.settings || {};
+      const welcomeActive = s.welcomeBonusActive !== false;
+      const welcomeAmt = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
+      const referralActive = s.referralRewardActive !== false;
+      const referralAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
+
+      const regWelcomeBanner = document.getElementById('regWelcomeBonusBanner');
+      const regWelcomeSpan = document.getElementById('regWelcomeBonusAmountSpan');
+      const successModalTxt = document.getElementById('captainSuccessModalText');
+
+      if (welcomeActive && welcomeAmt > 0) {
+        if (regWelcomeBanner) regWelcomeBanner.style.display = 'block';
+        if (regWelcomeSpan) regWelcomeSpan.innerText = welcomeAmt;
+        if (successModalTxt) {
+          successModalTxt.innerText = `كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك ${welcomeAmt} جنيه هدية ترحيبية فوراً 😎🍇`;
+        }
+      } else {
+        if (regWelcomeBanner) regWelcomeBanner.style.display = 'none';
+        if (successModalTxt) {
+          successModalTxt.innerText = 'كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد حسابك هيتفعل وتقدر تستقبل الأوردرات فوراً 😎🍇';
+        }
+      }
+
+      const regRefBox = document.getElementById('regReferralGroupBox');
+      const regRefLabel = document.getElementById('regReferralLabelText');
+      if (regRefBox) {
+        if (referralActive && referralAmt > 0) {
+          regRefBox.style.display = 'flex';
+          if (regRefLabel) {
+            regRefLabel.innerText = `ادخل رقم موبايل صاحبك الى قالك علينا عشان يكسب ${referralAmt} ج هدية (اختياري) 🎁`;
+          }
+        } else {
+          regRefBox.style.display = 'none';
+          const refInp = document.getElementById('regReferredByPhone');
+          if (refInp) refInp.value = '';
+        }
+      }
     }
 
     function selectTripType(type) {
@@ -1289,6 +1365,7 @@
           showToast('جاري رفع المستندات وتسجيل حسابك بأمان... ⏳', 'ok');
           const { ok, data } = await apiRequest('/api/captains/register', 'POST', { phone, password: pass, fullName: name, nationalId, primaryZone: zone, vehicleType: vehicle, plateNumber: vehicle === 'دراجة' ? 'دراجة معفية' : plate, idFrontPhoto: tempCaptainFiles.idFront, idBackPhoto: tempCaptainFiles.idBack, vehiclePhoto: vehicle === 'دراجة' ? null : tempCaptainFiles.vehicle, referredByPhone: refPhone });
           if (!ok || !data.success) { showToast((data && data.message) || 'تعذر إتمام التسجيل ⚠️', 'warn'); return; }
+          subscribeUserToPush(phone);
           reuploadPhoneTarget = null; rejectedCaptainCache = null; document.getElementById('regFullName').value = ''; document.getElementById('regPhone').value = ''; document.getElementById('regNationalId').value = ''; if (document.getElementById('regReferredByPhone')) document.getElementById('regReferredByPhone').value = ''; document.getElementById('regPassword').value = ''; if (passConfirmEl) passConfirmEl.value = ''; document.getElementById('regPlateNumber').value = ''; removeUploadedFile('idFront'); removeUploadedFile('idBack'); removeUploadedFile('vehicle'); document.getElementById('captainSuccessModal')?.classList.add('show');
         } catch (err) { showToast('تعذر الاتصال بالسيرفر أثناء رفع المستندات ⚠️', 'warn'); }
       });
@@ -1372,9 +1449,10 @@
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
           const rawNotices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
-          // إخفاء إشعار هدية الترحيب "مبروك يا بطل" طالما الحساب لم يُعتمد بعد
+          // إخفاء إشعار هدية الترحيب طالما الحساب لم يُعتمد بعد أو إذا أوقفت الإدارة البرنامج الترحيبي
           const notices = rawNotices.filter(n => {
-            if (courier.status !== 'معتمد' && n && (String(n.id || '').startsWith('welcome-') || String(n.text || '').includes('مبروك يا بطل'))) {
+            const isWelcomeNotice = n && (String(n.id || '').startsWith('welcome-') || String(n.text || '').includes('هدية تسجيل'));
+            if (isWelcomeNotice && (courier.status !== 'معتمد' || s.welcomeBonusActive === false)) {
               return false;
             }
             return true;
@@ -1394,8 +1472,24 @@
         document.getElementById('courierCompletedCount').innerText = `${lifetimeCompTotal} أوردرات`; document.getElementById('courierTodayEarnings').innerText = `${lifetimeNetTotal} جنيه`;
         const lifeCompEl = document.getElementById('courierLifetimeCompletedCount'); const lifeCancEl = document.getElementById('courierLifetimeCancelledCount'); const lifeNetEl = document.getElementById('courierLifetimeNetEarnings');
         if (lifeCompEl) lifeCompEl.innerText = lifetimeCompTotal; if (lifeCancEl) lifeCancEl.innerText = lifetimeCancTotal; if (lifeNetEl) lifeNetEl.innerText = `${lifetimeNetTotal} ج`;
-        const refCodeEl = document.getElementById('courierReferralCodeDisplay'); const refBadgeEl = document.getElementById('courierReferralsCountBadge');
-        if (refCodeEl) refCodeEl.innerText = courier.phone; if (refBadgeEl) refBadgeEl.innerText = `${courier.referralsCount || 0} أصدقاء`;
+
+        // تحديث ديناميكي لكارت برنامج دعوة الأصدقاء (الإحالات) في حساب الكابتن
+        const refCardEl = document.getElementById('courierReferralProgramCard');
+        const refRewardDisplayEl = document.getElementById('courierReferralRewardAmountDisplay');
+        const refCodeEl = document.getElementById('courierReferralCodeDisplay');
+        const refBadgeEl = document.getElementById('courierReferralsCountBadge');
+        const refActive = s.referralRewardActive !== false;
+        const refAmount = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
+
+        if (refCardEl) {
+          refCardEl.style.display = (refActive && refAmount > 0) ? 'block' : 'none';
+        }
+        if (refRewardDisplayEl) {
+          refRewardDisplayEl.innerText = `${refAmount} جنيه هدية`;
+        }
+        if (refCodeEl) refCodeEl.innerText = courier.phone;
+        if (refBadgeEl) refBadgeEl.innerText = `${courier.referralsCount || 0} أصدقاء`;
+
         const quickWal = document.getElementById('courierQuickWalletDisplay'); const quickEarn = document.getElementById('courierQuickEarningsDisplay');
         if (quickWal) quickWal.innerText = `${roundMoney(courier.walletBalance).toFixed(2)} ج`; if (quickEarn) quickEarn.innerText = `${lifetimeNetTotal} جنيه`;
         const profDetails = document.getElementById('courierProfileDetailsBox');

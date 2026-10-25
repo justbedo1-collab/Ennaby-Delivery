@@ -401,6 +401,28 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   ]);
 
   const sRow = settingsRes.data || {};
+  const rawPricingObj = (sRow.pricing && typeof sRow.pricing === 'object') ? { ...sRow.pricing } : { ...DEFAULT_PRICING };
+  const storedIncentives = (rawPricingObj.__incentives && typeof rawPricingObj.__incentives === 'object') ? rawPricingObj.__incentives : {};
+  delete rawPricingObj.__incentives;
+
+  const welcomeBonusActive = sRow.welcome_bonus_active !== undefined
+    ? Boolean(sRow.welcome_bonus_active)
+    : (storedIncentives.welcomeBonusActive !== undefined ? Boolean(storedIncentives.welcomeBonusActive) : true);
+
+  const welcomeBonusAmount = sRow.welcome_bonus_amount !== undefined && sRow.welcome_bonus_amount !== null
+    ? Math.max(0, roundMoney(sRow.welcome_bonus_amount))
+    : (storedIncentives.welcomeBonusAmount !== undefined ? Math.max(0, roundMoney(storedIncentives.welcomeBonusAmount)) : 7);
+
+  const referralRewardActive = sRow.referral_reward_active !== undefined
+    ? Boolean(sRow.referral_reward_active)
+    : (storedIncentives.referralRewardActive !== undefined ? Boolean(storedIncentives.referralRewardActive) : true);
+
+  const referralRewardAmount = sRow.referral_reward_amount !== undefined && sRow.referral_reward_amount !== null
+    ? Math.max(0, roundMoney(sRow.referral_reward_amount))
+    : (storedIncentives.referralRewardAmount !== undefined ? Math.max(0, roundMoney(storedIncentives.referralRewardAmount)) : 50);
+
+  const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
+
   const settings = {
     platformFee: roundMoney(sRow.platform_fee ?? 7),
     customerPointsPerOrder: Number(sRow.customer_points_per_order ?? 5),
@@ -409,8 +431,13 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     courierPointsPerOrder: Number(sRow.courier_points_per_order ?? 5),
     courierRewardThreshold: Number(sRow.courier_reward_threshold ?? 100),
     courierRewardCash: roundMoney(sRow.courier_reward_cash ?? 10),
+    welcomeBonusActive,
+    welcomeBonusAmount,
+    referralRewardActive,
+    referralRewardAmount,
     supportWhatsapp: sRow.support_whatsapp || '201507800875',
     broadcastMessage: sRow.broadcast_message || '',
+    broadcastTarget,
     waitingTimeoutMinutes: Number(sRow.waiting_timeout_minutes ?? 30),
     maintenanceMode: Boolean(sRow.maintenance_mode),
     allowCaptainRegistration: sRow.allow_captain_registration !== false,
@@ -420,7 +447,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   runLazyExpiredOrdersCleanup(settings.waitingTimeoutMinutes);
 
   const zones = Array.isArray(sRow.zones) && sRow.zones.length > 0 ? sRow.zones : DEFAULT_ZONES;
-  const pricing = (sRow.pricing && typeof sRow.pricing === 'object') ? sRow.pricing : DEFAULT_PRICING;
+  const pricing = Object.keys(rawPricingObj).length > 0 ? rawPricingObj : { ...DEFAULT_PRICING };
 
   const customersMap = {};
   (customersRes.data || []).forEach(c => {
@@ -740,7 +767,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
   res.json({ success: true, message: 'تم تسجيل الدخول بنجاح 👑', state });
 });
 
-// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage (تُصرف هدية الـ 7 جنيه بعد اعتماد الإدارة فقط)
+// تسجيل كابتن جديد + رفع الصور لـ Supabase Storage (تُصرف الهدية الترحيبية بعد اعتماد الإدارة فقط إذا كانت مفعلة)
 app.post('/api/captains/register', async (req, res) => {
   try {
     const {
@@ -753,6 +780,7 @@ app.post('/api/captains/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'برجاء استكمال جميع البيانات الإجبارية ونوع المركبة ⚠️' });
     }
 
+    const rawState = await fetchRawDatabaseState(false);
     const { data: existing } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
@@ -792,7 +820,7 @@ app.post('/api/captains/register', async (req, res) => {
     }
 
     let validReferrer = null;
-    if (referredByPhone && referredByPhone !== phone) {
+    if (rawState.settings.referralRewardActive !== false && referredByPhone && referredByPhone !== phone) {
       const { data: refCap } = await supabase.from('captains').select('phone').eq('phone', referredByPhone).maybeSingle();
       if (refCap) validReferrer = refCap.phone;
     }
@@ -1133,8 +1161,11 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
       });
     }
 
+    const referralActive = s.referralRewardActive !== false;
+    const referralRewardAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
+
     let claimReferralNow = false;
-    if (freshCap.referred_by_phone && !freshCap.referral_reward_claimed) {
+    if (referralActive && referralRewardAmt > 0 && freshCap.referred_by_phone && !freshCap.referral_reward_claimed) {
       const { count } = await supabase.from('orders')
         .select('id', { count: 'exact', head: true })
         .eq('assigned_courier_phone', cap.phone)
@@ -1155,12 +1186,27 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
       if (refCaptain) {
         await supabase.rpc('adjust_captain_wallet_atomic', {
           p_phone: refCaptain.phone,
-          p_amount: 50,
+          p_amount: referralRewardAmt,
           p_reason: `هدية دعوة الكابتن ${freshCap.full_name} بعد إتمام مشوارين 🎁`
         });
+
+        const refNotices = Array.isArray(refCaptain.admin_notices) ? refCaptain.admin_notices : [];
+        refNotices.unshift({
+          id: 'ref-reward-' + Date.now(),
+          text: `🎁 مبروك يا بطل! نزل في محفظتك ${referralRewardAmt} جنيه هدية دعوة الكابتن (${freshCap.full_name}) بعد إتمامه مشوارين بنجاح 🛵💸`,
+          type: 'reward',
+          at: Date.now()
+        });
+
         await supabase.from('captains').update({
-          referrals_count: Number(refCaptain.referrals_count || 0) + 1
+          referrals_count: Number(refCaptain.referrals_count || 0) + 1,
+          admin_notices: refNotices.slice(0, 10)
         }).eq('phone', refCaptain.phone);
+
+        sendPushNotificationToPhone(refCaptain.phone, {
+          title: 'مكافأة دعوة صديق 🎁💸',
+          body: `مبروك يا بطل! نزل في محفظتك ${referralRewardAmt} جنيه هدية دعوة الكابتن ${freshCap.full_name} 🛵`
+        });
       }
     }
   }
@@ -1322,6 +1368,8 @@ app.post('/api/orders/:id/dispute', async (req, res) => {
 // ==========================================
 app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   const body = req.body || {};
+  const rawState = await fetchRawDatabaseState(true);
+  const prevSettings = rawState.settings || {};
   const updates = {};
 
   if (body.platformFee !== undefined) updates.platform_fee = roundMoney(body.platformFee);
@@ -1331,7 +1379,6 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (body.maintenanceMode !== undefined) updates.maintenance_mode = Boolean(body.maintenanceMode);
   if (body.allowCaptainRegistration !== undefined) updates.allow_captain_registration = Boolean(body.allowCaptainRegistration);
   if (Array.isArray(body.zones)) updates.zones = body.zones;
-  if (body.pricing && typeof body.pricing === 'object') updates.pricing = body.pricing;
   if (Array.isArray(body.packageTypes)) updates.package_types = body.packageTypes;
 
   if (body.loyaltyField && body.loyaltyField.key) {
@@ -1347,8 +1394,48 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     if (dbCol) updates[dbCol] = Number(body.loyaltyField.value);
   }
 
+  // إدارة إعدادات الحوافز الديناميكية + الفئة المستهدفة لشريط الإعلان العام
+  const hasIncentiveUpdate =
+    body.welcomeBonusActive !== undefined ||
+    body.welcomeBonusAmount !== undefined ||
+    body.referralRewardActive !== undefined ||
+    body.referralRewardAmount !== undefined ||
+    body.broadcastTarget !== undefined;
+
+  const updatedIncentives = {
+    welcomeBonusActive: body.welcomeBonusActive !== undefined ? Boolean(body.welcomeBonusActive) : (prevSettings.welcomeBonusActive !== false),
+    welcomeBonusAmount: body.welcomeBonusAmount !== undefined ? Math.max(0, roundMoney(body.welcomeBonusAmount)) : roundMoney(prevSettings.welcomeBonusAmount ?? 7),
+    referralRewardActive: body.referralRewardActive !== undefined ? Boolean(body.referralRewardActive) : (prevSettings.referralRewardActive !== false),
+    referralRewardAmount: body.referralRewardAmount !== undefined ? Math.max(0, roundMoney(body.referralRewardAmount)) : roundMoney(prevSettings.referralRewardAmount ?? 50),
+    broadcastTarget: body.broadcastTarget !== undefined ? String(body.broadcastTarget).trim() : (prevSettings.broadcastTarget || 'all')
+  };
+
+  if (body.pricing && typeof body.pricing === 'object') {
+    const cleanP = { ...body.pricing };
+    cleanP.__incentives = updatedIncentives;
+    updates.pricing = cleanP;
+  } else if (hasIncentiveUpdate) {
+    const cleanP = { ...(rawState.pricing || DEFAULT_PRICING) };
+    cleanP.__incentives = updatedIncentives;
+    updates.pricing = cleanP;
+  }
+
   await supabase.from('settings').upsert({ id: 1, ...updates });
-  await logAdminAudit('تحديث إعدادات', 'المنصة', 'تعديل في إعدادات التشغيل أو التسعير', req.admin.name);
+
+  let auditDetails = 'تعديل في إعدادات التشغيل أو التسعير';
+  if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
+    const targetNames = { all: 'الجميع', customers: 'العملاء فقط', captains: 'الكباتن فقط', admins: 'المسؤولين فقط', public: 'العملاء والكباتن' };
+    const msgTxt = body.broadcastMessage !== undefined ? body.broadcastMessage : (prevSettings.broadcastMessage || '');
+    auditDetails = `تحديث الإعلان العام (${targetNames[updatedIncentives.broadcastTarget] || 'الجميع'}): ${msgTxt || 'إخفاء الإعلان'}`;
+  } else if (
+    body.welcomeBonusActive !== undefined ||
+    body.welcomeBonusAmount !== undefined ||
+    body.referralRewardActive !== undefined ||
+    body.referralRewardAmount !== undefined
+  ) {
+    auditDetails = `تحديث الحوافز — الترحيب: ${updatedIncentives.welcomeBonusActive ? updatedIncentives.welcomeBonusAmount + ' ج' : 'متوقف'} | الإحالة: ${updatedIncentives.referralRewardActive ? updatedIncentives.referralRewardAmount + ' ج' : 'متوقف'}`;
+  }
+  await logAdminAudit('تحديث إعدادات', 'المنصة', auditDetails, req.admin.name);
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -1466,7 +1553,7 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
   res.json({ success: true, state });
 });
 
-// اعتماد أو إيقاف أو رفض الكابتن + صرف الـ 7 جنيه وإشعار الترحيب فور الاعتماد لأول مرة
+// اعتماد أو إيقاف أو رفض الكابتن + صرف المبلغ الترحيبي الديناميكي وإشعار الترحيب فور الاعتماد لأول مرة
 app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res) => {
   const { status, reason } = req.body || {};
   const phone = req.params.phone;
@@ -1484,36 +1571,51 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
   }).eq('phone', phone);
 
   if (status === 'معتمد') {
+    const rawState = await fetchRawDatabaseState(false);
+    const s = rawState.settings || {};
+    const welcomeActive = s.welcomeBonusActive !== false;
+    const welcomeBonus = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
+
     const txList = Array.isArray(currentCap.wallet_transactions) ? currentCap.wallet_transactions : [];
     const notices = Array.isArray(currentCap.admin_notices) ? currentCap.admin_notices : [];
 
-    // التحقق مما إذا كان الكابتن قد حصل على هدية الـ 7 جنيه مسبقاً حتى لا تتكرر
-    const alreadyReceivedWelcome = txList.some(t => t && String(t.title || '').includes('هدية التسجيل'));
-    const welcomeBonus = 7.00;
+    if (welcomeActive && welcomeBonus > 0) {
+      // التحقق مما إذا كان الكابتن قد حصل على هدية التسجيل مسبقاً حتى لا تتكرر
+      const alreadyReceivedWelcome = txList.some(t => t && String(t.title || '').includes('هدية التسجيل'));
 
-    if (!alreadyReceivedWelcome) {
-      await supabase.rpc('adjust_captain_wallet_atomic', {
-        p_phone: phone,
-        p_amount: welcomeBonus,
-        p_reason: 'هدية التسجيل (أول مشوار مجاناً بدون عمولة) 🎁'
-      });
-    }
+      if (!alreadyReceivedWelcome) {
+        await supabase.rpc('adjust_captain_wallet_atomic', {
+          p_phone: phone,
+          p_amount: welcomeBonus,
+          p_reason: `هدية التسجيل الترحيبية (${welcomeBonus} ج) 🎁`
+        });
+      }
 
-    const hasWelcomeNotice = notices.some(n => n && String(n.id || '').startsWith('welcome-'));
-    if (!hasWelcomeNotice) {
-      notices.unshift({
-        id: 'welcome-' + Date.now(),
-        text: '🎁 مبروك يا بطل! نزل في محفظتك 7 جنيه هدية تسجيل عشان تجرب أول مشوار مجاناً بدون عمولة المنصة 🛵💪',
-        type: 'reward',
-        at: Date.now()
-      });
+      const dynamicWelcomeText = `🎁 مبروك يا بطل! نزل في محفظتك ${welcomeBonus} جنيه هدية تسجيل ترحيبية عشان تبدأ مشاويرك بقوة مع الرجل العنابي 🛵💪`;
+      const existingWelcomeIdx = notices.findIndex(n => n && String(n.id || '').startsWith('welcome-'));
+
+      if (existingWelcomeIdx === -1) {
+        notices.unshift({
+          id: 'welcome-' + Date.now(),
+          text: dynamicWelcomeText,
+          type: 'reward',
+          at: Date.now()
+        });
+      } else {
+        notices[existingWelcomeIdx].text = dynamicWelcomeText;
+      }
       await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', phone);
-    }
 
-    sendPushNotificationToPhone(phone, {
-      title: 'تم اعتماد حسابك يا بطل! 🛵🎉',
-      body: '🎁 مبروك يا بطل! نزل في محفظتك 7 جنيه هدية تسجيل عشان تجرب أول مشوار مجاناً بدون عمولة المنصة 🛵💪'
-    });
+      sendPushNotificationToPhone(phone, {
+        title: 'تم اعتماد حسابك يا بطل! 🛵🎉',
+        body: dynamicWelcomeText
+      });
+    } else {
+      sendPushNotificationToPhone(phone, {
+        title: 'تم اعتماد حسابك يا بطل! 🛵🎉',
+        body: 'مبروك يا نجم! تم اعتماد وتفعيل حسابك في منصة الرجل العنابي.. افتح الرادار وانطلق الآن 🛵💪'
+      });
+    }
   } else if (status === 'مرفوض') {
     sendPushNotificationToPhone(phone, {
       title: 'يرجى تحديث مستنداتك 📄⚠️',

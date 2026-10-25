@@ -29,6 +29,7 @@
     .view-container { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
     .sub-tab-section { display: flex; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .broadcast-banner { display: none; background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 8px 14px; color: #5D4037; font-size: 11.5px; font-weight: 800; align-items: center; gap: 8px; line-height: 1.5; }
     .brand-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 16px 10px; }
     .brand-title { display: flex; align-items: center; gap: 8px; }
     .brand-logo-badge { width: 44px; height: 44px; background: #302A2D; color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: var(--shadow-sm); }
@@ -139,6 +140,12 @@
             </button>
           </header>
 
+          <!-- شريط الإعلان العام داخل لوحة الإدارة (يظهر عند استهداف المسؤولين أو الجميع) -->
+          <div class="broadcast-banner" id="adminGlobalBroadcastBanner">
+            <i class="fa-solid fa-bullhorn" style="color:var(--primary); font-size:15px; flex-shrink:0;"></i>
+            <span id="adminGlobalBroadcastText"></span>
+          </div>
+
           <!-- تبويب الإدارة 1: الرئيسية -->
           <div id="admTab-home" class="sub-tab-section">
             <div class="admin-kpi-grid" id="admCard-kpiStats">
@@ -160,6 +167,14 @@
                 <span class="kpi-label">إجمالي محافظ الكباتن 💰</span>
                 <div class="kpi-value" style="color:#0288D1;" id="adminStatTotalCaptainsWallet">0.00 ج</div>
               </div>
+              <div class="card kpi-card" style="border-right:4px solid #E65100;">
+                <span class="kpi-label">عدد العملاء الحاليين 👑</span>
+                <div class="kpi-value" style="color:#E65100;" id="adminStatTotalCustomersCount">0 عميل</div>
+              </div>
+              <div class="card kpi-card" style="border-right:4px solid #7B1FA2;">
+                <span class="kpi-label">عدد الطلبات الجارية الآن 🚀</span>
+                <div class="kpi-value" style="color:#7B1FA2;" id="adminStatActiveOrdersCount">0</div>
+              </div>
               <div class="card kpi-card" style="border-right:4px solid #2E7D32;">
                 <span class="kpi-label">الطلبات المؤكدة ✅</span>
                 <div class="kpi-value" style="color:#2E7D32;" id="adminStatOrdersCompletedCount">0</div>
@@ -173,9 +188,17 @@
             <div class="card" id="admCard-platformControls" style="border: 2px solid var(--primary); background: #FFFDFD;">
               <h2 class="card-title" style="margin-bottom:8px;"><i class="fa-solid fa-bullhorn"></i> الإعلانات العامة وحالة التشغيل 📢</h2>
               <div class="input-group">
-                <label class="input-label">رسالة شريط الإعلان العام (تظهر للجميع):</label>
+                <label class="input-label" for="adminBroadcastTargetSelect">لمن يظهر شريط الإعلان العام؟</label>
+                <select id="adminBroadcastTargetSelect" class="select-field" style="margin-bottom:6px;">
+                  <option value="all">📢 الجميع (عملاء + كباتن + مسؤولين)</option>
+                  <option value="customers">👑 العملاء فقط</option>
+                  <option value="captains">🛵 الكباتن فقط</option>
+                  <option value="admins">🛡️ المسؤولين فقط</option>
+                  <option value="public">👥 العملاء والكباتن معاً</option>
+                </select>
+                <label class="input-label" for="adminBroadcastInput">رسالة شريط الإعلان العام:</label>
                 <div class="inline-action-row">
-                  <input type="text" id="adminBroadcastInput" class="input-field" placeholder="اكتب إعلانك...">
+                  <input type="text" id="adminBroadcastInput" class="input-field" placeholder="اكتب إعلانك (أو اتركه فارغاً للإخفاء)...">
                   <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveBroadcastBanner()"><i class="fa-solid fa-check"></i> تحديث</button>
                 </div>
               </div>
@@ -408,6 +431,55 @@
               <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
                 <button class="btn-main" style="background:#0277BD; padding:10px; font-size:12px;" onclick="adminSaveCaptainCustomFee()">اعتماد الخاص</button>
                 <button class="btn-secondary" style="font-size:11.5px; padding:10px;" onclick="adminResetCaptainCustomFee()">إرجاع للعامة</button>
+              </div>
+            </div>
+
+            <!-- كارت التحكم الديناميكي في المبلغ الترحيبي وبرنامج دعوة الأصدقاء -->
+            <div class="card" id="admCard-incentivesManage" style="border: 2px solid #2E7D32; background: #FAFFFA;">
+              <h2 class="card-title" style="color:var(--success);"><i class="fa-solid fa-hand-holding-heart"></i> الحوافز الترحيبية ودعوة الأصدقاء 🎁</h2>
+
+              <!-- 1. التحكم في الهدية الترحيبية للكباتن الجدد -->
+              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #C8E6C9; margin-bottom:12px;">
+                <div class="switch-wrapper" style="padding:0 0 8px 0; background:transparent; border-bottom:1px dashed #C8E6C9; margin-bottom:10px;">
+                  <div>
+                    <strong style="font-size:12.5px; color:var(--primary); display:block;">🎁 المبلغ الترحيبي للكباتن الجدد</strong>
+                    <small style="font-size:10.5px; color:var(--text-muted);">يُصرف تلقائياً فور اعتماد الإدارة للكابتن لأول مرة</small>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="adminWelcomeBonusSwitch" checked onchange="adminSaveIncentivesSettings('welcome')">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <label class="input-label" style="margin-bottom:4px; display:block;">قيمة الهدية الترحيبية (بالجنيه):</label>
+                <div class="inline-action-row">
+                  <input type="number" id="adminWelcomeBonusAmountInput" class="input-field" placeholder="7" min="0" oninput="updateIncentivesLivePreview()">
+                  <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('welcome')">
+                    <i class="fa-solid fa-check"></i> حفظ المبلغ
+                  </button>
+                </div>
+                <div id="adminWelcomePreviewNotice" style="margin-top:8px; background:#E8F5E9; border:1px dashed #2E7D32; padding:8px 10px; border-radius:10px; font-size:11px; color:#1B5E20; font-weight:700; line-height:1.5;"></div>
+              </div>
+
+              <!-- 2. التحكم في برنامج دعوة الأصدقاء (الإحالات) -->
+              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #C8E6C9;">
+                <div class="switch-wrapper" style="padding:0 0 8px 0; background:transparent; border-bottom:1px dashed #C8E6C9; margin-bottom:10px;">
+                  <div>
+                    <strong style="font-size:12.5px; color:#1B5E20; display:block;">🤝 برنامج دعوة الأصدقاء (الإحالات)</strong>
+                    <small style="font-size:10.5px; color:var(--text-muted);">مكافأة تُصرف للداعي بعد إتمام صديقه الجديد مشوارين</small>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="adminReferralRewardSwitch" checked onchange="adminSaveIncentivesSettings('referral')">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <label class="input-label" style="margin-bottom:4px; display:block;">قيمة هدية دعوة الصديق (بالجنيه):</label>
+                <div class="inline-action-row">
+                  <input type="number" id="adminReferralRewardAmountInput" class="input-field" placeholder="50" min="0" oninput="updateIncentivesLivePreview()">
+                  <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('referral')">
+                    <i class="fa-solid fa-check"></i> حفظ المكافأة
+                  </button>
+                </div>
+                <div id="adminReferralPreviewNotice" style="margin-top:8px; background:#FFFDE7; border:1px dashed #FBC02D; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; font-weight:700; line-height:1.5;"></div>
               </div>
             </div>
 
@@ -768,6 +840,7 @@
       toggleEl('admCard-customerWallets', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-platformFee', hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-customFee', hasAdminPerm('manageCommissions', adm));
+      toggleEl('admCard-incentivesManage', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-loyaltyPoints', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-financialLedger', hasAdminPerm('manageWallets', adm) || hasAdminPerm('viewDashboard', adm));
       toggleEl('admCard-ordersManage', hasAdminPerm('viewOrders', adm) || hasAdminPerm('manageOrders', adm));
@@ -1052,6 +1125,71 @@
       });
     }
 
+    function updateIncentivesLivePreview() {
+      const wActive = Boolean(document.getElementById('adminWelcomeBonusSwitch')?.checked);
+      const wAmt = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
+      const rActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
+      const rAmt = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
+
+      const wPreview = document.getElementById('adminWelcomePreviewNotice');
+      if (wPreview) {
+        if (wActive && wAmt > 0) {
+          wPreview.style.background = '#E8F5E9';
+          wPreview.style.color = '#1B5E20';
+          wPreview.style.borderColor = '#2E7D32';
+          wPreview.innerText = `📢 معاينة الإشعار للكابتن الجديد: «🎁 مبروك يا بطل! نزل في محفظتك ${wAmt} جنيه هدية تسجيل ترحيبية عشان تبدأ مشاويرك بقوة مع الرجل العنابي 🛵💪»`;
+        } else {
+          wPreview.style.background = '#FFEBEE';
+          wPreview.style.color = '#B71C1C';
+          wPreview.style.borderColor = '#D32F2F';
+          wPreview.innerText = '⛔ المبلغ الترحيبي متوقف حالياً (لن يتم صرف رصيد ترحيبي عند اعتماد الكباتن الجدد).';
+        }
+      }
+
+      const rPreview = document.getElementById('adminReferralPreviewNotice');
+      if (rPreview) {
+        if (rActive && rAmt > 0) {
+          rPreview.style.background = '#FFFDE7';
+          rPreview.style.color = '#5D4037';
+          rPreview.style.borderColor = '#FBC02D';
+          rPreview.innerText = `📢 معاينة الإشعار في حساب الكابتن: «ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل مشوارين هيجيلك ${rAmt} جنيه هدية في محفظتك 😎🛵»`;
+        } else {
+          rPreview.style.background = '#FFEBEE';
+          rPreview.style.color = '#B71C1C';
+          rPreview.style.borderColor = '#D32F2F';
+          rPreview.innerText = '⛔ برنامج دعوة الأصدقاء متوقف حالياً (سيتم إخفاؤه تلقائياً من حسابات الكباتن واستمارة التسجيل).';
+        }
+      }
+    }
+
+    function adminSaveIncentivesSettings(type) {
+      withActionLock(async () => {
+        const welcomeBonusActive = Boolean(document.getElementById('adminWelcomeBonusSwitch')?.checked);
+        const welcomeBonusAmount = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
+        const referralRewardActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
+        const referralRewardAmount = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
+
+        updateIncentivesLivePreview();
+
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          welcomeBonusActive,
+          welcomeBonusAmount,
+          referralRewardActive,
+          referralRewardAmount
+        });
+
+        if (ok && data && data.success) {
+          if (type === 'welcome') {
+            showToast(welcomeBonusActive ? `تم اعتماد الهدية الترحيبية (${welcomeBonusAmount} ج) بنجاح 🎁✅` : 'تم إيقاف الهدية الترحيبية للكباتن الجدد ⛔', 'ok');
+          } else {
+            showToast(referralRewardActive ? `تم اعتماد مكافأة دعوة الأصدقاء (${referralRewardAmount} ج) بنجاح 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
+          }
+        } else {
+          showToast('تعذر حفظ إعدادات الحوافز ⚠️', 'warn');
+        }
+      });
+    }
+
     function adminSaveLoyaltyField(key, id) {
       withActionLock(async () => {
         const v = Number(document.getElementById(id)?.value); if(v<1)return;
@@ -1062,9 +1200,10 @@
 
     function adminSaveBroadcastBanner() {
       withActionLock(async () => {
-        const v = document.getElementById('adminBroadcastInput')?.value.trim();
-        const {ok, data}=await apiRequest('/api/admin/settings','POST',{broadcastMessage:v});
-        if(ok&&data.success)showToast('تم تحديث الإعلان ✅','ok');
+        const v = document.getElementById('adminBroadcastInput')?.value.trim() || '';
+        const t = document.getElementById('adminBroadcastTargetSelect')?.value || 'all';
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{broadcastMessage:v, broadcastTarget:t});
+        if(ok&&data.success)showToast('تم تحديث شريط الإعلان العام والفئة المستهدفة 📢✅','ok');
       });
     }
 
@@ -1178,10 +1317,45 @@
     function renderAdminDynamicSettingsInputs() {
       const s = STATE.settings||{}; const f = Number(s.platformFee ?? 7);
       document.getElementById('adminCurrentFeeBadge').innerText = `العمولة: ${f} ج`; document.getElementById('adminStatCurrentFeeNote').innerText = `العمولة: ${f} ج`;
-      const m={ adminPlatformFeeInput:f, adminCustPointsPerOrderInput:s.customerPointsPerOrder||5, adminCustPointsTargetInput:s.customerRewardThreshold||100, adminCustRewardAmountInput:s.customerRewardCash||10, adminCourPointsPerOrderInput:s.courierPointsPerOrder||5, adminCourPointsTargetInput:s.courierRewardThreshold||100, adminCourRewardAmountInput:s.courierRewardCash||10, adminBroadcastInput:s.broadcastMessage||'', adminSupportWhatsappInput:s.supportWhatsapp||'201507800875', adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30 };
+      const m={
+        adminPlatformFeeInput:f,
+        adminCustPointsPerOrderInput:s.customerPointsPerOrder||5,
+        adminCustPointsTargetInput:s.customerRewardThreshold||100,
+        adminCustRewardAmountInput:s.customerRewardCash||10,
+        adminCourPointsPerOrderInput:s.courierPointsPerOrder||5,
+        adminCourPointsTargetInput:s.courierRewardThreshold||100,
+        adminCourRewardAmountInput:s.courierRewardCash||10,
+        adminWelcomeBonusAmountInput:s.welcomeBonusAmount!==undefined?s.welcomeBonusAmount:7,
+        adminReferralRewardAmountInput:s.referralRewardAmount!==undefined?s.referralRewardAmount:50,
+        adminBroadcastInput:s.broadcastMessage||'',
+        adminSupportWhatsappInput:s.supportWhatsapp||'201507800875',
+        adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30
+      };
       Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id) document.getElementById(id).value=m[id]; });
+
+      const bTargetSel = document.getElementById('adminBroadcastTargetSelect');
+      if (bTargetSel && document.activeElement !== bTargetSel) {
+        bTargetSel.value = s.broadcastTarget || 'all';
+      }
+
+      const bBanner = document.getElementById('adminGlobalBroadcastBanner');
+      const bText = document.getElementById('adminGlobalBroadcastText');
+      const bMsg = (s.broadcastMessage || '').trim();
+      const bTarget = s.broadcastTarget || 'all';
+      if (bBanner && bText) {
+        if (bMsg && (bTarget === 'all' || bTarget === 'admins')) {
+          bText.innerText = bMsg;
+          bBanner.style.display = 'flex';
+        } else {
+          bBanner.style.display = 'none';
+        }
+      }
+
       if(document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
       if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
+      if(document.getElementById('adminWelcomeBonusSwitch')) document.getElementById('adminWelcomeBonusSwitch').checked = s.welcomeBonusActive!==false;
+      if(document.getElementById('adminReferralRewardSwitch')) document.getElementById('adminReferralRewardSwitch').checked = s.referralRewardActive!==false;
+      updateIncentivesLivePreview();
     }
 
     function renderAdminDropdown() {
@@ -1267,11 +1441,17 @@
     function renderAdminDashboardData() {
       const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
       const disputed=STATE.orders.filter(o=>o.status==='قيد مراجعة الاعتراض');
+      const activeOrders=STATE.orders.filter(o=>ACTIVE_COURIER_STATUSES.includes(o.status));
+      const custPhonesSet=new Set(Object.keys(STATE.customers||{}).filter(isValidEgyptianPhone));
+      STATE.orders.forEach(o=>{const cp=resolveOrderClientPhone(o); if(isValidEgyptianPhone(cp))custPhonesSet.add(cp);});
+
       document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
       document.getElementById('adminStatCommissionTotal').innerText = `${roundMoney(STATE.orders.filter(o=>o.feeDeducted&&!o.feeRefunded).reduce((s,o)=>s+(Number(o.platformFee)||0),0))} ج`;
       document.getElementById('adminStatTotalCaptainsWallet').innerText = `${roundMoney(STATE.captains.reduce((s,c)=>s+(Number(c.walletBalance)||0),0))} ج`;
       document.getElementById('adminStatOrdersCompletedCount').innerText = comp.length; document.getElementById('adminStatOrdersCancelledCount').innerText = canc.length;
       document.getElementById('adminStatTotalCaptainsCount').innerText = `${STATE.captains.length} كابتن`;
+      if(document.getElementById('adminStatTotalCustomersCount')) document.getElementById('adminStatTotalCustomersCount').innerText = `${custPhonesSet.size} عميل`;
+      if(document.getElementById('adminStatActiveOrdersCount')) document.getElementById('adminStatActiveOrdersCount').innerText = activeOrders.length;
       
       const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
       const capBadge = document.getElementById('admNavCaptainsBadge');
