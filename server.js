@@ -1841,22 +1841,3 @@ if (require.main === module) {
   app.listen(PORT, () => console.log(`🚀 Server running securely on http://localhost:${PORT}`));
 }
 module.exports = app;
-
-// ==========================================
-// 10. المهام المجدولة (Vercel Cron) لتنظيف الطلبات المنتهية
-// ==========================================
-app.get('/api/cron/cleanup-orders', async (req, res) => {
-  if (req.headers['x-vercel-cron'] !== '1' && process.env.NODE_ENV === 'production') {
-    return res.status(401).json({ success: false });
-  }
-  lastLazyCleanupRun = 0;
-  const rawState = await fetchRawDatabaseState(false);
-  const canceledCount = await runLazyExpiredOrdersCleanup(rawState.settings.waitingTimeoutMinutes);
-  res.json({ success: true, canceled: canceledCount });
-});
-
-const PORT = process.env.PORT || 3000;
-if (require.main === module) {
-  app.listen(PORT, () => console.log(`🚀 Server running securely on http://localhost:${PORT}`));
-}
-module.exports = app;
