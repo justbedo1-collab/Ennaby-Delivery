@@ -36,7 +36,6 @@
   </script>
 
   <style>
-    /* تم الاحتفاظ بنفس التصميم والستايل الأصلي بالكامل مع إضافة ستايل المستويات والخرائط والكوبونات */
     :root {
       --primary: #7B3F52;
       --primary-dark: #5F2E3E;
@@ -100,7 +99,7 @@
     .badge-rejected { background: #FFEBEE; color: #D32F2F; }
     .badge-verified { background: #E8F5E9; color: #2E7D32; }
     .badge-review { background: #EDE7F6; color: #512DA8; }
-    /* شارات وألوان مستويات الكباتن الثلاثة (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) */
+    /* شارات مستويات الكباتن الثلاثة (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) */
     .tier-badge-bronze { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); color: #8D4E15; border: 1px solid #FFB74D; }
     .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
     .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 8px rgba(2, 136, 209, 0.22); }
@@ -109,6 +108,12 @@
     .btn-gps-action:active { transform: scale(0.98); background: var(--accent); }
     .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; }
     .gps-manual-note { font-size: 10.5px; color: #665E62; font-weight: 700; margin-top: 2px; line-height: 1.4; }
+    /* الخريطة المدمجة المباشرة (InDrive Style) داخل التصميم الكلاسيكي */
+    .inline-live-map-card { background: #FAF7F4; border: 1.5px solid var(--primary); border-radius: 16px; padding: 10px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .inline-map-mode-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+    .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.25); }
+    .inline-leaflet-canvas { width: 100%; height: 195px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
     .upload-card-box { border: 1.5px dashed var(--primary); background: #FAF7F4; border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease; }
     .upload-preview-container { position: relative; width: 100%; height: 100px; border-radius: 10px; overflow: hidden; display: none; }
     .upload-preview-container img { width: 100%; height: 100%; object-fit: cover; }
@@ -231,6 +236,28 @@
                 </div>
               </div>
 
+              <!-- خريطة تحديد الموقع التفاعلية المباشرة (تظهر تلقائياً بأسلوب InDrive في جميع أقسام الطلبات) -->
+              <div class="inline-live-map-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:11.5px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-map-location-dot"></i> خريطة تحديد المشوار المباشرة 📍</span>
+                  <button type="button" onclick="captureAutoGpsLocation(inlineMapActiveTarget)" style="background:#E8F5E9; color:var(--success); border:1px solid #A5D6A7; border-radius:50px; padding:3px 9px; font-size:10.5px; font-weight:800; cursor:pointer;">
+                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي
+                  </button>
+                </div>
+                <div class="inline-map-mode-pills">
+                  <button type="button" class="inline-map-mode-btn active" id="inlineMapModeBtn-pickup" onclick="setInlineMapTargetMode('pickup')">
+                    📦 دبابيس مكان الاستلام
+                  </button>
+                  <button type="button" class="inline-map-mode-btn" id="inlineMapModeBtn-dropoff" onclick="setInlineMapTargetMode('dropoff')">
+                    🏁 دبابيس مكان التسليم
+                  </button>
+                </div>
+                <div id="customerInlineLeafletMap" class="inline-leaflet-canvas"></div>
+                <small style="display:block; font-size:10px; color:var(--text-muted); font-weight:700; margin-top:5px; text-align:center;">
+                  👆 اضغط على الخريطة أو حرك الدبوس لتحديد الموقع فوراً (أو اكتب العنوان يدوياً بالأسفل)
+                </small>
+              </div>
+
               <!-- مكان الاستلام + أزرار الخريطة التفاعلية والمساندة -->
               <div class="input-group">
                 <label class="input-label" id="pickupZoneLabel" for="pickupZone">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
@@ -243,7 +270,7 @@
                     <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
                   </button>
                   <button type="button" class="btn-gps-action" onclick="openCustomerMapPicker('pickup')">
-                    <i class="fa-solid fa-map-location-dot"></i> تحديد ع الخريطة 🗺️
+                    <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
                   </button>
                 </div>
                 <div class="gps-captured-pill" id="pickupGpsCapturedPill">
@@ -265,7 +292,7 @@
                     <i class="fa-solid fa-location-crosshairs"></i> لوكيشن تلقائي للمكان 📍
                   </button>
                   <button type="button" class="btn-gps-action" onclick="openCustomerMapPicker('dropoff')">
-                    <i class="fa-solid fa-map-location-dot"></i> تحديد ع الخريطة 🗺️
+                    <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
                   </button>
                 </div>
                 <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
@@ -847,17 +874,8 @@
   </div>
 
   <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">تأكيد التنفيذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
-<script>
-    'use strict';
-    const SESSION_KEY = 'ENNABY_PUBLIC_SESSION_V35';
-    const DEFAULT_PLATFORM_FEE = 7;
-    const DEFAULT_POINTS_PER_ORDER = 5;
-    const DEFAULT_POINTS_THRESHOLD = 100;
-    const DEFAULT_REWARD_CASH = 10;
-    const DEFAULT_SUPPORT_WHATSAPP = '201507800875';
-    const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
-    const ACTIVE_CO
-<script>
+
+  <script>
     'use strict';
     const SESSION_KEY = 'ENNABY_PUBLIC_SESSION_V35';
     const CLIENT_PRESENCE_KEY = 'ENNABY_CLIENT_PRESENCE_ID_V1';
@@ -877,17 +895,20 @@
     let customModalCallback = null; let isCloudSyncInFlight = false; let lastCloudStateFingerprint = '';
     const tempCaptainFiles = { idFront: null, idBack: null, vehicle: null };
 
-    // متغيرات الخرائط التفاعلية (Leaflet GPS) والتحديث اللحظي (Supabase Realtime) والكوبونات
+    // متغيرات الخرائط التفاعلية (Leaflet GPS المباشرة والمودال) والتحديث اللحظي (Supabase Realtime)
     const tempOrderCoords = { pickupLat: null, pickupLng: null, dropoffLat: null, dropoffLng: null };
+    let customerInlineMap = null;
+    let inlinePickupMarker = null;
+    let inlineDropoffMarker = null;
+    let inlineMapActiveTarget = 'pickup';
     let publicLeafletMap = null;
     let publicLeafletMarkers = [];
-    let currentMapPickerTarget = 'pickup'; // 'pickup' | 'dropoff'
+    let currentMapPickerTarget = 'pickup';
     let tempPickedLatLng = null;
     let publicRealtimeClient = null;
     let publicRealtimeInitialized = false;
     let publicRealtimeDebounce = null;
 
-    // معرف فريد لجهاز العميل لإرسال نبضة التواجد (Online Customers Presence)
     const CLIENT_DEVICE_ID = (() => {
       try {
         let id = localStorage.getItem(CLIENT_PRESENCE_KEY);
@@ -901,7 +922,6 @@
       }
     })();
 
-    // تحميل كود الخصم المحفوظ على هاتف العميل (إن وجد ولم تنتهِ فترة السماح)
     let savedPromoCodeObj = (() => {
       try {
         const raw = localStorage.getItem(SAVED_PROMO_KEY);
@@ -1293,7 +1313,92 @@
       calculateDeliveryPrice();
     }
 
-    // ==================== محرك الخرائط التفاعلي (Leaflet GPS Maps) ====================
+    // ==================== محرك الخرائط التفاعلي المدمج المباشر (InDrive Style) + المودال ====================
+    function initCustomerInlineLeafletMap() {
+      const box = document.getElementById('customerInlineLeafletMap');
+      if (!box || !window.L) return;
+      if (!customerInlineMap) {
+        customerInlineMap = L.map('customerInlineLeafletMap').setView([31.0409, 31.3785], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(customerInlineMap);
+
+        customerInlineMap.on('click', function(ev) {
+          applyInlineMapCoordinate(inlineMapActiveTarget, ev.latlng.lat, ev.latlng.lng, true);
+        });
+      }
+      setTimeout(() => {
+        if (customerInlineMap) customerInlineMap.invalidateSize();
+      }, 150);
+    }
+
+    function setInlineMapTargetMode(mode) {
+      inlineMapActiveTarget = mode === 'dropoff' ? 'dropoff' : 'pickup';
+      document.getElementById('inlineMapModeBtn-pickup')?.classList.toggle('active', inlineMapActiveTarget === 'pickup');
+      document.getElementById('inlineMapModeBtn-dropoff')?.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
+      if (customerInlineMap) {
+        const lat = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLat : tempOrderCoords.dropoffLat;
+        const lng = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLng : tempOrderCoords.dropoffLng;
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          customerInlineMap.panTo([lat, lng]);
+        }
+      }
+    }
+
+    function applyInlineMapCoordinate(target, rawLat, rawLng, panMap = false) {
+      const lat = Number(Number(rawLat).toFixed(6));
+      const lng = Number(Number(rawLng).toFixed(6));
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      if (target === 'pickup') {
+        tempOrderCoords.pickupLat = lat;
+        tempOrderCoords.pickupLng = lng;
+        const addrInp = document.getElementById('pickupAddress');
+        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقعي المحدد على الخريطة 📍';
+      } else {
+        tempOrderCoords.dropoffLat = lat;
+        tempOrderCoords.dropoffLng = lng;
+        const addrInp = document.getElementById('dropoffAddress');
+        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقع التسليم المحدد على الخريطة 📍';
+      }
+      syncInlineMapMarkers(panMap ? target : null);
+      updateGpsPillsUI();
+    }
+
+    function syncInlineMapMarkers(panToTarget = null) {
+      if (!customerInlineMap || !window.L) return;
+      if (inlinePickupMarker) { customerInlineMap.removeLayer(inlinePickupMarker); inlinePickupMarker = null; }
+      if (inlineDropoffMarker) { customerInlineMap.removeLayer(inlineDropoffMarker); inlineDropoffMarker = null; }
+
+      if (Number.isFinite(tempOrderCoords.pickupLat) && Number.isFinite(tempOrderCoords.pickupLng)) {
+        inlinePickupMarker = L.marker([tempOrderCoords.pickupLat, tempOrderCoords.pickupLng], { draggable: true })
+          .addTo(customerInlineMap)
+          .bindPopup('📦 مكان الاستلام');
+        inlinePickupMarker.on('dragend', function(e) {
+          const p = e.target.getLatLng();
+          applyInlineMapCoordinate('pickup', p.lat, p.lng, false);
+        });
+      }
+
+      if (Number.isFinite(tempOrderCoords.dropoffLat) && Number.isFinite(tempOrderCoords.dropoffLng)) {
+        inlineDropoffMarker = L.marker([tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng], { draggable: true })
+          .addTo(customerInlineMap)
+          .bindPopup('🏁 مكان التسليم');
+        inlineDropoffMarker.on('dragend', function(e) {
+          const p = e.target.getLatLng();
+          applyInlineMapCoordinate('dropoff', p.lat, p.lng, false);
+        });
+      }
+
+      if (panToTarget === 'pickup' && inlinePickupMarker) {
+        customerInlineMap.setView([tempOrderCoords.pickupLat, tempOrderCoords.pickupLng], 15);
+        inlinePickupMarker.openPopup();
+      } else if (panToTarget === 'dropoff' && inlineDropoffMarker) {
+        customerInlineMap.setView([tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng], 15);
+        inlineDropoffMarker.openPopup();
+      }
+    }
+
     function updateGpsPillsUI() {
       const pPill = document.getElementById('pickupGpsCapturedPill');
       const dPill = document.getElementById('dropoffGpsCapturedPill');
@@ -1315,36 +1420,26 @@
         tempOrderCoords.dropoffLat = null;
         tempOrderCoords.dropoffLng = null;
       }
+      syncInlineMapMarkers();
       updateGpsPillsUI();
       showToast('تم مسح إحداثيات الخريطة، يمكنك الاعتماد على العنوان المكتوب يدوياً ✍️', 'ok');
     }
 
     function captureAutoGpsLocation(target) {
+      const activeMode = target === 'dropoff' ? 'dropoff' : 'pickup';
+      setInlineMapTargetMode(activeMode);
       if (!navigator.geolocation) {
-        showToast('متصفحك مش بيدعم الـ GPS التلقائي يا باشا.. اكتب العنوان يدوياً أو اختاره من الخريطة 📍⚠️', 'warn');
+        showToast('متصفحك مش بيدعم الـ GPS التلقائي يا باشا.. حدد الدبوس من الخريطة قدامك أو اكتب العنوان يدوياً 📍⚠️', 'warn');
         return;
       }
       showToast('جاري التقاط موقعك الحالي بالـ GPS يا باشا... 📡📍', 'ok');
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = Number(pos.coords.latitude.toFixed(6));
-          const lng = Number(pos.coords.longitude.toFixed(6));
-          if (target === 'pickup') {
-            tempOrderCoords.pickupLat = lat;
-            tempOrderCoords.pickupLng = lng;
-            const addrInp = document.getElementById('pickupAddress');
-            if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقعي المحدد على الخريطة 📍';
-          } else {
-            tempOrderCoords.dropoffLat = lat;
-            tempOrderCoords.dropoffLng = lng;
-            const addrInp = document.getElementById('dropoffAddress');
-            if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقع التسليم المحدد على الخريطة 📍';
-          }
-          updateGpsPillsUI();
-          showToast('تم التقاط اللوكيشن التلقائي بنجاح يا نجم! 📍✅', 'ok');
+          applyInlineMapCoordinate(activeMode, pos.coords.latitude, pos.coords.longitude, true);
+          showToast('تم التقاط اللوكيشن التلقائي وتثبيته ع الخريطة بنجاح يا نجم! 📍✅', 'ok');
         },
         () => {
-          showToast('مقدرناش نلقط الـ GPS تلقائياً.. افتح الخريطة حدد الدبوس أو اكتب العنوان بالتفصيل ✍️⚠️', 'warn');
+          showToast('مقدرناش نلقط الـ GPS تلقائياً.. اضغط على الخريطة قدامك لتحديد الدبوس أو اكتب العنوان يدوياً ✍️⚠️', 'warn');
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -1352,6 +1447,7 @@
 
     function openCustomerMapPicker(target) {
       currentMapPickerTarget = target === 'dropoff' ? 'dropoff' : 'pickup';
+      setInlineMapTargetMode(currentMapPickerTarget);
       const modal = document.getElementById('publicLeafletMapModal');
       const titleEl = document.getElementById('publicLeafletMapTitle');
       const hintEl = document.getElementById('publicLeafletMapSubHint');
@@ -1422,18 +1518,7 @@
 
     function confirmPickedMapLocation() {
       if (!tempPickedLatLng) return;
-      if (currentMapPickerTarget === 'pickup') {
-        tempOrderCoords.pickupLat = tempPickedLatLng.lat;
-        tempOrderCoords.pickupLng = tempPickedLatLng.lng;
-        const addrInp = document.getElementById('pickupAddress');
-        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقعي المحدد على الخريطة 📍';
-      } else {
-        tempOrderCoords.dropoffLat = tempPickedLatLng.lat;
-        tempOrderCoords.dropoffLng = tempPickedLatLng.lng;
-        const addrInp = document.getElementById('dropoffAddress');
-        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقع التسليم المحدد على الخريطة 📍';
-      }
-      updateGpsPillsUI();
+      applyInlineMapCoordinate(currentMapPickerTarget, tempPickedLatLng.lat, tempPickedLatLng.lng, true);
       closePublicLeafletMapModal();
       showToast('تم تثبيت الدبوس على الخريطة بنجاح يا باشا! 🗺️✅', 'ok');
     }
@@ -1447,7 +1532,7 @@
       const footerEl = document.getElementById('publicLeafletMapFooter');
       if (!modal) return;
 
-      tempPickedLatLng = null; // تعطيل وضع الاختيار عند عرض خريطة الطلب للكابتن
+      tempPickedLatLng = null;
       if (titleEl) titleEl.innerText = `🗺️ خريطة مشوار الطلب (${o.id})`;
       if (hintEl) hintEl.innerText = `من: ${o.pickupZone} (${o.pickupAddress}) ⬅️ إلى: ${o.dropoffZone} (${o.dropoffAddress})`;
 
@@ -1622,6 +1707,9 @@
       document.getElementById('customerView')?.classList.toggle('active-view', validRole === 'customer');
       document.getElementById('courierView')?.classList.toggle('active-view', validRole === 'courier');
       renderAllData(); updateBottomNavVisibility();
+      if (validRole === 'customer') {
+        setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 120);
+      }
     }
 
     function switchCustTab(tab) {
@@ -1633,6 +1721,9 @@
         if (navEl) navEl.classList.toggle('active', t === validTab);
       });
       const screen = document.getElementById('phoneScreen'); if (screen) screen.scrollTop = 0;
+      if (validTab === 'home') {
+        setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 120);
+      }
     }
 
     function switchCourierTab(tab) {
@@ -1688,7 +1779,6 @@
       const regLinkBox = document.getElementById('courierNewRegLinkBox'); if (regLinkBox) regLinkBox.style.display = allowReg ? 'block' : 'none';
 
       const s = STATE.settings || {};
-      // إظهار تنبيه وقت الذروة المؤقت للعميل والكابتن
       const custSurgeBanner = document.getElementById('customerSurgeActiveBanner');
       const courSurgeBanner = document.getElementById('courierSurgeActiveBanner');
       if (s.surgeActive && Number(s.surgePercent) > 0) {
@@ -1706,7 +1796,6 @@
         if (courSurgeBanner) courSurgeBanner.style.display = 'none';
       }
 
-      // تحديث ديناميكي للمبلغ الترحيبي وبرنامج دعوة الأصدقاء (المبلغ + عدد المشاوير)
       const welcomeActive = s.welcomeBonusActive !== false;
       const welcomeAmt = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
       const referralActive = s.referralRewardActive !== false;
@@ -1765,6 +1854,7 @@
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
         if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم عند الوصول 🎯';
       }
+      setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
     }
 
     function populateAllZoneDropdowns() {
@@ -1878,6 +1968,7 @@
             subscribeUserToPush(clientPhoneTyped);
             document.getElementById('pickupAddress').value = ''; document.getElementById('dropoffAddress').value = ''; document.getElementById('customerOrderNotes').value = ''; document.getElementById('orderRecipientPhone').value = '';
             tempOrderCoords.pickupLat = null; tempOrderCoords.pickupLng = null; tempOrderCoords.dropoffLat = null; tempOrderCoords.dropoffLng = null;
+            syncInlineMapMarkers();
             updateGpsPillsUI();
             if (activePromoCode) {
               persistSavedPromoCode(null);
@@ -1901,7 +1992,8 @@
         }
       });
     }
-// ==================== نافذة شروط مستويات الكباتن الديناميكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) ====================
+
+    // ==================== نافذة شروط مستويات الكباتن الديناميكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) ====================
     function renderCaptainTiersModalContent() {
       const bodyEl = document.getElementById('captainTiersInfoModalBody');
       if (!bodyEl) return;
@@ -2125,7 +2217,6 @@
         const s = STATE.settings || {}; const effectiveFee = getEffectiveCaptainFee(courier); const courPtsPerOrder = Math.max(1, Number(s.courierPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const courThreshold = Math.max(5, Number(s.courierRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const courRewardCash = Math.max(1, roundMoney(s.courierRewardCash ?? DEFAULT_REWARD_CASH));
         document.getElementById('courierNameHeading').innerText = `كابتن: ${courier.fullName}`; document.getElementById('courierIdHeading').innerText = `#${courier.phone.slice(-4)}`; document.getElementById('courierWalletBalanceDisplay').innerHTML = `${roundMoney(courier.walletBalance).toFixed(2)} <span>جنيه</span>`; document.getElementById('courierPointsDisplay').innerText = `${courier.points || 0} نقطة`; const progPct = Math.min(100, Math.round(((courier.points || 0) / courThreshold) * 100)); document.getElementById('courierPointsProgress').style.width = `${progPct}%`;
 
-        // تحديث شارة مستوى الكابتن بجوار اسمه وفي تبويب الحساب
         const tierBadgeTxt = courier.tierBadgeText || 'كابتن برونزي 🥉';
         const tierCls = getCaptainTierBadgeClass(courier.tier);
         const headerTierBadge = document.getElementById('courierTierBadgeHeader');
@@ -2133,7 +2224,6 @@
         if (headerTierBadge) { headerTierBadge.className = `badge ${tierCls}`; headerTierBadge.innerText = tierBadgeTxt; }
         if (profileTierBadge) { profileTierBadge.className = `badge ${tierCls}`; profileTierBadge.innerText = tierBadgeTxt; }
 
-        // ملخص تقدم الكابتن في المستويات داخل تبويب حسابي
         const tierProgBox = document.getElementById('courierTierProgressSummary');
         if (tierProgBox) {
           const wTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
@@ -2172,7 +2262,6 @@
         const rPerOrd = document.getElementById('courRulePointsPerOrder'); const rTarget = document.getElementById('courRulePointsTarget'); const rCash = document.getElementById('courRuleRewardCash');
         if (rPerOrd) rPerOrd.innerText = `${courPtsPerOrder} نقط`; if (rTarget) rTarget.innerText = `${courThreshold} نقطة`; if (rCash) rCash.innerText = `${courRewardCash} جنيه كاش فوري`;
 
-        // تحديث إشعار العمولة في بطاقة المحفظة ليعرف الكابتن مستواه ونسبة عمولته الحالية بالضبط
         const commNoticeEl = document.getElementById('courierCommissionNoticeText');
         if (commNoticeEl) {
           if (effectiveFee === 0) {
@@ -2195,7 +2284,6 @@
         const lifeCompEl = document.getElementById('courierLifetimeCompletedCount'); const lifeCancEl = document.getElementById('courierLifetimeCancelledCount'); const lifeNetEl = document.getElementById('courierLifetimeNetEarnings');
         if (lifeCompEl) lifeCompEl.innerText = lifetimeCompTotal; if (lifeCancEl) lifeCancEl.innerText = lifetimeCancTotal; if (lifeNetEl) lifeNetEl.innerText = `${lifetimeNetTotal} ج`;
 
-        // تحديث ديناميكي لكارت برنامج دعوة الأصدقاء (المبلغ + عدد المشاوير المطلوبة)
         const refCardEl = document.getElementById('courierReferralProgramCard');
         const refRewardDisplayEl = document.getElementById('courierReferralRewardAmountDisplay');
         const refTripsDisplayEl = document.getElementById('courierReferralTripsCountDisplay');
@@ -2346,6 +2434,7 @@
     async function initApp() {
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
       setupDelegatedEvents(); populateAllZoneDropdowns();
+      initCustomerInlineLeafletMap();
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) { const senderInput = document.getElementById('orderSenderPhone'); if (senderInput) senderInput.value = STATE.customerProfile.savedPhone; }
       selectTripType(STATE.currentTripType || 'send');
       renderSavedPromoUI();

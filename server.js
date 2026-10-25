@@ -178,15 +178,17 @@ function formatCairoTime(dateInput = Date.now()) {
   }
 }
 
-// دوال ترميز وفك ترميز إحداثيات الخريطة والكوبون داخل ملاحظات الطلب لضمان التوافق التام مع جدول orders
+// دوال ترميز وفك ترميز إحداثيات الخريطة والكوبون داخل ملاحظات الطلب بأمان تام وبدون تعارض مع الأقواس
 function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
-  const cleanNotes = String(rawNotes || '').replace(/\s*\[META:[^\]]+\]/g, '').trim();
+  const cleanNotes = String(rawNotes || '').replace(/\s*\[META:\{[\s\S]*?\}\]/g, '').trim();
   const payload = {};
   if (Number.isFinite(Number(meta.pickupLat)) && Number.isFinite(Number(meta.pickupLng))) {
-    payload.p = [Number(Number(meta.pickupLat).toFixed(6)), Number(Number(meta.pickupLng).toFixed(6))];
+    payload.plat = Number(Number(meta.pickupLat).toFixed(6));
+    payload.plng = Number(Number(meta.pickupLng).toFixed(6));
   }
   if (Number.isFinite(Number(meta.dropoffLat)) && Number.isFinite(Number(meta.dropoffLng))) {
-    payload.d = [Number(Number(meta.dropoffLat).toFixed(6)), Number(Number(meta.dropoffLng).toFixed(6))];
+    payload.dlat = Number(Number(meta.dropoffLat).toFixed(6));
+    payload.dlng = Number(Number(meta.dropoffLng).toFixed(6));
   }
   if (meta.promoCode) payload.c = String(meta.promoCode).trim().toUpperCase();
   if (meta.promoDiscount > 0) payload.cd = roundMoney(meta.promoDiscount);
@@ -199,18 +201,22 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
 
 function decodeOrderMetaFromNotes(storedNotes) {
   const raw = String(storedNotes || '');
-  const match = raw.match(/\[META:(\{[^\]]+\})\]/);
+  const match = raw.match(/\[META:(\{[\s\S]*?\})\]/);
   let meta = {};
   if (match && match[1]) {
     try { meta = JSON.parse(match[1]); } catch (e) {}
   }
-  const cleanNotes = raw.replace(/\s*\[META:\{[^\]]+\}\]/g, '').trim();
+  const cleanNotes = raw.replace(/\s*\[META:\{[\s\S]*?\}\]/g, '').trim();
+  const pLat = meta.plat !== undefined ? Number(meta.plat) : (Array.isArray(meta.p) ? Number(meta.p[0]) : null);
+  const pLng = meta.plng !== undefined ? Number(meta.plng) : (Array.isArray(meta.p) ? Number(meta.p[1]) : null);
+  const dLat = meta.dlat !== undefined ? Number(meta.dlat) : (Array.isArray(meta.d) ? Number(meta.d[0]) : null);
+  const dLng = meta.dlng !== undefined ? Number(meta.dlng) : (Array.isArray(meta.d) ? Number(meta.d[1]) : null);
   return {
     cleanNotes,
-    pickupLat: Array.isArray(meta.p) ? Number(meta.p[0]) : null,
-    pickupLng: Array.isArray(meta.p) ? Number(meta.p[1]) : null,
-    dropoffLat: Array.isArray(meta.d) ? Number(meta.d[0]) : null,
-    dropoffLng: Array.isArray(meta.d) ? Number(meta.d[1]) : null,
+    pickupLat: Number.isFinite(pLat) ? pLat : null,
+    pickupLng: Number.isFinite(pLng) ? pLng : null,
+    dropoffLat: Number.isFinite(dLat) ? dLat : null,
+    dropoffLng: Number.isFinite(dLng) ? dLng : null,
     promoCode: meta.c || null,
     promoDiscount: roundMoney(meta.cd || 0),
     walletDiscount: roundMoney(meta.wd || 0),
