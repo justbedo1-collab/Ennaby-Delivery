@@ -353,24 +353,28 @@
                 <div id="adminCaptainReviewFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
               </div>
 
-              <!-- لوحة التحكم الديناميكية في مستويات الكباتن وعمولاتها (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
+              <!-- لوحة التحكم الديناميكية الكاملة في مستويات الكباتن (المشاوير + نافذة الأيام + الأيام المتتالية للماسي + خصم العمولة + الهبوط التدريجي) -->
               <div class="card" id="admCard-captainTiers" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F5FBFF);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <h2 class="card-title" style="margin:0; color:#01579B;"><i class="fa-solid fa-Ranking-star"></i> مستويات الكباتن والترقية الأوتوماتيكية 💎</h2>
+                  <h2 class="card-title" style="margin:0; color:#01579B;"><i class="fa-solid fa-ranking-star"></i> مستويات الكباتن والترقية الأوتوماتيكية 💎</h2>
                   <span class="badge tier-badge-diamond">ديناميكي ⚡</span>
                 </div>
                 <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
-                  تحكم في شروط انتقال الكابتن من <strong>برونزي 🥉</strong> إلى <strong>بلاتيني 🥈</strong> ثم <strong>ماسي 💎</strong> وقيمة خصم العمولة لكل مستوى.
+                  تحكم ديناميكياً في شروط انتقال الكابتن من <strong>برونزي 🥉</strong> إلى <strong>بلاتيني 🥈</strong> ثم <strong>ماسي 💎</strong>، والنافذة الزمنية بالأيام، وقيمة خصم العمولة (مع نظام الهبوط التدريجي الآمن).
                 </p>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
                   <div>
-                    <label class="input-label" style="font-size:10.5px;">طلبات الأسبوع للبلاتيني 🥈:</label>
+                    <label class="input-label" style="font-size:10.5px;">المشاوير المطلوبة للبلاتيني 🥈:</label>
                     <input type="number" id="adminTierWeeklyOrdersInput" class="input-field" placeholder="25" min="1" oninput="updateAdminTiersLiveNote()">
                   </div>
                   <div>
-                    <label class="input-label" style="font-size:10.5px;">عدد الأسابيع للماسي 💎:</label>
-                    <input type="number" id="adminTierDiamondWeeksInput" class="input-field" placeholder="4" min="1" oninput="updateAdminTiersLiveNote()">
+                    <label class="input-label" style="font-size:10.5px;">خلال نافذة زمنية (بالأيام) 📅:</label>
+                    <input type="number" id="adminTierDaysWindowInput" class="input-field" placeholder="7" min="1" oninput="updateAdminTiersLiveNote()">
                   </div>
+                </div>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" style="font-size:10.5px;">عدد الأيام المتتالية للوصول للمستوى الماسي 💎 (الافتراضي 28 يوماً):</label>
+                  <input type="number" id="adminTierConsecutiveDaysInput" class="input-field" placeholder="28" min="1" oninput="updateAdminTiersLiveNote()">
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
                   <div>
@@ -1073,37 +1077,43 @@
       renderAdminDashboardData();
     }
 
-    // ==================== مستويات الكباتن الديناميكية ====================
+    // ==================== مستويات الكباتن الديناميكية (شاملة الأيام والهبوط التدريجي الآمن) ====================
     function updateAdminTiersLiveNote() {
       const wOrd = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
-      const dWks = Math.max(1, Number(document.getElementById('adminTierDiamondWeeksInput')?.value || 4));
+      const dWin = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
+      const cDays = Math.max(dWin, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
       const pDisc = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
       const dDisc = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
       const baseFee = roundMoney(STATE.settings.platformFee ?? 7);
       const box = document.getElementById('adminTiersLiveRuleNote');
       if (!box) return;
       box.innerHTML = `
-        🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب/أسبوع — العمولة الأساسية (${baseFee} ج).<br>
-        🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب في 7 أيام — خصم <strong>${pDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - pDisc))} ج).<br>
-        💎 <strong>كابتن ماسي:</strong> الحفاظ على ${wOrd} طلب/أسبوع لمدة ${dWks} أسابيع — خصم <strong>${dDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - dDisc))} ج).
+        🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب خلال ${dWin} يوم — العمولة الأساسية (${baseFee} ج).<br>
+        🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب خلال ${dWin} يوم — خصم <strong>${pDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - pDisc))} ج).<br>
+        💎 <strong>كابتن ماسي:</strong> الحفاظ على التارجت لمدة ${cDays} يوماً متتالية — خصم <strong>${dDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - dDisc))} ج).<br>
+        🛡️ <strong>الهبوط التدريجي الآمن:</strong> إذا أخفق الكابتن الماسي 💎 في تحقيق تارجت الأسبوع يهبط خطوة واحدة للبلاتيني 🥈 (وليس للبرونزي 🥉 مباشرة).
       `;
     }
 
     function adminSaveCaptainTiersConfig() {
       withActionLock(async () => {
         const tierWeeklyOrdersTarget = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
-        const tierWeeksForDiamond = Math.max(1, Number(document.getElementById('adminTierDiamondWeeksInput')?.value || 4));
+        const tierDaysWindow = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
+        const tierConsecutiveDaysForDiamond = Math.max(tierDaysWindow, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
+        const tierWeeksForDiamond = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
         const tierPlatinumDiscount = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
         const tierDiamondDiscount = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
 
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
           tierWeeklyOrdersTarget,
+          tierDaysWindow,
+          tierConsecutiveDaysForDiamond,
           tierWeeksForDiamond,
           tierPlatinumDiscount,
           tierDiamondDiscount
         });
         if (ok && data && data.success) {
-          showToast('تم حفظ واعتماد نظام مستويات الكباتن بنجاح 💎✅', 'ok');
+          showToast('تم حفظ واعتماد قواعد مستويات الكباتن والمدد الزمنية بنجاح 💎✅', 'ok');
         } else {
           showToast('تعذر حفظ إعدادات المستويات ⚠️', 'warn');
         }
@@ -1727,6 +1737,11 @@
       const effFee = Number(s.effectivePlatformFee ?? f);
       document.getElementById('adminCurrentFeeBadge').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج` : `العمولة: ${f} ج`;
       document.getElementById('adminStatCurrentFeeNote').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج ⚡` : `العمولة: ${f} ج`;
+      const daysWinVal = s.tierDaysWindow !== undefined ? s.tierDaysWindow : 7;
+      const consDaysVal = s.tierConsecutiveDaysForDiamond !== undefined
+        ? s.tierConsecutiveDaysForDiamond
+        : ((s.tierWeeksForDiamond !== undefined ? s.tierWeeksForDiamond : 4) * daysWinVal);
+
       const m={
         adminPlatformFeeInput:f,
         adminCustPointsPerOrderInput:s.customerPointsPerOrder||5,
@@ -1739,7 +1754,8 @@
         adminReferralRewardAmountInput:s.referralRewardAmount!==undefined?s.referralRewardAmount:50,
         adminReferralRequiredOrdersInput:s.referralRequiredOrders!==undefined?s.referralRequiredOrders:2,
         adminTierWeeklyOrdersInput:s.tierWeeklyOrdersTarget!==undefined?s.tierWeeklyOrdersTarget:25,
-        adminTierDiamondWeeksInput:s.tierWeeksForDiamond!==undefined?s.tierWeeksForDiamond:4,
+        adminTierDaysWindowInput:daysWinVal,
+        adminTierConsecutiveDaysInput:consDaysVal,
         adminTierPlatDiscountInput:s.tierPlatinumDiscount!==undefined?s.tierPlatinumDiscount:1,
         adminTierDiaDiscountInput:s.tierDiamondDiscount!==undefined?s.tierDiamondDiscount:2,
         adminSurgePercentInput:s.surgePercent||20,
@@ -1856,6 +1872,9 @@
       const canManageCap = hasAdminPerm('manageCaptains');
       const tierBadgeCls = getCaptainTierBadgeClass(c.tier);
       const currentOverride = (STATE.settings.tierManualOverrides && STATE.settings.tierManualOverrides[c.phone]) || 'auto';
+      const targetOrd = Math.max(1, Number(STATE.settings.tierWeeklyOrdersTarget ?? 25));
+      const winDays = Math.max(1, Number(c.tierDaysWindow || STATE.settings.tierDaysWindow || 7));
+      const progPct = Math.min(100, Math.round(((c.weeklyCompletedOrders || 0) / targetOrd) * 100));
 
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
@@ -1867,8 +1886,12 @@
         </div>
         <div style="font-size:11px; margin:8px 0; line-height:1.7;">
           رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong><br>
-          📊 مشاوير آخر 7 أيام: <strong>${c.weeklyCompletedOrders || 0} طلب</strong> | أسابيع التميز المتتالية: <strong>${c.consecutiveQualifiedWeeks || 0} أسبوع</strong> | العمولة الحالية: <strong style="color:var(--success);">${c.effectiveFee ?? 7} ج</strong>
+          📊 مشاوير آخر ${winDays} أيام: <strong>${c.weeklyCompletedOrders || 0} من ${targetOrd} طلب (${progPct}%)</strong> | أيام التميز: <strong>${c.consecutiveQualifiedDays || 0} يوم</strong> | العمولة الحالية: <strong style="color:var(--success);">${c.effectiveFee ?? 7} ج</strong>
+          ${c.gracefulDemotion ? `<div style="color:#E65100; font-weight:800; margin-top:4px; background:#FFF3E0; padding:4px 8px; border-radius:6px;">🛡️ هبوط تدريجي آمن: الكابتن في فترة الأمان بالبلاتيني 🥈 (كان ماسياً 💎)</div>` : ''}
           ${c.suspendReason ? `<div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; padding:4px 8px; border-radius:6px;">⚠️ سبب الرفض/الإيقاف: ${escapeHtml(c.suspendReason)}</div>` : ''}
+        </div>
+        <div style="background:#E9DCE0; border-radius:10px; height:7px; width:100%; margin-bottom:8px; overflow:hidden;">
+          <div style="background:#0288D1; height:100%; width:${progPct}%; transition:width 0.3s ease;"></div>
         </div>
         ${canManageCap ? `<div style="background:#fff; padding:8px; border-radius:10px; border:1px dashed #0288D1; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
           <span style="font-size:11px; font-weight:800; color:#01579B;">تخصيص المستوى:</span>

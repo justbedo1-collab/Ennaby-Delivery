@@ -104,16 +104,21 @@
     .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
     .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 8px rgba(2, 136, 209, 0.22); }
     .gps-helper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
-    .btn-gps-action { background: #F3EAED; color: var(--primary); border: 1px dashed var(--primary); border-radius: 10px; padding: 7px 10px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+    .btn-gps-action { background: #F3EAED; color: var(--primary); border: 1.5px dashed var(--primary); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; width: 100%; }
     .btn-gps-action:active { transform: scale(0.98); background: var(--accent); }
-    .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; }
-    .gps-manual-note { font-size: 10.5px; color: #665E62; font-weight: 700; margin-top: 2px; line-height: 1.4; }
+    .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; gap: 8px; }
+    /* إطار الملاحظات المميز لإرشاد كتابة العنوان يدوياً */
+    .gps-manual-note { display: block; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border: 1.5px dashed #FBC02D; border-radius: 10px; padding: 7px 10px; font-size: 11px; color: #5D4037; font-weight: 800; margin-top: 6px; line-height: 1.5; text-align: right; }
     /* الخريطة المدمجة المباشرة (InDrive Style) داخل التصميم الكلاسيكي */
     .inline-live-map-card { background: #FAF7F4; border: 1.5px solid var(--primary); border-radius: 16px; padding: 10px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
     .inline-map-mode-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+    .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; text-align: center; }
     .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.25); }
     .inline-leaflet-canvas { width: 100%; height: 195px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
+    /* شريط تقدم مستوى الكابتن الحي */
+    .tier-live-progress-wrap { background: linear-gradient(135deg, #FFFFFF, #F5FBFF); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 10px 12px; }
+    .tier-live-progress-track { background: #E1F5FE; border-radius: 50px; height: 9px; width: 100%; overflow: hidden; margin: 6px 0; border: 1px solid #B3E5FC; }
+    .tier-live-progress-fill { background: linear-gradient(90deg, #0288D1, #26C6DA); height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 50px; }
     .upload-card-box { border: 1.5px dashed var(--primary); background: #FAF7F4; border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease; }
     .upload-preview-container { position: relative; width: 100%; height: 100px; border-radius: 10px; overflow: hidden; display: none; }
     .upload-preview-container img { width: 100%; height: 100%; object-fit: cover; }
@@ -144,10 +149,8 @@
   </style>
 </head>
 <body>
-
   <main class="device-container" id="deviceContainer">
     <div class="phone-mockup" id="phoneMockup">
-
       <div class="in-app-role-bar">
         <nav class="role-pills" aria-label="أدوار المستخدمين">
           <button class="role-btn active" onclick="switchRole('customer')" id="roleBtn-customer">
@@ -158,7 +161,6 @@
           </button>
         </nav>
       </div>
-
       <div id="toast" class="toast-box toast-success" role="status" onclick="hideToast()">
         <div style="display:flex; align-items:center; gap:9px;">
           <i id="toastIcon" class="fa-solid fa-circle-check" style="color: #4CAF50; font-size:18px; flex-shrink:0;"></i>
@@ -166,9 +168,7 @@
         </div>
         <span class="toast-close-x">✕</span>
       </div>
-
       <div class="phone-screen" id="phoneScreen">
-
         <div class="install-banner" id="globalInstallBanner">
           <div style="display:flex; align-items:center; gap:8px;">
             <div style="width:36px; height:36px; background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">🛵</div>
@@ -181,12 +181,10 @@
             <i class="fa-solid fa-download"></i> تثبيت الآن
           </button>
         </div>
-
         <div class="broadcast-banner" id="globalBroadcastBanner">
           <i class="fa-solid fa-bullhorn" style="color:var(--primary); font-size:15px; flex-shrink:0;"></i>
           <span id="globalBroadcastText"></span>
         </div>
-
         <!-- ==================== 1. Customer View ==================== -->
         <section id="customerView" class="view-container active-view">
           
@@ -203,24 +201,19 @@
                 <i class="fa-solid fa-location-dot"></i> Mansoura
               </div>
             </header>
-
             <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color:#fff; border-radius:var(--radius); padding:16px;">
               <div style="font-size:16px; font-weight:900;">يا هلا يا باشا.. منورنا والله! 🛵✨</div>
               <p style="font-size:12px; opacity:0.9; margin-top:4px;">طلبك في عنينا، ورجالة العنابي جاهزين يطيروا لك فوراً.</p>
             </div>
-
             <div id="customerMaintenanceAlert" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:14px; padding:14px; text-align:center; color:var(--danger); font-size:12.5px; font-weight:800; line-height:1.6;">
               🛠️ المنصة في صيانة وتحديثات دورية سريعة حالياً.. راجعين لك فوراً يا باشا! 🛵❤️
             </div>
-
             <!-- تنبيه وقت الذروة للعميل (Surge Pricing) -->
             <div id="customerSurgeActiveBanner" style="display:none; background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:14px; padding:12px 14px; color:#E65100; font-size:11.5px; font-weight:800; line-height:1.6;"></div>
-
             <div class="card" id="customerOrderFormCard">
               <h2 class="card-title">
-                <i class="fa-solid fa-box-open"></i> عايز تبعت حاجة يا نجم؟
+                <i class="fa-solid fa-box-open"></i> عايز تبعت حاجة او نجبلك حاجة يا نجم؟
               </h2>
-
               <div style="margin-bottom:14px;">
                 <label class="input-label" style="font-weight:800; color:var(--primary); margin-bottom:6px; display:block;">نوع المشوار إيه النهارده يا نجم؟ 🛵</label>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -235,29 +228,27 @@
                   💡 <strong>ملحوظة يا باشا:</strong> أجرة المشوار للتوصيل بس، وحساب الحاجة اللي الكابتن هيشتريها بتتحاسبوا عليها كاش مع بعض بالفاتورة عند الباب يا نجم 😉
                 </div>
               </div>
-
-              <!-- خريطة تحديد الموقع التفاعلية المباشرة (تظهر تلقائياً بأسلوب InDrive في جميع أقسام الطلبات) -->
+              <!-- خريطة تحديد الموقع التفاعلية المباشرة (الاختيار في اليمين دائماً لطالب الأوردر) -->
               <div class="inline-live-map-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                   <span style="font-size:11.5px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-map-location-dot"></i> خريطة تحديد المشوار المباشرة 📍</span>
-                  <button type="button" onclick="captureAutoGpsLocation(inlineMapActiveTarget)" style="background:#E8F5E9; color:var(--success); border:1px solid #A5D6A7; border-radius:50px; padding:3px 9px; font-size:10.5px; font-weight:800; cursor:pointer;">
-                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي
+                  <button type="button" onclick="captureRequesterOwnGpsLocation()" style="background:#E8F5E9; color:var(--success); border:1px solid #A5D6A7; border-radius:50px; padding:3px 9px; font-size:10.5px; font-weight:800; cursor:pointer;">
+                    <i class="fa-solid fa-location-crosshairs"></i> تحديد مكاني تلقائي
                   </button>
                 </div>
-                <div class="inline-map-mode-pills">
-                  <button type="button" class="inline-map-mode-btn active" id="inlineMapModeBtn-pickup" onclick="setInlineMapTargetMode('pickup')">
-                    📦 دبابيس مكان الاستلام
+                <div class="inline-map-mode-pills" id="inlineMapModePillsGrid">
+                  <button type="button" class="inline-map-mode-btn active" id="inlineMapRightRequesterBtn" onclick="handleInlineMapRightBtnClick()">
+                    📦 اختار مكان الاستلام على الخريطة
                   </button>
-                  <button type="button" class="inline-map-mode-btn" id="inlineMapModeBtn-dropoff" onclick="setInlineMapTargetMode('dropoff')">
-                    🏁 دبابيس مكان التسليم
+                  <button type="button" class="inline-map-mode-btn" id="inlineMapLeftOtherBtn" onclick="handleInlineMapLeftBtnClick()">
+                    🏁 اختار مكان التسليم على الخريطة
                   </button>
                 </div>
                 <div id="customerInlineLeafletMap" class="inline-leaflet-canvas"></div>
-                <small style="display:block; font-size:10px; color:var(--text-muted); font-weight:700; margin-top:5px; text-align:center;">
-                  👆 اضغط على الخريطة أو حرك الدبوس لتحديد الموقع فوراً (أو اكتب العنوان يدوياً بالأسفل)
-                </small>
+                <div class="gps-manual-note" style="margin-top:8px; text-align:center;">
+                  💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.
+                </div>
               </div>
-
               <!-- مكان الاستلام + أزرار الخريطة التفاعلية والمساندة -->
               <div class="input-group">
                 <label class="input-label" id="pickupZoneLabel" for="pickupZone">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
@@ -265,21 +256,20 @@
                   <select class="select-field" id="pickupZone" onchange="handleZoneChange()"></select>
                   <input type="text" id="pickupAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: حي الجامعة)">
                 </div>
-                <div class="gps-helper-row">
-                  <button type="button" class="btn-gps-action" onclick="captureAutoGpsLocation('pickup')">
+                <div class="gps-helper-row" id="pickupGpsHelperRow">
+                  <button type="button" class="btn-gps-action" id="pickupAutoGpsBtn" onclick="captureAutoGpsLocation('pickup')">
                     <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
                   </button>
-                  <button type="button" class="btn-gps-action" onclick="openCustomerMapPicker('pickup')">
+                  <button type="button" class="btn-gps-action" id="pickupExpandMapBtn" onclick="openCustomerMapPicker('pickup')">
                     <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
                   </button>
                 </div>
                 <div class="gps-captured-pill" id="pickupGpsCapturedPill">
                   <span id="pickupGpsCapturedText">✅ تم التقاط لوكيشن الاستلام على الخريطة بدقة!</span>
-                  <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer;">إلغاء ✕</button>
+                  <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
                 </div>
-                <small class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</small>
+                <div class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
               </div>
-
               <!-- مكان التسليم + أزرار الخريطة التفاعلية والمساندة -->
               <div class="input-group">
                 <label class="input-label" id="dropoffZoneLabel" for="dropoffZone">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</label>
@@ -287,26 +277,24 @@
                   <select class="select-field" id="dropoffZone" onchange="handleZoneChange()"></select>
                   <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: كوبري جديلة)">
                 </div>
-                <div class="gps-helper-row">
-                  <button type="button" class="btn-gps-action" onclick="captureAutoGpsLocation('dropoff')">
-                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن تلقائي للمكان 📍
+                <div class="gps-helper-row" id="dropoffGpsHelperRow" style="grid-template-columns: 1fr;">
+                  <button type="button" class="btn-gps-action" id="dropoffAutoGpsBtn" style="display:none;" onclick="captureAutoGpsLocation('dropoff')">
+                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
                   </button>
-                  <button type="button" class="btn-gps-action" onclick="openCustomerMapPicker('dropoff')">
+                  <button type="button" class="btn-gps-action" id="dropoffExpandMapBtn" onclick="openCustomerMapPicker('dropoff')">
                     <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
                   </button>
                 </div>
                 <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
                   <span id="dropoffGpsCapturedText">✅ تم التقاط لوكيشن التسليم على الخريطة بدقة!</span>
-                  <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer;">إلغاء ✕</button>
+                  <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
                 </div>
-                <small class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</small>
+                <div class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
               </div>
-
               <div class="input-group">
                 <label class="input-label" for="customerOrderNotes">لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
                 <textarea id="customerOrderNotes" class="textarea-field" rows="2" placeholder="اكتب هنا أي تفاصيل (مثال: رن جرس الدور التالت، معيش فكة، الطرد فيه زجاج)..."></textarea>
               </div>
-
               <div class="input-group">
                 <label class="input-label" id="phonesSectionLabel" for="orderSenderPhone">أرقام هواتف المشوار (مهمة للكابتن) 📱</label>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
@@ -320,27 +308,31 @@
                   </div>
                 </div>
               </div>
-
-              <div class="input-group" style="background:#FAF4F6; border:1.5px dashed var(--primary); border-radius:14px; padding:12px;">
-                <label class="input-label" for="orderCustomerPin" style="color:var(--primary); font-weight:800; font-size:12px;">
-                  <i class="fa-solid fa-lock"></i> رمز PIN السري لحسابك (4 أرقام) 🔒
-                </label>
-                <div style="position:relative;">
-                  <input type="password" inputmode="numeric" maxlength="4" id="orderCustomerPin" class="input-field" placeholder="اكتب 4 أرقام سرية (مثال: 1234)" style="background:#fff; letter-spacing:3px; font-weight:800;">
-                  <button type="button" onclick="togglePasswordVisibility('orderCustomerPin', 'toggleOrderPinIcon')" style="position:absolute; left:12px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
-                    <i class="fa-solid fa-eye" id="toggleOrderPinIcon"></i>
-                  </button>
+              <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة) -->
+              <div class="input-group" id="orderCustomerPinGroupBox" style="background:#FAF4F6; border:1.5px dashed var(--primary); border-radius:14px; padding:12px;">
+                <div id="orderCustomerPinInputWrap">
+                  <label class="input-label" for="orderCustomerPin" style="color:var(--primary); font-weight:800; font-size:12px; margin-bottom:5px; display:block;">
+                    <i class="fa-solid fa-lock"></i> رمز PIN السري لحسابك (4 أرقام - يُطلب أول مرة فقط) 🔒
+                  </label>
+                  <div style="position:relative;">
+                    <input type="password" inputmode="numeric" maxlength="4" id="orderCustomerPin" class="input-field" placeholder="اكتب 4 أرقام سرية (مثال: 1234)" style="background:#fff; letter-spacing:3px; font-weight:800;">
+                    <button type="button" onclick="togglePasswordVisibility('orderCustomerPin', 'toggleOrderPinIcon')" style="position:absolute; left:12px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                      <i class="fa-solid fa-eye" id="toggleOrderPinIcon"></i>
+                    </button>
+                  </div>
+                  <small style="font-size:10.5px; color:#5F2E3E; font-weight:700; line-height:1.5; margin-top:4px; display:block;">
+                    💡 بتكتبه مرة واحدة بس في أول طلب وهنتعرف على جلستك دايماً أوتوماتيك، ولو الجلسة انتهت تقدر تسترجع حسابك من تبويب «حسابي» 🎁🛵
+                  </small>
                 </div>
-                <small style="font-size:10.5px; color:#5F2E3E; font-weight:700; line-height:1.5; margin-top:2px;">
-                  💡 ضيف هنا 4 أرقام سرية عشان تقدر تتابع طلباتك بعد كده من أي موبايل وتحافظ على نقاط التقدم والمكافآت بتاعتك 🎁🛵
-                </small>
+                <div id="orderCustomerPinSessionActiveBanner" style="display:none; align-items:center; justify-content:space-between; gap:8px; color:var(--success); font-size:11.5px; font-weight:800;">
+                  <span><i class="fa-solid fa-circle-check"></i> جلستك نشطة ومحفوظة يا باشا! تقدر تطلب علطول بدون إعادة كتابة الـ PIN 🚀</span>
+                  <button type="button" onclick="forceShowOrderPinInput()" style="background:none; border:none; color:var(--primary); font-size:10.5px; font-weight:900; cursor:pointer; text-decoration:underline; white-space:nowrap;">تغيير الرقم؟</button>
+                </div>
               </div>
-
               <div class="input-group">
                 <label class="input-label" for="packageWeight">الوزن / حجم الحاجة</label>
                 <select class="select-field" id="packageWeight"></select>
               </div>
-
               <div class="input-group">
                 <span class="input-label" id="payerQuestionLabel">مين هيدفع أجرة التوصيل؟ 💰</span>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -354,7 +346,6 @@
                   </label>
                 </div>
               </div>
-
               <!-- قسم كوبونات وأكواد الخصم للعميل (مع إمكانية الاحتفاظ بالكود لفترة السماح) -->
               <div class="input-group" style="background:#FCF8FF; border:1.5px dashed #8E24AA; border-radius:14px; padding:12px; margin-bottom:6px;">
                 <label class="input-label" for="orderPromoCodeInput" style="color:#6A1B9A; font-weight:800; font-size:12px;">
@@ -374,7 +365,6 @@
                   💡 الكود بيفضل محفوظ معاك في تليفونك لحد ما تستخدمه أو تنتهي فترة السماح بتاعته!
                 </small>
               </div>
-
               <div class="price-preview-banner" id="priceBanner">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
@@ -395,13 +385,11 @@
                   صديقى العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك خارج نطاق الاختيارات وده هيبلغك بيه الكابتن العنابى لو فيه زيادة 🛵
                 </div>
               </div>
-
               <button class="btn-main" id="submitOrderBtn" onclick="createNewCustomerOrder()">
                 <i class="fa-solid fa-rocket"></i> تأكيد الطلب دلوقتي
               </button>
             </div>
           </div>
-
           <div id="custTab-orders" class="sub-tab-section" style="display:none;">
             <div class="card-title" style="justify-content:space-between; margin-bottom:4px;">
               <span><i class="fa-solid fa-clock-rotate-left"></i> متابعة طلباتك 📦</span>
@@ -411,7 +399,6 @@
             </div>
             <div id="customerOrdersList" style="display:flex; flex-direction:column; gap:12px;"></div>
           </div>
-
           <div id="custTab-support" class="sub-tab-section" style="display:none;">
             <div class="card">
               <h2 class="card-title"><i class="fa-brands fa-whatsapp" style="color:#25D366; font-size:20px;"></i> دعم الرجل العنابي 🛵</h2>
@@ -433,7 +420,6 @@
               </div>
             </div>
           </div>
-
           <div id="custTab-profile" class="sub-tab-section" style="display:none;">
             <div class="card" style="text-align:center; padding:20px 16px;">
               <div style="width:65px; height:65px; background:var(--accent); color:var(--primary); border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:28px;">
@@ -441,7 +427,6 @@
               </div>
               <h3 style="font-size:16px; font-weight:900;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
               <p style="font-size:12px; color:var(--text-muted);" id="custDisplayPhone">لم يتم ربط رقم هاتف بعد • Mansoura</p>
-
               <div style="margin-top:14px; padding-top:14px; border-top:1px dashed #E9DCE0; text-align:right;">
                 <label class="input-label" style="font-size:12px; color:var(--primary); font-weight:800; display:block; margin-bottom:8px;">
                   <i class="fa-solid fa-cloud-arrow-down"></i> فتح حسابك واسترجاع نقاطك ومحفظتك:
@@ -470,7 +455,6 @@
                 </button>
               </div>
             </div>
-
             <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white;">
               <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
@@ -487,14 +471,12 @@
                 <strong style="font-size:13px;" id="custTotalOrdersCount">0 مشوار</strong>
               </div>
             </div>
-
             <div class="card">
               <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
               <div id="custWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
                 <div style="color:var(--text-muted); text-align:center;">لا توجد حركات مسجلة بعد.</div>
               </div>
             </div>
-
             <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 style="font-size:14px; font-weight:900; color:var(--primary); margin:0;">🍇 عنابي بوينتس للعملاء</h3>
@@ -510,10 +492,8 @@
             </div>
           </div>
         </section>
-
         <!-- ==================== 2. Courier View ==================== -->
         <section id="courierView" class="view-container">
-
           <!-- شاشة الدخول -->
           <div id="courierLoginSection" style="display:none;">
             <div class="card" style="padding:22px 16px;">
@@ -522,7 +502,6 @@
                 <h2 style="font-size:18px; font-weight:900; color:var(--primary);">دخول كباتن العنابي 🛵</h2>
                 <span style="font-size:12px; color:var(--text-muted);">أهلاً برجالة التوصيل السريع بالدقهلية</span>
               </div>
-
               <div id="courierSuspendedNoticeBox" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:12px; padding:12px; margin-bottom:14px; text-align:center;">
                 <div id="courierSuspendedNoticeTitle" style="color:var(--danger); font-weight:900; font-size:13px; margin-bottom:4px;"></div>
                 <div id="courierSuspendedReasonText" style="font-size:11px; color:#5F2E3E; margin-bottom:10px; line-height:1.5;"></div>
@@ -533,12 +512,10 @@
                   <i class="fa-brands fa-whatsapp"></i> تواصل مع الدعم الفني 💬
                 </a>
               </div>
-
               <div class="input-group">
                 <label class="input-label" for="courierLoginPhone">رقم الهاتف المسجل</label>
                 <input type="tel" inputmode="numeric" autocomplete="tel" id="courierLoginPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
               </div>
-
               <div class="input-group">
                 <label class="input-label" for="courierLoginPass">كلمة المرور</label>
                 <div style="position:relative;">
@@ -548,17 +525,14 @@
                   </button>
                 </div>
               </div>
-
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:11px;">
                 <button type="button" onclick="handleCourierForgotPassword()" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer;">
                   نسيت كلمة المرور؟ 🤔
                 </button>
               </div>
-
               <button class="btn-main" onclick="handleCourierLogin()" style="margin-top:6px;">
                 <i class="fa-solid fa-right-to-bracket"></i> دخول يا كابتن
               </button>
-
               <div id="courierNewRegLinkBox" style="text-align:center; margin-top:14px; font-size:12px;">
                 لسة جديد في الميدان؟ 
                 <button onclick="switchCourierSubView('register')" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer;">
@@ -567,10 +541,9 @@
               </div>
             </div>
           </div>
-
           <!-- لوحة تحكم الكابتن -->
           <div id="courierDashboardContent" style="display:none; flex-direction:column; gap:14px;">
-            <header class="brand-header">
+            <header class="brand-header" style="padding-bottom:4px;">
               <div class="brand-title">
                 <div class="brand-logo-badge">🛵</div>
                 <div>
@@ -587,14 +560,22 @@
                 </button>
               </div>
             </header>
-
+            <!-- شريط التقدم المرئي المباشر تحت شارة مستوى الكابتن في الرئيسية -->
+            <div class="tier-live-progress-wrap" id="courierHeaderTierProgressWrap" onclick="openCaptainTiersModal()" style="cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; color:#01579B;">
+                <span id="courierHomeTierProgressTitle">📊 تقدمك في تارجت المستوى الحالي:</span>
+                <span class="badge tier-badge-diamond" id="courierHomeTierProgressPctBadge" style="padding:2px 8px; font-size:10.5px;">0%</span>
+              </div>
+              <div class="tier-live-progress-track">
+                <div class="tier-live-progress-fill" id="courierHomeTierProgressBar"></div>
+              </div>
+              <div id="courierHomeTierProgressSubText" style="font-size:11px; font-weight:700; color:#263238; line-height:1.4;"></div>
+            </div>
             <div id="courierMaintenanceAlert" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:14px; padding:14px; text-align:center; color:var(--danger); font-size:12.5px; font-weight:800; line-height:1.6;">
               🛠️ المنصة في صيانة وتحديثات دورية سريعة حالياً.. راجعين لك فوراً يا باشا! 🛵❤️
             </div>
-
             <!-- تنبيه وقت الذروة للكابتن على الرادار -->
             <div id="courierSurgeActiveBanner" style="display:none; background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:14px; padding:10px 14px; color:#E65100; font-size:11.5px; font-weight:800; line-height:1.6;"></div>
-
             <!-- تبويب الرئيسية للكابتن (الرادار) -->
             <div id="courTab-home" class="sub-tab-section">
               <div id="courierAdminNoticesBox" style="display:none; flex-direction:column; gap:8px;"></div>
@@ -609,7 +590,6 @@
                   <span class="slider"></span>
                 </label>
               </div>
-
               <div class="card" style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg, #7B3F52, #562737); color:#fff;">
                 <div>
                   <span style="font-size:11px; opacity:0.85;">رصيد محفظتك المتاح:</span>
@@ -620,7 +600,6 @@
                   <strong style="font-size:15px; display:block; color:#A5D6A7;" id="courierQuickEarningsDisplay">0 جنيه</strong>
                 </div>
               </div>
-
               <div id="courierRadarSectionWrap">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h2 style="font-size:15px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-bell"></i> أوردرات على الرادار 📡</h2>
@@ -629,7 +608,6 @@
                 <div id="courierOrdersFeed" style="display:flex; flex-direction:column; gap:12px;"></div>
               </div>
             </div>
-
             <!-- باقي تبويبات الكابتن (الطلبات، الدعم، الحساب) -->
             <div id="courTab-orders" class="sub-tab-section" style="display:none;">
               <div class="card-title" style="justify-content:space-between; margin-bottom:4px;">
@@ -638,7 +616,6 @@
               </div>
               <div id="courierHistoryOrdersList" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
-
             <div id="courTab-support" class="sub-tab-section" style="display:none;">
               <div class="card">
                 <h2 class="card-title"><i class="fa-brands fa-whatsapp" style="color:#25D366; font-size:20px;"></i> دعم كباتن الرجل العنابي 🛵</h2>
@@ -661,7 +638,6 @@
                 </div>
               </div>
             </div>
-
             <div id="courTab-profile" class="sub-tab-section" style="display:none;">
               <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -677,19 +653,24 @@
                   <div><span style="font-size:11px; opacity:0.8;">صافي أرباحك:</span> <strong style="font-size:14px; display:block;" id="courierTodayEarnings">0 جنيه</strong></div>
                 </div>
               </div>
-
-              <!-- كارت مستوى الكابتن الحالي وشروط الترقية الأوتوماتيكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
+              <!-- كارت مستوى الكابتن الحالي + شريط التقدم المرئي المباشر وشروط الترقية الأوتوماتيكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
               <div class="card" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F4FAFF); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#01579B; margin:0;"><i class="fa-solid fa-medal"></i> مستواك الحالي في العنابي</h3>
                   <span id="courierTierBadgeProfile" class="badge tier-badge-bronze">كابتن برونزي 🥉</span>
                 </div>
-                <div id="courierTierProgressSummary" style="font-size:11.5px; color:#263238; font-weight:700; line-height:1.6; margin-bottom:8px;"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; color:#01579B; margin-bottom:2px;">
+                  <span id="courierProfileTierProgressLabel">نسبة إنجاز التارجت الحالي:</span>
+                  <strong id="courierProfileTierProgressPct">0%</strong>
+                </div>
+                <div class="tier-live-progress-track" style="margin-bottom:8px;">
+                  <div class="tier-live-progress-fill" id="courierProfileTierProgressBar"></div>
+                </div>
+                <div id="courierTierProgressSummary" style="font-size:11.5px; color:#263238; font-weight:700; line-height:1.6; margin-bottom:10px;"></div>
                 <button type="button" class="btn-secondary" style="width:100%; padding:8px; font-size:11.5px; background:#E1F5FE; color:#01579B;" onclick="openCaptainTiersModal()">
                   <i class="fa-solid fa-circle-info"></i> اعرف شروط المستويات وخصم العمولة 🥉🥈💎
                 </button>
               </div>
-
               <!-- عدادات التراكمية، الإحالات، النقاط، التفاصيل -->
               <div class="card" style="padding:14px;">
                 <h3 class="card-title" style="font-size:13px; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> عداداتك التراكمية (منذ أول مشوار) 🚀</h3>
@@ -699,7 +680,6 @@
                   <div style="background:#FAF7F4; padding:10px 6px; border-radius:12px; border:1px solid #E9DCE0;"><span style="font-size:10px; font-weight:800; color:var(--primary); display:block;">أرباحي</span><strong style="font-size:15px; font-weight:900; color:var(--primary); display:block; margin-top:4px;" id="courierLifetimeNetEarnings">0 ج</strong></div>
                 </div>
               </div>
-
               <div class="card" id="courierReferralProgramCard" style="border: 2px solid #25D366; background: linear-gradient(135deg, #F1F8E9, #FFFDE7); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#1B5E20; margin:0;"><i class="fa-solid fa-user-group"></i> برنامج دعوة أصدقاء الكابتن 🎁💸</h3>
@@ -714,7 +694,6 @@
                   <button type="button" class="btn-secondary" style="padding:6px 12px; font-size:11px; background:#E8F5E9; color:var(--success);" onclick="copyCourierReferralPhone()"><i class="fa-solid fa-copy"></i> نسخ الرقم</button>
                 </div>
               </div>
-
               <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                   <h3 style="font-size:14px; font-weight:900; color:var(--primary); margin:0;">🛵 عنابي بوينتس للكباتن</h3>
@@ -725,12 +704,10 @@
                   كل أوردر بتكمله بتاخد عليه <strong id="courRulePointsPerOrder">5 نقط</strong> عنابي 🛵، أول ما تجمع <strong id="courRulePointsTarget">100 نقطة</strong> بينزلك <strong id="courRuleRewardCash">10 جنيه كاش فوري</strong> في محفظتك هدية! 💸
                 </div>
               </div>
-
               <div class="card">
                 <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة بالمنصة</h3>
                 <div id="courierProfileDetailsBox" style="font-size:12px; line-height:1.8; color:var(--text-main);"></div>
               </div>
-
               <div class="card">
                 <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة (الحركات الأخيرة)</h3>
                 <div id="courierWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
@@ -739,7 +716,6 @@
               </div>
             </div>
           </div>
-
           <!-- شاشة تسجيل كابتن جديد -->
           <div id="courierSubView-register" style="display:none;">
             <div class="card">
@@ -748,7 +724,6 @@
                 <button onclick="switchCourierSubView('login')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right"></i> أنا مسجل بالفعل</button>
               </div>
               <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">سجل بياناتك ومستنداتك الرسمية بوضوح عشان الإدارة تعتمد حسابك فوراً.</p>
-
               <!-- إشعار ديناميكي بالمبلغ الترحيبي للكباتن الجدد -->
               <div id="regWelcomeBonusBanner" style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:12px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; font-weight:800; color:#1B5E20; line-height:1.6;">
                 🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong id="regWelcomeBonusAmountSpan">7</strong> جنيه هدية ترحيبية في محفظتك فوراً! 🛵💸
@@ -789,7 +764,6 @@
                 <div style="margin-bottom: 10px;"><strong style="color: #7B3F52; font-size: 13px; display: block;">3️⃣ الطريق مش حلبة سباق يا عنب! 🛵💨</strong><p style="margin: 3px 0 0;">التزم بقواعد المرور، والبس وسائل الأمان، وخلي بالك من نفسك ومن الناس. إحنا عايزينك توصل الطلب بالسلامة وترجع تنوّر علينا، مش نعملك بوست: «كان معانا كابتن زي الفل»! 😂❤️</p></div>
                 <div style="background:rgba(255,255,255,0.75); padding:8px 10px; border-radius:10px; font-size:11px; color:#302A2D; margin-top:8px; border:1px dashed #7B3F52;">🔒 <strong>حماية البيانات الشخصية:</strong> تُحفظ صور المستندات والبطاقة في خزنة سحابية مشفرة وخاصة للتحقق من الهوية فقط وفقاً لقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020.</div>
               </div>
-
               <!-- مربع شروط مستويات الكباتن أسفل عهد الكابتن مباشرة ويفتح القائمة المنبثقة عند الضغط -->
               <div style="background: linear-gradient(135deg, #E1F5FE, #F5FBFF); border: 1.5px solid #29B6F6; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #01579B; line-height: 1.6;">
                 <div style="font-weight: 900; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
@@ -803,14 +777,11 @@
                   <i class="fa-solid fa-gem"></i> اضغط هنا لعرض شروط المستويات وخصم العمولة 📋
                 </button>
               </div>
-
               <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد وسياسة الخصوصية 💪🍇</button>
             </div>
           </div>
         </section>
-
       </div>
-
       <!-- Navigation Bars -->
       <nav class="bottom-nav" id="customerBottomNav">
         <button class="nav-item active" onclick="switchCustTab('home')" id="navCust-home"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
@@ -818,17 +789,14 @@
         <button class="nav-item" onclick="switchCustTab('support')" id="navCust-support"><i class="fa-solid fa-headset"></i><span>الدعم</span></button>
         <button class="nav-item" onclick="switchCustTab('profile')" id="navCust-profile"><i class="fa-solid fa-user-circle"></i><span>حسابي</span></button>
       </nav>
-
       <nav class="bottom-nav" id="courierBottomNav" style="display:none;">
         <button class="nav-item active" onclick="switchCourierTab('home')" id="navCour-home"><i class="fa-solid fa-satellite-dish"></i><span>الرئيسية</span><span class="nav-badge-count" id="courNavRadarBadge" style="display:none;">0</span></button>
         <button class="nav-item" onclick="switchCourierTab('orders')" id="navCour-orders"><i class="fa-solid fa-box"></i><span>طلباتي</span><span class="nav-badge-count" id="courNavActiveBadge" style="display:none;">0</span></button>
         <button class="nav-item" onclick="switchCourierTab('support')" id="navCour-support"><i class="fa-solid fa-headset"></i><span>الدعم</span></button>
         <button class="nav-item" onclick="switchCourierTab('profile')" id="navCour-profile"><i class="fa-solid fa-user-astronaut"></i><span>حسابي</span></button>
       </nav>
-
     </div>
   </main>
-
   <!-- Modals -->
   <div class="custom-modal" id="imagePreviewModal" style="z-index: 2000;" onclick="if(event.target === this) closeImageViewer()">
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
@@ -845,7 +813,6 @@
       <button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام يا باشا، في انتظار الإدارة 💪</button>
     </div>
   </div>
-
   <!-- نافذة الخريطة التفاعلية المجانية (Leaflet Map Modal للعميل والكابتن) -->
   <div class="custom-modal" id="publicLeafletMapModal" style="z-index: 1900;" onclick="if(event.target === this) closePublicLeafletMapModal()">
     <div class="modal-content-card" style="max-width:440px; padding:16px;">
@@ -857,10 +824,10 @@
         اضغط على أي مكان في الخريطة لوضع الدبوس 📍 (أو اسحب الدبوس لمكانك بالضبط).
       </p>
       <div id="publicLeafletMapContainer" style="width:100%; height:270px; border-radius:14px; border:1.5px solid var(--primary); overflow:hidden;"></div>
+      <div class="gps-manual-note" style="margin-top:8px;">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
       <div id="publicLeafletMapFooter" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"></div>
     </div>
   </div>
-
   <!-- القائمة المنبثقة لشرح شروط مستويات الكباتن الثلاثة (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
   <div class="custom-modal" id="captainTiersInfoModal" style="z-index: 1950;" onclick="if(event.target === this) closeCaptainTiersModal()">
     <div class="modal-content-card" style="max-width:420px; padding:18px;">
@@ -872,9 +839,7 @@
       <button type="button" class="btn-main" style="margin-top:14px;" onclick="closeCaptainTiersModal()">فهمت النظام يا باشا.. توكلنا على الله! 🛵💪</button>
     </div>
   </div>
-
   <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">تأكيد التنفيذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
-
   <script>
     'use strict';
     const SESSION_KEY = 'ENNABY_PUBLIC_SESSION_V35';
@@ -887,16 +852,16 @@
     const DEFAULT_SUPPORT_WHATSAPP = '201507800875';
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
     const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
-
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
-
     let currentSelectedStars = 5; let toastTimer = null; let lastInteractedElement = null; let actionLock = false;
     let ennabyAudioCtx = null; let deferredInstallPrompt = null; let reuploadPhoneTarget = null; let rejectedCaptainCache = null;
     let customModalCallback = null; let isCloudSyncInFlight = false; let lastCloudStateFingerprint = '';
+    let forcePinEntryManual = false;
     const tempCaptainFiles = { idFront: null, idBack: null, vehicle: null };
-
-    // متغيرات الخرائط التفاعلية (Leaflet GPS المباشرة والمودال) والتحديث اللحظي (Supabase Realtime)
+    // متغيرات الخرائط التفاعلية (Leaflet GPS المباشرة والمودال) وقراءة اسم الشارع الفعلي والتحديث اللحظي
     const tempOrderCoords = { pickupLat: null, pickupLng: null, dropoffLat: null, dropoffLng: null };
+    const tempResolvedAddresses = { pickup: '', dropoff: '' };
+    const reverseGeocodeReqId = { pickup: 0, dropoff: 0 };
     let customerInlineMap = null;
     let inlinePickupMarker = null;
     let inlineDropoffMarker = null;
@@ -908,7 +873,6 @@
     let publicRealtimeClient = null;
     let publicRealtimeInitialized = false;
     let publicRealtimeDebounce = null;
-
     const CLIENT_DEVICE_ID = (() => {
       try {
         let id = localStorage.getItem(CLIENT_PRESENCE_KEY);
@@ -921,7 +885,6 @@
         return 'cid_' + Math.random().toString(36).slice(2, 10);
       }
     })();
-
     let savedPromoCodeObj = (() => {
       try {
         const raw = localStorage.getItem(SAVED_PROMO_KEY);
@@ -936,7 +899,6 @@
         return null;
       }
     })();
-
     function persistSavedPromoCode(promoObj) {
       savedPromoCodeObj = promoObj || null;
       try {
@@ -949,7 +911,6 @@
       renderSavedPromoUI();
       calculateDeliveryPrice();
     }
-
     // ==================== Web Push Notifications ====================
     async function subscribeUserToPush(userPhone) {
       if (!userPhone || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -971,7 +932,6 @@
         console.error('Push subscription error:', e);
       }
     }
-
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
       const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -980,7 +940,6 @@
       for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
       return outputArray;
     }
-
     function normalizeDigits(str) {
       if (str === null || str === undefined) return '';
       return String(str).replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776));
@@ -1017,7 +976,6 @@
       catch (e) { return new Date(num).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); }
     }
     function formatTxTime(t) { if (!t) return ''; if (t.at && Number.isFinite(Number(t.at))) return formatCairoDateTime(t.at); return String(t.time || ''); }
-
     function unlockAudioEngine() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1026,7 +984,6 @@
         if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
       } catch (e) {}
     }
-
     function triggerDeviceAlert(alertType) {
       try {
         if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
@@ -1054,7 +1011,6 @@
         });
       } catch (e) {}
     }
-
     function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'تأكيد ✅', isDanger = false, onConfirm }) {
       const modal = document.getElementById('customActionModal'); const titleEl = document.getElementById('customActionModalTitle');
       const msgEl = document.getElementById('customActionModalMessage'); const inpWrap = document.getElementById('customActionModalInputWrap');
@@ -1075,27 +1031,26 @@
       modal.classList.add('show');
       if (needInput && inpEl) setTimeout(() => inpEl.focus(), 80);
     }
-
     function closeCustomActionModal() {
       const modal = document.getElementById('customActionModal');
       if (modal) modal.classList.remove('show');
       customModalCallback = null;
     }
-
     function getDefaultSession() {
-      return { currentRole: 'customer', currentCustTab: 'home', currentCourTab: 'home', isAppInstalled: window.matchMedia('(display-mode: standalone)').matches || Boolean(window.navigator.standalone), activeCourierPhone: null, savedCustomerPhone: '', currentTripType: 'send' };
+      return { currentRole: 'customer', currentCustTab: 'home', currentCourTab: 'home', isAppInstalled: window.matchMedia('(display-mode: standalone)').matches || Boolean(window.navigator.standalone), activeCourierPhone: null, savedCustomerPhone: '', authenticatedCustomerPhone: '', currentTripType: 'send' };
     }
     function loadSession() {
       const def = getDefaultSession();
       try { const raw = localStorage.getItem(SESSION_KEY); if (raw) return { ...def, ...JSON.parse(raw) }; } catch (e) {}
       return def;
     }
-
     let SESSION = loadSession();
     let STATE = {
       currentRole: SESSION.currentRole === 'courier' ? 'courier' : 'customer',
       currentCustTab: SESSION.currentCustTab || 'home', currentCourTab: SESSION.currentCourTab || 'home',
-      isAppInstalled: SESSION.isAppInstalled, activeCourierPhone: SESSION.activeCourierPhone, currentTripType: SESSION.currentTripType || 'send',
+      isAppInstalled: SESSION.isAppInstalled, activeCourierPhone: SESSION.activeCourierPhone,
+      authenticatedCustomerPhone: SESSION.authenticatedCustomerPhone || SESSION.savedCustomerPhone || '',
+      currentTripType: SESSION.currentTripType || 'send',
       realtimeConfig: null,
       settings: {
         platformFee: DEFAULT_PLATFORM_FEE,
@@ -1112,6 +1067,8 @@
         referralRewardAmount: 50,
         referralRequiredOrders: 2,
         tierWeeklyOrdersTarget: 25,
+        tierDaysWindow: 7,
+        tierConsecutiveDaysForDiamond: 28,
         tierWeeksForDiamond: 4,
         tierPlatinumDiscount: 1,
         tierDiamondDiscount: 2,
@@ -1131,11 +1088,20 @@
       customerProfile: { title: 'باشا مصر اللي منورنا 👑', savedPhone: SESSION.savedCustomerPhone || '', points: 0, walletBalance: 0.00, walletTransactions: [] },
       customers: {}, captains: [], orders: []
     };
-
     function saveSession() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ currentRole: STATE.currentRole === 'courier' ? 'courier' : 'customer', currentCustTab: STATE.currentCustTab, currentCourTab: STATE.currentCourTab, isAppInstalled: STATE.isAppInstalled, activeCourierPhone: STATE.activeCourierPhone, savedCustomerPhone: STATE.customerProfile ? STATE.customerProfile.savedPhone : '', currentTripType: STATE.currentTripType })); } catch (e) {}
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          currentRole: STATE.currentRole === 'courier' ? 'courier' : 'customer',
+          currentCustTab: STATE.currentCustTab,
+          currentCourTab: STATE.currentCourTab,
+          isAppInstalled: STATE.isAppInstalled,
+          activeCourierPhone: STATE.activeCourierPhone,
+          savedCustomerPhone: STATE.customerProfile ? STATE.customerProfile.savedPhone : '',
+          authenticatedCustomerPhone: STATE.authenticatedCustomerPhone || '',
+          currentTripType: STATE.currentTripType
+        }));
+      } catch (e) {}
     }
-
     function resolveOrderClientPhone(order) {
       if (!order || typeof order !== 'object') return '';
       if (order.clientPhone && isValidEgyptianPhone(order.clientPhone)) return normalizePhone(order.clientPhone);
@@ -1144,7 +1110,35 @@
       if (order.senderPhone && isValidEgyptianPhone(order.senderPhone)) return normalizePhone(order.senderPhone);
       return '';
     }
-
+    // التحقق مما إذا كانت جلسة العميل موثقة ونشطة لهذا الرقم حتى لا يُطلب الـ PIN مرة أخرى
+    function isCustomerSessionActiveForPhone(phoneToCheck) {
+      if (forcePinEntryManual) return false;
+      const cleanCheck = normalizePhone(phoneToCheck || getActiveCustomerPhoneForPricing());
+      if (!isValidEgyptianPhone(cleanCheck)) return false;
+      return Boolean(
+        (STATE.authenticatedCustomerPhone && normalizePhone(STATE.authenticatedCustomerPhone) === cleanCheck) ||
+        (STATE.customerProfile.savedPhone && normalizePhone(STATE.customerProfile.savedPhone) === cleanCheck && STATE.customers[cleanCheck])
+      );
+    }
+    function updateCustomerPinFieldVisibility() {
+      const inpWrap = document.getElementById('orderCustomerPinInputWrap');
+      const activeBanner = document.getElementById('orderCustomerPinSessionActiveBanner');
+      if (!inpWrap || !activeBanner) return;
+      const typedPh = normalizePhone(document.getElementById('orderSenderPhone')?.value || STATE.customerProfile.savedPhone || '');
+      if (isCustomerSessionActiveForPhone(typedPh)) {
+        inpWrap.style.display = 'none';
+        activeBanner.style.display = 'flex';
+      } else {
+        inpWrap.style.display = 'block';
+        activeBanner.style.display = 'none';
+      }
+    }
+    function forceShowOrderPinInput() {
+      forcePinEntryManual = true;
+      updateCustomerPinFieldVisibility();
+      const senderInp = document.getElementById('orderSenderPhone');
+      if (senderInp) senderInp.focus();
+    }
     // ==================== Supabase Realtime WebSockets & Presence ====================
     function setupPublicSupabaseRealtime(cfg) {
       if (publicRealtimeInitialized || !cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
@@ -1164,7 +1158,6 @@
         publicRealtimeInitialized = false;
       }
     }
-
     function sendCustomerPresencePing() {
       if (STATE.currentRole !== 'customer' || document.hidden) return;
       const savedPh = STATE.customerProfile?.savedPhone || '';
@@ -1176,7 +1169,6 @@
         body: JSON.stringify({ clientId, role: 'customer' })
       }).catch(() => {});
     }
-
     async function apiRequest(endpoint, method = 'POST', bodyObj = null) {
       const opts = { method, credentials: 'include', headers: {} };
       if (bodyObj !== null) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(bodyObj); }
@@ -1194,7 +1186,6 @@
       }
       return { ok: res.ok, status: res.status, data };
     }
-
     function applyCloudStateSnapshot(cloudState) {
       if (!cloudState || typeof cloudState !== 'object') return;
       const oldOrders = Array.isArray(STATE.orders) ? STATE.orders : [];
@@ -1205,15 +1196,22 @@
       if (cloudState.customers && typeof cloudState.customers === 'object') STATE.customers = cloudState.customers;
       if (Array.isArray(cloudState.captains)) STATE.captains = cloudState.captains;
       if (Array.isArray(cloudState.orders)) STATE.orders = cloudState.orders;
+      if (cloudState.authenticatedCustomerPhone) {
+        STATE.authenticatedCustomerPhone = normalizePhone(cloudState.authenticatedCustomerPhone);
+        if (!STATE.customerProfile.savedPhone) {
+          STATE.customerProfile.savedPhone = STATE.authenticatedCustomerPhone;
+          const senderInp = document.getElementById('orderSenderPhone');
+          if (senderInp && !senderInp.value.trim()) senderInp.value = STATE.authenticatedCustomerPhone;
+        }
+      }
       if (cloudState.realtimeConfig) {
         STATE.realtimeConfig = cloudState.realtimeConfig;
         setupPublicSupabaseRealtime(cloudState.realtimeConfig);
       }
       if (STATE.activeCourierPhone && !STATE.captains.some(c => c.phone === STATE.activeCourierPhone)) STATE.activeCourierPhone = null;
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) syncActiveCustomerProfile(STATE.customerProfile.savedPhone);
-
       validateSavedPromoCodeLocally();
-
+      updateCustomerPinFieldVisibility();
       if (oldOrders.length > 0) {
         const newlyCreatedOrder = STATE.orders.find(o => !oldOrderMap[o.id] && o.status === 'في انتظار كابتن');
         if (newlyCreatedOrder) {
@@ -1237,7 +1235,6 @@
       }
       saveSession(); populateAllZoneDropdowns(); renderAllData(); calculateDeliveryPrice();
     }
-
     async function syncFromCloudServer(silent = true) {
       if (isCloudSyncInFlight) return;
       isCloudSyncInFlight = true;
@@ -1256,19 +1253,16 @@
       } catch (err) { if (!silent) showToast('تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت ⚠️', 'warn'); } 
       finally { isCloudSyncInFlight = false; }
     }
-
     document.addEventListener('pointerdown', function(e) {
       unlockAudioEngine();
       const target = e.target.closest('button, a, select, input, label, .upload-card-box');
       if (target && !target.closest('#toast')) lastInteractedElement = target;
     }, true);
-
     function withActionLock(fn) {
       if (actionLock) return;
       actionLock = true;
       Promise.resolve(fn()).finally(() => { setTimeout(() => { actionLock = false; }, 260); });
     }
-
     function getStatusBadgeClass(status) {
       switch (status) {
         case 'في انتظار كابتن': return 'badge-pending';
@@ -1280,13 +1274,11 @@
         default: return String(status || '').includes('ملغي') ? 'badge-rejected' : 'badge-pending';
       }
     }
-
     function getCurrentPlatformFee() {
       const s = STATE.settings || {};
       const eff = Number(s.effectivePlatformFee ?? s.platformFee);
       return (Number.isFinite(eff) && eff >= 0) ? roundMoney(eff) : DEFAULT_PLATFORM_FEE;
     }
-
     function getEffectiveCaptainFee(captain) {
       if (captain && captain.effectiveFee !== undefined && captain.effectiveFee !== null && Number.isFinite(Number(captain.effectiveFee))) {
         return Math.max(0, roundMoney(captain.effectiveFee));
@@ -1296,7 +1288,6 @@
       }
       return getCurrentPlatformFee();
     }
-
     function getSupportWhatsapp() { return (STATE.settings && STATE.settings.supportWhatsapp) || DEFAULT_SUPPORT_WHATSAPP; }
     function getActiveCourier() { if (!STATE.activeCourierPhone) return null; return STATE.captains.find(c => c.phone === STATE.activeCourierPhone) || null; }
     function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArray(STATE.orders)) return null; return STATE.orders.find(o => o && o.assignedCourierPhone === courierPhone && ACTIVE_COURIER_STATUSES.includes(o.status)) || null; }
@@ -1307,13 +1298,50 @@
       if (rec) { STATE.customerProfile.savedPhone = targetPhone; STATE.customerProfile.walletBalance = Math.max(0, roundMoney(rec.walletBalance)); STATE.customerProfile.points = Math.max(0, Number(rec.points) || 0); STATE.customerProfile.walletTransactions = Array.isArray(rec.walletTransactions) ? rec.walletTransactions : []; }
     }
     function getActiveCustomerPhoneForPricing() { const inputEl = document.getElementById('orderSenderPhone'); const typed = inputEl ? normalizePhone(inputEl.value) : ''; if (isValidEgyptianPhone(typed)) return typed; return STATE.customerProfile.savedPhone || ''; }
-
     function handleCustomerPhoneInput() {
+      const typed = normalizePhone(document.getElementById('orderSenderPhone')?.value || '');
+      if (typed && STATE.authenticatedCustomerPhone && typed === normalizePhone(STATE.authenticatedCustomerPhone)) {
+        forcePinEntryManual = false;
+      }
+      updateCustomerPinFieldVisibility();
       validateSavedPromoCodeLocally();
       calculateDeliveryPrice();
     }
+    // ==================== محرك الخرائط التفاعلي وقراءة اسم الشارع الفعلي من الخريطة (Reverse Geocoding) ====================
+    async function fetchArabicAddressFromCoords(lat, lng) {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&accept-language=ar&addressdetails=1`
+        );
+        if (!res.ok) return '';
+        const data = await res.json();
+        const addr = data.address || {};
+        const parts = [];
+        const placeName = data.name || addr.amenity || addr.shop || addr.building || addr.tourism || addr.office || addr.historic || '';
+        const roadName = addr.road || addr.pedestrian || addr.street || addr.residential || '';
+        const areaName = addr.neighbourhood || addr.suburb || addr.quarter || addr.city_district || addr.hamlet || addr.village || '';
+        const cityName = addr.city || addr.town || addr.county || '';
 
-    // ==================== محرك الخرائط التفاعلي المدمج المباشر (InDrive Style) + المودال ====================
+        if (placeName && placeName !== roadName) parts.push(placeName);
+        if (roadName) parts.push(roadName);
+        if (areaName && areaName !== roadName && areaName !== placeName) parts.push(areaName);
+        if (parts.length < 2 && cityName && !parts.includes(cityName)) parts.push(cityName);
+
+        let cleanAddr = parts.filter(Boolean).join('، ');
+        if (!cleanAddr && data.display_name) {
+          cleanAddr = String(data.display_name)
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s && !/^[0-9]{4,7}$/.test(s) && s !== 'مصر' && s !== 'Egypt')
+            .slice(0, 3)
+            .join('، ');
+        }
+        return cleanAddr.trim();
+      } catch (e) {
+        return '';
+      }
+    }
+
     function initCustomerInlineLeafletMap() {
       const box = document.getElementById('customerInlineLeafletMap');
       if (!box || !window.L) return;
@@ -1322,7 +1350,6 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap'
         }).addTo(customerInlineMap);
-
         customerInlineMap.on('click', function(ev) {
           applyInlineMapCoordinate(inlineMapActiveTarget, ev.latlng.lat, ev.latlng.lng, true);
         });
@@ -1331,11 +1358,38 @@
         if (customerInlineMap) customerInlineMap.invalidateSize();
       }, 150);
     }
-
+    // الزر الأيمن دائماً لطالب الأوردر (في "هبعت" = pickup، وفي "هاتلي" = dropoff)
+    function handleInlineMapRightBtnClick() {
+      const target = STATE.currentTripType === 'fetch' ? 'dropoff' : 'pickup';
+      setInlineMapTargetMode(target);
+    }
+    // الزر الأيسر دائماً للطرف الآخر (في "هبعت" = dropoff، وفي "هاتلي" = pickup المحل)
+    function handleInlineMapLeftBtnClick() {
+      const target = STATE.currentTripType === 'fetch' ? 'pickup' : 'dropoff';
+      setInlineMapTargetMode(target);
+    }
+    function captureRequesterOwnGpsLocation() {
+      const requesterTarget = STATE.currentTripType === 'fetch' ? 'dropoff' : 'pickup';
+      captureAutoGpsLocation(requesterTarget);
+    }
     function setInlineMapTargetMode(mode) {
       inlineMapActiveTarget = mode === 'dropoff' ? 'dropoff' : 'pickup';
-      document.getElementById('inlineMapModeBtn-pickup')?.classList.toggle('active', inlineMapActiveTarget === 'pickup');
-      document.getElementById('inlineMapModeBtn-dropoff')?.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
+      const isFetch = STATE.currentTripType === 'fetch';
+      const rightBtn = document.getElementById('inlineMapRightRequesterBtn');
+      const leftBtn = document.getElementById('inlineMapLeftOtherBtn');
+      if (rightBtn && leftBtn) {
+        if (isFetch) {
+          rightBtn.innerHTML = '🏁 اختار مكان التسليم على الخريطة';
+          leftBtn.innerHTML = '🏪 اختار مكان الاستلام على الخريطة';
+          rightBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
+          leftBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
+        } else {
+          rightBtn.innerHTML = '📦 اختار مكان الاستلام على الخريطة';
+          leftBtn.innerHTML = '🏁 اختار مكان التسليم على الخريطة';
+          rightBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
+          leftBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
+        }
+      }
       if (customerInlineMap) {
         const lat = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLat : tempOrderCoords.dropoffLat;
         const lng = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLng : tempOrderCoords.dropoffLng;
@@ -1344,52 +1398,71 @@
         }
       }
     }
-
-    function applyInlineMapCoordinate(target, rawLat, rawLng, panMap = false) {
+    async function applyInlineMapCoordinate(target, rawLat, rawLng, panMap = false) {
       const lat = Number(Number(rawLat).toFixed(6));
       const lng = Number(Number(rawLng).toFixed(6));
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      const targetKey = target === 'dropoff' ? 'dropoff' : 'pickup';
+      const addrInp = document.getElementById(targetKey === 'pickup' ? 'pickupAddress' : 'dropoffAddress');
+      const pillTxt = document.getElementById(targetKey === 'pickup' ? 'pickupGpsCapturedText' : 'dropoffGpsCapturedText');
 
-      if (target === 'pickup') {
+      if (targetKey === 'pickup') {
         tempOrderCoords.pickupLat = lat;
         tempOrderCoords.pickupLng = lng;
-        const addrInp = document.getElementById('pickupAddress');
-        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقعي المحدد على الخريطة 📍';
       } else {
         tempOrderCoords.dropoffLat = lat;
         tempOrderCoords.dropoffLng = lng;
-        const addrInp = document.getElementById('dropoffAddress');
-        if (addrInp && !addrInp.value.trim()) addrInp.value = 'موقع التسليم المحدد على الخريطة 📍';
       }
-      syncInlineMapMarkers(panMap ? target : null);
-      updateGpsPillsUI();
-    }
 
+      if (addrInp) {
+        addrInp.value = '⏳ جاري قراءة اسم الشارع من الخريطة...';
+      }
+      if (pillTxt) {
+        pillTxt.innerText = '⏳ جاري قراءة اسم الشارع والمنطقة من الخريطة...';
+      }
+      syncInlineMapMarkers(panMap ? targetKey : null);
+      updateGpsPillsUI();
+
+      const reqId = ++reverseGeocodeReqId[targetKey];
+      const streetAddress = await fetchArabicAddressFromCoords(lat, lng);
+      if (reqId !== reverseGeocodeReqId[targetKey]) return;
+
+      const zoneVal = document.getElementById(targetKey === 'pickup' ? 'pickupZone' : 'dropoffZone')?.value || 'المنصورة';
+      const finalAddressText = streetAddress || `موقع محدد بالخريطة (${zoneVal})`;
+      tempResolvedAddresses[targetKey] = finalAddressText;
+
+      if (addrInp) {
+        addrInp.value = finalAddressText;
+      }
+      if (pillTxt) {
+        pillTxt.innerText = `✅ العنوان من الخريطة: ${finalAddressText}`;
+      }
+      syncInlineMapMarkers(null);
+    }
     function syncInlineMapMarkers(panToTarget = null) {
       if (!customerInlineMap || !window.L) return;
       if (inlinePickupMarker) { customerInlineMap.removeLayer(inlinePickupMarker); inlinePickupMarker = null; }
       if (inlineDropoffMarker) { customerInlineMap.removeLayer(inlineDropoffMarker); inlineDropoffMarker = null; }
-
       if (Number.isFinite(tempOrderCoords.pickupLat) && Number.isFinite(tempOrderCoords.pickupLng)) {
+        const pLabel = tempResolvedAddresses.pickup ? `📦 <b>مكان الاستلام:</b><br>${escapeHtml(tempResolvedAddresses.pickup)}` : '📦 مكان الاستلام';
         inlinePickupMarker = L.marker([tempOrderCoords.pickupLat, tempOrderCoords.pickupLng], { draggable: true })
           .addTo(customerInlineMap)
-          .bindPopup('📦 مكان الاستلام');
+          .bindPopup(pLabel);
         inlinePickupMarker.on('dragend', function(e) {
           const p = e.target.getLatLng();
           applyInlineMapCoordinate('pickup', p.lat, p.lng, false);
         });
       }
-
       if (Number.isFinite(tempOrderCoords.dropoffLat) && Number.isFinite(tempOrderCoords.dropoffLng)) {
+        const dLabel = tempResolvedAddresses.dropoff ? `🏁 <b>مكان التسليم:</b><br>${escapeHtml(tempResolvedAddresses.dropoff)}` : '🏁 مكان التسليم';
         inlineDropoffMarker = L.marker([tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng], { draggable: true })
           .addTo(customerInlineMap)
-          .bindPopup('🏁 مكان التسليم');
+          .bindPopup(dLabel);
         inlineDropoffMarker.on('dragend', function(e) {
           const p = e.target.getLatLng();
           applyInlineMapCoordinate('dropoff', p.lat, p.lng, false);
         });
       }
-
       if (panToTarget === 'pickup' && inlinePickupMarker) {
         customerInlineMap.setView([tempOrderCoords.pickupLat, tempOrderCoords.pickupLng], 15);
         inlinePickupMarker.openPopup();
@@ -1398,7 +1471,6 @@
         inlineDropoffMarker.openPopup();
       }
     }
-
     function updateGpsPillsUI() {
       const pPill = document.getElementById('pickupGpsCapturedPill');
       const dPill = document.getElementById('dropoffGpsCapturedPill');
@@ -1411,9 +1483,15 @@
         dPill.style.display = hasD ? 'flex' : 'none';
       }
     }
-
     function clearCapturedGps(target) {
-      if (target === 'pickup') {
+      const targetKey = target === 'dropoff' ? 'dropoff' : 'pickup';
+      reverseGeocodeReqId[targetKey]++;
+      const addrInp = document.getElementById(targetKey === 'pickup' ? 'pickupAddress' : 'dropoffAddress');
+      if (addrInp && (addrInp.value === tempResolvedAddresses[targetKey] || addrInp.value.includes('جاري قراءة') || addrInp.value.includes('المحدد على الخريطة') || addrInp.value.includes('محدد بالخريطة'))) {
+        addrInp.value = '';
+      }
+      tempResolvedAddresses[targetKey] = '';
+      if (targetKey === 'pickup') {
         tempOrderCoords.pickupLat = null;
         tempOrderCoords.pickupLng = null;
       } else {
@@ -1424,7 +1502,6 @@
       updateGpsPillsUI();
       showToast('تم مسح إحداثيات الخريطة، يمكنك الاعتماد على العنوان المكتوب يدوياً ✍️', 'ok');
     }
-
     function captureAutoGpsLocation(target) {
       const activeMode = target === 'dropoff' ? 'dropoff' : 'pickup';
       setInlineMapTargetMode(activeMode);
@@ -1432,11 +1509,11 @@
         showToast('متصفحك مش بيدعم الـ GPS التلقائي يا باشا.. حدد الدبوس من الخريطة قدامك أو اكتب العنوان يدوياً 📍⚠️', 'warn');
         return;
       }
-      showToast('جاري التقاط موقعك الحالي بالـ GPS يا باشا... 📡📍', 'ok');
+      showToast('جاري التقاط موقعك وقراءة اسم الشارع بالـ GPS يا باشا... 📡📍', 'ok');
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           applyInlineMapCoordinate(activeMode, pos.coords.latitude, pos.coords.longitude, true);
-          showToast('تم التقاط اللوكيشن التلقائي وتثبيته ع الخريطة بنجاح يا نجم! 📍✅', 'ok');
+          showToast('تم التقاط اللوكيشن وكتابة اسم الشارع بنجاح يا نجم! 📍✅', 'ok');
         },
         () => {
           showToast('مقدرناش نلقط الـ GPS تلقائياً.. اضغط على الخريطة قدامك لتحديد الدبوس أو اكتب العنوان يدوياً ✍️⚠️', 'warn');
@@ -1444,7 +1521,6 @@
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
-
     function openCustomerMapPicker(target) {
       currentMapPickerTarget = target === 'dropoff' ? 'dropoff' : 'pickup';
       setInlineMapTargetMode(currentMapPickerTarget);
@@ -1453,10 +1529,9 @@
       const hintEl = document.getElementById('publicLeafletMapSubHint');
       const footerEl = document.getElementById('publicLeafletMapFooter');
       if (!modal) return;
-
       const isPickup = currentMapPickerTarget === 'pickup';
-      if (titleEl) titleEl.innerText = isPickup ? '📍 تحديد مكان الاستلام على الخريطة' : '🏁 تحديد مكان التسليم على الخريطة';
-      if (hintEl) hintEl.innerText = 'اضغط في أي حتة ع الخريطة عشان تحط الدبوس بالمللي (أو اسحبه لمكانك يا باشا) 😎🗺️';
+      if (titleEl) titleEl.innerText = isPickup ? '📍 اختار مكان الاستلام على الخريطة' : '🏁 اختار مكان التسليم على الخريطة';
+      if (hintEl) hintEl.innerText = 'اضغط في أي حتة ع الخريطة عشان تحط الدبوس ويتكتب اسم الشارع تلقائياً 😎🗺️';
       if (footerEl) {
         footerEl.innerHTML = `
           <button type="button" class="btn-main" style="flex:1.5; padding:10px;" onclick="confirmPickedMapLocation()">
@@ -1465,7 +1540,6 @@
           <button type="button" class="btn-secondary" style="flex:1; padding:10px;" onclick="closePublicLeafletMapModal()">تراجع</button>
         `;
       }
-
       const startLat = isPickup
         ? (tempOrderCoords.pickupLat || 31.0409)
         : (tempOrderCoords.dropoffLat || 31.0409);
@@ -1473,9 +1547,7 @@
         ? (tempOrderCoords.pickupLng || 31.3785)
         : (tempOrderCoords.dropoffLng || 31.3785);
       tempPickedLatLng = { lat: startLat, lng: startLng };
-
       modal.classList.add('show');
-
       setTimeout(() => {
         if (!window.L) return;
         if (!publicLeafletMap) {
@@ -1483,7 +1555,6 @@
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
           }).addTo(publicLeafletMap);
-
           publicLeafletMap.on('click', function(ev) {
             if (!tempPickedLatLng) return;
             tempPickedLatLng = {
@@ -1500,12 +1571,10 @@
             publicLeafletMarkers.push(mk);
           });
         }
-
         publicLeafletMap.invalidateSize();
         publicLeafletMap.setView([startLat, startLng], 14);
         publicLeafletMarkers.forEach(m => publicLeafletMap.removeLayer(m));
         publicLeafletMarkers = [];
-
         const marker = L.marker([startLat, startLng], { draggable: true }).addTo(publicLeafletMap)
           .bindPopup(isPickup ? '📦 اسحب الدبوس لمكان الاستلام' : '🏁 اسحب الدبوس لمكان التسليم').openPopup();
         marker.on('dragend', function(e) {
@@ -1515,14 +1584,12 @@
         publicLeafletMarkers.push(marker);
       }, 120);
     }
-
     function confirmPickedMapLocation() {
       if (!tempPickedLatLng) return;
       applyInlineMapCoordinate(currentMapPickerTarget, tempPickedLatLng.lat, tempPickedLatLng.lng, true);
       closePublicLeafletMapModal();
-      showToast('تم تثبيت الدبوس على الخريطة بنجاح يا باشا! 🗺️✅', 'ok');
+      showToast('تم تثبيت الدبوس وجاري كتابة اسم الشارع في الخانة تلقائياً! 🗺️✅', 'ok');
     }
-
     function openCourierOrderMapModal(orderId) {
       const o = STATE.orders.find(x => x.id === orderId);
       if (!o) return;
@@ -1531,13 +1598,10 @@
       const hintEl = document.getElementById('publicLeafletMapSubHint');
       const footerEl = document.getElementById('publicLeafletMapFooter');
       if (!modal) return;
-
       tempPickedLatLng = null;
       if (titleEl) titleEl.innerText = `🗺️ خريطة مشوار الطلب (${o.id})`;
       if (hintEl) hintEl.innerText = `من: ${o.pickupZone} (${o.pickupAddress}) ⬅️ إلى: ${o.dropoffZone} (${o.dropoffAddress})`;
-
       modal.classList.add('show');
-
       setTimeout(() => {
         if (!window.L) return;
         if (!publicLeafletMap) {
@@ -1549,10 +1613,8 @@
         publicLeafletMap.invalidateSize();
         publicLeafletMarkers.forEach(m => publicLeafletMap.removeLayer(m));
         publicLeafletMarkers = [];
-
         const bounds = [];
         let linksHtml = '';
-
         if (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) {
           const m1 = L.marker([o.pickupLat, o.pickupLng]).addTo(publicLeafletMap)
             .bindPopup(`📦 <b>مكان الاستلام:</b><br>${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}`).openPopup();
@@ -1567,7 +1629,6 @@
           bounds.push([o.dropoffLat, o.dropoffLng]);
           linksHtml += `<a href="https://www.google.com/maps?q=${o.dropoffLat},${o.dropoffLng}" target="_blank" class="btn-main" style="flex:1; text-decoration:none; font-size:11.5px;"><i class="fa-solid fa-flag-checkered"></i> لوكيشن التسليم Maps</a>`;
         }
-
         if (bounds.length === 1) {
           publicLeafletMap.setView(bounds[0], 15);
         } else if (bounds.length > 1) {
@@ -1576,12 +1637,10 @@
         if (footerEl) footerEl.innerHTML = linksHtml || `<button type="button" class="btn-secondary" style="width:100%;" onclick="closePublicLeafletMapModal()">إغلاق الخريطة</button>`;
       }, 120);
     }
-
     function closePublicLeafletMapModal() {
       tempPickedLatLng = null;
       document.getElementById('publicLeafletMapModal')?.classList.remove('show');
     }
-
     // ==================== نظام كوبونات الخصم للعميل (Promo Codes) ====================
     function validateSavedPromoCodeLocally() {
       if (!savedPromoCodeObj || !savedPromoCodeObj.code) return;
@@ -1611,7 +1670,6 @@
       const txt = document.getElementById('savedPromoCodeActiveText');
       const inp = document.getElementById('orderPromoCodeInput');
       if (!box || !txt) return;
-
       if (savedPromoCodeObj && savedPromoCodeObj.code) {
         const remHours = savedPromoCodeObj.expiresAt
           ? Math.max(1, Math.ceil((Number(savedPromoCodeObj.expiresAt) - Date.now()) / 3600000))
@@ -1667,9 +1725,14 @@
           showToast('جاري التحقق من رمز الـ PIN واسترجاع حسابك... ⏳', 'auto');
           const { ok, data } = await apiRequest('/api/auth/customer/login', 'POST', { phone: typedPhone, pin: typedPin });
           if (ok && data && data.success) {
-            STATE.customerProfile.savedPhone = typedPhone; saveSession(); syncActiveCustomerProfile(typedPhone);
+            STATE.customerProfile.savedPhone = typedPhone;
+            STATE.authenticatedCustomerPhone = typedPhone;
+            forcePinEntryManual = false;
+            saveSession();
+            syncActiveCustomerProfile(typedPhone);
             const senderInp = document.getElementById('orderSenderPhone'); if (senderInp) senderInp.value = typedPhone;
             if (pinInp) pinInp.value = '';
+            updateCustomerPinFieldVisibility();
             subscribeUserToPush(typedPhone);
             renderAllData(); calculateDeliveryPrice(); showToast(data.message || `تم فتح حسابك واسترجاع نقاطك ومحفظتك بنجاح 🛵👑`, 'ok');
           } else { triggerDeviceAlert('warning'); showToast((data && data.message) || 'رقم الهاتف أو رمز الـ PIN غير صحيح! 🔒⚠️', 'warn'); }
@@ -1777,7 +1840,6 @@
       if (courRadarWrap) { courRadarWrap.style.opacity = isMaint ? '0.55' : '1'; courRadarWrap.style.pointerEvents = isMaint ? 'none' : 'auto'; }
       const allowReg = STATE.settings ? Boolean(STATE.settings.allowCaptainRegistration) : true;
       const regLinkBox = document.getElementById('courierNewRegLinkBox'); if (regLinkBox) regLinkBox.style.display = allowReg ? 'block' : 'none';
-
       const s = STATE.settings || {};
       const custSurgeBanner = document.getElementById('customerSurgeActiveBanner');
       const courSurgeBanner = document.getElementById('courierSurgeActiveBanner');
@@ -1795,18 +1857,15 @@
         if (custSurgeBanner) custSurgeBanner.style.display = 'none';
         if (courSurgeBanner) courSurgeBanner.style.display = 'none';
       }
-
       const welcomeActive = s.welcomeBonusActive !== false;
       const welcomeAmt = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
       const referralActive = s.referralRewardActive !== false;
       const referralAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
       const referralReqTrips = Math.max(1, Number(s.referralRequiredOrders ?? 2));
       const tripsTextAr = formatArabicTripsCount(referralReqTrips);
-
       const regWelcomeBanner = document.getElementById('regWelcomeBonusBanner');
       const regWelcomeSpan = document.getElementById('regWelcomeBonusAmountSpan');
       const successModalTxt = document.getElementById('captainSuccessModalText');
-
       if (welcomeActive && welcomeAmt > 0) {
         if (regWelcomeBanner) regWelcomeBanner.style.display = 'block';
         if (regWelcomeSpan) regWelcomeSpan.innerText = welcomeAmt;
@@ -1819,7 +1878,6 @@
           successModalTxt.innerText = 'كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد حسابك هيتفعل وتقدر تستقبل الأوردرات فوراً 😎🍇';
         }
       }
-
       const regRefBox = document.getElementById('regReferralGroupBox');
       const regRefLabel = document.getElementById('regReferralLabelText');
       if (regRefBox) {
@@ -1834,6 +1892,7 @@
           if (refInp) refInp.value = '';
         }
       }
+      updateCustomerPinFieldVisibility();
       renderSavedPromoUI();
     }
 
@@ -1841,18 +1900,32 @@
       const normalizedType = (type === 'fetch') ? 'fetch' : 'send'; STATE.currentTripType = normalizedType; saveSession();
       const btnSend = document.getElementById('tripTypeBtn-send'); const btnFetch = document.getElementById('tripTypeBtn-fetch'); const notice = document.getElementById('fetchNoticeAlert');
       const pLabel = document.getElementById('pickupZoneLabel'); const dLabel = document.getElementById('dropoffZoneLabel'); const senderPhoneLabel = document.getElementById('orderSenderPhoneLabel'); const recipientPhoneLabel = document.getElementById('orderRecipientPhoneLabel'); const payerOption1Radio = document.getElementById('payerOption1Radio'); const payerOption1Text = document.getElementById('payerOption1Text'); const payerOption2Radio = document.getElementById('payerOption2Radio'); const payerOption2Text = document.getElementById('payerOption2Text');
+      const pickupHelperRow = document.getElementById('pickupGpsHelperRow');
+      const pickupAutoBtn = document.getElementById('pickupAutoGpsBtn');
+      const dropoffHelperRow = document.getElementById('dropoffGpsHelperRow');
+      const dropoffAutoBtn = document.getElementById('dropoffAutoGpsBtn');
       if (normalizedType === 'fetch') {
         if (btnSend) btnSend.className = 'btn-secondary'; if (btnFetch) btnFetch.className = 'btn-main'; if (notice) notice.style.display = 'block';
         if (pLabel) pLabel.innerText = 'هنجيب الحاجة منين؟ (المحل أو المكان اللي هنشتري/نستلم منه)'; if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك أنت ورقمك لتستلم بنفسك)';
         if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم المستلم (رقمك لتستلم الطلب) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم المكان / الشخص اللي هنشتري أو نستلم منه 🏪';
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
+        if (pickupAutoBtn) pickupAutoBtn.style.display = 'none';
+        if (pickupHelperRow) pickupHelperRow.style.gridTemplateColumns = '1fr';
+        if (dropoffAutoBtn) dropoffAutoBtn.style.display = 'flex';
+        if (dropoffHelperRow) dropoffHelperRow.style.gridTemplateColumns = '1fr 1fr';
+        setInlineMapTargetMode('dropoff');
       } else {
         if (btnSend) btnSend.className = 'btn-main'; if (btnFetch) btnFetch.className = 'btn-secondary'; if (notice) notice.style.display = 'none';
         if (pLabel) pLabel.innerText = 'هناخد الطرد منين؟ (عنوانك يا باشا)'; if (dLabel) dLabel.innerText = 'هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)';
         if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم الراسل (رقمك يا باشا) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم هاتف المستلم 📱';
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
         if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم عند الوصول 🎯';
+        if (pickupAutoBtn) pickupAutoBtn.style.display = 'flex';
+        if (pickupHelperRow) pickupHelperRow.style.gridTemplateColumns = '1fr 1fr';
+        if (dropoffAutoBtn) dropoffAutoBtn.style.display = 'none';
+        if (dropoffHelperRow) dropoffHelperRow.style.gridTemplateColumns = '1fr';
+        setInlineMapTargetMode('pickup');
       }
       setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
     }
@@ -1886,12 +1959,10 @@
         const fare = (s.surgeActive && Number(s.surgePercent) > 0)
           ? roundMoney(baseFare * (1 + Number(s.surgePercent) / 100))
           : baseFare;
-
         const custPhone = getActiveCustomerPhoneForPricing();
         const custRecord = (custPhone && STATE.customers[custPhone]) ? STATE.customers[custPhone] : STATE.customerProfile;
         const availableWallet = Math.max(0, roundMoney(custRecord ? custRecord.walletBalance : 0));
         const walletDiscount = availableWallet > 0 ? roundMoney(Math.min(availableWallet, fare)) : 0;
-
         let promoDiscount = 0;
         if (savedPromoCodeObj && savedPromoCodeObj.code) {
           const matchesTarget = !savedPromoCodeObj.targetPhone || savedPromoCodeObj.targetPhone === 'all' || savedPromoCodeObj.targetPhone === custPhone;
@@ -1900,11 +1971,9 @@
             promoDiscount = roundMoney(Math.min(roundMoney(savedPromoCodeObj.discountAmount || 0), remAfterWallet));
           }
         }
-
         const totalDiscount = roundMoney(walletDiscount + promoDiscount);
         const finalFare = Math.max(0, roundMoney(fare - totalDiscount));
         priceSpan.innerText = finalFare;
-
         if (discountNotice) {
           if (totalDiscount > 0) {
             discountNotice.style.display = 'block';
@@ -1927,26 +1996,36 @@
     function createNewCustomerOrder() {
       withActionLock(async () => {
         if (STATE.settings && STATE.settings.maintenanceMode) { showToast('عفواً يا باشا! المنصة في صيانة سريعة حالياً وراجعين فوراً 🛠️', 'warn'); return; }
-        const pZone = document.getElementById('pickupZone')?.value || STATE.zones[0]; const pAddr = (document.getElementById('pickupAddress')?.value || '').trim();
-        const dZone = document.getElementById('dropoffZone')?.value || STATE.zones[0]; const dAddr = (document.getElementById('dropoffAddress')?.value || '').trim();
+        const pZone = document.getElementById('pickupZone')?.value || STATE.zones[0];
+        let pAddr = (document.getElementById('pickupAddress')?.value || '').trim();
+        const dZone = document.getElementById('dropoffZone')?.value || STATE.zones[0];
+        let dAddr = (document.getElementById('dropoffAddress')?.value || '').trim();
+
+        if (pAddr.includes('جاري قراءة')) pAddr = tempResolvedAddresses.pickup || `موقع محدد بالخريطة (${pZone})`;
+        if (dAddr.includes('جاري قراءة')) dAddr = tempResolvedAddresses.dropoff || `موقع محدد بالخريطة (${dZone})`;
+
         const notes = (document.getElementById('customerOrderNotes')?.value || '').trim(); const clientPhoneTyped = normalizePhone(document.getElementById('orderSenderPhone')?.value || '');
         const otherPhoneTyped = normalizePhone(document.getElementById('orderRecipientPhone')?.value || ''); const customerPin = normalizeDigits(document.getElementById('orderCustomerPin')?.value || '').trim();
         const weight = document.getElementById('packageWeight')?.value || DEFAULT_PACKAGE_TYPES[0]; const payerInput = document.querySelector('input[name="payer"]:checked');
         const isFetch = (STATE.currentTripType === 'fetch'); const defaultPayer = isFetch ? 'العميل عند الاستلام بالباب 🏠' : 'الراسل'; const payer = payerInput ? payerInput.value : defaultPayer;
         const typedPromo = (document.getElementById('orderPromoCodeInput')?.value || '').trim().toUpperCase();
         const activePromoCode = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : (typedPromo || null);
-
-        if (!pAddr || !dAddr) { showToast('برجاء كتابة عنوان الاستلام والتسليم بالتفصيل 📍⚠️', 'warn'); return; }
+        if (!pAddr || !dAddr) { showToast('برجاء كتابة عنوان الاستلام والتسليم بالتفصيل أو تحديده من الخريطة 📍⚠️', 'warn'); return; }
         if (!isValidEgyptianPhone(clientPhoneTyped)) { showToast('برجاء إدخال رقم هاتفك الصحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
         if (!isValidEgyptianPhone(otherPhoneTyped)) { showToast('برجاء إدخال رقم الهاتف الآخر بشكل صحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
-        if (!isValidPin(customerPin)) { showToast('برجاء كتابة رمز PIN سري مكون من 4 أرقام لحماية حسابك 🔒⚠️', 'warn'); document.getElementById('orderCustomerPin')?.focus(); return; }
-
+        const hasTrustedSession = isCustomerSessionActiveForPhone(clientPhoneTyped);
+        if (!hasTrustedSession && !isValidPin(customerPin)) {
+          forceShowOrderPinInput();
+          showToast('برجاء كتابة رمز PIN سري مكون من 4 أرقام لمرة واحدة فقط لتأمين حسابك 🔒⚠️', 'warn');
+          document.getElementById('orderCustomerPin')?.focus();
+          return;
+        }
         const senderPhone = isFetch ? otherPhoneTyped : clientPhoneTyped; const recipientPhone = isFetch ? clientPhoneTyped : otherPhoneTyped;
         try {
-          showToast('جاري تأكيد طلبك وتأمين حسابك برمز الـ PIN... 🚀', 'auto');
+          showToast('جاري تأكيد طلبك... 🚀', 'auto');
           const { ok, data } = await apiRequest('/api/orders', 'POST', {
             clientPhone: clientPhoneTyped,
-            pin: customerPin,
+            pin: hasTrustedSession ? customerPin : customerPin,
             tripType: isFetch ? 'fetch' : 'send',
             pickupZone: pZone,
             pickupAddress: pAddr,
@@ -1964,10 +2043,16 @@
             promoCode: activePromoCode
           });
           if (ok && data.success) {
-            STATE.customerProfile.savedPhone = clientPhoneTyped; saveSession();
+            STATE.customerProfile.savedPhone = clientPhoneTyped;
+            STATE.authenticatedCustomerPhone = clientPhoneTyped;
+            forcePinEntryManual = false;
+            saveSession();
+            updateCustomerPinFieldVisibility();
             subscribeUserToPush(clientPhoneTyped);
             document.getElementById('pickupAddress').value = ''; document.getElementById('dropoffAddress').value = ''; document.getElementById('customerOrderNotes').value = ''; document.getElementById('orderRecipientPhone').value = '';
+            const pinEl = document.getElementById('orderCustomerPin'); if (pinEl) pinEl.value = '';
             tempOrderCoords.pickupLat = null; tempOrderCoords.pickupLng = null; tempOrderCoords.dropoffLat = null; tempOrderCoords.dropoffLng = null;
+            tempResolvedAddresses.pickup = ''; tempResolvedAddresses.dropoff = '';
             syncInlineMapMarkers();
             updateGpsPillsUI();
             if (activePromoCode) {
@@ -1976,7 +2061,15 @@
               if (pInp) pInp.value = '';
             }
             switchCustTab('orders'); showToast(data.message || 'تم إرسال طلبك بنجاح 🚀', 'ok');
-          } else { triggerDeviceAlert('warning'); showToast((data && data.message) || 'حدث خطأ أثناء تأكيد الطلب ⚠️', 'warn'); }
+          } else {
+            if (data && data.needPin) {
+              STATE.authenticatedCustomerPhone = '';
+              forceShowOrderPinInput();
+              setTimeout(() => document.getElementById('orderCustomerPin')?.focus(), 80);
+            }
+            triggerDeviceAlert('warning');
+            showToast((data && data.message) || 'حدث خطأ أثناء تأكيد الطلب ⚠️', 'warn');
+          }
         } catch (err) { showToast('تعذر الاتصال بالسيرفر، تأكد أن الخادم يعمل ⚠️', 'warn'); }
       });
     }
@@ -1993,19 +2086,19 @@
       });
     }
 
-    // ==================== نافذة شروط مستويات الكباتن الديناميكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) ====================
+    // ==================== نافذة شروط مستويات الكباتن الديناميكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎 + الهبوط التدريجي الآمن) ====================
     function renderCaptainTiersModalContent() {
       const bodyEl = document.getElementById('captainTiersInfoModalBody');
       if (!bodyEl) return;
       const s = STATE.settings || {};
       const baseFee = roundMoney(s.platformFee ?? DEFAULT_PLATFORM_FEE);
       const weeklyTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
-      const diaWeeks = Math.max(1, Number(s.tierWeeksForDiamond ?? 4));
+      const daysWin = Math.max(1, Number(s.tierDaysWindow ?? 7));
+      const consDaysForDia = Math.max(daysWin, Number(s.tierConsecutiveDaysForDiamond ?? (Number(s.tierWeeksForDiamond ?? 4) * daysWin)));
       const platDisc = Math.max(0, roundMoney(s.tierPlatinumDiscount ?? 1));
       const diaDisc = Math.max(0, roundMoney(s.tierDiamondDiscount ?? 2));
       const platFee = Math.max(0, roundMoney(baseFee - platDisc));
       const diaFee = Math.max(0, roundMoney(baseFee - diaDisc));
-
       bodyEl.innerHTML = `
         <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:12px; padding:10px 12px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
@@ -2013,32 +2106,29 @@
             <span class="badge tier-badge-bronze">العمولة: ${baseFee} ج</span>
           </div>
           <p style="font-size:11.5px; color:#4E342E; margin:0;">
-            ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب في الأسبوع</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
+            ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب خلال ${daysWin} أيام</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
           </p>
         </div>
-
         <div style="background:#ECEFF1; border:1.5px solid #90A4AE; border-radius:12px; padding:10px 12px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <strong style="color:#263238; font-size:13px;">🥈 2. كابتن بلاتيني (الوحش)</strong>
             <span class="badge tier-badge-platinum">خصم ${platDisc} ج (العمولة: ${platFee} ج)</span>
           </div>
           <p style="font-size:11.5px; color:#263238; margin:0;">
-            أول ما تنفذ <strong>${weeklyTarget} طلب خلال 7 أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل أسبوع.
+            أول ما تنفذ <strong>${weeklyTarget} طلب خلال ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل ${daysWin} أيام.
           </p>
         </div>
-
         <div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:12px; padding:10px 12px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <strong style="color:#01579B; font-size:13px;">💎 3. كابتن ماسي (أسطورة الميدان)</strong>
             <span class="badge tier-badge-diamond">خصم ${diaDisc} ج (العمولة: ${diaFee} ج)</span>
           </div>
           <p style="font-size:11.5px; color:#01579B; margin:0;">
-            لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب في الأسبوع</strong> لمدة <strong>${diaWeeks} أسابيع متتالية</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الرئيسية في كل أوردر! 😍🚀
+            لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوماً متتالية</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الرئيسية في كل أوردر! 😍🚀
           </p>
         </div>
-
-        <div style="background:#FAF7F4; border:1px dashed var(--primary); border-radius:10px; padding:8px 10px; font-size:11px; color:#5F2E3E; font-weight:700;">
-          💡 <strong>خلي بالك يا نجم:</strong> لو مشاويرك في الأسبوع قلت عن (${weeklyTarget} طلب)، مستواك بينزل للمستوى الأقل والعمولة بتتعدل أوتوماتيك.. شد حيلك وخليك دايماً في الماسي! 💪🛵
+        <div style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:10px; padding:8px 10px; font-size:11px; color:#1B5E20; font-weight:700;">
+          🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو أنت <strong>كابتن ماسي 💎</strong> ومقدرتش تحقق تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈</strong> وتحتفظ بخصم عمولة البلاتيني كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
         </div>
       `;
     }
@@ -2066,7 +2156,6 @@
         const noticeBox = document.getElementById('courierSuspendedNoticeBox'); const noticeTitle = document.getElementById('courierSuspendedNoticeTitle'); const noticeText = document.getElementById('courierSuspendedReasonText'); const reuploadBtn = document.getElementById('courierReuploadDocsBtn'); const supportBtn = document.getElementById('courierSuspendedSupportBtn');
         if (noticeBox) noticeBox.style.display = 'none'; if (reuploadBtn) reuploadBtn.style.display = 'none';
         if (!isValidEgyptianPhone(p) || !pass) { showToast('برجاء إدخال رقم الهاتف وكلمة المرور بشكل صحيح ⚠️', 'warn'); return; }
-
         try {
           const { ok, status, data } = await apiRequest('/api/auth/captain/login', 'POST', { phone: p, password: pass });
           if (status === 403 && data && data.status === 'مرفوض') {
@@ -2077,7 +2166,6 @@
             if (noticeBox) noticeBox.style.display = 'block'; showToast(data.message || 'تم رفض المستندات، يمكنك إعادة رفع صور واضحة الآن 📄⚠️', 'warn'); return;
           }
           if (!ok || !data.success) { showToast((data && data.message) || 'بيانات الدخول غير صحيحة! ⚠️', 'warn'); return; }
-
           STATE.activeCourierPhone = p; document.getElementById('courierLoginPass').value = ''; saveSession();
           subscribeUserToPush(p);
           renderAllData(); switchCourierTab(STATE.currentCourTab || 'home'); updateBottomNavVisibility(); showToast(data.message || 'تم تسجيل الدخول بنجاح 🛵✅', 'ok');
@@ -2126,6 +2214,7 @@
       const file = event.target.files && event.target.files[0]; if (!file) return;
       compressImageDataUrl(file).then(compressedDataUrl => { tempCaptainFiles[type] = compressedDataUrl; const phEl = document.getElementById(`${type}Placeholder`); const pvEl = document.getElementById(`${type}Preview`); const imEl = document.getElementById(`${type}Img`); if (phEl) phEl.style.display = 'none'; if (pvEl) pvEl.style.display = 'block'; if (imEl) imEl.src = compressedDataUrl; showToast('تم إرفاق وضغط الصورة بنجاح 📷✅', 'ok'); }).catch(() => { event.target.value = ''; showToast('تعذر قراءة الصورة، يرجى اختيار صورة أخرى ⚠️', 'warn'); });
     }
+
     function removeUploadedFile(type) { tempCaptainFiles[type] = null; const fileInput = document.getElementById(`${type}FileInput`); if (fileInput) fileInput.value = ''; const placeholder = document.getElementById(`${type}Placeholder`); if (placeholder) placeholder.style.display = 'block'; const preview = document.getElementById(`${type}Preview`); if (preview) preview.style.display = 'none'; }
 
     function submitCaptainRegistration() {
@@ -2155,21 +2244,18 @@
       const courier = getActiveCourier();
       const sw = document.getElementById('courierAvailabilitySwitch');
       if (!courier || !sw) return;
-
       if (courier.status === 'قيد المراجعة') {
         sw.checked = false;
         triggerDeviceAlert('warning');
         showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
         return;
       }
-
       if (courier.status !== 'معتمد') {
         sw.checked = false;
         triggerDeviceAlert('warning');
         showToast(`حسابك ${courier.status} حالياً.. راجع الإدارة ⛔`, 'warn');
         return;
       }
-
       withActionLock(async () => {
         const { ok, data } = await apiRequest('/api/captain/availability', 'POST', { isAvailable: Boolean(sw.checked) });
         if (ok && data.success) {
@@ -2198,14 +2284,13 @@
         }
       });
     }
+
     function courierReleaseOrder(orderId) { openCustomActionModal({ title: 'التنازل عن الطلب وإعادته للرادار 🔄', message: `اكتب سبب اعتذارك عن الطلب (${orderId}) ليتم إعادته للرادار ورد العمولة لمحفظتك:`, needInput: true, inputPlaceholder: 'مثال: عطل مفاجئ في المركبة أو ظرف طارئ...', confirmText: 'تأكيد التنازل', isDanger: true, onConfirm: (reason) => { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/release`, 'POST', { reason }); if (ok && data.success) { showToast(data.message || 'تم التنازل عن الطلب وإعادته للرادار 🔄', 'ok'); } else { showToast((data && data.message) || 'تعذر التنازل عن الطلب ⚠️', 'warn'); } }); } }); }
     function courierAdvanceOrderStatus(orderId, nextStatus) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/advance`, 'POST', { nextStatus }); if (ok && data.success) { showToast(data.message || `تم تحديث حالة المشوار: ${nextStatus} 🛵✅`, 'ok'); } else { showToast((data && data.message) || 'تعذر تحديث حالة الطلب ⚠️', 'warn'); } }); }
     function courierCompleteDeliveryInstantly(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'تسلم إيدك يا بطل! تم تسليم الأوردر 🛵💨', 'ok'); } else { showToast((data && data.message) || 'تعذر إنهاء الطلب ⚠️', 'warn'); } }); }
-
     function openRatingModal(orderId) { const order = STATE.orders.find(o => o.id === orderId); if (!order || order.rating !== null) { showToast('تم تقييم هذا المشوار مسبقاً ولا يمكن تعديله ⭐', 'warn'); return; } const hid = document.getElementById('ratingOrderIdHidden'); if (hid) hid.value = orderId; setRatingStars(5); document.getElementById('ratingModal')?.classList.add('show'); }
     function setRatingStars(cnt) { currentSelectedStars = cnt; const container = document.getElementById('starRatingContainer'); if (!container) return; const stars = container.children; for (let i = 0; i < 5; i++) { if (stars[i]) stars[i].className = i < cnt ? 'fa-solid fa-star' : 'fa-regular fa-star'; } }
     function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars, clientPhone: STATE.customerProfile.savedPhone || '' }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('شكراً لتقييمك الجميل! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'تعذر حفظ التقييم ⚠️', 'warn'); } }); }
-
     function customerOpenDispute(orderId) { const hid = document.getElementById('disputeOrderIdHidden'); const inp = document.getElementById('disputeReasonInput'); if (hid) hid.value = orderId; if (inp) inp.value = ''; document.getElementById('disputeModal')?.classList.add('show'); }
     function closeDisputeModal() { document.getElementById('disputeModal')?.classList.remove('show'); }
     function confirmCustomerDispute() { withActionLock(async () => { const orderId = document.getElementById('disputeOrderIdHidden')?.value; const reason = (document.getElementById('disputeReasonInput')?.value || '').trim(); if (!reason) { showToast('اكتب سبب الاعتراض ⚠️', 'warn'); return; } const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/dispute`, 'POST', { reason, clientPhone: STATE.customerProfile.savedPhone || '' }); closeDisputeModal(); if (ok && data.success) { showToast('تم رفع الاعتراض للإدارة لبحثه وحسمه 🛡️', 'ok'); } else { showToast((data && data.message) || 'تعذر رفع الاعتراض ⚠️', 'warn'); } }); }
@@ -2216,32 +2301,49 @@
       if (courier) {
         const s = STATE.settings || {}; const effectiveFee = getEffectiveCaptainFee(courier); const courPtsPerOrder = Math.max(1, Number(s.courierPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const courThreshold = Math.max(5, Number(s.courierRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const courRewardCash = Math.max(1, roundMoney(s.courierRewardCash ?? DEFAULT_REWARD_CASH));
         document.getElementById('courierNameHeading').innerText = `كابتن: ${courier.fullName}`; document.getElementById('courierIdHeading').innerText = `#${courier.phone.slice(-4)}`; document.getElementById('courierWalletBalanceDisplay').innerHTML = `${roundMoney(courier.walletBalance).toFixed(2)} <span>جنيه</span>`; document.getElementById('courierPointsDisplay').innerText = `${courier.points || 0} نقطة`; const progPct = Math.min(100, Math.round(((courier.points || 0) / courThreshold) * 100)); document.getElementById('courierPointsProgress').style.width = `${progPct}%`;
-
         const tierBadgeTxt = courier.tierBadgeText || 'كابتن برونزي 🥉';
         const tierCls = getCaptainTierBadgeClass(courier.tier);
         const headerTierBadge = document.getElementById('courierTierBadgeHeader');
         const profileTierBadge = document.getElementById('courierTierBadgeProfile');
         if (headerTierBadge) { headerTierBadge.className = `badge ${tierCls}`; headerTierBadge.innerText = tierBadgeTxt; }
         if (profileTierBadge) { profileTierBadge.className = `badge ${tierCls}`; profileTierBadge.innerText = tierBadgeTxt; }
-
+        const wTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
+        const dWin = Math.max(1, Number(courier.tierDaysWindow || s.tierDaysWindow || 7));
+        const consDaysTarget = Math.max(dWin, Number(courier.tierConsecutiveDaysForDiamond || s.tierConsecutiveDaysForDiamond || 28));
+        const curWeekCnt = Number(courier.weeklyCompletedOrders || 0);
+        const consDaysDone = Number(courier.consecutiveQualifiedDays || 0);
+        const remOrdersThisWeek = Math.max(0, wTarget - curWeekCnt);
+        const tierPct = courier.tierProgressPct !== undefined ? Number(courier.tierProgressPct) : Math.min(100, Math.round((curWeekCnt / wTarget) * 100));
+        const homePctBadge = document.getElementById('courierHomeTierProgressPctBadge');
+        const homeProgBar = document.getElementById('courierHomeTierProgressBar');
+        const homeSubTxt = document.getElementById('courierHomeTierProgressSubText');
+        const profPctTxt = document.getElementById('courierProfileTierProgressPct');
+        const profProgBar = document.getElementById('courierProfileTierProgressBar');
         const tierProgBox = document.getElementById('courierTierProgressSummary');
-        if (tierProgBox) {
-          const wTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
-          const dWeeks = Math.max(1, Number(s.tierWeeksForDiamond ?? 4));
-          const curWeekCnt = Number(courier.weeklyCompletedOrders || 0);
-          const consWeeks = Number(courier.consecutiveQualifiedWeeks || 0);
-          const remOrdersThisWeek = Math.max(0, wTarget - curWeekCnt);
-
-          if (courier.tier === 'diamond') {
-            tierProgBox.innerHTML = `💎 <strong>أنت في القمة يانجم (كابتن ماسي)!</strong> عملت <strong>${curWeekCnt} طلب</strong> في آخر 7 أيام ومستفيد بخصم <strong>${courier.tierDiscount || 2} ج</strong> على عمولة كل مشوار! كمل على الأقل ${wTarget} طلب أسبوعياً عشان تحافظ على الماسي 🚀🔥`;
-          } else if (courier.tier === 'platinum') {
-            const remWeeksForDia = Math.max(1, dWeeks - consWeeks);
-            tierProgBox.innerHTML = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> عملت <strong>${curWeekCnt} طلب</strong> في آخر 7 أيام ومستفيد بخصم <strong>${courier.tierDiscount || 1} ج</strong> من العمولة! باقيلك <strong>${remWeeksForDia} أسبوع</strong> متتالي بالتارجت (${wTarget} طلب/أسبوع) وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
+        if (homePctBadge) homePctBadge.innerText = `${tierPct}% (${curWeekCnt}/${wTarget})`;
+        if (homeProgBar) homeProgBar.style.width = `${tierPct}%`;
+        if (profPctTxt) profPctTxt.innerText = `${tierPct}% (${curWeekCnt} من ${wTarget} طلب)`;
+        if (profProgBar) profProgBar.style.width = `${tierPct}%`;
+        let shortStatusHtml = '';
+        let detailedStatusHtml = '';
+        if (courier.tier === 'diamond') {
+          shortStatusHtml = `💎 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> خلال آخر ${dWin} أيام — حافظ على مستواك للبقاء في القمة الماسية بخصم ${courier.tierDiscount || 2} ج! 🚀`;
+          detailedStatusHtml = `💎 <strong>أنت في القمة يانجم (كابتن ماسي)!</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 2} ج</strong> على عمولة كل مشوار! كمل التارجت عشان تحافظ على الماسي 🚀🔥`;
+        } else if (courier.tier === 'platinum') {
+          if (courier.gracefulDemotion) {
+            shortStatusHtml = `🛡️ <strong>فترة الأمان (كابتن بلاتيني 🥈):</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> لاستعادة المستوى الماسي 💎!`;
+            detailedStatusHtml = `🛡️ <strong>ميزة الهبوط التدريجي الآمن:</strong> أنت حالياً في فترة الأمان بمستوى <strong>كابتن بلاتيني 🥈</strong> (بخصم ${courier.tierDiscount || 1} ج) بدل النزول للبرونزي! أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> وترجع فوراً لـ <strong>كابتن ماسي 💎</strong>! 💪🛵`;
           } else {
-            tierProgBox.innerHTML = `🥉 عملت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر 7 أيام. شد حيلك باقيلك <strong>${remOrdersThisWeek} طلب</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب خصم فوري على العمولة في كل مشوار! 💪🛵`;
+            const remDaysForDia = Math.max(0, consDaysTarget - consDaysDone);
+            shortStatusHtml = `🥈 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> (خصم ${courier.tierDiscount || 1} ج) — باقي <strong>${remDaysForDia} يوم</strong> بالتارجت للترقية للماسي 💎!`;
+            detailedStatusHtml = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 1} ج</strong> من العمولة! باقيلك <strong>${remDaysForDia} يوم</strong> متتالي بالتارجت وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
           }
+        } else {
+          shortStatusHtml = `🥉 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> للترقية للبلاتيني 🥈 وخصم العمولة!`;
+          detailedStatusHtml = `🥉 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> خلال آخر ${dWin} أيام (${tierPct}%). شد حيلك باقيلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب خصم فوري على العمولة في كل مشوار! 💪🛵`;
         }
-
+        if (homeSubTxt) homeSubTxt.innerHTML = shortStatusHtml;
+        if (tierProgBox) tierProgBox.innerHTML = detailedStatusHtml;
         const availSw = document.getElementById('courierAvailabilitySwitch'); const statusTxt = document.getElementById('courierStatusText');
         if (availSw) { availSw.checked = courier.status === 'قيد المراجعة' ? false : Boolean(courier.isAvailable); }
         if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسة بيتراجع يانجم الطيارين 😎 (المعاينة متاحة فقط)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يرجى التواصل مع الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'أنت جاهز ومتاح حاليًا لاستقبال طلبات الزباين' : 'أنت في وضع التوقف المؤقت عن استقبال الطلبات'; }
@@ -2261,7 +2363,6 @@
         }
         const rPerOrd = document.getElementById('courRulePointsPerOrder'); const rTarget = document.getElementById('courRulePointsTarget'); const rCash = document.getElementById('courRuleRewardCash');
         if (rPerOrd) rPerOrd.innerText = `${courPtsPerOrder} نقط`; if (rTarget) rTarget.innerText = `${courThreshold} نقطة`; if (rCash) rCash.innerText = `${courRewardCash} جنيه كاش فوري`;
-
         const commNoticeEl = document.getElementById('courierCommissionNoticeText');
         if (commNoticeEl) {
           if (effectiveFee === 0) {
@@ -2274,7 +2375,6 @@
             commNoticeEl.innerText = `مستواك (${tierBadgeTxt}): عمولتك الحالية ${effectiveFee} ج${s.surgeActive ? ' (شاملة نسبة الذروة ⚡)' : ''} تخصم فور قبول الطلب وتُرد لك تلقائياً في حال إلغاء العميل`;
           }
         }
-
         const badgeEl = document.getElementById('courierStatusBadgeDisplay'); if (badgeEl) { badgeEl.innerText = courier.status === 'معتمد' ? 'معتمد ✅' : courier.status; badgeEl.className = `badge ${courier.status === 'معتمد' ? 'badge-verified' : (courier.status === 'موقوف' ? 'badge-rejected' : 'badge-review')}`; }
         const mineCompleted = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'));
         const mineCancelled = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone && String(o.status || '').includes('ملغي'));
@@ -2283,7 +2383,6 @@
         document.getElementById('courierCompletedCount').innerText = `${lifetimeCompTotal} أوردرات`; document.getElementById('courierTodayEarnings').innerText = `${lifetimeNetTotal} جنيه`;
         const lifeCompEl = document.getElementById('courierLifetimeCompletedCount'); const lifeCancEl = document.getElementById('courierLifetimeCancelledCount'); const lifeNetEl = document.getElementById('courierLifetimeNetEarnings');
         if (lifeCompEl) lifeCompEl.innerText = lifetimeCompTotal; if (lifeCancEl) lifeCancEl.innerText = lifetimeCancTotal; if (lifeNetEl) lifeNetEl.innerText = `${lifetimeNetTotal} ج`;
-
         const refCardEl = document.getElementById('courierReferralProgramCard');
         const refRewardDisplayEl = document.getElementById('courierReferralRewardAmountDisplay');
         const refTripsDisplayEl = document.getElementById('courierReferralTripsCountDisplay');
@@ -2292,7 +2391,6 @@
         const refActive = s.referralRewardActive !== false;
         const refAmount = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
         const refReqTrips = Math.max(1, Number(s.referralRequiredOrders ?? 2));
-
         if (refCardEl) {
           refCardEl.style.display = (refActive && refAmount > 0) ? 'block' : 'none';
         }
@@ -2304,7 +2402,6 @@
         }
         if (refCodeEl) refCodeEl.innerText = courier.phone;
         if (refBadgeEl) refBadgeEl.innerText = `${courier.referralsCount || 0} أصدقاء`;
-
         const quickWal = document.getElementById('courierQuickWalletDisplay'); const quickEarn = document.getElementById('courierQuickEarningsDisplay');
         if (quickWal) quickWal.innerText = `${roundMoney(courier.walletBalance).toFixed(2)} ج`; if (quickEarn) quickEarn.innerText = `${lifetimeNetTotal} جنيه`;
         const profDetails = document.getElementById('courierProfileDetailsBox');
@@ -2367,7 +2464,6 @@
         if (courier.status === 'قيد المراجعة') { acceptBtnText = 'حسابك قيد المراجعة (للمعاينة فقط) ⏳'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
         else if (courier.status !== 'معتمد') { acceptBtnText = 'حسابك موقوف مؤقتاً (للمعاينة فقط) ⛔'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
         else if (currentActiveOrder) { acceptBtnText = 'معاك مشوار جاري يا بطل 🛵'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-
         return `<div class="card" style="border:1.5px solid ${isMine ? 'var(--primary)' : 'rgba(123,63,82,0.15)'};"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><div>${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FFE082; padding:6px 8px; border-radius:8px; margin:4px 0; color:#5D4037;"><strong>📝 ملحوظة من الباشا:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | تحصيل كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? `<div style="margin-top:4px; font-weight:700;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل (المستلم): <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> مشاهدة مكان العميل / الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار وتنازل عن الطلب (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يانجم العالم 🌟📦</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
       }).join('');
     }
@@ -2437,6 +2533,7 @@
       initCustomerInlineLeafletMap();
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) { const senderInput = document.getElementById('orderSenderPhone'); if (senderInput) senderInput.value = STATE.customerProfile.savedPhone; }
       selectTripType(STATE.currentTripType || 'send');
+      updateCustomerPinFieldVisibility();
       renderSavedPromoUI();
       calculateDeliveryPrice();
       await syncFromCloudServer(true);

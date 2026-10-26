@@ -238,50 +238,72 @@ function getActiveSurgeInfo(settings) {
   };
 }
 
-// حساب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) وعمولته الفعلية أوتوماتيكياً
+// حساب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) مع مبدأ الهبوط التدريجي الآمن (Graceful Demotion)
 function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
   const s = settings || {};
   const weeklyTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
-  const diamondWeeksTarget = Math.max(1, Number(s.tierWeeksForDiamond ?? 4));
+  const tierDaysWindow = Math.max(1, Number(s.tierDaysWindow ?? 7));
+  const tierConsecutiveDaysForDiamond = Math.max(
+    tierDaysWindow,
+    Number(s.tierConsecutiveDaysForDiamond ?? (Number(s.tierWeeksForDiamond ?? 4) * tierDaysWindow))
+  );
+  const diamondWeeksTarget = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
   const platDiscount = Math.max(0, roundMoney(s.tierPlatinumDiscount ?? 1));
   const diaDiscount = Math.max(0, roundMoney(s.tierDiamondDiscount ?? 2));
 
   const now = Date.now();
-  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const windowMs = tierDaysWindow * 24 * 60 * 60 * 1000;
 
   const capCompletedOrders = (mappedOrders || []).filter(
     o => o.assignedCourierPhone === captainRow.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض')
   );
 
-  // حساب عدد الطلبات في الأسابيع المتتالية (الأسبوع الحالي = 0، الأسبوع الماضي = 1، وهكذا)
+  // حساب عدد الطلبات في النوافذ الزمنية المتتالية (النافذة الحالية = 0، النافذة السابقة = 1، وهكذا)
+  const totalWindowsToCheck = Math.max(diamondWeeksTarget + 2, 8);
   const weeklyCounts = [];
-  for (let w = 0; w < Math.max(diamondWeeksTarget + 1, 6); w++) {
-    const startWindow = now - (w + 1) * weekMs;
-    const endWindow = now - w * weekMs;
+  for (let w = 0; w < totalWindowsToCheck; w++) {
+    const startWindow = now - (w + 1) * windowMs;
+    const endWindow = now - w * windowMs;
     const cnt = capCompletedOrders.filter(o => o.createdAt >= startWindow && o.createdAt <= endWindow).length;
     weeklyCounts.push(cnt);
   }
 
   const currentWeekOrders = weeklyCounts[0] || 0;
-  let consecutiveQualifiedWeeks = 0;
-  for (let w = 0; w < weeklyCounts.length; w++) {
+
+  // حساب عدد النوافذ المتتالية المكتملة قبل النافذة الحالية مباشرة (ابتداءً من w = 1)
+  let pastConsecutiveWeeks = 0;
+  for (let w = 1; w < weeklyCounts.length; w++) {
     if (weeklyCounts[w] >= weeklyTarget) {
-      consecutiveQualifiedWeeks++;
+      pastConsecutiveWeeks++;
     } else {
       break;
     }
   }
 
-  // تحديد المستوى الأوتوماتيكي بناءً على شروط المنصة
+  let consecutiveQualifiedWeeks = 0;
   let autoTier = 'bronze';
+  let gracefulDemotion = false;
+
   if (currentWeekOrders >= weeklyTarget) {
+    consecutiveQualifiedWeeks = 1 + pastConsecutiveWeeks;
     if (consecutiveQualifiedWeeks >= diamondWeeksTarget) {
       autoTier = 'diamond';
     } else {
       autoTier = 'platinum';
     }
   } else {
-    autoTier = 'bronze';
+    // تطبيق مبدأ الهبوط التدريجي الآمن (Graceful Demotion):
+    // إذا كان الكابتن قد حقق المستوى الماسي في النوافذ السابقة مباشرة وأخفق في النافذة الحالية،
+    // يهبط خطوة واحدة فقط إلى البلاتيني 🥈 (فرصة أمان) بدلاً من السقوط المباشر للبرونزي 🥉
+    if (pastConsecutiveWeeks >= diamondWeeksTarget) {
+      autoTier = 'platinum';
+      gracefulDemotion = true;
+      consecutiveQualifiedWeeks = pastConsecutiveWeeks;
+    } else {
+      // إذا كان بلاتينياً أو برونزياً وأخفق في النافذة الحالية، يهبط خطوة واحدة إلى البرونزي 🥉
+      autoTier = 'bronze';
+      consecutiveQualifiedWeeks = 0;
+    }
   }
 
   const manualOverrides = (s.tierManualOverrides && typeof s.tierManualOverrides === 'object') ? s.tierManualOverrides : {};
@@ -311,10 +333,14 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
       : baseCustom;
   }
 
+  const tierProgressPct = Math.min(100, Math.round((currentWeekOrders / weeklyTarget) * 100));
+  const consecutiveQualifiedDays = consecutiveQualifiedWeeks * tierDaysWindow;
+
   return {
     tier: finalTier,
     autoTier,
     isManualTier: ['bronze', 'platinum', 'diamond'].includes(manualTier),
+    gracefulDemotion,
     tierName: tierInfo.name,
     tierEmoji: tierInfo.emoji,
     tierBadgeText: tierInfo.badgeText,
@@ -322,8 +348,12 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     tierColor: tierInfo.color,
     weeklyCompletedOrders: currentWeekOrders,
     consecutiveQualifiedWeeks,
+    consecutiveQualifiedDays,
     weeklyTarget,
+    tierDaysWindow,
+    tierConsecutiveDaysForDiamond,
     diamondWeeksTarget,
+    tierProgressPct,
     effectiveFee,
     surgedPlatformFee
   };
@@ -456,6 +486,17 @@ function getAuthenticatedAdminFromCookie(req) {
   }
 }
 
+function getAuthenticatedCustomerFromCookie(req) {
+  try {
+    const token = req.cookies && req.cookies.customer_session;
+    if (!token) return null;
+    const dec = jwt.verify(token, JWT_SECRET);
+    return dec && dec.phone ? String(dec.phone).trim() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders = [], settings = {}) {
   const phoneFiles = storageMap[c.phone] || {};
   const frontPhoto = resolveCaptainPhotoUrl(c.id_front_photo || c.id_front_url || c.doc_id_front_path) || phoneFiles.idFront || null;
@@ -488,10 +529,11 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     lifetimeNetEarnings: roundMoney(c.lifetime_net_earnings || 0),
     walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 40) : [],
     adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : []),
-    // بيانات مستوى الكابتن والعمولة الديناميكية
+    // بيانات مستوى الكابتن، الهبوط التدريجي، وشريط التقدم الحي
     tier: tierData.tier,
     autoTier: tierData.autoTier,
     isManualTier: tierData.isManualTier,
+    gracefulDemotion: tierData.gracefulDemotion,
     tierName: tierData.tierName,
     tierEmoji: tierData.tierEmoji,
     tierBadgeText: tierData.tierBadgeText,
@@ -499,6 +541,10 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     tierColor: tierData.tierColor,
     weeklyCompletedOrders: tierData.weeklyCompletedOrders,
     consecutiveQualifiedWeeks: tierData.consecutiveQualifiedWeeks,
+    consecutiveQualifiedDays: tierData.consecutiveQualifiedDays,
+    tierDaysWindow: tierData.tierDaysWindow,
+    tierConsecutiveDaysForDiamond: tierData.tierConsecutiveDaysForDiamond,
+    tierProgressPct: tierData.tierProgressPct,
     effectiveFee: tierData.effectiveFee
   };
 }
@@ -651,9 +697,14 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const referralRequiredOrders = Math.max(1, Number(storedIncentives.referralRequiredOrders ?? 2));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
 
-  // إعدادات مستويات الكباتن (Captain Tiers)
+  // إعدادات مستويات الكباتن الديناميكية (شاملة نافذة الأيام وعدد الأيام المتتالية للماسي)
   const tierWeeklyOrdersTarget = Math.max(1, Number(storedIncentives.tierWeeklyOrdersTarget ?? 25));
-  const tierWeeksForDiamond = Math.max(1, Number(storedIncentives.tierWeeksForDiamond ?? 4));
+  const tierDaysWindow = Math.max(1, Number(storedIncentives.tierDaysWindow ?? 7));
+  const tierConsecutiveDaysForDiamond = Math.max(
+    tierDaysWindow,
+    Number(storedIncentives.tierConsecutiveDaysForDiamond ?? (Number(storedIncentives.tierWeeksForDiamond ?? 4) * tierDaysWindow))
+  );
+  const tierWeeksForDiamond = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
   const tierPlatinumDiscount = Math.max(0, roundMoney(storedIncentives.tierPlatinumDiscount ?? 1));
   const tierDiamondDiscount = Math.max(0, roundMoney(storedIncentives.tierDiamondDiscount ?? 2));
   const tierManualOverrides = (storedIncentives.tierManualOverrides && typeof storedIncentives.tierManualOverrides === 'object')
@@ -682,6 +733,8 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     referralRewardAmount,
     referralRequiredOrders,
     tierWeeklyOrdersTarget,
+    tierDaysWindow,
+    tierConsecutiveDaysForDiamond,
     tierWeeksForDiamond,
     tierPlatinumDiscount,
     tierDiamondDiscount,
@@ -763,6 +816,8 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
     referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
     broadcastTarget: prevSettings.broadcastTarget || 'all',
     tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
+    tierDaysWindow: Math.max(1, Number(prevSettings.tierDaysWindow ?? 7)),
+    tierConsecutiveDaysForDiamond: Math.max(1, Number(prevSettings.tierConsecutiveDaysForDiamond ?? 28)),
     tierWeeksForDiamond: Math.max(1, Number(prevSettings.tierWeeksForDiamond ?? 4)),
     tierPlatinumDiscount: Math.max(0, roundMoney(prevSettings.tierPlatinumDiscount ?? 1)),
     tierDiamondDiscount: Math.max(0, roundMoney(prevSettings.tierDiamondDiscount ?? 2)),
@@ -791,6 +846,7 @@ async function buildClientState(req, forceRefresh = false) {
   const raw = await fetchRawDatabaseState(forceRefresh);
   const isAdmin = isRequestFromAdminView(req);
   const adminToken = getAuthenticatedAdminFromCookie(req);
+  const authenticatedCustomerPhone = getAuthenticatedCustomerFromCookie(req);
 
   const surgeInfo = getActiveSurgeInfo(raw.settings);
   const clientSettings = {
@@ -818,6 +874,7 @@ async function buildClientState(req, forceRefresh = false) {
     orders: raw.orders,
     availableCaptainsCount,
     onlineCustomersCount,
+    authenticatedCustomerPhone,
     realtimeConfig: {
       supabaseUrl: SUPABASE_URL || '',
       supabaseAnonKey: SUPABASE_ANON_KEY || ''
@@ -1119,7 +1176,7 @@ app.post('/api/auth/admin/login', async (req, res) => {
     }
 
     const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
-    res.cookie('admin_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    res.cookie('admin_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
 
     req.query = { ...req.query, role: 'admin' };
     invalidateStateCache();
@@ -1165,10 +1222,11 @@ app.post('/api/auth/customer/login', async (req, res) => {
 
     touchCustomerPresence(req, `cust_${phone}`);
     invalidateStateCache();
-    const token = jwt.sign({ phone: newUser.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
-    res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    const token = jwt.sign({ phone: newUser.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '90d' });
+    res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 90 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+    req.cookies = { ...req.cookies, customer_session: token };
     const state = await buildClientState(req, true);
-    return res.json({ success: true, message: 'تم فتح حسابك بنجاح 👑', state });
+    return res.json({ success: true, message: 'تم فتح حسابك وتفعيل جلستك الدائمة بنجاح 👑', state });
   }
 
   const valid = await bcrypt.compare(String(pin), user.pin_hash);
@@ -1179,10 +1237,11 @@ app.post('/api/auth/customer/login', async (req, res) => {
 
   await clearFailedAttempts(phone);
   touchCustomerPresence(req, `cust_${phone}`);
-  const token = jwt.sign({ phone: user.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
-  res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+  const token = jwt.sign({ phone: user.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '90d' });
+  res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 90 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  req.cookies = { ...req.cookies, customer_session: token };
   const state = await buildClientState(req, false);
-  res.json({ success: true, message: 'تم تسجيل الدخول بنجاح 👑', state });
+  res.json({ success: true, message: 'تم تسجيل الدخول وتفعيل جلستك الدائمة بنجاح 👑', state });
 });
 
 app.post('/api/captains/register', async (req, res) => {
@@ -1306,7 +1365,7 @@ app.post('/api/auth/captain/login', async (req, res) => {
   }
 
   const token = jwt.sign({ phone: cap.phone, role: 'captain', session_version: cap.session_version || 1 }, JWT_SECRET, { expiresIn: '14d' });
-  res.cookie('captain_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+  res.cookie('captain_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 14 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
   const state = await buildClientState(req, false);
   res.json({ success: true, message: 'منور الميدان يا بطل 🛵', state });
 });
@@ -1333,7 +1392,7 @@ app.post('/api/orders', async (req, res) => {
       pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode
     } = req.body || {};
 
-    if (!clientPhone || !pin || !pickupAddress || !dropoffAddress) {
+    if (!clientPhone || !pickupAddress || !dropoffAddress) {
       return res.status(400).json({ success: false, message: 'برجاء استكمال كافة بيانات وعناوين الطلب ⚠️' });
     }
 
@@ -1342,9 +1401,21 @@ app.post('/api/orders', async (req, res) => {
       return res.status(403).json({ success: false, message: 'المنصة في وضع الصيانة الطارئة حالياً 🛠️' });
     }
 
+    // التحقق من جلسة العميل: لا يُطلب رمز الـ PIN إذا كانت جلسة العميل نشطة لنفس الرقم
+    const sessionCustPhone = getAuthenticatedCustomerFromCookie(req);
+    const isSessionTrustedForPhone = Boolean(sessionCustPhone && sessionCustPhone === String(clientPhone).trim());
+    const cleanPin = String(pin || '').trim();
+
     let { data: cust } = await supabase.from('customers').select('*').eq('phone', clientPhone).maybeSingle();
     if (!cust) {
-      const hashedPin = await bcrypt.hash(String(pin), 10);
+      if (!/^[0-9]{4}$/.test(cleanPin)) {
+        return res.status(400).json({
+          success: false,
+          needPin: true,
+          message: 'برجاء كتابة رمز PIN سري (4 أرقام) لمرة واحدة فقط لتأمين حسابك في أول طلب 🔒⚠️'
+        });
+      }
+      const hashedPin = await bcrypt.hash(cleanPin, 10);
       const { data: createdCust } = await supabase.from('customers').insert([{
         phone: clientPhone,
         pin_hash: hashedPin,
@@ -1353,16 +1424,33 @@ app.post('/api/orders', async (req, res) => {
         wallet_transactions: []
       }]).select().single();
       cust = createdCust;
-    } else {
-      const pinOk = await bcrypt.compare(String(pin), cust.pin_hash);
+    } else if (!isSessionTrustedForPhone) {
+      if (!/^[0-9]{4}$/.test(cleanPin)) {
+        return res.status(401).json({
+          success: false,
+          needPin: true,
+          message: 'يرجى إدخال رمز الـ PIN السري (4 أرقام) لمرة واحدة لتفعيل جلستك على هذا الجهاز 🔒⚠️'
+        });
+      }
+      const pinOk = await bcrypt.compare(cleanPin, cust.pin_hash);
       if (!pinOk) {
-        return res.status(401).json({ success: false, message: 'رمز الـ PIN غير مطابق لحسابك المسجل! 🔒⚠️' });
+        return res.status(401).json({
+          success: false,
+          needPin: true,
+          message: 'رمز الـ PIN غير مطابق لحسابك المسجل! (يمكنك استرجاعه من تبويب حسابي) 🔒⚠️'
+        });
       }
     }
 
     touchCustomerPresence(req, `cust_${clientPhone}`);
-    const custToken = jwt.sign({ phone: clientPhone, role: 'customer' }, JWT_SECRET, { expiresIn: '30d' });
-    res.cookie('customer_session', custToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    const custToken = jwt.sign({ phone: clientPhone, role: 'customer' }, JWT_SECRET, { expiresIn: '90d' });
+    res.cookie('customer_session', custToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 90 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax'
+    });
+    req.cookies = { ...req.cookies, customer_session: custToken };
 
     const routeKey = `${pickupZone}|${dropoffZone}`;
     const baseRouteFare = roundMoney(rawState.pricing[routeKey] ?? 40);
@@ -1660,7 +1748,7 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     if (newTierData.tier !== oldTierData.tier && (newTierData.tier === 'platinum' || newTierData.tier === 'diamond')) {
       const upgradeMsg = newTierData.tier === 'diamond'
         ? `💎 وسّع للكابتن الماسي! مبروك يا بطل، حافظت على مستواك ووصلت لـ (${newTierData.tierBadgeText}) وعمولتك نزلت بخصم ${newTierData.tierDiscount} جنيه على كل أوردر! 🚀🔥`
-        : `🥈 عاش يا نجم الطيارين! كملت التارجت الأسبوعي واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة بـ ${newTierData.tierDiscount} جنيه! حافظ على مستواك عشان توصل للماسي 💎🛵`;
+        : `🥈 عاش يا نجم الطيارين! كملت تارجت الـ ${newTierData.weeklyTarget} طلب في ${newTierData.tierDaysWindow} أيام واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة بـ ${newTierData.tierDiscount} جنيه! حافظ على مستواك عشان توصل للماسي 💎🛵`;
 
       capNotices.unshift({
         id: 'tier-up-' + Date.now(),
@@ -1935,9 +2023,26 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (body.referralRequiredOrders !== undefined) partialIncentives.referralRequiredOrders = Math.max(1, Number(body.referralRequiredOrders));
   if (body.broadcastTarget !== undefined) partialIncentives.broadcastTarget = String(body.broadcastTarget).trim();
 
-  // تحديثات مستويات الكباتن الديناميكية
-  if (body.tierWeeklyOrdersTarget !== undefined) partialIncentives.tierWeeklyOrdersTarget = Math.max(1, Number(body.tierWeeklyOrdersTarget));
-  if (body.tierWeeksForDiamond !== undefined) partialIncentives.tierWeeksForDiamond = Math.max(1, Number(body.tierWeeksForDiamond));
+  // تحديثات مستويات الكباتن الديناميكية (الطلبات، نافذة الأيام، والأيام المتتالية للماسي)
+  if (body.tierWeeklyOrdersTarget !== undefined) {
+    partialIncentives.tierWeeklyOrdersTarget = Math.max(1, Number(body.tierWeeklyOrdersTarget));
+  }
+  const effDaysWin = body.tierDaysWindow !== undefined
+    ? Math.max(1, Number(body.tierDaysWindow))
+    : Math.max(1, Number(prevSettings.tierDaysWindow ?? 7));
+
+  if (body.tierDaysWindow !== undefined) {
+    partialIncentives.tierDaysWindow = effDaysWin;
+  }
+  if (body.tierConsecutiveDaysForDiamond !== undefined) {
+    const consDays = Math.max(effDaysWin, Number(body.tierConsecutiveDaysForDiamond));
+    partialIncentives.tierConsecutiveDaysForDiamond = consDays;
+    partialIncentives.tierWeeksForDiamond = Math.max(1, Math.ceil(consDays / effDaysWin));
+  } else if (body.tierWeeksForDiamond !== undefined) {
+    const wks = Math.max(1, Number(body.tierWeeksForDiamond));
+    partialIncentives.tierWeeksForDiamond = wks;
+    partialIncentives.tierConsecutiveDaysForDiamond = wks * effDaysWin;
+  }
   if (body.tierPlatinumDiscount !== undefined) partialIncentives.tierPlatinumDiscount = Math.max(0, roundMoney(body.tierPlatinumDiscount));
   if (body.tierDiamondDiscount !== undefined) partialIncentives.tierDiamondDiscount = Math.max(0, roundMoney(body.tierDiamondDiscount));
   if (body.tierManualOverride && body.tierManualOverride.phone) {
@@ -1975,8 +2080,8 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     auditDetails = `تفعيل وقت الذروة (+${partialIncentives.surgePercent}%) لمدة ${partialIncentives.surgeDurationMinutes} دقيقة`;
   } else if (body.surgeAction === 'stop') {
     auditDetails = 'إيقاف وقت الذروة والعودة للتسعير الطبيعي';
-  } else if (body.tierWeeklyOrdersTarget !== undefined || body.tierPlatinumDiscount !== undefined) {
-    auditDetails = `تحديث نظام مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب/أسبوع - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
+  } else if (body.tierWeeklyOrdersTarget !== undefined || body.tierPlatinumDiscount !== undefined || body.tierDaysWindow !== undefined) {
+    auditDetails = `تحديث مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب خلال ${updatedIncentives.tierDaysWindow} يوم - الماسي ${updatedIncentives.tierConsecutiveDaysForDiamond} يوم - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
   } else if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
     const targetNames = { all: 'الجميع', customers: 'العملاء فقط', captains: 'الكباتن فقط', admins: 'المسؤولين فقط', public: 'العملاء والكباتن' };
     const msgTxt = body.broadcastMessage !== undefined ? body.broadcastMessage : (prevSettings.broadcastMessage || '');
@@ -2434,7 +2539,7 @@ app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
   }
 
   const newToken = jwt.sign({ username: updates.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
-  res.cookie('admin_session', newToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+  res.cookie('admin_session', newToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
