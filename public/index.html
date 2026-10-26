@@ -103,11 +103,11 @@
     .tier-badge-bronze { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); color: #8D4E15; border: 1px solid #FFB74D; }
     .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
     .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 8px rgba(2, 136, 209, 0.22); }
-    .gps-helper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+    .gps-helper-row { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 4px; }
     .btn-gps-action { background: #F3EAED; color: var(--primary); border: 1.5px dashed var(--primary); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; width: 100%; }
     .btn-gps-action:active { transform: scale(0.98); background: var(--accent); }
     .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; gap: 8px; }
-    /* إطار الملاحظات المميز لإرشاد كتابة العنوان يدوياً */
+    /* إطار الملاحظات المميز لإرشاد كتابة العنوان يدوياً أسفل الخريطة */
     .gps-manual-note { display: block; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border: 1.5px dashed #FBC02D; border-radius: 10px; padding: 7px 10px; font-size: 11px; color: #5D4037; font-weight: 800; margin-top: 6px; line-height: 1.5; text-align: right; }
     /* الخريطة المدمجة المباشرة (InDrive Style) داخل التصميم الكلاسيكي */
     .inline-live-map-card { background: #FAF7F4; border: 1.5px solid var(--primary); border-radius: 16px; padding: 10px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
@@ -249,7 +249,7 @@
                   💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.
                 </div>
               </div>
-              <!-- مكان الاستلام + أزرار الخريطة التفاعلية والمساندة -->
+              <!-- مكان الاستلام + زر لوكيشن مكاني تلقائي فقط -->
               <div class="input-group">
                 <label class="input-label" id="pickupZoneLabel" for="pickupZone">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
                 <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
@@ -260,36 +260,28 @@
                   <button type="button" class="btn-gps-action" id="pickupAutoGpsBtn" onclick="captureAutoGpsLocation('pickup')">
                     <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
                   </button>
-                  <button type="button" class="btn-gps-action" id="pickupExpandMapBtn" onclick="openCustomerMapPicker('pickup')">
-                    <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
-                  </button>
                 </div>
                 <div class="gps-captured-pill" id="pickupGpsCapturedPill">
                   <span id="pickupGpsCapturedText">✅ تم التقاط لوكيشن الاستلام على الخريطة بدقة!</span>
                   <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
                 </div>
-                <div class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
               </div>
-              <!-- مكان التسليم + أزرار الخريطة التفاعلية والمساندة -->
+              <!-- مكان التسليم + زر لوكيشن مكاني تلقائي فقط (يظهر في هاتلي حاجة ليا) -->
               <div class="input-group">
                 <label class="input-label" id="dropoffZoneLabel" for="dropoffZone">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</label>
                 <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
                   <select class="select-field" id="dropoffZone" onchange="handleZoneChange()"></select>
                   <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: كوبري جديلة)">
                 </div>
-                <div class="gps-helper-row" id="dropoffGpsHelperRow" style="grid-template-columns: 1fr;">
-                  <button type="button" class="btn-gps-action" id="dropoffAutoGpsBtn" style="display:none;" onclick="captureAutoGpsLocation('dropoff')">
+                <div class="gps-helper-row" id="dropoffGpsHelperRow" style="display:none;">
+                  <button type="button" class="btn-gps-action" id="dropoffAutoGpsBtn" onclick="captureAutoGpsLocation('dropoff')">
                     <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
-                  </button>
-                  <button type="button" class="btn-gps-action" id="dropoffExpandMapBtn" onclick="openCustomerMapPicker('dropoff')">
-                    <i class="fa-solid fa-expand"></i> تكبير الخريطة 🗺️
                   </button>
                 </div>
                 <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
                   <span id="dropoffGpsCapturedText">✅ تم التقاط لوكيشن التسليم على الخريطة بدقة!</span>
                   <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
                 </div>
-                <div class="gps-manual-note">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
               </div>
               <div class="input-group">
                 <label class="input-label" for="customerOrderNotes">لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
@@ -308,7 +300,7 @@
                   </div>
                 </div>
               </div>
-              <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة) -->
+              <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة، والتحكم في الحساب من تبويب حسابي) -->
               <div class="input-group" id="orderCustomerPinGroupBox" style="background:#FAF4F6; border:1.5px dashed var(--primary); border-radius:14px; padding:12px;">
                 <div id="orderCustomerPinInputWrap">
                   <label class="input-label" for="orderCustomerPin" style="color:var(--primary); font-weight:800; font-size:12px; margin-bottom:5px; display:block;">
@@ -321,12 +313,8 @@
                     </button>
                   </div>
                   <small style="font-size:10.5px; color:#5F2E3E; font-weight:700; line-height:1.5; margin-top:4px; display:block;">
-                    💡 بتكتبه مرة واحدة بس في أول طلب وهنتعرف على جلستك دايماً أوتوماتيك، ولو الجلسة انتهت تقدر تسترجع حسابك من تبويب «حسابي» 🎁🛵
+                    💡 بتكتبه مرة واحدة بس في أول طلب وهنتعرف على جلستك دايماً أوتوماتيك، وتقدر تتحكم في استرجاع حسابك من تبويب «حسابي» 🎁🛵
                   </small>
-                </div>
-                <div id="orderCustomerPinSessionActiveBanner" style="display:none; align-items:center; justify-content:space-between; gap:8px; color:var(--success); font-size:11.5px; font-weight:800;">
-                  <span><i class="fa-solid fa-circle-check"></i> جلستك نشطة ومحفوظة يا باشا! تقدر تطلب علطول بدون إعادة كتابة الـ PIN 🚀</span>
-                  <button type="button" onclick="forceShowOrderPinInput()" style="background:none; border:none; color:var(--primary); font-size:10.5px; font-weight:900; cursor:pointer; text-decoration:underline; white-space:nowrap;">تغيير الرقم؟</button>
                 </div>
               </div>
               <div class="input-group">
@@ -802,6 +790,26 @@
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
   <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> تحويل للدعم والشحن</button></div></div>
+  <!-- نافذة تنبيه عدم كفاية رصيد محفظة الكابتن لقبول الطلب -->
+  <div class="custom-modal" id="insufficientWalletModal" style="z-index: 1960;" onclick="if(event.target === this) closeInsufficientWalletModal()">
+    <div class="modal-content-card" style="text-align:center; padding:24px 18px; max-width:360px;">
+      <div style="width:56px; height:56px; background:#FFEBEE; color:var(--danger); border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:26px;">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <p style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.7; margin-bottom:18px;">
+        رصيدك الحالى مش كافى لإتمام الطلب 😭.<br>
+        <span style="color:var(--primary);">بس احنا لسة فيها ✌️💲</span>
+      </p>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-main" style="background:#25D366; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); flex:1.3;" onclick="openDirectWhatsAppTopupFromModal()">
+          <i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> اشحن دلوقتى
+        </button>
+        <button type="button" class="btn-main" style="flex:1;" onclick="closeInsufficientWalletModal()">
+          بعدين
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">إبلاغ عن مشكلة في الطلب ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكي لنا إيه المشكلة بالتفصيل..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">إرسال الشكوى</button><button class="btn-secondary" onclick="closeDisputeModal()">تراجع</button></div></div></div>
   <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">تقييم خدمة الكابتن 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:24px; color:#FFB300; margin-bottom:12px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><button class="btn-main" onclick="submitOrderRating()">حفظ التقييم الجميل</button></div></div>
   
@@ -813,7 +821,7 @@
       <button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام يا باشا، في انتظار الإدارة 💪</button>
     </div>
   </div>
-  <!-- نافذة الخريطة التفاعلية المجانية (Leaflet Map Modal للعميل والكابتن) -->
+  <!-- نافذة الخريطة التفاعلية المجانية (Leaflet Map Modal للعميل والكابتن بدون إشعار مكرر) -->
   <div class="custom-modal" id="publicLeafletMapModal" style="z-index: 1900;" onclick="if(event.target === this) closePublicLeafletMapModal()">
     <div class="modal-content-card" style="max-width:440px; padding:16px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -824,7 +832,6 @@
         اضغط على أي مكان في الخريطة لوضع الدبوس 📍 (أو اسحب الدبوس لمكانك بالضبط).
       </p>
       <div id="publicLeafletMapContainer" style="width:100%; height:270px; border-radius:14px; border:1.5px solid var(--primary); overflow:hidden;"></div>
-      <div class="gps-manual-note" style="margin-top:8px;">💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.</div>
       <div id="publicLeafletMapFooter" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"></div>
     </div>
   </div>
@@ -853,11 +860,12 @@
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
     const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
+
     let currentSelectedStars = 5; let toastTimer = null; let lastInteractedElement = null; let actionLock = false;
     let ennabyAudioCtx = null; let deferredInstallPrompt = null; let reuploadPhoneTarget = null; let rejectedCaptainCache = null;
     let customModalCallback = null; let isCloudSyncInFlight = false; let lastCloudStateFingerprint = '';
-    let forcePinEntryManual = false;
     const tempCaptainFiles = { idFront: null, idBack: null, vehicle: null };
+
     // متغيرات الخرائط التفاعلية (Leaflet GPS المباشرة والمودال) وقراءة اسم الشارع الفعلي والتحديث اللحظي
     const tempOrderCoords = { pickupLat: null, pickupLng: null, dropoffLat: null, dropoffLng: null };
     const tempResolvedAddresses = { pickup: '', dropoff: '' };
@@ -873,6 +881,7 @@
     let publicRealtimeClient = null;
     let publicRealtimeInitialized = false;
     let publicRealtimeDebounce = null;
+
     const CLIENT_DEVICE_ID = (() => {
       try {
         let id = localStorage.getItem(CLIENT_PRESENCE_KEY);
@@ -885,6 +894,7 @@
         return 'cid_' + Math.random().toString(36).slice(2, 10);
       }
     })();
+
     let savedPromoCodeObj = (() => {
       try {
         const raw = localStorage.getItem(SAVED_PROMO_KEY);
@@ -899,6 +909,7 @@
         return null;
       }
     })();
+
     function persistSavedPromoCode(promoObj) {
       savedPromoCodeObj = promoObj || null;
       try {
@@ -911,6 +922,15 @@
       renderSavedPromoUI();
       calculateDeliveryPrice();
     }
+
+    // التحقق الدقيق من صحة إحداثيات الخريطة لمنع ظهور دبوس وهمي عند النقطة (0,0)
+    function isValidGpsCoord(lat, lng) {
+      if (lat === null || lng === null || lat === undefined || lng === undefined || lat === '' || lng === '') return false;
+      const nLat = Number(lat);
+      const nLng = Number(lng);
+      return Number.isFinite(nLat) && Number.isFinite(nLng) && Math.abs(nLat) > 0.1 && Math.abs(nLng) > 0.1;
+    }
+
     // ==================== Web Push Notifications ====================
     async function subscribeUserToPush(userPhone) {
       if (!userPhone || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -932,6 +952,7 @@
         console.error('Push subscription error:', e);
       }
     }
+
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
       const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -940,6 +961,7 @@
       for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
       return outputArray;
     }
+
     function normalizeDigits(str) {
       if (str === null || str === undefined) return '';
       return String(str).replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776));
@@ -976,6 +998,7 @@
       catch (e) { return new Date(num).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); }
     }
     function formatTxTime(t) { if (!t) return ''; if (t.at && Number.isFinite(Number(t.at))) return formatCairoDateTime(t.at); return String(t.time || ''); }
+
     function unlockAudioEngine() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -984,6 +1007,7 @@
         if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
       } catch (e) {}
     }
+
     function triggerDeviceAlert(alertType) {
       try {
         if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
@@ -1011,6 +1035,7 @@
         });
       } catch (e) {}
     }
+
     function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'تأكيد ✅', isDanger = false, onConfirm }) {
       const modal = document.getElementById('customActionModal'); const titleEl = document.getElementById('customActionModalTitle');
       const msgEl = document.getElementById('customActionModalMessage'); const inpWrap = document.getElementById('customActionModalInputWrap');
@@ -1031,11 +1056,13 @@
       modal.classList.add('show');
       if (needInput && inpEl) setTimeout(() => inpEl.focus(), 80);
     }
+
     function closeCustomActionModal() {
       const modal = document.getElementById('customActionModal');
       if (modal) modal.classList.remove('show');
       customModalCallback = null;
     }
+
     function getDefaultSession() {
       return { currentRole: 'customer', currentCustTab: 'home', currentCourTab: 'home', isAppInstalled: window.matchMedia('(display-mode: standalone)').matches || Boolean(window.navigator.standalone), activeCourierPhone: null, savedCustomerPhone: '', authenticatedCustomerPhone: '', currentTripType: 'send' };
     }
@@ -1044,6 +1071,7 @@
       try { const raw = localStorage.getItem(SESSION_KEY); if (raw) return { ...def, ...JSON.parse(raw) }; } catch (e) {}
       return def;
     }
+
     let SESSION = loadSession();
     let STATE = {
       currentRole: SESSION.currentRole === 'courier' ? 'courier' : 'customer',
@@ -1088,6 +1116,7 @@
       customerProfile: { title: 'باشا مصر اللي منورنا 👑', savedPhone: SESSION.savedCustomerPhone || '', points: 0, walletBalance: 0.00, walletTransactions: [] },
       customers: {}, captains: [], orders: []
     };
+
     function saveSession() {
       try {
         localStorage.setItem(SESSION_KEY, JSON.stringify({
@@ -1102,6 +1131,7 @@
         }));
       } catch (e) {}
     }
+
     function resolveOrderClientPhone(order) {
       if (!order || typeof order !== 'object') return '';
       if (order.clientPhone && isValidEgyptianPhone(order.clientPhone)) return normalizePhone(order.clientPhone);
@@ -1110,9 +1140,9 @@
       if (order.senderPhone && isValidEgyptianPhone(order.senderPhone)) return normalizePhone(order.senderPhone);
       return '';
     }
-    // التحقق مما إذا كانت جلسة العميل موثقة ونشطة لهذا الرقم حتى لا يُطلب الـ PIN مرة أخرى
+
+    // التحقق مما إذا كانت جلسة العميل موثقة ونشطة لهذا الرقم حتى يختفي مربع الـ PIN تلقائياً بدون إشعارات
     function isCustomerSessionActiveForPhone(phoneToCheck) {
-      if (forcePinEntryManual) return false;
       const cleanCheck = normalizePhone(phoneToCheck || getActiveCustomerPhoneForPricing());
       if (!isValidEgyptianPhone(cleanCheck)) return false;
       return Boolean(
@@ -1120,25 +1150,18 @@
         (STATE.customerProfile.savedPhone && normalizePhone(STATE.customerProfile.savedPhone) === cleanCheck && STATE.customers[cleanCheck])
       );
     }
+
     function updateCustomerPinFieldVisibility() {
-      const inpWrap = document.getElementById('orderCustomerPinInputWrap');
-      const activeBanner = document.getElementById('orderCustomerPinSessionActiveBanner');
-      if (!inpWrap || !activeBanner) return;
+      const pinGroupBox = document.getElementById('orderCustomerPinGroupBox');
+      if (!pinGroupBox) return;
       const typedPh = normalizePhone(document.getElementById('orderSenderPhone')?.value || STATE.customerProfile.savedPhone || '');
       if (isCustomerSessionActiveForPhone(typedPh)) {
-        inpWrap.style.display = 'none';
-        activeBanner.style.display = 'flex';
+        pinGroupBox.style.display = 'none';
       } else {
-        inpWrap.style.display = 'block';
-        activeBanner.style.display = 'none';
+        pinGroupBox.style.display = 'flex';
       }
     }
-    function forceShowOrderPinInput() {
-      forcePinEntryManual = true;
-      updateCustomerPinFieldVisibility();
-      const senderInp = document.getElementById('orderSenderPhone');
-      if (senderInp) senderInp.focus();
-    }
+
     // ==================== Supabase Realtime WebSockets & Presence ====================
     function setupPublicSupabaseRealtime(cfg) {
       if (publicRealtimeInitialized || !cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
@@ -1158,6 +1181,7 @@
         publicRealtimeInitialized = false;
       }
     }
+
     function sendCustomerPresencePing() {
       if (STATE.currentRole !== 'customer' || document.hidden) return;
       const savedPh = STATE.customerProfile?.savedPhone || '';
@@ -1169,6 +1193,7 @@
         body: JSON.stringify({ clientId, role: 'customer' })
       }).catch(() => {});
     }
+
     async function apiRequest(endpoint, method = 'POST', bodyObj = null) {
       const opts = { method, credentials: 'include', headers: {} };
       if (bodyObj !== null) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(bodyObj); }
@@ -1186,6 +1211,7 @@
       }
       return { ok: res.ok, status: res.status, data };
     }
+
     function applyCloudStateSnapshot(cloudState) {
       if (!cloudState || typeof cloudState !== 'object') return;
       const oldOrders = Array.isArray(STATE.orders) ? STATE.orders : [];
@@ -1235,6 +1261,7 @@
       }
       saveSession(); populateAllZoneDropdowns(); renderAllData(); calculateDeliveryPrice();
     }
+
     async function syncFromCloudServer(silent = true) {
       if (isCloudSyncInFlight) return;
       isCloudSyncInFlight = true;
@@ -1253,16 +1280,19 @@
       } catch (err) { if (!silent) showToast('تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت ⚠️', 'warn'); } 
       finally { isCloudSyncInFlight = false; }
     }
+
     document.addEventListener('pointerdown', function(e) {
       unlockAudioEngine();
       const target = e.target.closest('button, a, select, input, label, .upload-card-box');
       if (target && !target.closest('#toast')) lastInteractedElement = target;
     }, true);
+
     function withActionLock(fn) {
       if (actionLock) return;
       actionLock = true;
       Promise.resolve(fn()).finally(() => { setTimeout(() => { actionLock = false; }, 260); });
     }
+
     function getStatusBadgeClass(status) {
       switch (status) {
         case 'في انتظار كابتن': return 'badge-pending';
@@ -1274,11 +1304,13 @@
         default: return String(status || '').includes('ملغي') ? 'badge-rejected' : 'badge-pending';
       }
     }
+
     function getCurrentPlatformFee() {
       const s = STATE.settings || {};
       const eff = Number(s.effectivePlatformFee ?? s.platformFee);
       return (Number.isFinite(eff) && eff >= 0) ? roundMoney(eff) : DEFAULT_PLATFORM_FEE;
     }
+
     function getEffectiveCaptainFee(captain) {
       if (captain && captain.effectiveFee !== undefined && captain.effectiveFee !== null && Number.isFinite(Number(captain.effectiveFee))) {
         return Math.max(0, roundMoney(captain.effectiveFee));
@@ -1288,25 +1320,26 @@
       }
       return getCurrentPlatformFee();
     }
+
     function getSupportWhatsapp() { return (STATE.settings && STATE.settings.supportWhatsapp) || DEFAULT_SUPPORT_WHATSAPP; }
     function getActiveCourier() { if (!STATE.activeCourierPhone) return null; return STATE.captains.find(c => c.phone === STATE.activeCourierPhone) || null; }
     function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArray(STATE.orders)) return null; return STATE.orders.find(o => o && o.assignedCourierPhone === courierPhone && ACTIVE_COURIER_STATUSES.includes(o.status)) || null; }
+
     function syncActiveCustomerProfile(phone) {
       const targetPhone = normalizePhone(phone || STATE.customerProfile.savedPhone || '');
       if (!isValidEgyptianPhone(targetPhone)) return;
       const rec = STATE.customers[targetPhone];
       if (rec) { STATE.customerProfile.savedPhone = targetPhone; STATE.customerProfile.walletBalance = Math.max(0, roundMoney(rec.walletBalance)); STATE.customerProfile.points = Math.max(0, Number(rec.points) || 0); STATE.customerProfile.walletTransactions = Array.isArray(rec.walletTransactions) ? rec.walletTransactions : []; }
     }
+
     function getActiveCustomerPhoneForPricing() { const inputEl = document.getElementById('orderSenderPhone'); const typed = inputEl ? normalizePhone(inputEl.value) : ''; if (isValidEgyptianPhone(typed)) return typed; return STATE.customerProfile.savedPhone || ''; }
+
     function handleCustomerPhoneInput() {
-      const typed = normalizePhone(document.getElementById('orderSenderPhone')?.value || '');
-      if (typed && STATE.authenticatedCustomerPhone && typed === normalizePhone(STATE.authenticatedCustomerPhone)) {
-        forcePinEntryManual = false;
-      }
       updateCustomerPinFieldVisibility();
       validateSavedPromoCodeLocally();
       calculateDeliveryPrice();
     }
+
     // ==================== محرك الخرائط التفاعلي وقراءة اسم الشارع الفعلي من الخريطة (Reverse Geocoding) ====================
     async function fetchArabicAddressFromCoords(lat, lng) {
       try {
@@ -1358,20 +1391,22 @@
         if (customerInlineMap) customerInlineMap.invalidateSize();
       }, 150);
     }
-    // الزر الأيمن دائماً لطالب الأوردر (في "هبعت" = pickup، وفي "هاتلي" = dropoff)
+
     function handleInlineMapRightBtnClick() {
       const target = STATE.currentTripType === 'fetch' ? 'dropoff' : 'pickup';
       setInlineMapTargetMode(target);
     }
-    // الزر الأيسر دائماً للطرف الآخر (في "هبعت" = dropoff، وفي "هاتلي" = pickup المحل)
+
     function handleInlineMapLeftBtnClick() {
       const target = STATE.currentTripType === 'fetch' ? 'pickup' : 'dropoff';
       setInlineMapTargetMode(target);
     }
+
     function captureRequesterOwnGpsLocation() {
       const requesterTarget = STATE.currentTripType === 'fetch' ? 'dropoff' : 'pickup';
       captureAutoGpsLocation(requesterTarget);
     }
+
     function setInlineMapTargetMode(mode) {
       inlineMapActiveTarget = mode === 'dropoff' ? 'dropoff' : 'pickup';
       const isFetch = STATE.currentTripType === 'fetch';
@@ -1393,15 +1428,16 @@
       if (customerInlineMap) {
         const lat = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLat : tempOrderCoords.dropoffLat;
         const lng = inlineMapActiveTarget === 'pickup' ? tempOrderCoords.pickupLng : tempOrderCoords.dropoffLng;
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          customerInlineMap.panTo([lat, lng]);
+        if (isValidGpsCoord(lat, lng)) {
+          customerInlineMap.panTo([Number(lat), Number(lng)]);
         }
       }
     }
+
     async function applyInlineMapCoordinate(target, rawLat, rawLng, panMap = false) {
+      if (!isValidGpsCoord(rawLat, rawLng)) return;
       const lat = Number(Number(rawLat).toFixed(6));
       const lng = Number(Number(rawLng).toFixed(6));
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
       const targetKey = target === 'dropoff' ? 'dropoff' : 'pickup';
       const addrInp = document.getElementById(targetKey === 'pickup' ? 'pickupAddress' : 'dropoffAddress');
       const pillTxt = document.getElementById(targetKey === 'pickup' ? 'pickupGpsCapturedText' : 'dropoffGpsCapturedText');
@@ -1439,11 +1475,12 @@
       }
       syncInlineMapMarkers(null);
     }
+
     function syncInlineMapMarkers(panToTarget = null) {
       if (!customerInlineMap || !window.L) return;
       if (inlinePickupMarker) { customerInlineMap.removeLayer(inlinePickupMarker); inlinePickupMarker = null; }
       if (inlineDropoffMarker) { customerInlineMap.removeLayer(inlineDropoffMarker); inlineDropoffMarker = null; }
-      if (Number.isFinite(tempOrderCoords.pickupLat) && Number.isFinite(tempOrderCoords.pickupLng)) {
+      if (isValidGpsCoord(tempOrderCoords.pickupLat, tempOrderCoords.pickupLng)) {
         const pLabel = tempResolvedAddresses.pickup ? `📦 <b>مكان الاستلام:</b><br>${escapeHtml(tempResolvedAddresses.pickup)}` : '📦 مكان الاستلام';
         inlinePickupMarker = L.marker([tempOrderCoords.pickupLat, tempOrderCoords.pickupLng], { draggable: true })
           .addTo(customerInlineMap)
@@ -1453,7 +1490,7 @@
           applyInlineMapCoordinate('pickup', p.lat, p.lng, false);
         });
       }
-      if (Number.isFinite(tempOrderCoords.dropoffLat) && Number.isFinite(tempOrderCoords.dropoffLng)) {
+      if (isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng)) {
         const dLabel = tempResolvedAddresses.dropoff ? `🏁 <b>مكان التسليم:</b><br>${escapeHtml(tempResolvedAddresses.dropoff)}` : '🏁 مكان التسليم';
         inlineDropoffMarker = L.marker([tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng], { draggable: true })
           .addTo(customerInlineMap)
@@ -1471,18 +1508,20 @@
         inlineDropoffMarker.openPopup();
       }
     }
+
     function updateGpsPillsUI() {
       const pPill = document.getElementById('pickupGpsCapturedPill');
       const dPill = document.getElementById('dropoffGpsCapturedPill');
       if (pPill) {
-        const hasP = Number.isFinite(tempOrderCoords.pickupLat) && Number.isFinite(tempOrderCoords.pickupLng);
+        const hasP = isValidGpsCoord(tempOrderCoords.pickupLat, tempOrderCoords.pickupLng);
         pPill.style.display = hasP ? 'flex' : 'none';
       }
       if (dPill) {
-        const hasD = Number.isFinite(tempOrderCoords.dropoffLat) && Number.isFinite(tempOrderCoords.dropoffLng);
+        const hasD = isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng);
         dPill.style.display = hasD ? 'flex' : 'none';
       }
     }
+
     function clearCapturedGps(target) {
       const targetKey = target === 'dropoff' ? 'dropoff' : 'pickup';
       reverseGeocodeReqId[targetKey]++;
@@ -1502,6 +1541,7 @@
       updateGpsPillsUI();
       showToast('تم مسح إحداثيات الخريطة، يمكنك الاعتماد على العنوان المكتوب يدوياً ✍️', 'ok');
     }
+
     function captureAutoGpsLocation(target) {
       const activeMode = target === 'dropoff' ? 'dropoff' : 'pickup';
       setInlineMapTargetMode(activeMode);
@@ -1521,75 +1561,7 @@
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
-    function openCustomerMapPicker(target) {
-      currentMapPickerTarget = target === 'dropoff' ? 'dropoff' : 'pickup';
-      setInlineMapTargetMode(currentMapPickerTarget);
-      const modal = document.getElementById('publicLeafletMapModal');
-      const titleEl = document.getElementById('publicLeafletMapTitle');
-      const hintEl = document.getElementById('publicLeafletMapSubHint');
-      const footerEl = document.getElementById('publicLeafletMapFooter');
-      if (!modal) return;
-      const isPickup = currentMapPickerTarget === 'pickup';
-      if (titleEl) titleEl.innerText = isPickup ? '📍 اختار مكان الاستلام على الخريطة' : '🏁 اختار مكان التسليم على الخريطة';
-      if (hintEl) hintEl.innerText = 'اضغط في أي حتة ع الخريطة عشان تحط الدبوس ويتكتب اسم الشارع تلقائياً 😎🗺️';
-      if (footerEl) {
-        footerEl.innerHTML = `
-          <button type="button" class="btn-main" style="flex:1.5; padding:10px;" onclick="confirmPickedMapLocation()">
-            <i class="fa-solid fa-check"></i> اعتماد هذا الموقع 📍
-          </button>
-          <button type="button" class="btn-secondary" style="flex:1; padding:10px;" onclick="closePublicLeafletMapModal()">تراجع</button>
-        `;
-      }
-      const startLat = isPickup
-        ? (tempOrderCoords.pickupLat || 31.0409)
-        : (tempOrderCoords.dropoffLat || 31.0409);
-      const startLng = isPickup
-        ? (tempOrderCoords.pickupLng || 31.3785)
-        : (tempOrderCoords.dropoffLng || 31.3785);
-      tempPickedLatLng = { lat: startLat, lng: startLng };
-      modal.classList.add('show');
-      setTimeout(() => {
-        if (!window.L) return;
-        if (!publicLeafletMap) {
-          publicLeafletMap = L.map('publicLeafletMapContainer').setView([startLat, startLng], 14);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-          }).addTo(publicLeafletMap);
-          publicLeafletMap.on('click', function(ev) {
-            if (!tempPickedLatLng) return;
-            tempPickedLatLng = {
-              lat: Number(ev.latlng.lat.toFixed(6)),
-              lng: Number(ev.latlng.lng.toFixed(6))
-            };
-            publicLeafletMarkers.forEach(m => publicLeafletMap.removeLayer(m));
-            publicLeafletMarkers = [];
-            const mk = L.marker([tempPickedLatLng.lat, tempPickedLatLng.lng], { draggable: true }).addTo(publicLeafletMap);
-            mk.on('dragend', function(e) {
-              const p = e.target.getLatLng();
-              tempPickedLatLng = { lat: Number(p.lat.toFixed(6)), lng: Number(p.lng.toFixed(6)) };
-            });
-            publicLeafletMarkers.push(mk);
-          });
-        }
-        publicLeafletMap.invalidateSize();
-        publicLeafletMap.setView([startLat, startLng], 14);
-        publicLeafletMarkers.forEach(m => publicLeafletMap.removeLayer(m));
-        publicLeafletMarkers = [];
-        const marker = L.marker([startLat, startLng], { draggable: true }).addTo(publicLeafletMap)
-          .bindPopup(isPickup ? '📦 اسحب الدبوس لمكان الاستلام' : '🏁 اسحب الدبوس لمكان التسليم').openPopup();
-        marker.on('dragend', function(e) {
-          const p = e.target.getLatLng();
-          tempPickedLatLng = { lat: Number(p.lat.toFixed(6)), lng: Number(p.lng.toFixed(6)) };
-        });
-        publicLeafletMarkers.push(marker);
-      }, 120);
-    }
-    function confirmPickedMapLocation() {
-      if (!tempPickedLatLng) return;
-      applyInlineMapCoordinate(currentMapPickerTarget, tempPickedLatLng.lat, tempPickedLatLng.lng, true);
-      closePublicLeafletMapModal();
-      showToast('تم تثبيت الدبوس وجاري كتابة اسم الشارع في الخانة تلقائياً! 🗺️✅', 'ok');
-    }
+
     function openCourierOrderMapModal(orderId) {
       const o = STATE.orders.find(x => x.id === orderId);
       if (!o) return;
@@ -1602,6 +1574,9 @@
       if (titleEl) titleEl.innerText = `🗺️ خريطة مشوار الطلب (${o.id})`;
       if (hintEl) hintEl.innerText = `من: ${o.pickupZone} (${o.pickupAddress}) ⬅️ إلى: ${o.dropoffZone} (${o.dropoffAddress})`;
       modal.classList.add('show');
+
+      const isCourierView = STATE.currentRole === 'courier';
+
       setTimeout(() => {
         if (!window.L) return;
         if (!publicLeafletMap) {
@@ -1615,32 +1590,57 @@
         publicLeafletMarkers = [];
         const bounds = [];
         let linksHtml = '';
-        if (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) {
-          const m1 = L.marker([o.pickupLat, o.pickupLng]).addTo(publicLeafletMap)
+
+        if (isValidGpsCoord(o.pickupLat, o.pickupLng)) {
+          const pLat = Number(o.pickupLat);
+          const pLng = Number(o.pickupLng);
+          const m1 = L.marker([pLat, pLng]).addTo(publicLeafletMap)
             .bindPopup(`📦 <b>مكان الاستلام:</b><br>${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}`).openPopup();
           publicLeafletMarkers.push(m1);
-          bounds.push([o.pickupLat, o.pickupLng]);
-          linksHtml += `<a href="https://www.google.com/maps?q=${o.pickupLat},${o.pickupLng}" target="_blank" class="btn-secondary" style="flex:1; text-decoration:none; font-size:11.5px;"><i class="fa-solid fa-location-dot"></i> لوكيشن الاستلام Maps</a>`;
+          bounds.push([pLat, pLng]);
+          if (isCourierView) {
+            linksHtml += `<a href="https://www.google.com/maps?q=${pLat},${pLng}" target="_blank" class="btn-secondary" style="flex:1; text-decoration:none; font-size:11.5px;"><i class="fa-solid fa-location-dot"></i> لوكيشن الاستلام Maps</a>`;
+          }
         }
-        if (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng)) {
-          const m2 = L.marker([o.dropoffLat, o.dropoffLng]).addTo(publicLeafletMap)
+
+        if (isValidGpsCoord(o.dropoffLat, o.dropoffLng)) {
+          const dLat = Number(o.dropoffLat);
+          const dLng = Number(o.dropoffLng);
+          const m2 = L.marker([dLat, dLng]).addTo(publicLeafletMap)
             .bindPopup(`🏁 <b>مكان التسليم:</b><br>${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}`);
           publicLeafletMarkers.push(m2);
-          bounds.push([o.dropoffLat, o.dropoffLng]);
-          linksHtml += `<a href="https://www.google.com/maps?q=${o.dropoffLat},${o.dropoffLng}" target="_blank" class="btn-main" style="flex:1; text-decoration:none; font-size:11.5px;"><i class="fa-solid fa-flag-checkered"></i> لوكيشن التسليم Maps</a>`;
+          bounds.push([dLat, dLng]);
+          if (isCourierView) {
+            linksHtml += `<a href="https://www.google.com/maps?q=${dLat},${dLng}" target="_blank" class="btn-main" style="flex:1; text-decoration:none; font-size:11.5px;"><i class="fa-solid fa-flag-checkered"></i> لوكيشن التسليم Maps</a>`;
+          }
         }
+
         if (bounds.length === 1) {
           publicLeafletMap.setView(bounds[0], 15);
+          if (publicLeafletMarkers[0]) publicLeafletMarkers[0].openPopup();
         } else if (bounds.length > 1) {
           publicLeafletMap.fitBounds(bounds, { padding: [30, 30] });
+        } else {
+          publicLeafletMap.setView([31.0409, 31.3785], 13);
         }
-        if (footerEl) footerEl.innerHTML = linksHtml || `<button type="button" class="btn-secondary" style="width:100%;" onclick="closePublicLeafletMapModal()">إغلاق الخريطة</button>`;
+
+        if (footerEl) {
+          if (isCourierView && linksHtml) {
+            footerEl.innerHTML = linksHtml;
+            footerEl.style.display = 'flex';
+          } else {
+            footerEl.innerHTML = '';
+            footerEl.style.display = 'none';
+          }
+        }
       }, 120);
     }
+
     function closePublicLeafletMapModal() {
       tempPickedLatLng = null;
       document.getElementById('publicLeafletMapModal')?.classList.remove('show');
     }
+
     // ==================== نظام كوبونات الخصم للعميل (Promo Codes) ====================
     function validateSavedPromoCodeLocally() {
       if (!savedPromoCodeObj || !savedPromoCodeObj.code) return;
@@ -1727,7 +1727,6 @@
           if (ok && data && data.success) {
             STATE.customerProfile.savedPhone = typedPhone;
             STATE.authenticatedCustomerPhone = typedPhone;
-            forcePinEntryManual = false;
             saveSession();
             syncActiveCustomerProfile(typedPhone);
             const senderInp = document.getElementById('orderSenderPhone'); if (senderInp) senderInp.value = typedPhone;
@@ -1901,19 +1900,15 @@
       const btnSend = document.getElementById('tripTypeBtn-send'); const btnFetch = document.getElementById('tripTypeBtn-fetch'); const notice = document.getElementById('fetchNoticeAlert');
       const pLabel = document.getElementById('pickupZoneLabel'); const dLabel = document.getElementById('dropoffZoneLabel'); const senderPhoneLabel = document.getElementById('orderSenderPhoneLabel'); const recipientPhoneLabel = document.getElementById('orderRecipientPhoneLabel'); const payerOption1Radio = document.getElementById('payerOption1Radio'); const payerOption1Text = document.getElementById('payerOption1Text'); const payerOption2Radio = document.getElementById('payerOption2Radio'); const payerOption2Text = document.getElementById('payerOption2Text');
       const pickupHelperRow = document.getElementById('pickupGpsHelperRow');
-      const pickupAutoBtn = document.getElementById('pickupAutoGpsBtn');
       const dropoffHelperRow = document.getElementById('dropoffGpsHelperRow');
-      const dropoffAutoBtn = document.getElementById('dropoffAutoGpsBtn');
       if (normalizedType === 'fetch') {
         if (btnSend) btnSend.className = 'btn-secondary'; if (btnFetch) btnFetch.className = 'btn-main'; if (notice) notice.style.display = 'block';
         if (pLabel) pLabel.innerText = 'هنجيب الحاجة منين؟ (المحل أو المكان اللي هنشتري/نستلم منه)'; if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك أنت ورقمك لتستلم بنفسك)';
         if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم المستلم (رقمك لتستلم الطلب) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم المكان / الشخص اللي هنشتري أو نستلم منه 🏪';
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
-        if (pickupAutoBtn) pickupAutoBtn.style.display = 'none';
-        if (pickupHelperRow) pickupHelperRow.style.gridTemplateColumns = '1fr';
-        if (dropoffAutoBtn) dropoffAutoBtn.style.display = 'flex';
-        if (dropoffHelperRow) dropoffHelperRow.style.gridTemplateColumns = '1fr 1fr';
+        if (pickupHelperRow) pickupHelperRow.style.display = 'none';
+        if (dropoffHelperRow) dropoffHelperRow.style.display = 'grid';
         setInlineMapTargetMode('dropoff');
       } else {
         if (btnSend) btnSend.className = 'btn-main'; if (btnFetch) btnFetch.className = 'btn-secondary'; if (notice) notice.style.display = 'none';
@@ -1921,10 +1916,8 @@
         if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم الراسل (رقمك يا باشا) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم هاتف المستلم 📱';
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
         if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم عند الوصول 🎯';
-        if (pickupAutoBtn) pickupAutoBtn.style.display = 'flex';
-        if (pickupHelperRow) pickupHelperRow.style.gridTemplateColumns = '1fr 1fr';
-        if (dropoffAutoBtn) dropoffAutoBtn.style.display = 'none';
-        if (dropoffHelperRow) dropoffHelperRow.style.gridTemplateColumns = '1fr';
+        if (pickupHelperRow) pickupHelperRow.style.display = 'grid';
+        if (dropoffHelperRow) dropoffHelperRow.style.display = 'none';
         setInlineMapTargetMode('pickup');
       }
       setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
@@ -2015,7 +2008,8 @@
         if (!isValidEgyptianPhone(otherPhoneTyped)) { showToast('برجاء إدخال رقم الهاتف الآخر بشكل صحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
         const hasTrustedSession = isCustomerSessionActiveForPhone(clientPhoneTyped);
         if (!hasTrustedSession && !isValidPin(customerPin)) {
-          forceShowOrderPinInput();
+          const pinGroupBox = document.getElementById('orderCustomerPinGroupBox');
+          if (pinGroupBox) pinGroupBox.style.display = 'flex';
           showToast('برجاء كتابة رمز PIN سري مكون من 4 أرقام لمرة واحدة فقط لتأمين حسابك 🔒⚠️', 'warn');
           document.getElementById('orderCustomerPin')?.focus();
           return;
@@ -2025,7 +2019,7 @@
           showToast('جاري تأكيد طلبك... 🚀', 'auto');
           const { ok, data } = await apiRequest('/api/orders', 'POST', {
             clientPhone: clientPhoneTyped,
-            pin: hasTrustedSession ? customerPin : customerPin,
+            pin: customerPin,
             tripType: isFetch ? 'fetch' : 'send',
             pickupZone: pZone,
             pickupAddress: pAddr,
@@ -2036,16 +2030,15 @@
             payer,
             senderPhone,
             recipientPhone,
-            pickupLat: tempOrderCoords.pickupLat,
-            pickupLng: tempOrderCoords.pickupLng,
-            dropoffLat: tempOrderCoords.dropoffLat,
-            dropoffLng: tempOrderCoords.dropoffLng,
+            pickupLat: isValidGpsCoord(tempOrderCoords.pickupLat, tempOrderCoords.pickupLng) ? tempOrderCoords.pickupLat : null,
+            pickupLng: isValidGpsCoord(tempOrderCoords.pickupLat, tempOrderCoords.pickupLng) ? tempOrderCoords.pickupLng : null,
+            dropoffLat: isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng) ? tempOrderCoords.dropoffLat : null,
+            dropoffLng: isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng) ? tempOrderCoords.dropoffLng : null,
             promoCode: activePromoCode
           });
           if (ok && data.success) {
             STATE.customerProfile.savedPhone = clientPhoneTyped;
             STATE.authenticatedCustomerPhone = clientPhoneTyped;
-            forcePinEntryManual = false;
             saveSession();
             updateCustomerPinFieldVisibility();
             subscribeUserToPush(clientPhoneTyped);
@@ -2064,7 +2057,8 @@
           } else {
             if (data && data.needPin) {
               STATE.authenticatedCustomerPhone = '';
-              forceShowOrderPinInput();
+              const pinGroupBox = document.getElementById('orderCustomerPinGroupBox');
+              if (pinGroupBox) pinGroupBox.style.display = 'flex';
               setTimeout(() => document.getElementById('orderCustomerPin')?.focus(), 80);
             }
             triggerDeviceAlert('warning');
@@ -2267,6 +2261,28 @@
       });
     }
 
+    // نافذة تنبيه عدم كفاية الرصيد في محفظة الكابتن عند محاولة قبول الطلب
+    function openInsufficientWalletModal() {
+      triggerDeviceAlert('warning');
+      document.getElementById('insufficientWalletModal')?.classList.add('show');
+    }
+
+    function closeInsufficientWalletModal() {
+      document.getElementById('insufficientWalletModal')?.classList.remove('show');
+    }
+
+    function openDirectWhatsAppTopupFromModal() {
+      const courier = getActiveCourier();
+      closeInsufficientWalletModal();
+      if (!courier) {
+        showToast('سجل دخول الكابتن أولاً ⚠️', 'warn');
+        return;
+      }
+      const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value || 100) || 100;
+      const text = `محتاج شحن محفظة بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`;
+      window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
     function courierAcceptOrder(orderId) {
       const courier = getActiveCourier();
       if (courier && courier.status === 'قيد المراجعة') {
@@ -2274,13 +2290,25 @@
         showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
         return;
       }
+      if (courier && courier.status === 'معتمد') {
+        const reqFee = getEffectiveCaptainFee(courier);
+        if (roundMoney(courier.walletBalance || 0) < reqFee) {
+          openInsufficientWalletModal();
+          return;
+        }
+      }
       withActionLock(async () => {
         const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/accept`, 'POST', {});
         if (ok && data.success) {
           showToast(data.message || 'عاش يا بطل! تم قبول الطلب 🚀', 'ok');
         } else {
-          triggerDeviceAlert('warning');
-          showToast((data && data.message) || 'تعذر قبول الطلب ⚠️', 'warn');
+          const msg = (data && data.message) ? String(data.message) : '';
+          if (msg.includes('رصيد محفظتك') || msg.includes('اشحن محفظتك')) {
+            openInsufficientWalletModal();
+          } else {
+            triggerDeviceAlert('warning');
+            showToast(msg || 'تعذر قبول الطلب ⚠️', 'warn');
+          }
         }
       });
     }
@@ -2422,7 +2450,7 @@
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:24px 16px; color:var(--text-muted);" class="card">لسة مفيش مشاوير في سجلك يا بطل.. اقبل أول أوردر من الرادار وانطلق! 🛵💨</div>`; return; }
       container.innerHTML = myOrders.map(o => {
         const isFetch = o.tripType === 'fetch'; const isActive = ACTIVE_COURIER_STATUSES.includes(o.status); const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'; const sender = escapeHtml(o.senderPhone); const recipient = escapeHtml(o.recipientPhone);
-        const hasGps = (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) || (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng));
+        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>تحصيل كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!isDelivered ? `<div style="font-weight:700; margin-top:4px;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🔒 تم إخفاء أرقام هواتف العميل والمستلم تلقائياً بعد إتمام التسليم.</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل لك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !isDelivered ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> عرض مكان الاستلام/التسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> الانتقال للرادار لتحديث حالة المشوار 🛵</button>` : ''}</div>`;
       }).join('');
     }
@@ -2435,7 +2463,7 @@
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">مفيش أوردرات مسجلة حالياً.. اطلب مشوارك الأول أو استرجع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
       container.innerHTML = myOrders.map(o => {
         const canCancel = o.status === 'في انتظار كابتن' || o.status === 'تم قبول الطلب'; const isDelivered = o.status === 'مكتمل'; const canRate = isDelivered && o.rating === null; const canDispute = isDelivered && !o.disputeReason;
-        const hasGps = (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) || (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng));
+        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let statusTextForCustomer = o.status;
         if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وجاري استلام الطلب 🛵';
         else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يانجم العالم وطاير بيه في السكة 🚀';
@@ -2454,7 +2482,7 @@
       const effectiveFee = getEffectiveCaptainFee(courier);
       container.innerHTML = visible.map(o => {
         const isMine = o.assignedCourierPhone === courier.phone; const isWaiting = o.status === 'في انتظار كابتن'; const sender = escapeHtml(o.senderPhone); const recipient = escapeHtml(o.recipientPhone); const isFetch = o.tripType === 'fetch'; const displayFee = isWaiting ? effectiveFee : o.platformFee; const displayNet = isWaiting ? Math.max(0, roundMoney(o.originalFare - effectiveFee)) : o.courierNet;
-        const hasGps = (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) || (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng));
+        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let discountNoteHtml = '';
         if (o.discountApplied > 0) {
           if (isWaiting) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل ده شكلة له واسطة ومعاه خصم/كود 😵 بس متقلقش الفرق (${o.discountApplied} ج) هينزل فى محفظتك فور قبول الطلب 😎»</div>`; }
