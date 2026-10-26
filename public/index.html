@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الرجل العنابي 🛵 | من أى حتة لأى حتة 😍✌️</title>
+  <title>الرجل العنابي 🛵 | من أي حتة لأي حتة 😎</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 
   <meta name="description" content="منصة الرجل العنابي دليفري - أسرع خدمات توصيل الطلبات والمشاوير في المنصورة والدقهلية.">
   <meta property="og:title" content="الرجل العنابي دليفري 🛵💨">
-  <meta property="og:description" content="أسرع دليفري وخدمات مشاوير في المنصورة. اطلب كابتن في ثوانٍ!">
+  <meta property="og:description" content="أسرع دليفري وخدمات مشاوير في المنصورة. اطلب كابتن في ثواني!">
   <meta property="og:image" content="https://ennaby-delivery.vercel.app/icon-512.png">
   <meta property="og:url" content="https://ennaby-delivery.vercel.app">
 
@@ -77,6 +77,11 @@
     .brand-title h1 { font-size: 20px; font-weight: 900; color: var(--primary); line-height: 1.1; }
     .brand-title span { font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; }
     .brand-logo-badge { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: var(--shadow-sm); cursor: default; user-select: none; }
+    /* تنسيق الهيدر المركزي الجديد وشعار العميل المحمي ضد السحب والضغط والحفظ */
+    .customer-centered-header { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6px 16px 8px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    .customer-main-logo { height: 58px; width: auto; max-width: 210px; object-fit: contain; pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; -webkit-touch-callout: none; display: block; }
+    .customer-slogan-text { font-size: 12px; font-weight: 800; color: var(--text-muted); margin-top: 3px; line-height: 1.3; }
+    .customer-smart-platform-frame { display: inline-block; font-size: 10.5px; font-weight: 800; color: var(--primary); padding: 2px 12px; border-radius: 8px; margin-top: 5px; border: 1px solid rgba(123, 63, 82, 0.24); background: rgba(123, 63, 82, 0.04); letter-spacing: 0.1px; }
     .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid rgba(123, 63, 82, 0.08); }
     .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .btn-main { background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 12px 18px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-shadow: 0 4px 12px rgba(123, 63, 82, 0.25); transition: all 0.2s ease; }
@@ -168,7 +173,7 @@
       <div id="toast" class="toast-box toast-success" role="status" onclick="hideToast()">
         <div style="display:flex; align-items:center; gap:9px;">
           <i id="toastIcon" class="fa-solid fa-circle-check" style="color: #4CAF50; font-size:18px; flex-shrink:0;"></i>
-          <span id="toastMsg">تم تنفيذ العملية بنجاح!</span>
+          <span id="toastMsg">تمت المصلحة بنجاح يا باشا!</span>
         </div>
         <span class="toast-close-x">✕</span>
       </div>
@@ -182,7 +187,7 @@
             </div>
           </div>
           <button class="install-app-btn" onclick="installAppLocally()">
-            <i class="fa-solid fa-download"></i> تثبيت الآن
+            <i class="fa-solid fa-download"></i> نزّله دلوقتي
           </button>
         </div>
         <div class="broadcast-banner" id="globalBroadcastBanner">
@@ -193,30 +198,23 @@
         <section id="customerView" class="view-container active-view">
           
           <div id="custTab-home" class="sub-tab-section">
-            <header class="brand-header">
-              <div class="brand-title">
-                <div class="brand-logo-badge">🛵</div>
-                <div>
-                  <h1>الرجل العنابي</h1>
-                  <span>من أى حتة لأى حتة 😍✌️</span>
-                </div>
-              </div>
-              <div style="font-size:12px; background:var(--accent); color:var(--primary); padding:6px 10px; border-radius:50px; font-weight:800;">
-                <i class="fa-solid fa-location-dot"></i> Mansoura
-              </div>
+            <header class="customer-centered-header" oncontextmenu="return false;" ondragstart="return false;">
+              <img src="/logo.png" alt="الرجل العنابي" class="customer-main-logo" draggable="false" oncontextmenu="return false;" ondragstart="return false;">
+              <span class="customer-slogan-text">من أى حتة لأى حتة 😎</span>
+              <div class="customer-smart-platform-frame">أول منصة دليفرى ذكية بالمنصورة</div>
             </header>
             <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color:#fff; border-radius:var(--radius); padding:16px;">
               <div style="font-size:16px; font-weight:900;">يا هلا يا باشا.. منورنا والله! 🛵✨</div>
               <p style="font-size:12px; opacity:0.9; margin-top:4px;">طلبك في عنينا، ورجالة العنابي جاهزين يطيروا لك فوراً.</p>
             </div>
             <div id="customerMaintenanceAlert" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:14px; padding:14px; text-align:center; color:var(--danger); font-size:12.5px; font-weight:800; line-height:1.6;">
-              🛠️ المنصة في صيانة وتحديثات دورية سريعة حالياً.. راجعين لك فوراً يا باشا! 🛵❤️
+              🛠️ بنعمل شوية صيانة وتظبيطات سريعة للمنصة دلوقتي.. راجعين لك هوا يا باشا! 🛵❤️
             </div>
             <!-- تنبيه وقت الذروة للعميل (Surge Pricing) -->
             <div id="customerSurgeActiveBanner" style="display:none; background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:14px; padding:12px 14px; color:#E65100; font-size:11.5px; font-weight:800; line-height:1.6;"></div>
             <div class="card" id="customerOrderFormCard">
               <h2 class="card-title">
-                <i class="fa-solid fa-box-open"></i> عايز تبعت حاجة او نجبلك حاجة يا نجم؟
+                <i class="fa-solid fa-box-open"></i> عايز تبعت حاجة أو نجيبلك حاجة يا نجم؟
               </h2>
               <div style="margin-bottom:14px;">
                 <label class="input-label" style="font-weight:800; color:var(--primary); margin-bottom:6px; display:block;">نوع المشوار إيه النهارده يا نجم؟ 🛵</label>
@@ -225,7 +223,7 @@
                     📦 هبعت حاجة لحد
                   </button>
                   <button type="button" class="btn-secondary" id="tripTypeBtn-fetch" onclick="selectTripType('fetch')" style="padding:10px; font-size:12px;">
-                    🛍️ هاتلى حاجة ليا
+                    🛍️ هاتلي حاجة ليا
                   </button>
                 </div>
                 <div id="fetchNoticeAlert" style="display:none; background:#FFFDE7; border:1px solid #FFE082; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; margin-top:8px; line-height:1.5;">
@@ -235,40 +233,40 @@
               <!-- خريطة تحديد الموقع التفاعلية المباشرة (الاختيار في اليمين دائماً لطالب الأوردر) -->
               <div class="inline-live-map-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <span style="font-size:11.5px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-map-location-dot"></i> خريطة تحديد المشوار المباشرة 📍</span>
+                  <span style="font-size:11.5px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-map-location-dot"></i> خريطة تحديد المشوار علطول 📍</span>
                   <button type="button" onclick="captureRequesterOwnGpsLocation()" style="background:#E8F5E9; color:var(--success); border:1px solid #A5D6A7; border-radius:50px; padding:3px 9px; font-size:10.5px; font-weight:800; cursor:pointer;">
-                    <i class="fa-solid fa-location-crosshairs"></i> تحديد مكاني تلقائي
+                    <i class="fa-solid fa-location-crosshairs"></i> القط مكاني تلقائي
                   </button>
                 </div>
                 <div class="inline-map-mode-pills" id="inlineMapModePillsGrid">
                   <button type="button" class="inline-map-mode-btn active" id="inlineMapRightRequesterBtn" onclick="handleInlineMapRightBtnClick()">
-                    📦 اختار مكان الاستلام على الخريطة
+                    📦 اختار مكان الاستلام ع الخريطة
                   </button>
                   <button type="button" class="inline-map-mode-btn" id="inlineMapLeftOtherBtn" onclick="handleInlineMapLeftBtnClick()">
-                    🏁 اختار مكان التسليم على الخريطة
+                    🏁 اختار مكان التسليم ع الخريطة
                   </button>
                 </div>
                 <div id="customerInlineLeafletMap" class="inline-leaflet-canvas"></div>
                 <div class="gps-manual-note" style="margin-top:8px; text-align:center;">
-                  💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.
+                  💡 لو معرفتش تحدد مكانك ع الخريطة ولا يهمك يا باشا، اكتب العنوان بإيدك بالتفصيل تحت! ✍️
                 </div>
               </div>
               <!-- الكارت الأول: بيانات وعنوان وتليفون نقطة الاستلام (تصميم انسيابي منفصل) -->
               <div class="route-party-card route-party-pickup" id="pickupPartyCard">
                 <div class="route-party-header">
                   <span class="route-party-badge" id="pickupPartyBadgeTitle" style="background:var(--accent); color:var(--primary);">
-                    <i class="fa-solid fa-box-archive"></i> أولاً: بيانات الراسل ومكان الاستلام 📦
+                    <i class="fa-solid fa-box-archive"></i> أول حاجة: بيانات الراسل ومكان الاستلام 📦
                   </span>
                 </div>
                 <div class="input-group" style="margin-bottom:8px;">
                   <label class="input-label" id="pickupZoneLabel" for="pickupZone" style="color:var(--primary); font-weight:800;">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
                   <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
                     <select class="select-field" id="pickupZone" onchange="handleZoneChange()" style="background:#fff;"></select>
-                    <input type="text" id="pickupAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: حي الجامعة)" style="background:#fff;">
+                    <input type="text" id="pickupAddress" class="input-field" placeholder="العنوان بالتفصيل (مثلاً: حي الجامعة)" style="background:#fff;">
                   </div>
                   <div class="gps-captured-pill" id="pickupGpsCapturedPill">
-                    <span id="pickupGpsCapturedText">✅ تم التقاط لوكيشن الاستلام على الخريطة بدقة!</span>
-                    <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
+                    <span id="pickupGpsCapturedText">✅ لقطنا لوكيشن الاستلام ع الخريطة بالمللي!</span>
+                    <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">مسح ✕</button>
                   </div>
                 </div>
                 <div id="pickupPhoneSlot">
@@ -285,23 +283,23 @@
               <div class="route-party-card route-party-dropoff" id="dropoffPartyCard">
                 <div class="route-party-header" style="border-bottom-color: rgba(46, 125, 50, 0.18);">
                   <span class="route-party-badge" id="dropoffPartyBadgeTitle" style="background:#E8F5E9; color:var(--success);">
-                    <i class="fa-solid fa-location-dot"></i> ثانياً: بيانات المستلم ومكان التسليم 🎯
+                    <i class="fa-solid fa-location-dot"></i> تاني حاجة: بيانات المستلم ومكان التسليم 🎯
                   </span>
                 </div>
                 <div class="input-group" style="margin-bottom:8px;">
                   <label class="input-label" id="dropoffZoneLabel" for="dropoffZone" style="color:var(--success); font-weight:800;">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</label>
                   <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
                     <select class="select-field" id="dropoffZone" onchange="handleZoneChange()" style="background:#fff;"></select>
-                    <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: كوبري جديلة)" style="background:#fff;">
+                    <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثلاً: كوبري جديلة)" style="background:#fff;">
                   </div>
                   <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
-                    <span id="dropoffGpsCapturedText">✅ تم التقاط لوكيشن التسليم على الخريطة بدقة!</span>
-                    <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
+                    <span id="dropoffGpsCapturedText">✅ لقطنا لوكيشن التسليم ع الخريطة بالمللي!</span>
+                    <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">مسح ✕</button>
                   </div>
                 </div>
                 <div id="dropoffPhoneSlot">
                   <div id="otherPartyPhoneWrap">
-                    <label class="input-label" id="orderRecipientPhoneLabel" for="orderRecipientPhone" style="font-size:11px; color:var(--success); font-weight:800; margin-bottom:3px; display:block;">رقم هاتف المستلم 📱</label>
+                    <label class="input-label" id="orderRecipientPhoneLabel" for="orderRecipientPhone" style="font-size:11px; color:var(--success); font-weight:800; margin-bottom:3px; display:block;">رقم تليفون المستلم 📱</label>
                     <input type="tel" inputmode="numeric" autocomplete="tel" id="orderRecipientPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15" style="background:#fff;">
                   </div>
                 </div>
@@ -309,22 +307,22 @@
 
               <div class="input-group">
                 <label class="input-label" for="customerOrderNotes">لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
-                <textarea id="customerOrderNotes" class="textarea-field" rows="2" placeholder="اكتب هنا أي تفاصيل (مثال: رن جرس الدور التالت، معيش فكة، الطرد فيه زجاج)..."></textarea>
+                <textarea id="customerOrderNotes" class="textarea-field" rows="2" placeholder="اكتب هنا أي تفاصيل (مثلاً: رن جرس الدور التالت، معيش فكة، الطرد فيه إزاز)..."></textarea>
               </div>
               <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة، والتحكم في الحساب من تبويب حسابي) -->
               <div class="input-group" id="orderCustomerPinGroupBox" style="background:#FAF4F6; border:1.5px dashed var(--primary); border-radius:14px; padding:12px;">
                 <div id="orderCustomerPinInputWrap">
                   <label class="input-label" for="orderCustomerPin" style="color:var(--primary); font-weight:800; font-size:12px; margin-bottom:5px; display:block;">
-                    <i class="fa-solid fa-lock"></i> رمز PIN السري لحسابك (4 أرقام - يُطلب أول مرة فقط) 🔒
+                    <i class="fa-solid fa-lock"></i> رمز الـ PIN السري لحسابك (4 أرقام - بنطلبه أول مرة بس) 🔒
                   </label>
                   <div style="position:relative;">
-                    <input type="password" inputmode="numeric" maxlength="4" id="orderCustomerPin" class="input-field" placeholder="اكتب 4 أرقام سرية (مثال: 1234)" style="background:#fff; letter-spacing:3px; font-weight:800;">
+                    <input type="password" inputmode="numeric" maxlength="4" id="orderCustomerPin" class="input-field" placeholder="اكتب 4 أرقام سرية (مثلاً: 1234)" style="background:#fff; letter-spacing:3px; font-weight:800;">
                     <button type="button" onclick="togglePasswordVisibility('orderCustomerPin', 'toggleOrderPinIcon')" style="position:absolute; left:12px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
                       <i class="fa-solid fa-eye" id="toggleOrderPinIcon"></i>
                     </button>
                   </div>
                   <small style="font-size:10.5px; color:#5F2E3E; font-weight:700; line-height:1.5; margin-top:4px; display:block;">
-                    💡 بتكتبه مرة واحدة بس في أول طلب وهنتعرف على جلستك دايماً أوتوماتيك، وتقدر تتحكم في استرجاع حسابك من تبويب «حسابي» 🎁🛵
+                    💡 بتكتبه مرة واحدة بس في أول طلب وهنحفظك عندنا علطول، وتقدر ترجّع حسابك ونقطك من أي تليفون تاني من تبويب «حسابي» 🎁🛵
                   </small>
                 </div>
               </div>
@@ -341,7 +339,7 @@
                   </label>
                   <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; background:#FAF7F4; padding:8px; border-radius:10px; cursor:pointer; line-height:1.4;">
                     <input type="radio" name="payer" id="payerOption2Radio" value="المستلم">
-                    <span id="payerOption2Text">المستلم عند الوصول 🎯</span>
+                    <span id="payerOption2Text">المستلم لما الكابتن يوصله 🎯</span>
                   </label>
                 </div>
               </div>
@@ -351,9 +349,9 @@
                   <i class="fa-solid fa-ticket"></i> معاك كود خصم عنابي يا باشا؟ 🎟️😍
                 </label>
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
-                  <input type="text" id="orderPromoCodeInput" class="input-field" placeholder="اكتب الكود هنا (مثال: ENNABY15)" style="background:#fff; text-transform:uppercase; font-weight:800;">
+                  <input type="text" id="orderPromoCodeInput" class="input-field" placeholder="اكتب الكود هنا (مثلاً: ENNABY15)" style="background:#fff; text-transform:uppercase; font-weight:800;">
                   <button type="button" class="btn-main" style="background:#6A1B9A; padding:10px; font-size:12px;" onclick="applyCustomerPromoCode()">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> تطبيق الكود 🎁
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> شغّل الكود 🎁
                   </button>
                 </div>
                 <div id="savedPromoCodeActiveBox" style="display:none; margin-top:6px; background:#F3E5F5; border:1px solid #CE93D8; border-radius:10px; padding:7px 10px; font-size:11px; color:#4A148C; font-weight:800; justify-content:space-between; align-items:center;">
@@ -361,13 +359,13 @@
                   <button type="button" onclick="removeSavedPromoCode()" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer;">إلغاء الكود ✕</button>
                 </div>
                 <small style="font-size:10px; color:#6A1B9A; font-weight:700; margin-top:2px;">
-                  💡 الكود بيفضل محفوظ معاك في تليفونك لحد ما تستخدمه أو تنتهي فترة السماح بتاعته!
+                  💡 الكود بيفضل متشال معاك في تليفونك لحد ما تستخدمه أو وقته يخلص!
                 </small>
               </div>
               <div class="price-preview-banner" id="priceBanner">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                    <span style="font-size:11px; font-weight:700; color:var(--text-muted); display:block;">أجرة التوصيل هاتبقى حوالى:</span>
+                    <span style="font-size:11px; font-weight:700; color:var(--text-muted); display:block;">أجرة التوصيل هتبقى حوالي:</span>
                     <div style="font-size:22px; font-weight:900; color:var(--primary); line-height:1.2;">
                       <span id="estimatedPrice">--</span> <span id="priceCurrency">جنيه</span>
                     </div>
@@ -376,12 +374,12 @@
                     </div>
                   </div>
                   <div style="text-align:left; font-size:11px; font-weight:700; color:var(--primary);">
-                    <span id="routeDescription">اختر المسار</span><br>
+                    <span id="routeDescription">اختار المسار</span><br>
                     <small style="color:var(--text-muted); font-size:10px;">الكابتن هيكوش عليهم حلال عليه 😂💲</small>
                   </div>
                 </div>
                 <div id="priceHumorMessage" style="font-size:11px; font-weight:700; color:#5F2E3E; background:rgba(255,255,255,0.7); padding:6px 10px; border-radius:8px; line-height:1.4; margin-top:8px;">
-                  صديقى العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك خارج نطاق الاختيارات وده هيبلغك بيه الكابتن العنابى لو فيه زيادة 🛵
+                  صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وده هيبلغك بيه الكابتن العنابي لو فيه زيادة 🛵
                 </div>
               </div>
               <button class="btn-main" id="submitOrderBtn" onclick="createNewCustomerOrder()">
@@ -402,19 +400,19 @@
             <div class="card">
               <h2 class="card-title"><i class="fa-brands fa-whatsapp" style="color:#25D366; font-size:20px;"></i> دعم الرجل العنابي 🛵</h2>
               <p style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">
-                فريق الدعم بالمنصورة والدقهلية جاهز لخدمتك دايماً لأي استفسار أو شكوى بخصوص رحلاتك وطلباتك!
+                رجالة الدعم في المنصورة والدقهلية جاهزين لخدمتك وفي ضهرك دايماً لأي سؤال أو شكوى تخص مشاويرك وطلباتك يا باشا!
               </p>
               <a id="custSupportWhatsappLink" href="https://wa.me/201507800875" target="_blank" class="btn-main" style="background:#25D366; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); text-decoration:none;">
-                <i class="fa-brands fa-whatsapp"></i> فتح شات واتساب الدعم المباشر
+                <i class="fa-brands fa-whatsapp"></i> كلمنا ع الواتساب علطول 💬
               </a>
               <div style="background: linear-gradient(135deg, #FFF9C4, #FFFDE7); border: 1.5px solid #FBC02D; border-radius: 14px; padding: 14px; margin-top: 14px; color: #5D4037; font-size: 12px; line-height: 1.7;">
                 <div style="font-size: 13px; font-weight: 900; margin-bottom: 6px; color: #7B3F52; display: flex; align-items: center; gap: 6px;">
                   <span>💡</span> <strong>تعليمات مشاوير العنابي يا باشا:</strong>
                 </div>
                 <ul style="padding-right: 18px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                  <li>لو هتطلب حاجة الكابتن يشتريهالك ده بيكون اتفاق بينك وبينه تقبل بيه او ترفضة.</li>
-                  <li>تسعيرة الشحن ممكن تتغير لو المنطة بتاعتك خارج التسعير او طلبت من الكابتن يشتريلك حاجة اضافية فى الطريق.</li>
-                  <li>لو الكابتن حصل منه مشكلة او اى موقف مش حلو ابعتلنا من خلال زر الدعم مع العلم اننا مش هنقتله 😂 احنا هنمسكة السلك عريان ⚡⚡</li>
+                  <li>لو هتطلب حاجة الكابتن يشتريهالك، ده بيكون اتفاق بينك وبينه تقبل بيه أو ترفضه براحتك.</li>
+                  <li>تسعيرة الشحن ممكن تتغير لو المنطقة بتاعتك بره التسعير أو طلبت من الكابتن يشتريلك حاجة إضافية في الطريق.</li>
+                  <li>لو الكابتن حصل منه مشكلة أو أي موقف مش حلو ابعتلنا من خلال زرار الدعم، مع العلم إننا مش هنقتله 😂 إحنا هنمسكه السلك عريان ⚡⚡</li>
                 </ul>
               </div>
             </div>
@@ -425,18 +423,18 @@
                 <i class="fa-solid fa-crown"></i>
               </div>
               <h3 style="font-size:16px; font-weight:900;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
-              <p style="font-size:12px; color:var(--text-muted);" id="custDisplayPhone">لم يتم ربط رقم هاتف بعد • Mansoura</p>
+              <p style="font-size:12px; color:var(--text-muted);" id="custDisplayPhone">لسه مربطتش رقم موبايلك • المنصورة</p>
               <div style="margin-top:14px; padding-top:14px; border-top:1px dashed #E9DCE0; text-align:right;">
                 <label class="input-label" style="font-size:12px; color:var(--primary); font-weight:800; display:block; margin-bottom:8px;">
-                  <i class="fa-solid fa-cloud-arrow-down"></i> فتح حسابك واسترجاع نقاطك ومحفظتك:
+                  <i class="fa-solid fa-cloud-arrow-down"></i> افتح حسابك ورجّع نقطك ومحفظتك:
                 </label>
                 <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:8px; margin-bottom:10px;">
                   <div>
-                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">إضافة رقم هاتفك 📱</label>
+                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">اكتب رقم موبايلك 📱</label>
                     <input type="tel" inputmode="numeric" autocomplete="tel" id="custProfilePhoneSyncInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
                   </div>
                   <div>
-                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">إضافة رمز PIN 🔒</label>
+                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">اكتب رمز الـ PIN 🔒</label>
                     <div style="position:relative;">
                       <input type="password" inputmode="numeric" maxlength="4" id="custProfilePinSyncInput" class="input-field" placeholder="4 أرقام" style="letter-spacing:2px; font-weight:800;">
                       <button type="button" onclick="togglePasswordVisibility('custProfilePinSyncInput', 'toggleProfilePinIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
@@ -446,7 +444,7 @@
                   </div>
                 </div>
                 <button type="button" class="btn-main" style="padding:11px 14px; font-size:13px;" onclick="handleProfilePhoneSync()">
-                  <i class="fa-solid fa-rotate"></i> استرجاع حسابي ونقاطي الآن
+                  <i class="fa-solid fa-rotate"></i> رجّعلي حسابي ونقطي دلوقتي
                 </button>
                 <button type="button" onclick="handleCustomerForgotPin()" style="margin-top:10px; width:100%; background:#E8F5E9; color:#1B5E20; border:1px dashed #2E7D32; border-radius:12px; padding:9px 12px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
                   <i class="fa-brands fa-whatsapp" style="font-size:16px; color:#25D366;"></i>
@@ -457,23 +455,23 @@
             <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white;">
               <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
-                  <span style="font-size:12px; opacity:0.85;">رصيد محفظتك المتاح للخصم</span>
+                  <span style="font-size:12px; opacity:0.85;">رصيد محفظتك الجاهز للخصم</span>
                   <div style="font-size:28px; font-weight:900; margin:2px 0 4px;" id="custWalletBalanceDisplay">
                     0.00 <span style="font-size:14px; font-weight:600;">جنيه</span>
                   </div>
-                  <div style="font-size:10px; opacity:0.85;">الرصيد بيتخصم تلقائياً من قيمة مشوارك القادم هدية 🎁</div>
+                  <div style="font-size:10px; opacity:0.85;">الرصيد ده بيتخصم أوتوماتيك من تمن مشوارك الجاي هدية 🎁</div>
                 </div>
                 <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">💸</div>
               </div>
               <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.15); display:flex; justify-content:space-between;">
-                <span style="font-size:11px; opacity:0.85;">إجمالي مشاويرك معنا:</span>
+                <span style="font-size:11px; opacity:0.85;">إجمالي مشاويرك معانا يا باشا:</span>
                 <strong style="font-size:13px;" id="custTotalOrdersCount">0 مشوار</strong>
               </div>
             </div>
             <div class="card">
               <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
               <div id="custWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
-                <div style="color:var(--text-muted); text-align:center;">لا توجد حركات مسجلة بعد.</div>
+                <div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>
               </div>
             </div>
             <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
@@ -499,26 +497,26 @@
               <div style="text-align:center; margin-bottom:16px;">
                 <div class="brand-logo-badge" style="width:50px; height:50px; font-size:26px; margin:0 auto 8px;">🛵</div>
                 <h2 style="font-size:18px; font-weight:900; color:var(--primary);">دخول كباتن العنابي 🛵</h2>
-                <span style="font-size:12px; color:var(--text-muted);">أهلاً برجالة التوصيل السريع بالدقهلية</span>
+                <span style="font-size:12px; color:var(--text-muted);">يا ميت هلا برجالة الشقيانين وأجدع طيارين في الدقهلية</span>
               </div>
               <div id="courierSuspendedNoticeBox" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:12px; padding:12px; margin-bottom:14px; text-align:center;">
                 <div id="courierSuspendedNoticeTitle" style="color:var(--danger); font-weight:900; font-size:13px; margin-bottom:4px;"></div>
                 <div id="courierSuspendedReasonText" style="font-size:11px; color:#5F2E3E; margin-bottom:10px; line-height:1.5;"></div>
                 <button type="button" id="courierReuploadDocsBtn" onclick="startRejectedCaptainReupload()" class="btn-main" style="display:none; background:var(--primary); padding:8px 12px; font-size:12px; margin-bottom:8px;">
-                  <i class="fa-solid fa-file-arrow-up"></i> إعادة رفع المستندات 📄
+                  <i class="fa-solid fa-file-arrow-up"></i> ارفع الورق والبطاقة من تاني 📄
                 </button>
                 <a id="courierSuspendedSupportBtn" href="#" target="_blank" class="btn-main" style="background:#25D366; text-decoration:none; padding:8px 12px; font-size:12px;">
-                  <i class="fa-brands fa-whatsapp"></i> تواصل مع الدعم الفني 💬
+                  <i class="fa-brands fa-whatsapp"></i> كلّم الدعم الفني ع الواتساب 💬
                 </a>
               </div>
               <div class="input-group">
-                <label class="input-label" for="courierLoginPhone">رقم الهاتف المسجل</label>
+                <label class="input-label" for="courierLoginPhone">رقم موبايلك اللي مسجل بيه</label>
                 <input type="tel" inputmode="numeric" autocomplete="tel" id="courierLoginPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
               </div>
               <div class="input-group">
-                <label class="input-label" for="courierLoginPass">كلمة المرور</label>
+                <label class="input-label" for="courierLoginPass">كلمة السر (الباسورد)</label>
                 <div style="position:relative;">
-                  <input type="password" id="courierLoginPass" class="input-field" placeholder="اكتب كلمة المرور">
+                  <input type="password" id="courierLoginPass" class="input-field" placeholder="اكتب كلمة السر هنا">
                   <button type="button" onclick="togglePasswordVisibility('courierLoginPass', 'toggleCourierPassIcon')" style="position:absolute; left:12px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
                     <i class="fa-solid fa-eye" id="toggleCourierPassIcon"></i>
                   </button>
@@ -526,14 +524,14 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:11px;">
                 <button type="button" onclick="handleCourierForgotPassword()" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer;">
-                  نسيت كلمة المرور؟ 🤔
+                  نسيت الباسورد يا بطل؟ 🤔
                 </button>
               </div>
               <button class="btn-main" onclick="handleCourierLogin()" style="margin-top:6px;">
                 <i class="fa-solid fa-right-to-bracket"></i> دخول يا كابتن
               </button>
               <div id="courierNewRegLinkBox" style="text-align:center; margin-top:14px; font-size:12px;">
-                لسة جديد في الميدان؟ 
+                لسه جديد في الميدان؟ 
                 <button onclick="switchCourierSubView('register')" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer;">
                   سجل كابتن عنابي جديد 🛵
                 </button>
@@ -548,7 +546,7 @@
                 <div>
                   <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <h1 style="font-size:16.5px;" id="courierNameHeading">كابتن العنابي</h1>
-                    <span id="courierTierBadgeHeader" class="badge tier-badge-bronze" onclick="openCaptainTiersModal()" style="cursor:pointer;" title="اضغط لعرض شروط المستويات">كابتن برونزي 🥉</span>
+                    <span id="courierTierBadgeHeader" class="badge tier-badge-bronze" onclick="openCaptainTiersModal()" style="cursor:pointer;" title="دوس هنا عشان تعرف شروط المستويات">كابتن برونزي 🥉</span>
                   </div>
                   <span style="margin-top:2px;"><span id="courierIdHeading">#----</span> | <span id="courierStatusBadgeDisplay" class="badge badge-verified">--</span></span>
                 </div>
@@ -571,7 +569,7 @@
               <div id="courierHomeTierProgressSubText" style="font-size:11px; font-weight:700; color:#263238; line-height:1.4;"></div>
             </div>
             <div id="courierMaintenanceAlert" style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:14px; padding:14px; text-align:center; color:var(--danger); font-size:12.5px; font-weight:800; line-height:1.6;">
-              🛠️ المنصة في صيانة وتحديثات دورية سريعة حالياً.. راجعين لك فوراً يا باشا! 🛵❤️
+              🛠️ بنعمل شوية صيانة وتظبيطات سريعة للمنصة دلوقتي.. راجعين لك هوا يا بطل! 🛵❤️
             </div>
             <!-- تنبيه وقت الذروة للكابتن على الرادار -->
             <div id="courierSurgeActiveBanner" style="display:none; background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:14px; padding:10px 14px; color:#E65100; font-size:11.5px; font-weight:800; line-height:1.6;"></div>
@@ -582,7 +580,7 @@
               <div class="switch-wrapper card" id="courierAvailabilityCard">
                 <div>
                   <strong style="font-size:13px; display:block;">حالة الاستعداد للأوردرات</strong>
-                  <small style="font-size:11px; color:var(--text-muted);" id="courierStatusText">جاري التحميل...</small>
+                  <small style="font-size:11px; color:var(--text-muted);" id="courierStatusText">ثواني بنحمل البيانات...</small>
                 </div>
                 <label class="switch">
                   <input type="checkbox" id="courierAvailabilitySwitch" checked onchange="toggleCourierAvailability()">
@@ -618,8 +616,8 @@
             <div id="courTab-support" class="sub-tab-section" style="display:none;">
               <div class="card">
                 <h2 class="card-title"><i class="fa-brands fa-whatsapp" style="color:#25D366; font-size:20px;"></i> دعم كباتن الرجل العنابي 🛵</h2>
-                <p style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">غرفة العمليات والدعم الفني معاك خطوة بخطوة في أي موقف يواجهك في الميدان.</p>
-                <a id="courierSupportWhatsappLink" href="https://wa.me/201507800875" target="_blank" class="btn-main" style="background:#25D366; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> تواصل مباشر مع غرفة العمليات 💬</a>
+                <p style="font-size:13px; line-height:1.6; color:var(--text-muted); margin-bottom:14px;">غرفة العمليات ورجالة الدعم في ضهرك خطوة بخطوة في أي موقف يقابلك في الشارع يا بطل.</p>
+                <a id="courierSupportWhatsappLink" href="https://wa.me/201507800875" target="_blank" class="btn-main" style="background:#25D366; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> كلّم غرفة العمليات علطول 💬</a>
                 <div style="background: linear-gradient(135deg, #FFF9C4, #FFFDE7); border: 1.5px solid #FBC02D; border-radius: 14px; padding: 14px; margin-top: 14px; color: #4E342E; font-size: 12px; line-height: 1.8;">
                   <div style="font-size: 15px; font-weight: 900; color: #7B3F52; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;"><span>🍇</span> <strong>عهد الكابتن العنابي يا رجالة 💪😂</strong></div>
                   <div style="margin-bottom: 10px;">
@@ -641,14 +639,14 @@
               <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                   <div>
-                    <span style="font-size:12px; opacity:0.85;">رصيد المحفظة المتاح للطلبات</span>
+                    <span style="font-size:12px; opacity:0.85;">رصيد المحفظة الجاهز للشغل</span>
                     <div style="font-size:28px; font-weight:900; margin:2px 0 4px;" id="courierWalletBalanceDisplay">0.00 <span style="font-size:14px; font-weight:600;">جنيه</span></div>
-                    <div style="font-size:10.5px; opacity:0.95; font-weight:700; line-height:1.5;" id="courierCommissionNoticeText">عمولة المنصة تخصم فور قبول الطلب وتُرد لك تلقائياً في حال إلغاء العميل</div>
+                    <div style="font-size:10.5px; opacity:0.95; font-weight:700; line-height:1.5;" id="courierCommissionNoticeText">عمولة المنصة بتتخصم أول ما تقبل الطلب، وبترجع لمحفظتك أوتوماتيك لو العميل لغى المشوار</div>
                   </div>
-                  <button class="btn-secondary" style="font-size:11px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.2); color:#fff;" onclick="openTopupModal()"><i class="fa-solid fa-plus-circle"></i> شحن المحفظة</button>
+                  <button class="btn-secondary" style="font-size:11px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.2); color:#fff;" onclick="openTopupModal()"><i class="fa-solid fa-plus-circle"></i> اشحن المحفظة</button>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.15);">
-                  <div><span style="font-size:11px; opacity:0.8;">طلبات مكتملة:</span> <strong style="font-size:14px; display:block;" id="courierCompletedCount">0 أوردرات</strong></div>
+                  <div><span style="font-size:11px; opacity:0.8;">مشاوير خلصتها:</span> <strong style="font-size:14px; display:block;" id="courierCompletedCount">0 أوردرات</strong></div>
                   <div><span style="font-size:11px; opacity:0.8;">صافي أرباحك:</span> <strong style="font-size:14px; display:block;" id="courierTodayEarnings">0 جنيه</strong></div>
                 </div>
               </div>
@@ -659,7 +657,7 @@
                   <span id="courierTierBadgeProfile" class="badge tier-badge-bronze">كابتن برونزي 🥉</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; color:#01579B; margin-bottom:2px;">
-                  <span id="courierProfileTierProgressLabel">نسبة إنجاز التارجت الحالي:</span>
+                  <span id="courierProfileTierProgressLabel">خلصت قد إيه من تارجت المستوى:</span>
                   <strong id="courierProfileTierProgressPct">0%</strong>
                 </div>
                 <div class="tier-live-progress-track" style="margin-bottom:8px;">
@@ -672,7 +670,7 @@
               </div>
               <!-- عدادات التراكمية، الإحالات، النقاط، التفاصيل -->
               <div class="card" style="padding:14px;">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> عداداتك التراكمية (منذ أول مشوار) 🚀</h3>
+                <h3 class="card-title" style="font-size:13px; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> عداداتك من يوم ما بدأت معانا 🚀</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;">
                   <div style="background:#E8F5E9; padding:10px 6px; border-radius:12px; border:1px solid #C8E6C9;"><span style="font-size:10px; font-weight:800; color:#1B5E20; display:block;">مكتملة</span><strong style="font-size:17px; font-weight:900; color:var(--success); display:block; margin-top:4px;" id="courierLifetimeCompletedCount">0</strong></div>
                   <div style="background:#FFEBEE; padding:10px 6px; border-radius:12px; border:1px solid #FFCDD2;"><span style="font-size:10px; font-weight:800; color:#B71C1C; display:block;">ملغية</span><strong style="font-size:17px; font-weight:900; color:var(--danger); display:block; margin-top:4px;" id="courierLifetimeCancelledCount">0</strong></div>
@@ -681,16 +679,16 @@
               </div>
               <div class="card" id="courierReferralProgramCard" style="border: 2px solid #25D366; background: linear-gradient(135deg, #F1F8E9, #FFFDE7); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <h3 style="font-size:14px; font-weight:900; color:#1B5E20; margin:0;"><i class="fa-solid fa-user-group"></i> برنامج دعوة أصدقاء الكابتن 🎁💸</h3>
+                  <h3 style="font-size:14px; font-weight:900; color:#1B5E20; margin:0;"><i class="fa-solid fa-user-group"></i> برنامج دعوة صحابك الكباتن 🎁💸</h3>
                   <span class="badge badge-completed" id="courierReferralsCountBadge">0 أصدقاء</span>
                 </div>
-                <p style="font-size:11.5px; font-weight:800; color:#33691E; line-height:1.6; margin-bottom:10px;">ابعت رقمك لصاحبك الى هيسجل جديد واول مايكمل <strong id="courierReferralTripsCountDisplay">مشوارين</strong> هيجيلك <strong id="courierReferralRewardAmountDisplay">50 جنيه هدية</strong> فى محفظتك 😎🛵</p>
+                <p style="font-size:11.5px; font-weight:800; color:#33691E; line-height:1.6; margin-bottom:10px;">ابعت رقمك لصاحبك اللي هيسجل جديد، وأول ما يكمل <strong id="courierReferralTripsCountDisplay">مشوارين</strong> هينزلك <strong id="courierReferralRewardAmountDisplay">50 جنيه هدية</strong> في محفظتك 😎🛵</p>
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border-radius:10px; border:1px dashed #2E7D32;">
                   <div>
                     <span style="font-size:10px; color:var(--text-muted); display:block;">رقمك لدعوة صحابك الكباتن:</span>
                     <strong style="font-size:14px; color:var(--primary); letter-spacing:0.5px;" id="courierReferralCodeDisplay">-----------</strong>
                   </div>
-                  <button type="button" class="btn-secondary" style="padding:6px 12px; font-size:11px; background:#E8F5E9; color:var(--success);" onclick="copyCourierReferralPhone()"><i class="fa-solid fa-copy"></i> نسخ الرقم</button>
+                  <button type="button" class="btn-secondary" style="padding:6px 12px; font-size:11px; background:#E8F5E9; color:var(--success);" onclick="copyCourierReferralPhone()"><i class="fa-solid fa-copy"></i> انسخ الرقم</button>
                 </div>
               </div>
               <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
@@ -704,13 +702,13 @@
                 </div>
               </div>
               <div class="card">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة بالمنصة</h3>
+                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة معانا</h3>
                 <div id="courierProfileDetailsBox" style="font-size:12px; line-height:1.8; color:var(--text-main);"></div>
               </div>
               <div class="card">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة (الحركات الأخيرة)</h3>
+                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة (آخر الحركات)</h3>
                 <div id="courierWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
-                  <div style="color:var(--text-muted); text-align:center;">لا توجد حركات مسجلة بعد.</div>
+                  <div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
                 </div>
               </div>
             </div>
@@ -720,48 +718,48 @@
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h2 class="card-title" style="margin-bottom:0;" id="regFormHeadingTitle"><i class="fa-solid fa-user-plus"></i> انضم لرجالة العنابي 🛵💨</h2>
-                <button onclick="switchCourierSubView('login')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right"></i> أنا مسجل بالفعل</button>
+                <button onclick="switchCourierSubView('login')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right"></i> أنا مسجل قبل كدا</button>
               </div>
-              <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">سجل بياناتك ومستنداتك الرسمية بوضوح عشان الإدارة تعتمد حسابك فوراً.</p>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">املى بياناتك وصور ورقك والبطاقة بوضوح عشان الإدارة تعتمد حسابك وتنزل الشارع فوراً يا وحش.</p>
               <!-- إشعار ديناميكي بالمبلغ الترحيبي للكباتن الجدد -->
               <div id="regWelcomeBonusBanner" style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:12px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; font-weight:800; color:#1B5E20; line-height:1.6;">
                 🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong id="regWelcomeBonusAmountSpan">7</strong> جنيه هدية ترحيبية في محفظتك فوراً! 🛵💸
               </div>
               
-              <div class="input-group"><label class="input-label">الاسم ثلاثي من واقع البطاقة *</label><input type="text" id="regFullName" class="input-field" placeholder="اكتب اسمك الثلاثي كاملاً"></div>
-              <div class="input-group"><label class="input-label">رقم الهاتف الشخصي الشغال *</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15"></div>
-              <div class="input-group"><label class="input-label">الرقم القومي (الـ 14 رقم) *</label><input type="text" inputmode="numeric" id="regNationalId" class="input-field" maxlength="14" placeholder="اكتب الـ 14 رقم بالكامل"></div>
-              <div class="input-group" id="regReferralGroupBox"><label class="input-label" id="regReferralLabelText" style="color:var(--success); font-weight:800;">ادخل رقم موبايل صاحبك الى قالك علينا (اختياري) 🎁</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15"><small id="regReferralSubHint" style="font-size:10px; color:var(--text-muted);">لو مفيش حد متكتبش حاجة هنا (مينفعش تكتب رقمك الشخصي)</small></div>
+              <div class="input-group"><label class="input-label">اسمك ثلاثي زي ما مكتوب في البطاقة *</label><input type="text" id="regFullName" class="input-field" placeholder="اكتب اسمك الثلاثي كامل يا بطل"></div>
+              <div class="input-group"><label class="input-label">رقم موبايلك الشخصي اللي شغال *</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15"></div>
+              <div class="input-group"><label class="input-label">الرقم القومي (الـ 14 رقم) *</label><input type="text" inputmode="numeric" id="regNationalId" class="input-field" maxlength="14" placeholder="اكتب الـ 14 رقم بتوع البطاقة كاملين"></div>
+              <div class="input-group" id="regReferralGroupBox"><label class="input-label" id="regReferralLabelText" style="color:var(--success); font-weight:800;">اكتب رقم موبايل صاحبك اللي قالك علينا (اختياري) 🎁</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15"><small id="regReferralSubHint" style="font-size:10px; color:var(--text-muted);">لو مفيش حد سيبها فاضية عادي (بس مينفعش تكتب رقمك الشخصي 😉)</small></div>
               
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <div class="input-group"><label class="input-label" for="regPassword">كلمة مرور للحساب *</label><div style="position:relative;"><input type="password" id="regPassword" class="input-field" placeholder="اكتب كلمة مرور"><button type="button" onclick="togglePasswordVisibility('regPassword', 'toggleRegPassIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassIcon"></i></button></div></div>
-                <div class="input-group"><label class="input-label" for="regPasswordConfirm">تأكيد كلمة المرور *</label><div style="position:relative;"><input type="password" id="regPasswordConfirm" class="input-field" placeholder="أكد كلمة المرور تاني"><button type="button" onclick="togglePasswordVisibility('regPasswordConfirm', 'toggleRegPassConfIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassConfIcon"></i></button></div></div>
+                <div class="input-group"><label class="input-label" for="regPassword">اعمل باسورد لحسابك *</label><div style="position:relative;"><input type="password" id="regPassword" class="input-field" placeholder="اكتب باسورد تحفظه"><button type="button" onclick="togglePasswordVisibility('regPassword', 'toggleRegPassIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassIcon"></i></button></div></div>
+                <div class="input-group"><label class="input-label" for="regPasswordConfirm">أكد الباسورد تاني *</label><div style="position:relative;"><input type="password" id="regPasswordConfirm" class="input-field" placeholder="اكتب الباسورد تاني للتأكيد"><button type="button" onclick="togglePasswordVisibility('regPasswordConfirm', 'toggleRegPassConfIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassConfIcon"></i></button></div></div>
               </div>
               
-              <div class="input-group"><label class="input-label">منطقة العمل الأساسية *</label><select class="select-field" id="regPrimaryZone"></select></div>
+              <div class="input-group"><label class="input-label">المنطقة الأساسية اللي بتشتغل فيها *</label><select class="select-field" id="regPrimaryZone"></select></div>
               
-              <div style="margin: 10px 0;"><label class="input-label" style="font-weight:800; color:var(--primary); margin-bottom:6px; display:block;">صور بطاقة الرقم القومي (إجباري وش وضهر) *</label>
+              <div style="margin: 10px 0;"><label class="input-label" style="font-weight:800; color:var(--primary); margin-bottom:6px; display:block;">صور البطاقة الشخصية (لازم وش وضهر واضحين) *</label>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                  <div><label class="input-label" style="font-size:11px;">وش البطاقة *</label><div class="upload-card-box" id="idFrontUploadBox"><input type="file" id="idFrontFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'idFront')"><div id="idFrontPlaceholder" onclick="document.getElementById('idFrontFileInput').click()"><i class="fa-solid fa-id-card" style="font-size:22px; color:var(--primary);"></i><div style="font-size:10px; font-weight:700; margin-top:4px;">رفع وش البطاقة</div></div><div class="upload-preview-container" id="idFrontPreview"><img src="" id="idFrontImg" alt="وش البطاقة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('idFront')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
-                  <div><label class="input-label" style="font-size:11px;">ضهر البطاقة *</label><div class="upload-card-box" id="idBackUploadBox"><input type="file" id="idBackFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'idBack')"><div id="idBackPlaceholder" onclick="document.getElementById('idBackFileInput').click()"><i class="fa-solid fa-id-card-clip" style="font-size:22px; color:var(--primary);"></i><div style="font-size:10px; font-weight:700; margin-top:4px;">رفع ضهر البطاقة</div></div><div class="upload-preview-container" id="idBackPreview"><img src="" id="idBackImg" alt="ضهر البطاقة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('idBack')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
+                  <div><label class="input-label" style="font-size:11px;">وش البطاقة *</label><div class="upload-card-box" id="idFrontUploadBox"><input type="file" id="idFrontFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'idFront')"><div id="idFrontPlaceholder" onclick="document.getElementById('idFrontFileInput').click()"><i class="fa-solid fa-id-card" style="font-size:22px; color:var(--primary);"></i><div style="font-size:10px; font-weight:700; margin-top:4px;">ارفع وش البطاقة</div></div><div class="upload-preview-container" id="idFrontPreview"><img src="" id="idFrontImg" alt="وش البطاقة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('idFront')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
+                  <div><label class="input-label" style="font-size:11px;">ضهر البطاقة *</label><div class="upload-card-box" id="idBackUploadBox"><input type="file" id="idBackFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'idBack')"><div id="idBackPlaceholder" onclick="document.getElementById('idBackFileInput').click()"><i class="fa-solid fa-id-card-clip" style="font-size:22px; color:var(--primary);"></i><div style="font-size:10px; font-weight:700; margin-top:4px;">ارفع ضهر البطاقة</div></div><div class="upload-preview-container" id="idBackPreview"><img src="" id="idBackImg" alt="ضهر البطاقة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('idBack')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
                 </div>
               </div>
               
               <div class="input-group"><label class="input-label">وسيلة التوصيل اللي شغال بيها إيه؟ *</label><select class="select-field" id="regVehicleType" onchange="handleVehicleTypeChange()"><option value="موتوسيكل">موتوسيكل 🏍️</option><option value="سكوتر">سكوتر 🛵</option><option value="سيارة">سيارة 🚗</option><option value="دراجة">عجلة / دراجة 🚲</option></select></div>
               
               <div id="vehicleSpecificFields">
-                <div class="input-group" id="plateNumberGroup"><label class="input-label">رقم اللوحة المعدنية للمركبة *</label><input type="text" id="regPlateNumber" class="input-field" placeholder="مثال: د ن ر 1 2 3 4"></div>
-                <div class="input-group"><label class="input-label">صورة للمركبة مع وضوح النمرة *</label><div class="upload-card-box" id="vehicleUploadBox"><input type="file" id="vehicleFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'vehicle')"><div id="vehiclePlaceholder" onclick="document.getElementById('vehicleFileInput').click()"><i class="fa-solid fa-camera" style="font-size:24px; color:var(--primary);"></i><div style="font-size:11px; font-weight:700; margin-top:4px;">التقط صورة مركبتك والنمرة واضحة</div></div><div class="upload-preview-container" id="vehiclePreview" style="height:120px;"><img src="" id="vehicleImg" alt="صورة المركبة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('vehicle')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
+                <div class="input-group" id="plateNumberGroup"><label class="input-label">نمرة الموتوسيكل أو العربية (اللوحة) *</label><input type="text" id="regPlateNumber" class="input-field" placeholder="مثلاً: د ن ر 1 2 3 4"></div>
+                <div class="input-group"><label class="input-label">صورة للمركبة والنمرة باينة وواضحة *</label><div class="upload-card-box" id="vehicleUploadBox"><input type="file" id="vehicleFileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'vehicle')"><div id="vehiclePlaceholder" onclick="document.getElementById('vehicleFileInput').click()"><i class="fa-solid fa-camera" style="font-size:24px; color:var(--primary);"></i><div style="font-size:11px; font-weight:700; margin-top:4px;">صوّر مركبتك والنمرة واضحة</div></div><div class="upload-preview-container" id="vehiclePreview" style="height:120px;"><img src="" id="vehicleImg" alt="صورة المركبة"><button type="button" class="remove-upload-btn" onclick="removeUploadedFile('vehicle')"><i class="fa-solid fa-xmark"></i></button></div></div></div>
               </div>
               
-              <div id="bikeNoticeBox" style="display:none; background:#E8F5E9; border:1px solid #A5D6A7; border-radius:10px; padding:10px; font-size:11px; color:#1B5E20; margin-bottom:12px;"><i class="fa-solid fa-bicycle"></i> <strong>أجدع كابتن عجلة:</strong> أنت معفي تماماً من النمرة وصورة اللوحة!</div>
+              <div id="bikeNoticeBox" style="display:none; background:#E8F5E9; border:1px solid #A5D6A7; border-radius:10px; padding:10px; font-size:11px; color:#1B5E20; margin-bottom:12px;"><i class="fa-solid fa-bicycle"></i> <strong>أجدع كابتن عجلة:</strong> إنت معفي خالص من النمرة وصورة اللوحة يا بطل!</div>
               
               <div style="background: linear-gradient(135deg, #FFF9C4, #FFFDE7); border: 1.5px solid #FBC02D; border-radius: 14px; padding: 14px; margin: 14px 0 10px; color: #4E342E; font-size: 12px; line-height: 1.8;">
-                <div style="font-size: 15px; font-weight: 900; color: #7B3F52; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;"><span>🍇</span> <strong>عهد الكابتن العنابي وسياسة الخصوصية 💪😂</strong></div>
+                <div style="font-size: 15px; font-weight: 900; color: #7B3F52; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;"><span>🍇</span> <strong>عهد الكابتن العنابي وأمان بياناتك 💪😂</strong></div>
                 <div style="margin-bottom: 10px;"><strong style="color: #7B3F52; font-size: 13px; display: block;">1️⃣ فلوسك يا كابتن.. مسؤوليتك يا كابتن! 💸</strong><p style="margin: 3px 0 0;">لو اشتريت حاجة للعميل من جيبك، يبقى اتفقت معاه على مزاجك 😎 المنصة مش طرف في الاتفاق، ومش ضامنة إن فلوسك ترجعلك.. يعني متشتريش وتيجي تقولنا الحقوني يا رجالة العنابي! 😂</p></div>
                 <div style="margin-bottom: 10px;"><strong style="color: #7B3F52; font-size: 13px; display: block;">2️⃣ إلغاء الطلب مش بمزاجك يا نجم! 📦</strong><p style="margin: 3px 0 0;">ممنوع تقول للعميل: «ادخل إنت ألغيه يا باشا» 🙅‍♂️ إلغاء الطلب لازم يتم عن طريق المنصة، عشان الدنيا متقلبش علينا مولد يا جدعان! 😂</p></div>
                 <div style="margin-bottom: 10px;"><strong style="color: #7B3F52; font-size: 13px; display: block;">3️⃣ الطريق مش حلبة سباق يا عنب! 🛵💨</strong><p style="margin: 3px 0 0;">التزم بقواعد المرور، والبس وسائل الأمان، وخلي بالك من نفسك ومن الناس. إحنا عايزينك توصل الطلب بالسلامة وترجع تنوّر علينا، مش نعملك بوست: «كان معانا كابتن زي الفل»! 😂❤️</p></div>
-                <div style="background:rgba(255,255,255,0.75); padding:8px 10px; border-radius:10px; font-size:11px; color:#302A2D; margin-top:8px; border:1px dashed #7B3F52;">🔒 <strong>حماية البيانات الشخصية:</strong> تُحفظ صور المستندات والبطاقة في خزنة سحابية مشفرة وخاصة للتحقق من الهوية فقط وفقاً لقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020.</div>
+                <div style="background:rgba(255,255,255,0.75); padding:8px 10px; border-radius:10px; font-size:11px; color:#302A2D; margin-top:8px; border:1px dashed #7B3F52;">🔒 <strong>ورقك وبياناتك في الحفظ والصون:</strong> صور البطاقة والورق بتوعك بيتشالوا في خزنة سحابية متشفرة ومحدش بيشوفهم غير الإدارة عشان نراجع هويتك بس، وده تبع قانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020.</div>
               </div>
               <!-- مربع شروط مستويات الكباتن أسفل عهد الكابتن مباشرة ويفتح القائمة المنبثقة عند الضغط -->
               <div style="background: linear-gradient(135deg, #E1F5FE, #F5FBFF); border: 1.5px solid #29B6F6; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #01579B; line-height: 1.6;">
@@ -773,10 +771,10 @@
                   كل ما تشتغل أكتر في الأسبوع، مستواك بيعلى أوتوماتيك من <strong>برونزي 🥉</strong> لـ <strong>بلاتيني 🥈</strong> لـ <strong>ماسي 💎</strong> وعمولة المنصة بتقل عليك في كل مشوار!
                 </p>
                 <button type="button" onclick="openCaptainTiersModal()" style="width:100%; background:#0288D1; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-                  <i class="fa-solid fa-gem"></i> اضغط هنا لعرض شروط المستويات وخصم العمولة 📋
+                  <i class="fa-solid fa-gem"></i> دوس هنا عشان تعرف شروط المستويات وخصم العمولة 📋
                 </button>
               </div>
-              <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد وسياسة الخصوصية 💪🍇</button>
+              <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد وعلى ضمان الله 💪🍇</button>
             </div>
           </div>
         </section>
@@ -800,7 +798,7 @@
   <div class="custom-modal" id="imagePreviewModal" style="z-index: 2000;" onclick="if(event.target === this) closeImageViewer()">
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
-  <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> تحويل للدعم والشحن</button></div></div>
+  <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> يلا نحول ع الدعم ونشحن 💬</button></div></div>
   <!-- نافذة تنبيه عدم كفاية رصيد محفظة الكابتن لقبول الطلب -->
   <div class="custom-modal" id="insufficientWalletModal" style="z-index: 1960;" onclick="if(event.target === this) closeInsufficientWalletModal()">
     <div class="modal-content-card" style="text-align:center; padding:24px 18px; max-width:360px;">
@@ -808,12 +806,12 @@
         <i class="fa-solid fa-wallet"></i>
       </div>
       <p style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.7; margin-bottom:18px;">
-        رصيدك الحالى مش كافى لإتمام الطلب 😭.<br>
-        <span style="color:var(--primary);">بس احنا لسة فيها ✌️💲</span>
+        رصيدك الحالي مش كافي لإتمام الطلب 😭.<br>
+        <span style="color:var(--primary);">بس إحنا لسه فيها ✌️💲</span>
       </p>
       <div style="display:flex; gap:8px;">
         <button type="button" class="btn-main" style="background:#25D366; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); flex:1.3;" onclick="openDirectWhatsAppTopupFromModal()">
-          <i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> اشحن دلوقتى
+          <i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> اشحن دلوقتي
         </button>
         <button type="button" class="btn-main" style="flex:1;" onclick="closeInsufficientWalletModal()">
           بعدين
@@ -821,14 +819,14 @@
       </div>
     </div>
   </div>
-  <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">إبلاغ عن مشكلة في الطلب ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكي لنا إيه المشكلة بالتفصيل..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">إرسال الشكوى</button><button class="btn-secondary" onclick="closeDisputeModal()">تراجع</button></div></div></div>
-  <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">تقييم خدمة الكابتن 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:24px; color:#FFB300; margin-bottom:12px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><button class="btn-main" onclick="submitOrderRating()">حفظ التقييم الجميل</button></div></div>
+  <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">فيه مشكلة في الأوردر؟ بلّغنا فوراً ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكيلنا إيه اللي حصل بالتفصيل يا باشا..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">ابعت الشكوى للإدارة</button><button class="btn-secondary" onclick="closeDisputeModal()">خلاص رجعت في كلامي</button></div></div></div>
+  <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">قيّم الكابتن الشقيان يا باشا 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:24px; color:#FFB300; margin-bottom:12px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><button class="btn-main" onclick="submitOrderRating()">اعتمد التقييم الحلو ده ⭐</button></div></div>
   
   <div class="custom-modal" id="captainSuccessModal">
     <div class="modal-content-card" style="text-align:center; padding:24px 16px;">
       <i class="fa-solid fa-circle-check" style="color:var(--success); font-size:36px; margin-bottom:10px;"></i>
       <h3 style="font-size:16px; font-weight:900; color:var(--primary); margin-bottom:8px;">كدا إنت سجلت معانا يا بطل! 🛵🎉</h3>
-      <p id="captainSuccessModalText" style="font-size:13px; line-height:1.6; color:#444;">كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك 7 جنيه هدية ترحيبية فوراً 😎🍇</p>
+      <p id="captainSuccessModalText" style="font-size:13px; line-height:1.6; color:#444;">كدا يا نجم باقي بس الإدارة تراجع بياناتك والورق.. وأول ما تعتمدك هينزلك في محفظتك 7 جنيه هدية ترحيبية فوراً 😎🍇</p>
       <button class="btn-main" style="margin-top:14px;" onclick="closeCaptainSuccessModal()">تمام يا باشا، في انتظار الإدارة 💪</button>
     </div>
   </div>
@@ -836,11 +834,11 @@
   <div class="custom-modal" id="publicLeafletMapModal" style="z-index: 1900;" onclick="if(event.target === this) closePublicLeafletMapModal()">
     <div class="modal-content-card" style="max-width:440px; padding:16px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 id="publicLeafletMapTitle" style="font-size:14.5px; font-weight:900; color:var(--primary); margin:0;">🗺️ تحديد الموقع على الخريطة</h3>
+        <h3 id="publicLeafletMapTitle" style="font-size:14.5px; font-weight:900; color:var(--primary); margin:0;">🗺️ تحديد المكان ع الخريطة</h3>
         <button type="button" onclick="closePublicLeafletMapModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button>
       </div>
       <p id="publicLeafletMapSubHint" style="font-size:11px; color:var(--text-muted); margin-bottom:8px; line-height:1.4;">
-        اضغط على أي مكان في الخريطة لوضع الدبوس 📍 (أو اسحب الدبوس لمكانك بالضبط).
+        دوس في أي حتة ع الخريطة عشان تحط الدبوس 📍 (أو شد الدبوس لمكانك بالظبط يا باشا).
       </p>
       <div id="publicLeafletMapContainer" style="width:100%; height:270px; border-radius:14px; border:1.5px solid var(--primary); overflow:hidden;"></div>
       <div id="publicLeafletMapFooter" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"></div>
@@ -857,7 +855,7 @@
       <button type="button" class="btn-main" style="margin-top:14px;" onclick="closeCaptainTiersModal()">فهمت النظام يا باشا.. توكلنا على الله! 🛵💪</button>
     </div>
   </div>
-  <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الإجراء</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">تأكيد التنفيذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
+  <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الخطوة دي</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">اعتمد ونفّذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
   <script>
     'use strict';
     const SESSION_KEY = 'ENNABY_PUBLIC_SESSION_V35';
@@ -1004,7 +1002,7 @@
       return 'tier-badge-bronze';
     }
     function formatCairoDateTime(ts) {
-      const num = Number(ts); if (!Number.isFinite(num) || num <= 0) return 'غير محدد';
+      const num = Number(ts); if (!Number.isFinite(num) || num <= 0) return 'مش متحدد';
       try { return new Date(num).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
       catch (e) { return new Date(num).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); }
     }
@@ -1047,19 +1045,19 @@
       } catch (e) {}
     }
 
-    function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'تأكيد ✅', isDanger = false, onConfirm }) {
+    function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'اعتمد ونفّذ ✅', isDanger = false, onConfirm }) {
       const modal = document.getElementById('customActionModal'); const titleEl = document.getElementById('customActionModalTitle');
       const msgEl = document.getElementById('customActionModalMessage'); const inpWrap = document.getElementById('customActionModalInputWrap');
       const inpEl = document.getElementById('customActionModalInput'); const confBtn = document.getElementById('customActionModalConfirmBtn');
       if (!modal) return;
-      if (titleEl) { titleEl.innerText = title || 'تأكيد الإجراء'; titleEl.style.color = isDanger ? 'var(--danger)' : 'var(--primary)'; }
+      if (titleEl) { titleEl.innerText = title || 'تأكيد الخطوة دي'; titleEl.style.color = isDanger ? 'var(--danger)' : 'var(--primary)'; }
       if (msgEl) msgEl.innerText = message || '';
       if (inpWrap) inpWrap.style.display = needInput ? 'block' : 'none';
       if (inpEl) { inpEl.value = defaultValue || ''; inpEl.placeholder = inputPlaceholder || 'اكتب السبب أو التفاصيل هنا...'; }
       if (confBtn) { confBtn.innerText = confirmText; confBtn.style.background = isDanger ? 'var(--danger)' : 'var(--primary)'; }
       customModalCallback = function() {
         const val = inpEl ? inpEl.value.trim() : '';
-        if (needInput && !val) { showToast('برجاء كتابة السبب أو التفاصيل أولاً ⚠️', 'warn'); return; }
+        if (needInput && !val) { showToast('اكتب السبب أو التفاصيل الأول يا غالي ⚠️', 'warn'); return; }
         closeCustomActionModal();
         if (typeof onConfirm === 'function') onConfirm(val);
       };
@@ -1255,7 +1253,7 @@
           const activeCourier = getActiveCourier();
           if (STATE.currentRole === 'courier' && activeCourier && activeCourier.isAvailable && activeCourier.status === 'معتمد') {
             triggerDeviceAlert('courier_new_order');
-            showToast(`🔔 طلب جديد على الرادار (${newlyCreatedOrder.id}) من ${newlyCreatedOrder.pickupZone} إلى ${newlyCreatedOrder.dropoffZone} 🛵💨`, 'ok');
+            showToast(`🔔 أوردر جديد لسه نازل ع الرادار (${newlyCreatedOrder.id}) من ${newlyCreatedOrder.pickupZone} لـ ${newlyCreatedOrder.dropoffZone}.. الحق اقبله! 🛵💨`, 'ok');
           }
         }
         const savedCustPhone = STATE.customerProfile ? STATE.customerProfile.savedPhone : '';
@@ -1265,7 +1263,7 @@
             const ownerPh = resolveOrderClientPhone(o);
             if (STATE.currentRole === 'customer' && savedCustPhone && ownerPh === savedCustPhone) {
               triggerDeviceAlert('customer_status_update');
-              showToast(`🔔 تحديث في طلبك (${o.id}): ${o.status} 🛵`, 'ok');
+              showToast(`🔔 جديد في طلبك (${o.id}): ${o.status} 🛵`, 'ok');
             }
           }
         });
@@ -1286,9 +1284,9 @@
         if (data && data.success && data.state) {
           const fp = JSON.stringify(data.state);
           if (!silent || fp !== lastCloudStateFingerprint) { lastCloudStateFingerprint = fp; applyCloudStateSnapshot(data.state); }
-          if (!silent) showToast('تم تحديث البيانات بنجاح ☁️✅', 'ok');
+          if (!silent) showToast('حدّثنا البيانات وكله تمام ع السحابة ☁️✅', 'ok');
         }
-      } catch (err) { if (!silent) showToast('تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت ⚠️', 'warn'); } 
+      } catch (err) { if (!silent) showToast('السيرفر مش بيرد دلوقتي يا نجم، بص بصة على النت عندك كدا ⚠️', 'warn'); } 
       finally { isCloudSyncInFlight = false; }
     }
 
@@ -1425,13 +1423,13 @@
       const leftBtn = document.getElementById('inlineMapLeftOtherBtn');
       if (rightBtn && leftBtn) {
         if (isFetch) {
-          rightBtn.innerHTML = '🏁 اختار مكان التسليم على الخريطة';
-          leftBtn.innerHTML = '🏪 اختار مكان الاستلام على الخريطة';
+          rightBtn.innerHTML = '🏁 اختار مكان التسليم ع الخريطة';
+          leftBtn.innerHTML = '🏪 اختار مكان الاستلام ع الخريطة';
           rightBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
           leftBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
         } else {
-          rightBtn.innerHTML = '📦 اختار مكان الاستلام على الخريطة';
-          leftBtn.innerHTML = '🏁 اختار مكان التسليم على الخريطة';
+          rightBtn.innerHTML = '📦 اختار مكان الاستلام ع الخريطة';
+          leftBtn.innerHTML = '🏁 اختار مكان التسليم ع الخريطة';
           rightBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
           leftBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
         }
@@ -1462,10 +1460,10 @@
       }
 
       if (addrInp) {
-        addrInp.value = '⏳ جاري قراءة اسم الشارع من الخريطة...';
+        addrInp.value = '⏳ ثواني بنلقط اسم الشارع من الخريطة...';
       }
       if (pillTxt) {
-        pillTxt.innerText = '⏳ جاري قراءة اسم الشارع والمنطقة من الخريطة...';
+        pillTxt.innerText = '⏳ ثواني بنلقط اسم الشارع والمنطقة من الخريطة...';
       }
       syncInlineMapMarkers(panMap ? targetKey : null);
       updateGpsPillsUI();
@@ -1475,7 +1473,7 @@
       if (reqId !== reverseGeocodeReqId[targetKey]) return;
 
       const zoneVal = document.getElementById(targetKey === 'pickup' ? 'pickupZone' : 'dropoffZone')?.value || 'المنصورة';
-      const finalAddressText = streetAddress || `موقع محدد بالخريطة (${zoneVal})`;
+      const finalAddressText = streetAddress || `موقع متحدد ع الخريطة (${zoneVal})`;
       tempResolvedAddresses[targetKey] = finalAddressText;
 
       if (addrInp) {
@@ -1537,7 +1535,7 @@
       const targetKey = target === 'dropoff' ? 'dropoff' : 'pickup';
       reverseGeocodeReqId[targetKey]++;
       const addrInp = document.getElementById(targetKey === 'pickup' ? 'pickupAddress' : 'dropoffAddress');
-      if (addrInp && (addrInp.value === tempResolvedAddresses[targetKey] || addrInp.value.includes('جاري قراءة') || addrInp.value.includes('المحدد على الخريطة') || addrInp.value.includes('محدد بالخريطة'))) {
+      if (addrInp && (addrInp.value === tempResolvedAddresses[targetKey] || addrInp.value.includes('ثواني بنلقط') || addrInp.value.includes('جاري قراءة') || addrInp.value.includes('المحدد على الخريطة') || addrInp.value.includes('محدد بالخريطة') || addrInp.value.includes('متحدد ع الخريطة'))) {
         addrInp.value = '';
       }
       tempResolvedAddresses[targetKey] = '';
@@ -1550,24 +1548,24 @@
       }
       syncInlineMapMarkers();
       updateGpsPillsUI();
-      showToast('تم مسح إحداثيات الخريطة، يمكنك الاعتماد على العنوان المكتوب يدوياً ✍️', 'ok');
+      showToast('مسحنا اللوكيشن من الخريطة، وكدا هنمشي ع العنوان اللي هتكتبه بإيدك يا باشا ✍️', 'ok');
     }
 
     function captureAutoGpsLocation(target) {
       const activeMode = target === 'dropoff' ? 'dropoff' : 'pickup';
       setInlineMapTargetMode(activeMode);
       if (!navigator.geolocation) {
-        showToast('متصفحك مش بيدعم الـ GPS التلقائي يا باشا.. حدد الدبوس من الخريطة قدامك أو اكتب العنوان يدوياً 📍⚠️', 'warn');
+        showToast('متصفحك مش بيدعم الـ GPS التلقائي يا باشا.. حط الدبوس ع الخريطة قدامك أو اكتب العنوان بإيدك 📍⚠️', 'warn');
         return;
       }
-      showToast('جاري التقاط موقعك وقراءة اسم الشارع بالـ GPS يا باشا... 📡📍', 'ok');
+      showToast('ثواني بنلقط مكانك واسم الشارع بالـ GPS يا باشا... 📡📍', 'ok');
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           applyInlineMapCoordinate(activeMode, pos.coords.latitude, pos.coords.longitude, true);
-          showToast('تم التقاط اللوكيشن وكتابة اسم الشارع بنجاح يا نجم! 📍✅', 'ok');
+          showToast('لقطنا اللوكيشن وكتبنا اسم الشارع بالمللي يا نجم! 📍✅', 'ok');
         },
         () => {
-          showToast('مقدرناش نلقط الـ GPS تلقائياً.. اضغط على الخريطة قدامك لتحديد الدبوس أو اكتب العنوان يدوياً ✍️⚠️', 'warn');
+          showToast('مقدرناش نلقط الـ GPS لوحده.. دوس ع الخريطة قدامك وحط الدبوس أو اكتب العنوان بإيدك ✍️⚠️', 'warn');
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -1582,7 +1580,7 @@
       const footerEl = document.getElementById('publicLeafletMapFooter');
       if (!modal) return;
       tempPickedLatLng = null;
-      if (titleEl) titleEl.innerText = `🗺️ خريطة مشوار الطلب (${o.id})`;
+      if (titleEl) titleEl.innerText = `🗺️ خريطة مشوار الأوردر (${o.id})`;
       if (hintEl) hintEl.innerText = `من: ${o.pickupZone} (${o.pickupAddress}) ⬅️ إلى: ${o.dropoffZone} (${o.dropoffAddress})`;
       modal.classList.add('show');
 
@@ -1686,7 +1684,7 @@
           ? Math.max(1, Math.ceil((Number(savedPromoCodeObj.expiresAt) - Date.now()) / 3600000))
           : 24;
         box.style.display = 'flex';
-        txt.innerText = `🎟️ كود مفعل ومحفوظ (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (صالح لـ ${remHours} س)`;
+        txt.innerText = `🎟️ كود شغال ومتشال معاك (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (شغال لـ ${remHours} س)`;
         if (inp && document.activeElement !== inp) inp.value = savedPromoCodeObj.code;
       } else {
         box.style.display = 'none';
@@ -1699,20 +1697,20 @@
         const code = (inp ? inp.value : '').trim().toUpperCase();
         const clientPhone = getActiveCustomerPhoneForPricing();
         if (!code) {
-          showToast('اكتب كود الخصم الأول يا باشا عشان نطبقهولك! 🎟️⚠️', 'warn');
+          showToast('اكتب كود الخصم الأول يا باشا عشان نشغلهولك! 🎟️⚠️', 'warn');
           return;
         }
         try {
           const { ok, data } = await apiRequest('/api/promo-codes/validate', 'POST', { code, clientPhone });
           if (ok && data && data.success && data.promo) {
             persistSavedPromoCode(data.promo);
-            showToast(data.message || `مبروك يا باشا! تم تفعيل وحفظ كود الخصم (${data.promo.code}) بنجاح 🎁🎉`, 'ok');
+            showToast(data.message || `مبروك يا باشا! شغلنالك كود الخصم (${data.promo.code}) واتحفظ معاك بنجاح 🎁🎉`, 'ok');
           } else {
             triggerDeviceAlert('warning');
-            showToast((data && data.message) || 'كود الخصم غير صالح أو انتهت صلاحيته ⚠️', 'warn');
+            showToast((data && data.message) || 'الكود ده مش شغال أو وقته خلص يا باشا ⚠️', 'warn');
           }
         } catch (err) {
-          showToast('تعذر التحقق من الكود، جرب تاني يا باشا ⚠️', 'warn');
+          showToast('مش عارفين نراجع الكود دلوقتي، جرب تاني كدا يا باشا ⚠️', 'warn');
         }
       });
     }
@@ -1721,7 +1719,7 @@
       persistSavedPromoCode(null);
       const inp = document.getElementById('orderPromoCodeInput');
       if (inp) inp.value = '';
-      showToast('تم إلغاء كود الخصم من الطلب الحالي 🎟️', 'ok');
+      showToast('شيلنا كود الخصم من المشوار ده خلاص 🎟️', 'ok');
     }
 
     async function handleProfilePhoneSync() {
@@ -1729,11 +1727,11 @@
       const pinInp = document.getElementById('custProfilePinSyncInput');
       const typedPhone = phoneInp ? normalizePhone(phoneInp.value) : '';
       const typedPin = pinInp ? normalizeDigits(pinInp.value).trim() : '';
-      if (!isValidEgyptianPhone(typedPhone)) { showToast('برجاء كتابة رقم موبايل مصري صحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
-      if (!isValidPin(typedPin)) { showToast('برجاء إدخال رمز الـ PIN السري المكون من 4 أرقام 🔒⚠️', 'warn'); return; }
+      if (!isValidEgyptianPhone(typedPhone)) { showToast('اكتب رقم موبايل مصري صح يا باشا (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn'); return; }
+      if (!isValidPin(typedPin)) { showToast('اكتب رمز الـ PIN السري بتاعك (4 أرقام) 🔒⚠️', 'warn'); return; }
       withActionLock(async () => {
         try {
-          showToast('جاري التحقق من رمز الـ PIN واسترجاع حسابك... ⏳', 'auto');
+          showToast('ثواني بنراجع الـ PIN ونرجّعلك حسابك... ⏳', 'auto');
           const { ok, data } = await apiRequest('/api/auth/customer/login', 'POST', { phone: typedPhone, pin: typedPin });
           if (ok && data && data.success) {
             STATE.customerProfile.savedPhone = typedPhone;
@@ -1744,9 +1742,9 @@
             if (pinInp) pinInp.value = '';
             updateCustomerPinFieldVisibility();
             subscribeUserToPush(typedPhone);
-            renderAllData(); calculateDeliveryPrice(); showToast(data.message || `تم فتح حسابك واسترجاع نقاطك ومحفظتك بنجاح 🛵👑`, 'ok');
-          } else { triggerDeviceAlert('warning'); showToast((data && data.message) || 'رقم الهاتف أو رمز الـ PIN غير صحيح! 🔒⚠️', 'warn'); }
-        } catch (err) { showToast('تعذر الاتصال بالسيرفر، حاول مرة أخرى ⚠️', 'warn'); }
+            renderAllData(); calculateDeliveryPrice(); showToast(data.message || `فتحنا حسابك ورجّعنا نقطك ومحفظتك بنجاح يا باشا 🛵👑`, 'ok');
+          } else { triggerDeviceAlert('warning'); showToast((data && data.message) || 'رقم الموبايل أو رمز الـ PIN مش مظبوطين! 🔒⚠️', 'warn'); }
+        } catch (err) { showToast('السيرفر مش مجمع دلوقتي، جرب تاني كمان ثانية ⚠️', 'warn'); }
       });
     }
 
@@ -1754,15 +1752,15 @@
       const phoneInp = document.getElementById('custProfilePhoneSyncInput');
       const ph = normalizePhone((phoneInp && phoneInp.value) || STATE.customerProfile.savedPhone || '');
       const phoneText = isValidEgyptianPhone(ph) ? ph : 'اكتب رقمك هنا';
-      const msg = `السلام عليكم يا رجالة العنابي 🛵، أنا العميل صاحب رقم الموبايل (${phoneText}) ونسيت رمز الـ PIN السري بتاعي ومحتاج أجدده عشان أفتح حسابي.`;
+      const msg = `السلام عليكم يا رجالة العنابي 🛵، أنا العميل صاحب رقم الموبايل (${phoneText}) ونسيت رمز الـ PIN السري بتاعي وعاوز أجدده عشان أفتح حسابي.`;
       window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredInstallPrompt = e; renderGlobalBannersAndSettings(); });
-    window.addEventListener('appinstalled', function() { deferredInstallPrompt = null; STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('تم تثبيت تطبيق الرجل العنابي بنجاح على جهازك! 🛵🎉', 'ok'); });
+    window.addEventListener('appinstalled', function() { deferredInstallPrompt = null; STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('نورتنا يا باشا! تطبيق الرجل العنابي نزل على تليفونك بنجاح 🛵🎉', 'ok'); });
     function installAppLocally() {
-      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('التطبيق مثبت بالفعل على شاشتك الرئيسية يا باشا! 🛵✨', 'ok'); return; }
-      if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then((choiceResult) => { if (choiceResult && choiceResult.outcome === 'accepted') { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('نورت يا باشا.. جاري تثبيت الرجل العنابي على تليفونك 🛵🎉', 'ok'); } deferredInstallPrompt = null; }); } 
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('التطبيق متثبت وجاهز على تليفونك أصلاً يا باشا! 🛵✨', 'ok'); return; }
+      if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then((choiceResult) => { if (choiceResult && choiceResult.outcome === 'accepted') { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('نورت يا باشا.. ثواني والتطبيق يركب على تليفونك 🛵🎉', 'ok'); } deferredInstallPrompt = null; }); } 
       else { window.location.href = '/install'; }
     }
 
@@ -1857,11 +1855,11 @@
         const remMins = Math.max(1, Number(s.surgeRemainingMinutes || 1));
         if (custSurgeBanner) {
           custSurgeBanner.style.display = 'block';
-          custSurgeBanner.innerHTML = `⚡ <strong>وقت ذروة مؤقت يا باشا (+${s.surgePercent}%):</strong> عشان الزحمة الشديدة والطلبات كتير، فيه زيادة مؤقتة وهترجع للطبيعي لوحدها بعد <strong>${remMins} دقيقة</strong> 🛵⏱️`;
+          custSurgeBanner.innerHTML = `⚡ <strong>وقت ذروة مؤقت يا باشا (+${s.surgePercent}%):</strong> عشان الزحمة الشديدة والطلبات كتير، فيه زيادة بسيطة وهترجع للطبيعي لوحدها بعد <strong>${remMins} دقيقة</strong> 🛵⏱️`;
         }
         if (courSurgeBanner) {
           courSurgeBanner.style.display = 'block';
-          courSurgeBanner.innerHTML = `🔥 <strong>وقت الذروة شغال يانجم (+${s.surgePercent}%):</strong> الأوردرات دلوقتي أجرتها أعلى لمدة <strong>${remMins} دقيقة</strong>.. الحق لقط رزقك! 🛵💸`;
+          courSurgeBanner.innerHTML = `🔥 <strong>وقت الذروة شغال يا نجم (+${s.surgePercent}%):</strong> الأوردرات دلوقتي أجرتها أعلى لمدة <strong>${remMins} دقيقة</strong>.. الحق لقط رزقك! 🛵💸`;
         }
       } else {
         if (custSurgeBanner) custSurgeBanner.style.display = 'none';
@@ -1880,12 +1878,12 @@
         if (regWelcomeBanner) regWelcomeBanner.style.display = 'block';
         if (regWelcomeSpan) regWelcomeSpan.innerText = welcomeAmt;
         if (successModalTxt) {
-          successModalTxt.innerText = `كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد هينزلك فى محفظتك ${welcomeAmt} جنيه هدية ترحيبية فوراً 😎🍇`;
+          successModalTxt.innerText = `كدا يا نجم باقي بس الإدارة تراجع بياناتك والورق.. وأول ما تعتمدك هينزلك في محفظتك ${welcomeAmt} جنيه هدية ترحيبية فوراً 😎🍇`;
         }
       } else {
         if (regWelcomeBanner) regWelcomeBanner.style.display = 'none';
         if (successModalTxt) {
-          successModalTxt.innerText = 'كدا يانجم باقي بس الإدارة تراجع بياناتك والمستندات.. أول ما تعتمد حسابك هيتفعل وتقدر تستقبل الأوردرات فوراً 😎🍇';
+          successModalTxt.innerText = 'كدا يا نجم باقي بس الإدارة تراجع بياناتك والورق.. وأول ما تعتمد حسابك هيتفعل وتقدر تلقط الأوردرات فوراً 😎🍇';
         }
       }
       const regRefBox = document.getElementById('regReferralGroupBox');
@@ -1894,7 +1892,7 @@
         if (referralActive && referralAmt > 0) {
           regRefBox.style.display = 'flex';
           if (regRefLabel) {
-            regRefLabel.innerText = `ادخل رقم موبايل صاحبك الى قالك علينا عشان يكسب ${referralAmt} ج هدية أول ما تكمل ${tripsTextAr} (اختياري) 🎁`;
+            regRefLabel.innerText = `اكتب رقم موبايل صاحبك اللي قالك علينا عشان يكسب ${referralAmt} ج هدية أول ما تكمل ${tripsTextAr} (اختياري) 🎁`;
           }
         } else {
           regRefBox.style.display = 'none';
@@ -1919,29 +1917,29 @@
 
       if (normalizedType === 'fetch') {
         if (btnSend) btnSend.className = 'btn-secondary'; if (btnFetch) btnFetch.className = 'btn-main'; if (notice) notice.style.display = 'block';
-        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-store"></i> أولاً: بيانات المكان / المحل للاستلام 🏪';
-        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-house-user"></i> ثانياً: بياناتك وعنوانك للاستلام بالباب 🏠';
+        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-store"></i> أول حاجة: بيانات المحل أو المكان اللي هنستلم منه 🏪';
+        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-house-user"></i> تاني حاجة: عنوانك ورقمك عشان تستلم لحد باب البيت 🏠';
         if (pLabel) pLabel.innerText = 'هنجيب الحاجة منين؟ (المحل أو المكان اللي هنشتري/نستلم منه)';
-        if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك أنت ورقمك لتستلم بنفسك)';
+        if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك إنت ورقمك عشان تستلم بنفسك)';
         if (pickupSlot && otherPhoneWrap) pickupSlot.appendChild(otherPhoneWrap);
         if (dropoffSlot && clientPhoneWrap) dropoffSlot.appendChild(clientPhoneWrap);
-        if (senderPhoneLabel) { senderPhoneLabel.innerText = 'رقم المستلم (رقمك لتستلم الطلب) 📱'; senderPhoneLabel.style.color = 'var(--success)'; }
-        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم المكان / الشخص اللي هنشتري أو نستلم منه 🏪'; recipientPhoneLabel.style.color = 'var(--primary)'; }
+        if (senderPhoneLabel) { senderPhoneLabel.innerText = 'رقم المستلم (رقمك إنت عشان تستلم الطلب) 📱'; senderPhoneLabel.style.color = 'var(--success)'; }
+        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم المحل أو الشخص اللي هنشتري/نستلم منه 🏪'; recipientPhoneLabel.style.color = 'var(--primary)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
         setInlineMapTargetMode('dropoff');
       } else {
         if (btnSend) btnSend.className = 'btn-main'; if (btnFetch) btnFetch.className = 'btn-secondary'; if (notice) notice.style.display = 'none';
-        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-box-archive"></i> أولاً: بيانات الراسل ومكان الاستلام 📦';
-        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-location-dot"></i> ثانياً: بيانات المستلم ومكان التسليم 🎯';
+        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-box-archive"></i> أول حاجة: بيانات الراسل ومكان الاستلام 📦';
+        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-location-dot"></i> تاني حاجة: بيانات المستلم ومكان التسليم 🎯';
         if (pLabel) pLabel.innerText = 'هناخد الطرد منين؟ (عنوانك يا باشا)';
         if (dLabel) dLabel.innerText = 'هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)';
         if (pickupSlot && clientPhoneWrap) pickupSlot.appendChild(clientPhoneWrap);
         if (dropoffSlot && otherPhoneWrap) dropoffSlot.appendChild(otherPhoneWrap);
         if (senderPhoneLabel) { senderPhoneLabel.innerText = 'رقم الراسل (رقمك يا باشا) 📱'; senderPhoneLabel.style.color = 'var(--primary)'; }
-        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم هاتف المستلم 📱'; recipientPhoneLabel.style.color = 'var(--success)'; }
+        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم تليفون المستلم 📱'; recipientPhoneLabel.style.color = 'var(--success)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
-        if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم عند الوصول 🎯';
+        if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم لما الكابتن يوصله 🎯';
         setInlineMapTargetMode('pickup');
       }
       setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
@@ -1969,7 +1967,7 @@
       const discountNotice = document.getElementById('customerDiscountBannerNotice'); const submitBtn = document.getElementById('submitOrderBtn'); const routeDescEl = document.getElementById('routeDescription');
       if (!pZoneEl || !dZoneEl || !priceSpan || !submitBtn) return null;
       const pZone = pZoneEl.value || STATE.zones[0] || 'المنصورة'; const dZone = dZoneEl.value || STATE.zones[0] || 'المنصورة'; const routeKey = `${pZone}|${dZone}`;
-      if (routeDescEl) routeDescEl.innerText = `${pZone} إلى ${dZone}`;
+      if (routeDescEl) routeDescEl.innerText = `من ${pZone} لـ ${dZone}`;
       if (STATE.pricing[routeKey] !== undefined) {
         const baseFare = Math.max(0, roundMoney(STATE.pricing[routeKey]));
         const s = STATE.settings || {};
@@ -1997,7 +1995,7 @@
             const parts = [];
             if (walletDiscount > 0) parts.push(`${walletDiscount} ج محفظة`);
             if (promoDiscount > 0) parts.push(`${promoDiscount} ج كود ${savedPromoCodeObj.code}`);
-            discountNotice.innerText = `🎁 مبروك! هيتخصم ${totalDiscount} ج (${parts.join(' + ')}) فوراً (الأصل ${fare} ج)`;
+            discountNotice.innerText = `🎁 يا بختك يا عم! هيتخصملك ${totalDiscount} ج (${parts.join(' + ')}) فوراً (بدل ${fare} ج)`;
           } else if (s.surgeActive && Number(s.surgePercent) > 0) {
             discountNotice.style.display = 'block';
             discountNotice.innerText = `⚡ شامل زيادة وقت الذروة المؤقتة (+${s.surgePercent}%)`;
@@ -2007,19 +2005,19 @@
         }
         submitBtn.disabled = false; return { originalFare: fare, finalFare, discount: totalDiscount };
       }
-      priceSpan.innerText = 'غير محدد'; if (discountNotice) discountNotice.style.display = 'none'; submitBtn.disabled = true; return null;
+      priceSpan.innerText = 'مش متحدد'; if (discountNotice) discountNotice.style.display = 'none'; submitBtn.disabled = true; return null;
     }
 
     function createNewCustomerOrder() {
       withActionLock(async () => {
-        if (STATE.settings && STATE.settings.maintenanceMode) { showToast('عفواً يا باشا! المنصة في صيانة سريعة حالياً وراجعين فوراً 🛠️', 'warn'); return; }
+        if (STATE.settings && STATE.settings.maintenanceMode) { showToast('معلش يا باشا! بنعمل شوية صيانة سريعة للمنصة وراجعين في ثواني 🛠️', 'warn'); return; }
         const pZone = document.getElementById('pickupZone')?.value || STATE.zones[0];
         let pAddr = (document.getElementById('pickupAddress')?.value || '').trim();
         const dZone = document.getElementById('dropoffZone')?.value || STATE.zones[0];
         let dAddr = (document.getElementById('dropoffAddress')?.value || '').trim();
 
-        if (pAddr.includes('جاري قراءة')) pAddr = tempResolvedAddresses.pickup || `موقع محدد بالخريطة (${pZone})`;
-        if (dAddr.includes('جاري قراءة')) dAddr = tempResolvedAddresses.dropoff || `موقع محدد بالخريطة (${dZone})`;
+        if (pAddr.includes('جاري قراءة') || pAddr.includes('ثواني بنلقط')) pAddr = tempResolvedAddresses.pickup || `موقع متحدد ع الخريطة (${pZone})`;
+        if (dAddr.includes('جاري قراءة') || dAddr.includes('ثواني بنلقط')) dAddr = tempResolvedAddresses.dropoff || `موقع متحدد ع الخريطة (${dZone})`;
 
         const notes = (document.getElementById('customerOrderNotes')?.value || '').trim(); const clientPhoneTyped = normalizePhone(document.getElementById('orderSenderPhone')?.value || '');
         const otherPhoneTyped = normalizePhone(document.getElementById('orderRecipientPhone')?.value || ''); const customerPin = normalizeDigits(document.getElementById('orderCustomerPin')?.value || '').trim();
@@ -2027,20 +2025,20 @@
         const isFetch = (STATE.currentTripType === 'fetch'); const defaultPayer = isFetch ? 'العميل عند الاستلام بالباب 🏠' : 'الراسل'; const payer = payerInput ? payerInput.value : defaultPayer;
         const typedPromo = (document.getElementById('orderPromoCodeInput')?.value || '').trim().toUpperCase();
         const activePromoCode = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : (typedPromo || null);
-        if (!pAddr || !dAddr) { showToast('برجاء كتابة عنوان الاستلام والتسليم بالتفصيل أو تحديده من الخريطة 📍⚠️', 'warn'); return; }
-        if (!isValidEgyptianPhone(clientPhoneTyped)) { showToast('برجاء إدخال رقم هاتفك الصحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
-        if (!isValidEgyptianPhone(otherPhoneTyped)) { showToast('برجاء إدخال رقم الهاتف الآخر بشكل صحيح (11 رقم يبدأ بـ 01) 📱⚠️', 'warn'); return; }
+        if (!pAddr || !dAddr) { showToast('اكتب عنوان الاستلام والتسليم بالتفصيل يا باشا أو حددهم ع الخريطة 📍⚠️', 'warn'); return; }
+        if (!isValidEgyptianPhone(clientPhoneTyped)) { showToast('اكتب رقم موبايلك صح يا باشا (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn'); return; }
+        if (!isValidEgyptianPhone(otherPhoneTyped)) { showToast('اكتب رقم الموبايل التاني صح يا باشا (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn'); return; }
         const hasTrustedSession = isCustomerSessionActiveForPhone(clientPhoneTyped);
         if (!hasTrustedSession && !isValidPin(customerPin)) {
           const pinGroupBox = document.getElementById('orderCustomerPinGroupBox');
           if (pinGroupBox) pinGroupBox.style.display = 'flex';
-          showToast('برجاء كتابة رمز PIN سري مكون من 4 أرقام لمرة واحدة فقط لتأمين حسابك 🔒⚠️', 'warn');
+          showToast('اكتب رمز PIN سري من 4 أرقام أول مرة بس عشان نأمن حسابك يا باشا 🔒⚠️', 'warn');
           document.getElementById('orderCustomerPin')?.focus();
           return;
         }
         const senderPhone = isFetch ? otherPhoneTyped : clientPhoneTyped; const recipientPhone = isFetch ? clientPhoneTyped : otherPhoneTyped;
         try {
-          showToast('جاري تأكيد طلبك... 🚀', 'auto');
+          showToast('ثواني بنبعت طلبك لرجالة العنابي ع الرادار... 🚀', 'auto');
           const { ok, data } = await apiRequest('/api/orders', 'POST', {
             clientPhone: clientPhoneTyped,
             pin: customerPin,
@@ -2077,7 +2075,7 @@
               const pInp = document.getElementById('orderPromoCodeInput');
               if (pInp) pInp.value = '';
             }
-            switchCustTab('orders'); showToast(data.message || 'تم إرسال طلبك بنجاح 🚀', 'ok');
+            switchCustTab('orders'); showToast(data.message || 'طلبك طار ع الرادار بنجاح يا باشا 🚀', 'ok');
           } else {
             if (data && data.needPin) {
               STATE.authenticatedCustomerPhone = '';
@@ -2086,19 +2084,19 @@
               setTimeout(() => document.getElementById('orderCustomerPin')?.focus(), 80);
             }
             triggerDeviceAlert('warning');
-            showToast((data && data.message) || 'حدث خطأ أثناء تأكيد الطلب ⚠️', 'warn');
+            showToast((data && data.message) || 'حصلت لخبطة بسيطة وإحنا بنأكد الطلب، جرب تاني كدا ⚠️', 'warn');
           }
-        } catch (err) { showToast('تعذر الاتصال بالسيرفر، تأكد أن الخادم يعمل ⚠️', 'warn'); }
+        } catch (err) { showToast('السيرفر مش بيرد دلوقتي، اتأكد إن النت شغال عندك يا باشا ⚠️', 'warn'); }
       });
     }
 
     function customerCancelOrder(orderId) {
-      openCustomActionModal({ title: 'إلغاء الطلب ❌', message: `هل أنت متأكد من رغبتك في إلغاء الطلب (${orderId})؟`, confirmText: 'نعم، إلغاء الطلب', isDanger: true,
+      openCustomActionModal({ title: 'إلغاء الطلب ❌', message: `متأكد يا باشا إنك عاوز تلغي الطلب (${orderId})؟`, confirmText: 'أيوة، الغي الطلب', isDanger: true,
         onConfirm: () => {
           withActionLock(async () => {
             const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/cancel`, 'POST', { clientPhone: STATE.customerProfile.savedPhone || '' });
-            if (ok && data.success) { showToast(data.message || `تم إلغاء طلبك (${orderId}) بنجاح ✅`, 'ok'); } 
-            else { showToast((data && data.message) || 'تعذر إلغاء الطلب ⚠️', 'warn'); }
+            if (ok && data.success) { showToast(data.message || `خلاص لغينا طلبك (${orderId}) يا باشا ✅`, 'ok'); } 
+            else { showToast((data && data.message) || 'مقدرناش نلغي الطلب دلوقتي ⚠️', 'warn'); }
           });
         }
       });
@@ -2124,7 +2122,7 @@
             <span class="badge tier-badge-bronze">العمولة: ${baseFee} ج</span>
           </div>
           <p style="font-size:11.5px; color:#4E342E; margin:0;">
-            ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب خلال ${daysWin} أيام</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
+            ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
           </p>
         </div>
         <div style="background:#ECEFF1; border:1.5px solid #90A4AE; border-radius:12px; padding:10px 12px;">
@@ -2133,7 +2131,7 @@
             <span class="badge tier-badge-platinum">خصم ${platDisc} ج (العمولة: ${platFee} ج)</span>
           </div>
           <p style="font-size:11.5px; color:#263238; margin:0;">
-            أول ما تنفذ <strong>${weeklyTarget} طلب خلال ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل ${daysWin} أيام.
+            أول ما تخلص <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل ${daysWin} أيام.
           </p>
         </div>
         <div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:12px; padding:10px 12px;">
@@ -2142,11 +2140,11 @@
             <span class="badge tier-badge-diamond">خصم ${diaDisc} ج (العمولة: ${diaFee} ج)</span>
           </div>
           <p style="font-size:11.5px; color:#01579B; margin:0;">
-            لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوماً متتالية</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الرئيسية في كل أوردر! 😍🚀
+            لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوم ورا بعض</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الأساسية في كل أوردر! 😍🚀
           </p>
         </div>
         <div style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:10px; padding:8px 10px; font-size:11px; color:#1B5E20; font-weight:700;">
-          🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو أنت <strong>كابتن ماسي 💎</strong> ومقدرتش تحقق تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈</strong> وتحتفظ بخصم عمولة البلاتيني كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
+          🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو إنت <strong>كابتن ماسي 💎</strong> ومقدرتش تجيب تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈</strong> وتحتفظ بخصم عمولة البلاتيني كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
         </div>
       `;
     }
@@ -2162,8 +2160,8 @@
 
     function handleCourierForgotPassword() {
       const p = normalizePhone(document.getElementById('courierLoginPhone')?.value || '');
-      if (!isValidEgyptianPhone(p)) { showToast('اكتب رقم تليفونك المسجل بشكل صحيح أولاً يا كابتن 📱⚠️', 'warn'); return; }
-      const msg = `انا الكابتن صاحب رقم الهاتف المسجل "${p}" بطلب استعادة الرقم السرى.`;
+      if (!isValidEgyptianPhone(p)) { showToast('اكتب رقم موبايلك اللي مسجل بيه صح الأول يا كابتن 📱⚠️', 'warn'); return; }
+      const msg = `أنا الكابتن صاحب رقم الموبايل المسجل "${p}" ونسيت الباسورد بتاعي وعاوز أستعيده.`;
       window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
@@ -2173,39 +2171,39 @@
         const pass = (document.getElementById('courierLoginPass')?.value || '').trim();
         const noticeBox = document.getElementById('courierSuspendedNoticeBox'); const noticeTitle = document.getElementById('courierSuspendedNoticeTitle'); const noticeText = document.getElementById('courierSuspendedReasonText'); const reuploadBtn = document.getElementById('courierReuploadDocsBtn'); const supportBtn = document.getElementById('courierSuspendedSupportBtn');
         if (noticeBox) noticeBox.style.display = 'none'; if (reuploadBtn) reuploadBtn.style.display = 'none';
-        if (!isValidEgyptianPhone(p) || !pass) { showToast('برجاء إدخال رقم الهاتف وكلمة المرور بشكل صحيح ⚠️', 'warn'); return; }
+        if (!isValidEgyptianPhone(p) || !pass) { showToast('اكتب رقم موبايلك والباسورد صح يا بطل ⚠️', 'warn'); return; }
         try {
           const { ok, status, data } = await apiRequest('/api/auth/captain/login', 'POST', { phone: p, password: pass });
           if (status === 403 && data && data.status === 'مرفوض') {
-            const reason = data.rejectReason || 'المستندات المرفوعة تحتاج لتحديث'; rejectedCaptainCache = data.captainProfile || { phone: p }; reuploadPhoneTarget = p;
-            if (noticeTitle) noticeTitle.innerText = '❌ تم رفض طلب التسجيل — يرجى تحديث المستندات'; if (noticeText) noticeText.innerText = `سبب الرفض: ${reason}`; if (reuploadBtn) reuploadBtn.style.display = 'flex';
-            const msg = `السلام عليكم، أنا الكابتن صاحب الرقم "${p}"، بخصوص سبب رفض المستندات: "${reason}"`;
+            const reason = data.rejectReason || 'الورق والبطاقة محتاجين يتصوروا بوضوح أكتر'; rejectedCaptainCache = data.captainProfile || { phone: p }; reuploadPhoneTarget = p;
+            if (noticeTitle) noticeTitle.innerText = '❌ ورق التسجيل محتاج يتحدث يا بطل'; if (noticeText) noticeText.innerText = `السبب: ${reason}`; if (reuploadBtn) reuploadBtn.style.display = 'flex';
+            const msg = `السلام عليكم، أنا الكابتن صاحب الرقم "${p}"، بخصوص ملاحظة مراجعة الورق: "${reason}"`;
             if (supportBtn) supportBtn.href = `https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`;
-            if (noticeBox) noticeBox.style.display = 'block'; showToast(data.message || 'تم رفض المستندات، يمكنك إعادة رفع صور واضحة الآن 📄⚠️', 'warn'); return;
+            if (noticeBox) noticeBox.style.display = 'block'; showToast(data.message || 'الورق محتاج يتحدث، تقدر ترفع صور واضحة دلوقتي يا بطل 📄⚠️', 'warn'); return;
           }
-          if (!ok || !data.success) { showToast((data && data.message) || 'بيانات الدخول غير صحيحة! ⚠️', 'warn'); return; }
+          if (!ok || !data.success) { showToast((data && data.message) || 'رقم الموبايل أو الباسورد مش مظبوطين يا كابتن! ⚠️', 'warn'); return; }
           STATE.activeCourierPhone = p; document.getElementById('courierLoginPass').value = ''; saveSession();
           subscribeUserToPush(p);
-          renderAllData(); switchCourierTab(STATE.currentCourTab || 'home'); updateBottomNavVisibility(); showToast(data.message || 'تم تسجيل الدخول بنجاح 🛵✅', 'ok');
-        } catch (err) { showToast('تعذر الاتصال بالسيرفر أثناء تسجيل الدخول ⚠️', 'warn'); }
+          renderAllData(); switchCourierTab(STATE.currentCourTab || 'home'); updateBottomNavVisibility(); showToast(data.message || 'منور الميدان يا بطل! 🛵✅', 'ok');
+        } catch (err) { showToast('السيرفر مش مجمع دلوقتي وإحنا بندخلك، جرب تاني كدا ⚠️', 'warn'); }
       });
     }
 
     function startRejectedCaptainReupload() {
       const cap = rejectedCaptainCache || STATE.captains.find(c => c.phone === reuploadPhoneTarget); if (!cap) return; switchCourierSubView('register', true);
       const heading = document.getElementById('regFormHeadingTitle'); const subNote = document.getElementById('regFormSubNote');
-      if (heading) heading.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i> إعادة رفع مستندات الكابتن 📄'; if (subNote) subNote.innerText = 'عدّل بياناتك واكتب كلمة مرور جديدة وارفع صوراً واضحة للمستندات.';
+      if (heading) heading.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i> تحديث ورق ومستندات الكابتن 📄'; if (subNote) subNote.innerText = 'ظبّط بياناتك واكتب باسورد جديد وصوّر البطاقة والورق صور واضحة عشان نعتمدك فوراً.';
       document.getElementById('regFullName').value = cap.fullName || ''; document.getElementById('regPhone').value = cap.phone || ''; document.getElementById('regNationalId').value = cap.nationalId || ''; document.getElementById('regPassword').value = '';
       if (document.getElementById('regPasswordConfirm')) document.getElementById('regPasswordConfirm').value = '';
       document.getElementById('regPrimaryZone').value = cap.primaryZone || STATE.zones[0]; document.getElementById('regVehicleType').value = cap.vehicleType || 'موتوسيكل';
       document.getElementById('regPlateNumber').value = cap.plateNumber === 'دراجة معفية' ? '' : (cap.plateNumber || ''); handleVehicleTypeChange();
     }
 
-    async function handleCourierLogout() { await apiRequest('/api/auth/captain/logout', 'POST', {}).catch(() => {}); STATE.activeCourierPhone = null; saveSession(); renderCourierScreen(); updateBottomNavVisibility(); showToast('تم تسجيل خروج الكابتن بنجاح 👋', 'ok'); }
+    async function handleCourierLogout() { await apiRequest('/api/auth/captain/logout', 'POST', {}).catch(() => {}); STATE.activeCourierPhone = null; saveSession(); renderCourierScreen(); updateBottomNavVisibility(); showToast('سجلت خروجك بالسلامة يا كابتن.. مستنيينك ترجع تنورنا 👋', 'ok'); }
 
     function switchCourierSubView(view, isReupload = false) {
-      if (view === 'register' && !isReupload && STATE.settings && STATE.settings.allowCaptainRegistration === false) { showToast('باب تسجيل الكباتن الجدد مغلق حالياً لاكتمال العدد 🛵', 'warn'); return; }
-      if (!isReupload) { reuploadPhoneTarget = null; rejectedCaptainCache = null; const heading = document.getElementById('regFormHeadingTitle'); const subNote = document.getElementById('regFormSubNote'); if (heading) heading.innerHTML = '<i class="fa-solid fa-user-plus"></i> انضم لرجالة العنابي 🛵💨'; if (subNote) subNote.innerText = 'سجل بياناتك ومستنداتك الرسمية بوضوح عشان الإدارة تعتمد حسابك فوراً.'; }
+      if (view === 'register' && !isReupload && STATE.settings && STATE.settings.allowCaptainRegistration === false) { showToast('باب تسجيل الكباتن الجدد مقفول دلوقتي عشان العدد اكتمل يا بطل 🛵', 'warn'); return; }
+      if (!isReupload) { reuploadPhoneTarget = null; rejectedCaptainCache = null; const heading = document.getElementById('regFormHeadingTitle'); const subNote = document.getElementById('regFormSubNote'); if (heading) heading.innerHTML = '<i class="fa-solid fa-user-plus"></i> انضم لرجالة العنابي 🛵💨'; if (subNote) subNote.innerText = 'املى بياناتك وصور ورقك والبطاقة بوضوح عشان الإدارة تعتمد حسابك وتنزل الشارع فوراً يا وحش.'; }
       const loginSec = document.getElementById('courierLoginSection'); const regSec = document.getElementById('courierSubView-register'); const dashSec = document.getElementById('courierDashboardContent');
       if (loginSec) loginSec.style.display = (view === 'login') ? 'block' : 'none'; if (regSec) regSec.style.display = (view === 'register') ? 'block' : 'none'; if (dashSec) dashSec.style.display = 'none'; updateBottomNavVisibility();
     }
@@ -2230,7 +2228,7 @@
 
     function handleFileUpload(event, type) {
       const file = event.target.files && event.target.files[0]; if (!file) return;
-      compressImageDataUrl(file).then(compressedDataUrl => { tempCaptainFiles[type] = compressedDataUrl; const phEl = document.getElementById(`${type}Placeholder`); const pvEl = document.getElementById(`${type}Preview`); const imEl = document.getElementById(`${type}Img`); if (phEl) phEl.style.display = 'none'; if (pvEl) pvEl.style.display = 'block'; if (imEl) imEl.src = compressedDataUrl; showToast('تم إرفاق وضغط الصورة بنجاح 📷✅', 'ok'); }).catch(() => { event.target.value = ''; showToast('تعذر قراءة الصورة، يرجى اختيار صورة أخرى ⚠️', 'warn'); });
+      compressImageDataUrl(file).then(compressedDataUrl => { tempCaptainFiles[type] = compressedDataUrl; const phEl = document.getElementById(`${type}Placeholder`); const pvEl = document.getElementById(`${type}Preview`); const imEl = document.getElementById(`${type}Img`); if (phEl) phEl.style.display = 'none'; if (pvEl) pvEl.style.display = 'block'; if (imEl) imEl.src = compressedDataUrl; showToast('تمام يا بطل! الصورة اترفعت واتظبطت بنجاح 📷✅', 'ok'); }).catch(() => { event.target.value = ''; showToast('الصورة دي مش راضية تفتح، جرب تختار صورة تانية واضحة ⚠️', 'warn'); });
     }
 
     function removeUploadedFile(type) { tempCaptainFiles[type] = null; const fileInput = document.getElementById(`${type}FileInput`); if (fileInput) fileInput.value = ''; const placeholder = document.getElementById(`${type}Placeholder`); if (placeholder) placeholder.style.display = 'block'; const preview = document.getElementById(`${type}Preview`); if (preview) preview.style.display = 'none'; }
@@ -2238,24 +2236,24 @@
     function submitCaptainRegistration() {
       withActionLock(async () => {
         const name = (document.getElementById('regFullName')?.value || '').trim(); const phone = normalizePhone(document.getElementById('regPhone')?.value || ''); const nationalId = normalizeDigits(document.getElementById('regNationalId')?.value || '').trim(); const refPhoneRaw = (document.getElementById('regReferredByPhone')?.value || '').trim(); const refPhone = refPhoneRaw ? normalizePhone(refPhoneRaw) : ''; const pass = (document.getElementById('regPassword')?.value || '').trim(); const passConfirmEl = document.getElementById('regPasswordConfirm'); const passConfirm = passConfirmEl ? passConfirmEl.value.trim() : pass; const zone = document.getElementById('regPrimaryZone')?.value || STATE.zones[0]; const vehicle = document.getElementById('regVehicleType')?.value || 'موتوسيكل'; const plate = (document.getElementById('regPlateNumber')?.value || '').trim();
-        if (!name || name.split(/\s+/).length < 3) { showToast('اكتب الاسم ثلاثي كاملاً ⚠️', 'warn'); return; }
-        if (!isValidEgyptianPhone(phone)) { showToast('رقم تليفون غير صحيح ⚠️', 'warn'); return; }
-        if (!nationalId || !/^[0-9]{14}$/.test(nationalId)) { showToast('الرقم القومي يجب أن يكون 14 رقماً صحيحاً ⚠️', 'warn'); return; }
-        if (!pass || pass !== passConfirm) { showToast('تأكد من كتابة كلمة المرور وتأكيدها بشكل متطابق 🛵⚠️', 'warn'); return; }
-        if (!tempCaptainFiles.idFront || !tempCaptainFiles.idBack) { showToast('رفع وجه وظهر البطاقة إجباري ⚠️', 'warn'); return; }
-        if (vehicle !== 'دراجة' && (!plate || !tempCaptainFiles.vehicle)) { showToast('رقم اللوحة وصورة المركبة إجباري ⚠️', 'warn'); return; }
+        if (!name || name.split(/\s+/).length < 3) { showToast('اكتب اسمك ثلاثي كامل زي البطاقة يا بطل ⚠️', 'warn'); return; }
+        if (!isValidEgyptianPhone(phone)) { showToast('رقم الموبايل ده مش مظبوط يا كابتن ⚠️', 'warn'); return; }
+        if (!nationalId || !/^[0-9]{14}$/.test(nationalId)) { showToast('الرقم القومي لازم يكون 14 رقم بالظبط يا وحش ⚠️', 'warn'); return; }
+        if (!pass || pass !== passConfirm) { showToast('اتأكد إنك كاتب الباسورد وتأكيده شبه بعض بالظبط 🛵⚠️', 'warn'); return; }
+        if (!tempCaptainFiles.idFront || !tempCaptainFiles.idBack) { showToast('لازم ترفع صورة وش وضهر البطاقة يا بطل ⚠️', 'warn'); return; }
+        if (vehicle !== 'دراجة' && (!plate || !tempCaptainFiles.vehicle)) { showToast('لازم تكتب نمرة المركبة وترفع صورتها واضحة ⚠️', 'warn'); return; }
         try {
-          showToast('جاري رفع المستندات وتسجيل حسابك بأمان... ⏳', 'ok');
+          showToast('ثواني بنرفع ورقك ونسجل حسابك في الحفظ والصون... ⏳', 'ok');
           const { ok, data } = await apiRequest('/api/captains/register', 'POST', { phone, password: pass, fullName: name, nationalId, primaryZone: zone, vehicleType: vehicle, plateNumber: vehicle === 'دراجة' ? 'دراجة معفية' : plate, idFrontPhoto: tempCaptainFiles.idFront, idBackPhoto: tempCaptainFiles.idBack, vehiclePhoto: vehicle === 'دراجة' ? null : tempCaptainFiles.vehicle, referredByPhone: refPhone });
-          if (!ok || !data.success) { showToast((data && data.message) || 'تعذر إتمام التسجيل ⚠️', 'warn'); return; }
+          if (!ok || !data.success) { showToast((data && data.message) || 'حصلت مشكلة وإحنا بنسجلك، جرب تاني كدا ⚠️', 'warn'); return; }
           subscribeUserToPush(phone);
           reuploadPhoneTarget = null; rejectedCaptainCache = null; document.getElementById('regFullName').value = ''; document.getElementById('regPhone').value = ''; document.getElementById('regNationalId').value = ''; if (document.getElementById('regReferredByPhone')) document.getElementById('regReferredByPhone').value = ''; document.getElementById('regPassword').value = ''; if (passConfirmEl) passConfirmEl.value = ''; document.getElementById('regPlateNumber').value = ''; removeUploadedFile('idFront'); removeUploadedFile('idBack'); removeUploadedFile('vehicle'); document.getElementById('captainSuccessModal')?.classList.add('show');
-        } catch (err) { showToast('تعذر الاتصال بالسيرفر أثناء رفع المستندات ⚠️', 'warn'); }
+        } catch (err) { showToast('السيرفر مش بيرد وإحنا بنرفع الورق، اتأكد من النت وجرب تاني ⚠️', 'warn'); }
       });
     }
 
     function closeCaptainSuccessModal() { document.getElementById('captainSuccessModal')?.classList.remove('show'); switchCourierSubView('login'); }
-    function copyCourierReferralPhone() { const courier = getActiveCourier(); if (!courier) return; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(courier.phone).then(() => { showToast(`تم نسخ رقمك (${courier.phone}).. ابعته لصاحبك الكابتن دلوقتي! 😎🛵`, 'ok'); }).catch(() => {}); } else { showToast(`رقمك للدعوة: ${courier.phone} 📋`, 'ok'); } }
+    function copyCourierReferralPhone() { const courier = getActiveCourier(); if (!courier) return; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(courier.phone).then(() => { showToast(`نسخنالك رقمك (${courier.phone}).. ابعته لصاحبك الكابتن دلوقتي! 😎🛵`, 'ok'); }).catch(() => {}); } else { showToast(`رقمك لدعوة صحابك: ${courier.phone} 📋`, 'ok'); } }
     async function dismissCourierNotice(noticeId) { await apiRequest(`/api/captain/notices/${encodeURIComponent(noticeId)}/dismiss`, 'POST', {}).catch(() => {}); }
 
     function toggleCourierAvailability() {
@@ -2265,22 +2263,22 @@
       if (courier.status === 'قيد المراجعة') {
         sw.checked = false;
         triggerDeviceAlert('warning');
-        showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
+        showToast('⏳ حسابك لسه بيتراجع يا نجم الطيارين 😎', 'warn');
         return;
       }
       if (courier.status !== 'معتمد') {
         sw.checked = false;
         triggerDeviceAlert('warning');
-        showToast(`حسابك ${courier.status} حالياً.. راجع الإدارة ⛔`, 'warn');
+        showToast(`حسابك ${courier.status} دلوقتي.. كلّم الإدارة ⛔`, 'warn');
         return;
       }
       withActionLock(async () => {
         const { ok, data } = await apiRequest('/api/captain/availability', 'POST', { isAvailable: Boolean(sw.checked) });
         if (ok && data.success) {
-          showToast(data.message || 'تم تحديث حالة الاستعداد 📡✅', 'ok');
+          showToast(data.message || 'حدّثنا حالة استعدادك ع الرادار يا بطل 📡✅', 'ok');
         } else {
           sw.checked = Boolean(courier.isAvailable);
-          showToast((data && data.message) || 'تعذر تغيير حالة الاستعداد ⚠️', 'warn');
+          showToast((data && data.message) || 'معرفناش نغير حالة الاستعداد دلوقتي ⚠️', 'warn');
         }
       });
     }
@@ -2299,11 +2297,11 @@
       const courier = getActiveCourier();
       closeInsufficientWalletModal();
       if (!courier) {
-        showToast('سجل دخول الكابتن أولاً ⚠️', 'warn');
+        showToast('سجل دخولك الأول يا كابتن ⚠️', 'warn');
         return;
       }
       const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value || 100) || 100;
-      const text = `محتاج شحن محفظة بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`;
+      const text = `محتاج أشحن محفظتي بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`;
       window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank');
     }
 
@@ -2311,7 +2309,7 @@
       const courier = getActiveCourier();
       if (courier && courier.status === 'قيد المراجعة') {
         triggerDeviceAlert('warning');
-        showToast('⏳ حسابك لسة بيتراجع يانجم الطيارين 😎', 'warn');
+        showToast('⏳ حسابك لسه بيتراجع يا نجم الطيارين 😎', 'warn');
         return;
       }
       if (courier && courier.status === 'معتمد') {
@@ -2324,28 +2322,28 @@
       withActionLock(async () => {
         const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/accept`, 'POST', {});
         if (ok && data.success) {
-          showToast(data.message || 'عاش يا بطل! تم قبول الطلب 🚀', 'ok');
+          showToast(data.message || 'عاش يا بطل! لقطت الأوردر.. توكل على الله 🚀', 'ok');
         } else {
           const msg = (data && data.message) ? String(data.message) : '';
           if (msg.includes('رصيد محفظتك') || msg.includes('اشحن محفظتك')) {
             openInsufficientWalletModal();
           } else {
             triggerDeviceAlert('warning');
-            showToast(msg || 'تعذر قبول الطلب ⚠️', 'warn');
+            showToast(msg || 'ملحقناش الأوردر ده، جرب اللي بعده يا بطل ⚠️', 'warn');
           }
         }
       });
     }
 
-    function courierReleaseOrder(orderId) { openCustomActionModal({ title: 'التنازل عن الطلب وإعادته للرادار 🔄', message: `اكتب سبب اعتذارك عن الطلب (${orderId}) ليتم إعادته للرادار ورد العمولة لمحفظتك:`, needInput: true, inputPlaceholder: 'مثال: عطل مفاجئ في المركبة أو ظرف طارئ...', confirmText: 'تأكيد التنازل', isDanger: true, onConfirm: (reason) => { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/release`, 'POST', { reason }); if (ok && data.success) { showToast(data.message || 'تم التنازل عن الطلب وإعادته للرادار 🔄', 'ok'); } else { showToast((data && data.message) || 'تعذر التنازل عن الطلب ⚠️', 'warn'); } }); } }); }
-    function courierAdvanceOrderStatus(orderId, nextStatus) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/advance`, 'POST', { nextStatus }); if (ok && data.success) { showToast(data.message || `تم تحديث حالة المشوار: ${nextStatus} 🛵✅`, 'ok'); } else { showToast((data && data.message) || 'تعذر تحديث حالة الطلب ⚠️', 'warn'); } }); }
-    function courierCompleteDeliveryInstantly(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'تسلم إيدك يا بطل! تم تسليم الأوردر 🛵💨', 'ok'); } else { showToast((data && data.message) || 'تعذر إنهاء الطلب ⚠️', 'warn'); } }); }
-    function openRatingModal(orderId) { const order = STATE.orders.find(o => o.id === orderId); if (!order || order.rating !== null) { showToast('تم تقييم هذا المشوار مسبقاً ولا يمكن تعديله ⭐', 'warn'); return; } const hid = document.getElementById('ratingOrderIdHidden'); if (hid) hid.value = orderId; setRatingStars(5); document.getElementById('ratingModal')?.classList.add('show'); }
+    function courierReleaseOrder(orderId) { openCustomActionModal({ title: 'الاعتذار عن المشوار ورجوعه للرادار 🔄', message: `اكتب سبب اعتذارك عن الأوردر (${orderId}) عشان نرجّعه للرادار ونردلك العمولة في محفظتك فوراً:`, needInput: true, inputPlaceholder: 'مثلاً: الموتوسيكل عطل فجأة أو حصل ظرف طارئ...', confirmText: 'تأكيد الاعتذار عن المشوار', isDanger: true, onConfirm: (reason) => { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/release`, 'POST', { reason }); if (ok && data.success) { showToast(data.message || 'خلاص رجّعنا الأوردر للرادار وردينا العمولة لمحفظتك 🔄', 'ok'); } else { showToast((data && data.message) || 'معرفناش نرجّع الأوردر دلوقتي ⚠️', 'warn'); } }); } }); }
+    function courierAdvanceOrderStatus(orderId, nextStatus) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/advance`, 'POST', { nextStatus }); if (ok && data.success) { showToast(data.message || `تمام يا بطل! حدّثنا حالة المشوار: ${nextStatus} 🛵✅`, 'ok'); } else { showToast((data && data.message) || 'معرفناش نحدّث حالة الأوردر دلوقتي ⚠️', 'warn'); } }); }
+    function courierCompleteDeliveryInstantly(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'تسلم إيدك يا بطل! الأوردر اتسلم على خير 🛵💨', 'ok'); } else { showToast((data && data.message) || 'معرفناش نقفل الأوردر دلوقتي ⚠️', 'warn'); } }); }
+    function openRatingModal(orderId) { const order = STATE.orders.find(o => o.id === orderId); if (!order || order.rating !== null) { showToast('إنت قيّمت المشوار ده قبل كدا يا باشا ومينفعش يتعدل تاني ⭐', 'warn'); return; } const hid = document.getElementById('ratingOrderIdHidden'); if (hid) hid.value = orderId; setRatingStars(5); document.getElementById('ratingModal')?.classList.add('show'); }
     function setRatingStars(cnt) { currentSelectedStars = cnt; const container = document.getElementById('starRatingContainer'); if (!container) return; const stars = container.children; for (let i = 0; i < 5; i++) { if (stars[i]) stars[i].className = i < cnt ? 'fa-solid fa-star' : 'fa-regular fa-star'; } }
-    function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars, clientPhone: STATE.customerProfile.savedPhone || '' }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('شكراً لتقييمك الجميل! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'تعذر حفظ التقييم ⚠️', 'warn'); } }); }
+    function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars, clientPhone: STATE.customerProfile.savedPhone || '' }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('تسلم إيدك يا باشا على التقييم الحلو ده! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'معرفناش نحفظ التقييم دلوقتي ⚠️', 'warn'); } }); }
     function customerOpenDispute(orderId) { const hid = document.getElementById('disputeOrderIdHidden'); const inp = document.getElementById('disputeReasonInput'); if (hid) hid.value = orderId; if (inp) inp.value = ''; document.getElementById('disputeModal')?.classList.add('show'); }
     function closeDisputeModal() { document.getElementById('disputeModal')?.classList.remove('show'); }
-    function confirmCustomerDispute() { withActionLock(async () => { const orderId = document.getElementById('disputeOrderIdHidden')?.value; const reason = (document.getElementById('disputeReasonInput')?.value || '').trim(); if (!reason) { showToast('اكتب سبب الاعتراض ⚠️', 'warn'); return; } const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/dispute`, 'POST', { reason, clientPhone: STATE.customerProfile.savedPhone || '' }); closeDisputeModal(); if (ok && data.success) { showToast('تم رفع الاعتراض للإدارة لبحثه وحسمه 🛡️', 'ok'); } else { showToast((data && data.message) || 'تعذر رفع الاعتراض ⚠️', 'warn'); } }); }
+    function confirmCustomerDispute() { withActionLock(async () => { const orderId = document.getElementById('disputeOrderIdHidden')?.value; const reason = (document.getElementById('disputeReasonInput')?.value || '').trim(); if (!reason) { showToast('اكتب إيه المشكلة الأول يا باشا عشان نجيبلك حقك ⚠️', 'warn'); return; } const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/dispute`, 'POST', { reason, clientPhone: STATE.customerProfile.savedPhone || '' }); closeDisputeModal(); if (ok && data.success) { showToast('وصلت شكوتك للإدارة يا باشا وهنراجعها ونجيبلك حقك فوراً 🛡️', 'ok'); } else { showToast((data && data.message) || 'معرفناش نبعت الشكوى دلوقتي، جرب تاني ⚠️', 'warn'); } }); }
 
     function renderCourierScreen() {
       const courier = getActiveCourier(); const loginSec = document.getElementById('courierLoginSection'); const dashSec = document.getElementById('courierDashboardContent'); const regSec = document.getElementById('courierSubView-register');
@@ -2379,26 +2377,26 @@
         let shortStatusHtml = '';
         let detailedStatusHtml = '';
         if (courier.tier === 'diamond') {
-          shortStatusHtml = `💎 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> خلال آخر ${dWin} أيام — حافظ على مستواك للبقاء في القمة الماسية بخصم ${courier.tierDiscount || 2} ج! 🚀`;
-          detailedStatusHtml = `💎 <strong>أنت في القمة يانجم (كابتن ماسي)!</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 2} ج</strong> على عمولة كل مشوار! كمل التارجت عشان تحافظ على الماسي 🚀🔥`;
+          shortStatusHtml = `💎 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام — خليك محافظ على مستواك عشان تفضل في القمة الماسية بخصم ${courier.tierDiscount || 2} ج! 🚀`;
+          detailedStatusHtml = `💎 <strong>إنت في القمة يا نجم (كابتن ماسي)!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 2} ج</strong> على عمولة كل مشوار! كمّل التارجت عشان تحافظ على الماسي 🚀🔥`;
         } else if (courier.tier === 'platinum') {
           if (courier.gracefulDemotion) {
-            shortStatusHtml = `🛡️ <strong>فترة الأمان (كابتن بلاتيني 🥈):</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> لاستعادة المستوى الماسي 💎!`;
-            detailedStatusHtml = `🛡️ <strong>ميزة الهبوط التدريجي الآمن:</strong> أنت حالياً في فترة الأمان بمستوى <strong>كابتن بلاتيني 🥈</strong> (بخصم ${courier.tierDiscount || 1} ج) بدل النزول للبرونزي! أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> وترجع فوراً لـ <strong>كابتن ماسي 💎</strong>! 💪🛵`;
+            shortStatusHtml = `🛡️ <strong>فترة الأمان (كابتن بلاتيني 🥈):</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وترجع للمستوى الماسي 💎!`;
+            detailedStatusHtml = `🛡️ <strong>ميزة الهبوط التدريجي الآمن:</strong> إنت دلوقتي في فترة الأمان بمستوى <strong>كابتن بلاتيني 🥈</strong> (بخصم ${courier.tierDiscount || 1} ج) بدل ما تنزل للبرونزي! خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وترجع فوراً لـ <strong>كابتن ماسي 💎</strong>! 💪🛵`;
           } else {
             const remDaysForDia = Math.max(0, consDaysTarget - consDaysDone);
-            shortStatusHtml = `🥈 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> (خصم ${courier.tierDiscount || 1} ج) — باقي <strong>${remDaysForDia} يوم</strong> بالتارجت للترقية للماسي 💎!`;
-            detailedStatusHtml = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 1} ج</strong> من العمولة! باقيلك <strong>${remDaysForDia} يوم</strong> متتالي بالتارجت وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
+            shortStatusHtml = `🥈 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> (خصم ${courier.tierDiscount || 1} ج) — فاضلك <strong>${remDaysForDia} يوم</strong> بالتارجت وتطلع للماسي 💎!`;
+            detailedStatusHtml = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 1} ج</strong> من العمولة! فاضلك <strong>${remDaysForDia} يوم</strong> ورا بعض بالتارجت وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
           }
         } else {
-          shortStatusHtml = `🥉 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> — باقي <strong>${remOrdersThisWeek} طلبات</strong> للترقية للبلاتيني 🥈 وخصم العمولة!`;
-          detailedStatusHtml = `🥉 أتممت <strong>${curWeekCnt} من ${wTarget} طلباً</strong> خلال آخر ${dWin} أيام (${tierPct}%). شد حيلك باقيلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب خصم فوري على العمولة في كل مشوار! 💪🛵`;
+          shortStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى للبلاتيني 🥈 وتكسب خصم العمولة!`;
+          detailedStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام (${tierPct}%). شد حيلك فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب خصم فوري على العمولة في كل مشوار! 💪🛵`;
         }
         if (homeSubTxt) homeSubTxt.innerHTML = shortStatusHtml;
         if (tierProgBox) tierProgBox.innerHTML = detailedStatusHtml;
         const availSw = document.getElementById('courierAvailabilitySwitch'); const statusTxt = document.getElementById('courierStatusText');
         if (availSw) { availSw.checked = courier.status === 'قيد المراجعة' ? false : Boolean(courier.isAvailable); }
-        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسة بيتراجع يانجم الطيارين 😎 (المعاينة متاحة فقط)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يرجى التواصل مع الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'أنت جاهز ومتاح حاليًا لاستقبال طلبات الزباين' : 'أنت في وضع التوقف المؤقت عن استقبال الطلبات'; }
+        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال أوردرات البشوات' : 'إنت قافل الرادار في استراحة مؤقتة ومش بتستقبل طلبات'; }
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
           const rawNotices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
@@ -2409,7 +2407,7 @@
             }
             return true;
           });
-          const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined) ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 انت شغال على عمولة خاصة "${effectiveFee} جنيه" دلوقتى — السبب: ${escapeHtml(courier.customFeeReason || 'تخصيص من الإدارة')} 🛵</div>` : '';
+          const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined) ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 إنت شغال على عمولة خاصة "${effectiveFee} جنيه" دلوقتي — السبب: ${escapeHtml(courier.customFeeReason || 'تقدير خاص من الإدارة')} 🛵</div>` : '';
           const dynamicNoticesHtml = notices.slice(0, 5).map(n => { const bg = n.type === 'deduct' ? '#FFEBEE' : (n.type === 'reward' ? '#E8F5E9' : '#FFFDE7'); const brd = n.type === 'deduct' ? '#EF5350' : (n.type === 'reward' ? '#2E7D32' : '#FBC02D'); return `<div style="background:${bg}; border:1.5px solid ${brd}; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800; display:flex; justify-content:space-between; align-items:center; gap:8px;"><span>${escapeHtml(n.text)}</span><button type="button" onclick="dismissCourierNotice('${escapeHtml(n.id)}')" style="border:none; background:none; font-size:14px; cursor:pointer; color:#555;">✕</button></div>`; }).join('');
           const combinedHtml = customFeeBanner + dynamicNoticesHtml; noticesBox.innerHTML = combinedHtml; noticesBox.style.display = combinedHtml ? 'flex' : 'none';
         }
@@ -2418,13 +2416,13 @@
         const commNoticeEl = document.getElementById('courierCommissionNoticeText');
         if (commNoticeEl) {
           if (effectiveFee === 0) {
-            commNoticeEl.innerText = `🎉 عرض خاص من العنابي (${tierBadgeTxt}): عمولتك الحالية 0 ج (إعفاء كامل على الطلبات!)`;
+            commNoticeEl.innerText = `🎉 عرض خاص من العنابي (${tierBadgeTxt}): عمولتك دلوقتي 0 ج (إعفاء كامل ع المشاوير!)`;
           } else if (courier.customFee !== null && courier.customFee !== undefined) {
-            commNoticeEl.innerText = `🎯 عمولتك الخاصة الحالية (${effectiveFee} ج${s.surgeActive ? ' شاملة الذروة ⚡' : ''}) تخصم فور قبول الطلب وتُرد لك تلقائياً لو العميل لغى`;
+            commNoticeEl.innerText = `🎯 عمولتك الخاصة دلوقتي (${effectiveFee} ج${s.surgeActive ? ' شاملة الذروة ⚡' : ''}) بتتخصم أول ما تقبل الطلب وبترجعلك أوتوماتيك لو العميل لغى`;
           } else if (Number(courier.tierDiscount) > 0) {
-            commNoticeEl.innerText = `✨ مستواك (${tierBadgeTxt}): عمولتك المخفضة حالياً ${effectiveFee} ج فقط (بخصم ${courier.tierDiscount} ج عن العمولة الأساسية${s.surgeActive ? ' + ذروة ⚡' : ''}) وتُرد لك لو العميل لغى`;
+            commNoticeEl.innerText = `✨ مستواك (${tierBadgeTxt}): عمولتك المخفضة دلوقتي ${effectiveFee} ج بس (بخصم ${courier.tierDiscount} ج عن العمولة الأساسية${s.surgeActive ? ' + ذروة ⚡' : ''}) وبترجعلك لو العميل لغى`;
           } else {
-            commNoticeEl.innerText = `مستواك (${tierBadgeTxt}): عمولتك الحالية ${effectiveFee} ج${s.surgeActive ? ' (شاملة نسبة الذروة ⚡)' : ''} تخصم فور قبول الطلب وتُرد لك تلقائياً في حال إلغاء العميل`;
+            commNoticeEl.innerText = `مستواك (${tierBadgeTxt}): عمولتك دلوقتي ${effectiveFee} ج${s.surgeActive ? ' (شاملة نسبة الذروة ⚡)' : ''} بتتخصم أول ما تقبل الطلب وبترجعلك أوتوماتيك لو العميل لغى`;
           }
         }
         const badgeEl = document.getElementById('courierStatusBadgeDisplay'); if (badgeEl) { badgeEl.innerText = courier.status === 'معتمد' ? 'معتمد ✅' : courier.status; badgeEl.className = `badge ${courier.status === 'معتمد' ? 'badge-verified' : (courier.status === 'موقوف' ? 'badge-rejected' : 'badge-review')}`; }
@@ -2458,10 +2456,10 @@
         if (quickWal) quickWal.innerText = `${roundMoney(courier.walletBalance).toFixed(2)} ج`; if (quickEarn) quickEarn.innerText = `${lifetimeNetTotal} جنيه`;
         const profDetails = document.getElementById('courierProfileDetailsBox');
         if (profDetails) {
-          profDetails.innerHTML = `<div>👤 الاسم: <strong>${escapeHtml(courier.fullName)}</strong> <span class="badge ${tierCls}" style="margin-right:4px;">${escapeHtml(tierBadgeTxt)}</span></div><div>📱 رقم الهاتف: <strong>${escapeHtml(courier.phone)}</strong></div><div>📍 منطقة العمل: <strong>${escapeHtml(courier.primaryZone)}</strong></div><div>🛵 المركبة: <strong>${escapeHtml(courier.vehicleType)}</strong> (${escapeHtml(courier.plateNumber || 'معفي')})</div>`;
+          profDetails.innerHTML = `<div>👤 الاسم: <strong>${escapeHtml(courier.fullName)}</strong> <span class="badge ${tierCls}" style="margin-right:4px;">${escapeHtml(tierBadgeTxt)}</span></div><div>📱 رقم الموبايل: <strong>${escapeHtml(courier.phone)}</strong></div><div>📍 منطقة الشغل: <strong>${escapeHtml(courier.primaryZone)}</strong></div><div>🛵 المركبة: <strong>${escapeHtml(courier.vehicleType)}</strong> (${escapeHtml(courier.plateNumber || 'معفي')})</div>`;
         }
         const transList = document.getElementById('courierWalletTransactionsList');
-        if (transList) { const list = courier.walletTransactions || []; transList.innerHTML = list.length === 0 ? `<div style="text-align:center; color:#888;">لا توجد حركات مسجلة.</div>` : list.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join(''); }
+        if (transList) { const list = courier.walletTransactions || []; transList.innerHTML = list.length === 0 ? `<div style="text-align:center; color:#888;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>` : list.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join(''); }
         renderCourierHistoryOrders(courier);
       }
       updateBottomNavVisibility();
@@ -2471,11 +2469,11 @@
       const container = document.getElementById('courierHistoryOrdersList'); if (!container || !courier) return;
       const myOrders = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone); const activeMine = myOrders.filter(o => ACTIVE_COURIER_STATUSES.includes(o.status));
       const activeBadge = document.getElementById('courNavActiveBadge'); if (activeBadge) { activeBadge.innerText = activeMine.length; activeBadge.style.display = activeMine.length > 0 ? 'flex' : 'none'; }
-      if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:24px 16px; color:var(--text-muted);" class="card">لسة مفيش مشاوير في سجلك يا بطل.. اقبل أول أوردر من الرادار وانطلق! 🛵💨</div>`; return; }
+      if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:24px 16px; color:var(--text-muted);" class="card">لسه مفيش مشاوير في سجلك يا بطل.. اقبل أول أوردر من الرادار وطير بيه! 🛵💨</div>`; return; }
       container.innerHTML = myOrders.map(o => {
         const isFetch = o.tripType === 'fetch'; const isActive = ACTIVE_COURIER_STATUSES.includes(o.status); const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'; const sender = escapeHtml(o.senderPhone); const recipient = escapeHtml(o.recipientPhone);
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
-        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>تحصيل كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!isDelivered ? `<div style="font-weight:700; margin-top:4px;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🔒 تم إخفاء أرقام هواتف العميل والمستلم تلقائياً بعد إتمام التسليم.</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل لك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !isDelivered ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> عرض مكان الاستلام/التسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> الانتقال للرادار لتحديث حالة المشوار 🛵</button>` : ''}</div>`;
+        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>هتقبض كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!isDelivered ? `<div style="font-weight:700; margin-top:4px;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🔒 خفينا أرقام العميل والمستلم أوتوماتيك طالما الأوردر اتسلم بالسلامة.</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل ليك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !isDelivered ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> روح للرادار عشان تحدّث حالة المشوار 🛵</button>` : ''}</div>`;
       }).join('');
     }
 
@@ -2484,15 +2482,15 @@
       const sPhone = STATE.customerProfile.savedPhone; const myOrders = sPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === sPhone) : [];
       const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && !String(o.status || '').includes('ملغي')).length;
       if (badgeEl) { badgeEl.innerText = activeCount; badgeEl.style.display = activeCount > 0 ? 'flex' : 'none'; }
-      if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">مفيش أوردرات مسجلة حالياً.. اطلب مشوارك الأول أو استرجع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
+      if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
       container.innerHTML = myOrders.map(o => {
         const canCancel = o.status === 'في انتظار كابتن' || o.status === 'تم قبول الطلب'; const isDelivered = o.status === 'مكتمل'; const canRate = isDelivered && o.rating === null; const canDispute = isDelivered && !o.disputeReason;
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let statusTextForCustomer = o.status;
-        if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وجاري استلام الطلب 🛵';
-        else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يانجم العالم وطاير بيه في السكة 🚀';
-        else if (o.status === 'الكابتن وصل للتسليم') statusTextForCustomer = 'الكابتن وصل بالمصلحة على العنوان وجاهز للتسليم 🔔';
-        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">الحالة الحالية: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح واسود فى الطريق 😵 بس الحمد لله الاوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلى حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | المطلوب دفعه: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدلاً من ${o.originalFare} ج)</small>` : ''}</div>${o.discountApplied > 0 ? `<div style="color:var(--success); font-weight:700;">🎁 تم تطبيق خصم إجمالي: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>` : ''}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">تقييمك للكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">شكوى مسجلة: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800;">قرار الإدارة: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> عرض اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تقييم الكابتن الجدع ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">إبلاغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
+        if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو 🛵';
+        else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يا نجم العالم وطاير بيه في السكة 🚀';
+        else if (o.status === 'الكابتن وصل للتسليم') statusTextForCustomer = 'الكابتن وصل بالمصلحة تحت العنوان وجاهز للتسليم 🔔';
+        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${o.discountApplied > 0 ? `<div style="color:var(--success); font-weight:700;">🎁 اتخصملك هدية: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>` : ''}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">تقييمك للكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800;">رد وقرار الإدارة: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> قيّم الكابتن الجدع ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
       }).join('');
     }
 
@@ -2502,21 +2500,21 @@
       const visible = STATE.orders.filter(o => { if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || String(o.status || '').includes('ملغي')) return false; return (o.status === 'في انتظار كابتن' && canSeeRadar) || o.assignedCourierPhone === courier.phone; });
       const availCount = canSeeRadar ? waiting.length : 0; const availBadge = document.getElementById('availableOrdersBadge'); if (availBadge) availBadge.innerText = `${availCount} متاح`;
       const navRadarBadge = document.getElementById('courNavRadarBadge'); if (navRadarBadge) { navRadarBadge.innerText = availCount; navRadarBadge.style.display = availCount > 0 ? 'flex' : 'none'; }
-      if (visible.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">مفيش أوردرات على الرادار حالياً.</div>`; return; }
+      if (visible.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">مفيش أوردرات على الرادار دلوقتي يا بطل.. خليك مستعد! 📡</div>`; return; }
       const effectiveFee = getEffectiveCaptainFee(courier);
       container.innerHTML = visible.map(o => {
         const isMine = o.assignedCourierPhone === courier.phone; const isWaiting = o.status === 'في انتظار كابتن'; const sender = escapeHtml(o.senderPhone); const recipient = escapeHtml(o.recipientPhone); const isFetch = o.tripType === 'fetch'; const displayFee = isWaiting ? effectiveFee : o.platformFee; const displayNet = isWaiting ? Math.max(0, roundMoney(o.originalFare - effectiveFee)) : o.courierNet;
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let discountNoteHtml = '';
         if (o.discountApplied > 0) {
-          if (isWaiting) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل ده شكلة له واسطة ومعاه خصم/كود 😵 بس متقلقش الفرق (${o.discountApplied} ج) هينزل فى محفظتك فور قبول الطلب 😎»</div>`; }
-          else if (isMine) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل عنده خصم (${o.discountApplied} ج) يعنى هتاخد منه (${o.fare} جنيه) وباقى المبلغ نزل فى محفظتك فور قبول الطلب 💲✌️»</div>`; }
+          if (isWaiting) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل ده شكله له واسطة ومعاه خصم/كود 😵 بس متقلقش الفرق (${o.discountApplied} ج) هينزل في محفظتك أول ما تقبل الطلب 😎»</div>`; }
+          else if (isMine) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل عنده خصم (${o.discountApplied} ج) يعني هتاخد منه (${o.fare} جنيه) وباقي المبلغ نزل في محفظتك أول ما قبلت الطلب 💲✌️»</div>`; }
         }
-        let acceptBtnText = 'اقبل الطلب وامرك لله 😂🛵'; let acceptBtnStyle = '';
-        if (courier.status === 'قيد المراجعة') { acceptBtnText = 'حسابك قيد المراجعة (للمعاينة فقط) ⏳'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        else if (courier.status !== 'معتمد') { acceptBtnText = 'حسابك موقوف مؤقتاً (للمعاينة فقط) ⛔'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        else if (currentActiveOrder) { acceptBtnText = 'معاك مشوار جاري يا بطل 🛵'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        return `<div class="card" style="border:1.5px solid ${isMine ? 'var(--primary)' : 'rgba(123,63,82,0.15)'};"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><div>${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FFE082; padding:6px 8px; border-radius:8px; margin:4px 0; color:#5D4037;"><strong>📝 ملحوظة من الباشا:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | تحصيل كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? `<div style="margin-top:4px; font-weight:700;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل (المستلم): <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> مشاهدة مكان العميل / الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار وتنازل عن الطلب (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يانجم العالم 🌟📦</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
+        let acceptBtnText = 'اقبل الطلب وأمرك لله 😂🛵'; let acceptBtnStyle = '';
+        if (courier.status === 'قيد المراجعة') { acceptBtnText = 'حسابك لسه بيتراجع (تفرج بس دلوقتي) ⏳'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
+        else if (courier.status !== 'معتمد') { acceptBtnText = 'حسابك موقوف مؤقتاً (تفرج بس) ⛔'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
+        else if (currentActiveOrder) { acceptBtnText = 'معاك مشوار شغال يا بطل خلّصه الأول 🛵'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
+        return `<div class="card" style="border:1.5px solid ${isMine ? 'var(--primary)' : 'rgba(123,63,82,0.15)'};"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><div>${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FFE082; padding:6px 8px; border-radius:8px; margin:4px 0; color:#5D4037;"><strong>📝 ملحوظة من الباشا:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | هتقبض كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? `<div style="margin-top:4px; font-weight:700;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل (المستلم): <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان العميل والاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار عن المشوار ورجوعه للرادار (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يا نجم العالم 🌟📦</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
       }).join('');
     }
 
@@ -2525,7 +2523,7 @@
       const myOrders = prof.savedPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === prof.savedPhone) : [];
       const s = STATE.settings || {}; const custPtsPerOrder = Math.max(1, Number(s.customerPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const custThreshold = Math.max(5, Number(s.customerRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const custRewardCash = Math.max(1, roundMoney(s.customerRewardCash ?? DEFAULT_REWARD_CASH));
       const titleEl = document.getElementById('custDisplayTitle'); const phoneEl = document.getElementById('custDisplayPhone'); const balEl = document.getElementById('custWalletBalanceDisplay'); const ptsEl = document.getElementById('custPointsDisplay'); const progEl = document.getElementById('custPointsProgress'); const cntEl = document.getElementById('custTotalOrdersCount');
-      if (titleEl) titleEl.innerText = prof.title; if (phoneEl) phoneEl.innerText = `${prof.savedPhone || 'لم يتم ربط رقم هاتف بعد'} • Mansoura`;
+      if (titleEl) titleEl.innerText = prof.title; if (phoneEl) phoneEl.innerText = `${prof.savedPhone || 'لسه مربطتش رقم موبايلك يا باشا'} • المنصورة`;
       const profPhoneInp = document.getElementById('custProfilePhoneSyncInput'); if (profPhoneInp && document.activeElement !== profPhoneInp && prof.savedPhone) { profPhoneInp.value = prof.savedPhone; }
       if (balEl) balEl.innerHTML = `${roundMoney(prof.walletBalance).toFixed(2)} <span>جنيه</span>`; if (ptsEl) ptsEl.innerText = `${prof.points || 0} نقطة`;
       const progPct = Math.min(100, Math.round(((prof.points || 0) / custThreshold) * 100)); if (progEl) progEl.style.width = `${progPct}%`; if (cntEl) cntEl.innerText = `${myOrders.length} مشوار`;
@@ -2534,12 +2532,12 @@
       const txContainer = document.getElementById('custWalletTransactionsList');
       if (txContainer) {
         const txList = prof.walletTransactions || [];
-        txContainer.innerHTML = txList.length === 0 ? `<div style="color:var(--text-muted); text-align:center;">لا توجد حركات مسجلة بعد.</div>` : txList.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join('');
+        txContainer.innerHTML = txList.length === 0 ? `<div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>` : txList.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join('');
       }
     }
 
     function renderAllData() { renderGlobalBannersAndSettings(); renderCustomerProfileView(); renderCustomerOrdersList(); renderCourierScreen(); renderCourierFeed(); updateBottomNavVisibility(); }
-    function isWarningMessage(msg) { return /(طماع|غير|أقل|عفواً|عذراً|برجاء|اكتب|حدد|إجباري|موقوف|مرفوض|بيتراجع|خطأ|لا يمكن|مسجل بالفعل|تعذر|ممتلئة|صيانة|مغلق|⚠️|⛔|❌|✋|⏳)/.test(msg); }
+    function isWarningMessage(msg) { return /(طماع|غير|أقل|عفواً|عذراً|برجاء|اكتب|حدد|إجباري|موقوف|مرفوض|بيتراجع|خطأ|لا يمكن|مسجل بالفعل|تعذر|ممتلئة|صيانة|مغلق|معلش|ملحقناش|معرفناش|لخبطة|مش مظبوط|مش شغال|⚠️|⛔|❌|✋|⏳)/.test(msg); }
     function hideToast() { const toast = document.getElementById('toast'); if (toast) toast.classList.remove('show'); if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; } }
     function showToast(msg, type = 'auto') {
       const toast = document.getElementById('toast'); const toastIcon = document.getElementById('toastIcon'); const toastMsg = document.getElementById('toastMsg'); const mockup = document.getElementById('phoneMockup');
@@ -2561,7 +2559,7 @@
 
     function openTopupModal() { document.getElementById('topupModal')?.classList.add('show'); }
     function closeTopupModal() { document.getElementById('topupModal')?.classList.remove('show'); }
-    function redirectToWhatsAppTopup() { const courier = getActiveCourier(); const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value); if (!courier) { showToast('سجل دخول الكابتن أولاً ⚠️', 'warn'); return; } if (amt <= 0) { showToast('اكتب مبلغ شحن صحيح ⚠️', 'warn'); return; } const text = `محتاج شحن محفظة بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`; window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank'); closeTopupModal(); }
+    function redirectToWhatsAppTopup() { const courier = getActiveCourier(); const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value); if (!courier) { showToast('سجل دخولك الأول يا كابتن ⚠️', 'warn'); return; } if (amt <= 0) { showToast('اكتب مبلغ شحن مظبوط يا بطل ⚠️', 'warn'); return; } const text = `محتاج أشحن محفظتي بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`; window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank'); closeTopupModal(); }
 
     function setupDelegatedEvents() {
       document.getElementById('phoneScreen')?.addEventListener('click', function(e) {
