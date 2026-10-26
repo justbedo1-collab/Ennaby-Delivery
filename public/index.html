@@ -103,9 +103,6 @@
     .tier-badge-bronze { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); color: #8D4E15; border: 1px solid #FFB74D; }
     .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
     .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 8px rgba(2, 136, 209, 0.22); }
-    .gps-helper-row { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 4px; }
-    .btn-gps-action { background: #F3EAED; color: var(--primary); border: 1.5px dashed var(--primary); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; width: 100%; }
-    .btn-gps-action:active { transform: scale(0.98); background: var(--accent); }
     .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; gap: 8px; }
     /* إطار الملاحظات المميز لإرشاد كتابة العنوان يدوياً أسفل الخريطة */
     .gps-manual-note { display: block; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border: 1.5px dashed #FBC02D; border-radius: 10px; padding: 7px 10px; font-size: 11px; color: #5D4037; font-weight: 800; margin-top: 6px; line-height: 1.5; text-align: right; }
@@ -115,6 +112,13 @@
     .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; text-align: center; }
     .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.25); }
     .inline-leaflet-canvas { width: 100%; height: 195px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
+    /* تصميم الفصل الانسيابي المميز بين كارت بيانات الراسل/الاستلام وكارت المستلم/التسليم */
+    .route-party-card { border-radius: 16px; padding: 13px; margin-bottom: 10px; transition: all 0.25s ease; box-shadow: 0 3px 10px rgba(123, 63, 82, 0.05); }
+    .route-party-pickup { background: linear-gradient(135deg, #FAF7F4, #F5ECEF); border: 1.5px solid #E5D4DA; border-right: 4.5px solid var(--primary); }
+    .route-party-dropoff { background: linear-gradient(135deg, #F6FBF7, #ECF7EE); border: 1.5px solid #C8E6C9; border-right: 4.5px solid var(--success); }
+    .route-party-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; padding-bottom: 6px; border-bottom: 1px dashed rgba(123, 63, 82, 0.15); }
+    .route-party-badge { font-size: 11.5px; font-weight: 900; padding: 3px 10px; border-radius: 50px; display: inline-flex; align-items: center; gap: 5px; }
+    .route-party-connector { display: flex; align-items: center; justify-content: center; margin: -4px 0 6px; color: var(--primary); font-size: 13px; opacity: 0.65; }
     /* شريط تقدم مستوى الكابتن الحي */
     .tier-live-progress-wrap { background: linear-gradient(135deg, #FFFFFF, #F5FBFF); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 10px 12px; }
     .tier-live-progress-track { background: #E1F5FE; border-radius: 50px; height: 9px; width: 100%; overflow: hidden; margin: 6px 0; border: 1px solid #B3E5FC; }
@@ -249,56 +253,63 @@
                   💡 إذا لم تتمكن من اختيار موقعك على الخريطة، قم بكتابة العنوان يدوياً بالتفصيل.
                 </div>
               </div>
-              <!-- مكان الاستلام + زر لوكيشن مكاني تلقائي فقط -->
-              <div class="input-group">
-                <label class="input-label" id="pickupZoneLabel" for="pickupZone">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
-                  <select class="select-field" id="pickupZone" onchange="handleZoneChange()"></select>
-                  <input type="text" id="pickupAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: حي الجامعة)">
+              <!-- الكارت الأول: بيانات وعنوان وتليفون نقطة الاستلام (تصميم انسيابي منفصل) -->
+              <div class="route-party-card route-party-pickup" id="pickupPartyCard">
+                <div class="route-party-header">
+                  <span class="route-party-badge" id="pickupPartyBadgeTitle" style="background:var(--accent); color:var(--primary);">
+                    <i class="fa-solid fa-box-archive"></i> أولاً: بيانات الراسل ومكان الاستلام 📦
+                  </span>
                 </div>
-                <div class="gps-helper-row" id="pickupGpsHelperRow">
-                  <button type="button" class="btn-gps-action" id="pickupAutoGpsBtn" onclick="captureAutoGpsLocation('pickup')">
-                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
-                  </button>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" id="pickupZoneLabel" for="pickupZone" style="color:var(--primary); font-weight:800;">هناخد الطرد منين؟ (عنوانك يا باشا)</label>
+                  <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
+                    <select class="select-field" id="pickupZone" onchange="handleZoneChange()" style="background:#fff;"></select>
+                    <input type="text" id="pickupAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: حي الجامعة)" style="background:#fff;">
+                  </div>
+                  <div class="gps-captured-pill" id="pickupGpsCapturedPill">
+                    <span id="pickupGpsCapturedText">✅ تم التقاط لوكيشن الاستلام على الخريطة بدقة!</span>
+                    <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
+                  </div>
                 </div>
-                <div class="gps-captured-pill" id="pickupGpsCapturedPill">
-                  <span id="pickupGpsCapturedText">✅ تم التقاط لوكيشن الاستلام على الخريطة بدقة!</span>
-                  <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
-                </div>
-              </div>
-              <!-- مكان التسليم + زر لوكيشن مكاني تلقائي فقط (يظهر في هاتلي حاجة ليا) -->
-              <div class="input-group">
-                <label class="input-label" id="dropoffZoneLabel" for="dropoffZone">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</label>
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
-                  <select class="select-field" id="dropoffZone" onchange="handleZoneChange()"></select>
-                  <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: كوبري جديلة)">
-                </div>
-                <div class="gps-helper-row" id="dropoffGpsHelperRow" style="display:none;">
-                  <button type="button" class="btn-gps-action" id="dropoffAutoGpsBtn" onclick="captureAutoGpsLocation('dropoff')">
-                    <i class="fa-solid fa-location-crosshairs"></i> لوكيشن مكاني تلقائي 📍
-                  </button>
-                </div>
-                <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
-                  <span id="dropoffGpsCapturedText">✅ تم التقاط لوكيشن التسليم على الخريطة بدقة!</span>
-                  <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
+                <div id="pickupPhoneSlot">
+                  <div id="clientOwnPhoneWrap">
+                    <label class="input-label" id="orderSenderPhoneLabel" for="orderSenderPhone" style="font-size:11px; color:var(--primary); font-weight:800; margin-bottom:3px; display:block;">رقم الراسل (رقمك يا باشا) 📱</label>
+                    <input type="tel" inputmode="numeric" autocomplete="tel" id="orderSenderPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15" oninput="handleCustomerPhoneInput()" style="background:#fff;">
+                  </div>
                 </div>
               </div>
+
+              <div class="route-party-connector"><i class="fa-solid fa-angles-down"></i></div>
+
+              <!-- الكارت الثاني: بيانات وعنوان وتليفون نقطة التسليم (تصميم انسيابي منفصل) -->
+              <div class="route-party-card route-party-dropoff" id="dropoffPartyCard">
+                <div class="route-party-header" style="border-bottom-color: rgba(46, 125, 50, 0.18);">
+                  <span class="route-party-badge" id="dropoffPartyBadgeTitle" style="background:#E8F5E9; color:var(--success);">
+                    <i class="fa-solid fa-location-dot"></i> ثانياً: بيانات المستلم ومكان التسليم 🎯
+                  </span>
+                </div>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" id="dropoffZoneLabel" for="dropoffZone" style="color:var(--success); font-weight:800;">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</label>
+                  <div style="display:grid; grid-template-columns: 1fr 2fr; gap:6px;">
+                    <select class="select-field" id="dropoffZone" onchange="handleZoneChange()" style="background:#fff;"></select>
+                    <input type="text" id="dropoffAddress" class="input-field" placeholder="العنوان بالتفصيل (مثل: كوبري جديلة)" style="background:#fff;">
+                  </div>
+                  <div class="gps-captured-pill" id="dropoffGpsCapturedPill">
+                    <span id="dropoffGpsCapturedText">✅ تم التقاط لوكيشن التسليم على الخريطة بدقة!</span>
+                    <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">إلغاء ✕</button>
+                  </div>
+                </div>
+                <div id="dropoffPhoneSlot">
+                  <div id="otherPartyPhoneWrap">
+                    <label class="input-label" id="orderRecipientPhoneLabel" for="orderRecipientPhone" style="font-size:11px; color:var(--success); font-weight:800; margin-bottom:3px; display:block;">رقم هاتف المستلم 📱</label>
+                    <input type="tel" inputmode="numeric" autocomplete="tel" id="orderRecipientPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15" style="background:#fff;">
+                  </div>
+                </div>
+              </div>
+
               <div class="input-group">
                 <label class="input-label" for="customerOrderNotes">لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
                 <textarea id="customerOrderNotes" class="textarea-field" rows="2" placeholder="اكتب هنا أي تفاصيل (مثال: رن جرس الدور التالت، معيش فكة، الطرد فيه زجاج)..."></textarea>
-              </div>
-              <div class="input-group">
-                <label class="input-label" id="phonesSectionLabel" for="orderSenderPhone">أرقام هواتف المشوار (مهمة للكابتن) 📱</label>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                  <div>
-                    <label class="input-label" id="orderSenderPhoneLabel" style="font-size:10.5px; margin-bottom:2px; display:block;">رقم الراسل (رقمك يا باشا) 📱</label>
-                    <input type="tel" inputmode="numeric" autocomplete="tel" id="orderSenderPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15" oninput="handleCustomerPhoneInput()">
-                  </div>
-                  <div>
-                    <label class="input-label" id="orderRecipientPhoneLabel" style="font-size:10.5px; margin-bottom:2px; display:block;">رقم هاتف المستلم 📱</label>
-                    <input type="tel" inputmode="numeric" autocomplete="tel" id="orderRecipientPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
-                  </div>
-                </div>
               </div>
               <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة، والتحكم في الحساب من تبويب حسابي) -->
               <div class="input-group" id="orderCustomerPinGroupBox" style="background:#FAF4F6; border:1.5px dashed var(--primary); border-radius:14px; padding:12px;">
@@ -1898,26 +1909,39 @@
     function selectTripType(type) {
       const normalizedType = (type === 'fetch') ? 'fetch' : 'send'; STATE.currentTripType = normalizedType; saveSession();
       const btnSend = document.getElementById('tripTypeBtn-send'); const btnFetch = document.getElementById('tripTypeBtn-fetch'); const notice = document.getElementById('fetchNoticeAlert');
-      const pLabel = document.getElementById('pickupZoneLabel'); const dLabel = document.getElementById('dropoffZoneLabel'); const senderPhoneLabel = document.getElementById('orderSenderPhoneLabel'); const recipientPhoneLabel = document.getElementById('orderRecipientPhoneLabel'); const payerOption1Radio = document.getElementById('payerOption1Radio'); const payerOption1Text = document.getElementById('payerOption1Text'); const payerOption2Radio = document.getElementById('payerOption2Radio'); const payerOption2Text = document.getElementById('payerOption2Text');
-      const pickupHelperRow = document.getElementById('pickupGpsHelperRow');
-      const dropoffHelperRow = document.getElementById('dropoffGpsHelperRow');
+      const pLabel = document.getElementById('pickupZoneLabel'); const dLabel = document.getElementById('dropoffZoneLabel');
+      const senderPhoneLabel = document.getElementById('orderSenderPhoneLabel'); const recipientPhoneLabel = document.getElementById('orderRecipientPhoneLabel');
+      const payerOption1Radio = document.getElementById('payerOption1Radio'); const payerOption1Text = document.getElementById('payerOption1Text');
+      const payerOption2Radio = document.getElementById('payerOption2Radio'); const payerOption2Text = document.getElementById('payerOption2Text');
+      const pickupSlot = document.getElementById('pickupPhoneSlot'); const dropoffSlot = document.getElementById('dropoffPhoneSlot');
+      const clientPhoneWrap = document.getElementById('clientOwnPhoneWrap'); const otherPhoneWrap = document.getElementById('otherPartyPhoneWrap');
+      const pickupBadge = document.getElementById('pickupPartyBadgeTitle'); const dropoffBadge = document.getElementById('dropoffPartyBadgeTitle');
+
       if (normalizedType === 'fetch') {
         if (btnSend) btnSend.className = 'btn-secondary'; if (btnFetch) btnFetch.className = 'btn-main'; if (notice) notice.style.display = 'block';
-        if (pLabel) pLabel.innerText = 'هنجيب الحاجة منين؟ (المحل أو المكان اللي هنشتري/نستلم منه)'; if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك أنت ورقمك لتستلم بنفسك)';
-        if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم المستلم (رقمك لتستلم الطلب) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم المكان / الشخص اللي هنشتري أو نستلم منه 🏪';
+        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-store"></i> أولاً: بيانات المكان / المحل للاستلام 🏪';
+        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-house-user"></i> ثانياً: بياناتك وعنوانك للاستلام بالباب 🏠';
+        if (pLabel) pLabel.innerText = 'هنجيب الحاجة منين؟ (المحل أو المكان اللي هنشتري/نستلم منه)';
+        if (dLabel) dLabel.innerText = 'هنوصلهالك فين؟ (عنوانك أنت ورقمك لتستلم بنفسك)';
+        if (pickupSlot && otherPhoneWrap) pickupSlot.appendChild(otherPhoneWrap);
+        if (dropoffSlot && clientPhoneWrap) dropoffSlot.appendChild(clientPhoneWrap);
+        if (senderPhoneLabel) { senderPhoneLabel.innerText = 'رقم المستلم (رقمك لتستلم الطلب) 📱'; senderPhoneLabel.style.color = 'var(--success)'; }
+        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم المكان / الشخص اللي هنشتري أو نستلم منه 🏪'; recipientPhoneLabel.style.color = 'var(--primary)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
-        if (pickupHelperRow) pickupHelperRow.style.display = 'none';
-        if (dropoffHelperRow) dropoffHelperRow.style.display = 'grid';
         setInlineMapTargetMode('dropoff');
       } else {
         if (btnSend) btnSend.className = 'btn-main'; if (btnFetch) btnFetch.className = 'btn-secondary'; if (notice) notice.style.display = 'none';
-        if (pLabel) pLabel.innerText = 'هناخد الطرد منين؟ (عنوانك يا باشا)'; if (dLabel) dLabel.innerText = 'هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)';
-        if (senderPhoneLabel) senderPhoneLabel.innerText = 'رقم الراسل (رقمك يا باشا) 📱'; if (recipientPhoneLabel) recipientPhoneLabel.innerText = 'رقم هاتف المستلم 📱';
+        if (pickupBadge) pickupBadge.innerHTML = '<i class="fa-solid fa-box-archive"></i> أولاً: بيانات الراسل ومكان الاستلام 📦';
+        if (dropoffBadge) dropoffBadge.innerHTML = '<i class="fa-solid fa-location-dot"></i> ثانياً: بيانات المستلم ومكان التسليم 🎯';
+        if (pLabel) pLabel.innerText = 'هناخد الطرد منين؟ (عنوانك يا باشا)';
+        if (dLabel) dLabel.innerText = 'هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)';
+        if (pickupSlot && clientPhoneWrap) pickupSlot.appendChild(clientPhoneWrap);
+        if (dropoffSlot && otherPhoneWrap) dropoffSlot.appendChild(otherPhoneWrap);
+        if (senderPhoneLabel) { senderPhoneLabel.innerText = 'رقم الراسل (رقمك يا باشا) 📱'; senderPhoneLabel.style.color = 'var(--primary)'; }
+        if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم هاتف المستلم 📱'; recipientPhoneLabel.style.color = 'var(--success)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
         if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم عند الوصول 🎯';
-        if (pickupHelperRow) pickupHelperRow.style.display = 'grid';
-        if (dropoffHelperRow) dropoffHelperRow.style.display = 'none';
         setInlineMapTargetMode('pickup');
       }
       setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
