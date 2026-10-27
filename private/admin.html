@@ -1837,50 +1837,18 @@
     function handleRoutePriceInput(inputEl) {
       isPricingDirty = true;
       if (!inputEl) return;
-      inputEl.dataset.manual = 'true';
       const routeKey = inputEl.getAttribute('data-route') || '';
       const parts = routeKey.split('|');
       if (parts.length !== 2) return;
       const fromZ = parts[0];
       const toZ = parts[1];
       if (fromZ === toZ) return;
+      
       const reverseKey = `${toZ}|${fromZ}`;
       const allInputs = document.querySelectorAll('.route-price-input');
       allInputs.forEach(otherInp => {
         if (otherInp !== inputEl && otherInp.getAttribute('data-route') === reverseKey) {
-          if (otherInp.dataset.manual !== 'true') {
-            otherInp.value = inputEl.value;
-          }
-        }
-      });
-    }
-
-    function adminEditSingleRouteModal(routeKey) {
-      if (!routeKey) return;
-      const parts = routeKey.split('|');
-      const fromZ = parts[0] || '';
-      const toZ = parts[1] || '';
-      const reverseKey = `${toZ}|${fromZ}`;
-      let curInput = null;
-      document.querySelectorAll('.route-price-input').forEach(inp => {
-        if (inp.getAttribute('data-route') === routeKey) curInput = inp;
-      });
-      const currentVal = curInput ? curInput.value : (STATE.pricing[routeKey] || 40);
-      openCustomActionModal({
-        title: `تعديل تسعيرة المسار 🏷️`,
-        message: `من (${escapeHtml(fromZ)}) إلى (${escapeHtml(toZ)})${fromZ !== toZ ? ` — سيتم تسعير المسار العكسي تلقائياً بنفس السعر ما لم يكن معدلاً بشكل منفصل` : ''}:`,
-        needInput: true,
-        inputPlaceholder: 'السعر بالجنيه...',
-        defaultValue: String(currentVal),
-        confirmText: 'تحديث السعر ✅',
-        onConfirm: (val) => {
-          const num = roundMoney(val);
-          if (num <= 0) { showToast('برجاء إدخال سعر صحيح أكبر من صفر ⚠️', 'warn'); return; }
-          if (curInput) {
-            curInput.value = num;
-            handleRoutePriceInput(curInput);
-          }
-          showToast(`تم تحديث سعر المسار (${escapeHtml(fromZ)} ↔ ${escapeHtml(toZ)}) إلى ${num} ج — اضغط «حفظ واعتماد التسعيرة» للتأكيد النهائي 💡`, 'ok');
+          otherInp.value = inputEl.value; // تسعير الجهة المقابلة تلقائياً وفورياً
         }
       });
     }
@@ -2029,7 +1997,7 @@
       if(isPricingDirty||(document.activeElement&&document.activeElement.classList.contains('route-price-input')))return;
       const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
       const r=[]; zonesArr.forEach(f=>zonesArr.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
-      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><div style="display:flex; gap:6px; align-items:center;"><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="handleRoutePriceInput(this)" style="width:76px; padding:5px 6px;"><button type="button" class="btn-edit" style="padding:5px 8px; font-size:11px;" onclick="adminEditSingleRouteModal('${escapeHtml(x.k)}')" title="تعديل السعر">تعديل ✏️</button></div></td></tr>`).join('');
+      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="handleRoutePriceInput(this)" style="width:85px; padding:6px; font-weight:700;"></td></tr>`).join('');
     }
 
     function renderAdminCaptainDirectoryDropdown() {
