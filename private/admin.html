@@ -45,6 +45,7 @@
     .btn-secondary { background: var(--accent); color: var(--primary); border: none; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-danger { background: #FFEBEE; color: var(--danger); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .btn-success { background: #E8F5E9; color: var(--success); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-edit { background: #E1F5FE; color: #0277BD; border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
     .input-label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
     .input-field, .select-field { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 13px; font-weight: 600; outline: none; }
@@ -86,9 +87,10 @@
     table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; }
     table th, table td { padding: 8px 10px; border-bottom: 1px solid #f0e6e9; }
     table th { background: #FAF7F4; color: var(--primary); font-weight: 800; }
-    .toast-box { position: absolute; top: 16px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px); transition: all 0.22s ease; pointer-events: none; }
-    .toast-box.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .toast-box { position: absolute; top: 16px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px) scale(0.96); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.18s ease; pointer-events: none; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.12); }
+    .toast-box.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .toast-box.toast-warning { background: #3B2326; border-color: #FF8A80; }
+    .toast-box.toast-success { background: #233329; border-color: #81C784; }
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); }
@@ -96,12 +98,13 @@
 </head>
 <body>
   <main class="device-container">
-    <div class="phone-mockup">
+    <div class="phone-mockup" id="phoneMockup">
       <div id="toast" class="toast-box" onclick="this.classList.remove('show')">
         <div style="display:flex; align-items:center; gap:9px;">
           <i id="toastIcon" class="fa-solid fa-circle-check" style="color: #4CAF50; font-size:18px;"></i>
           <span id="toastMsg">تم</span>
         </div>
+        <span style="font-size:14px; opacity:0.75; padding:0 4px; line-height:1;">✕</span>
       </div>
 
       <div class="phone-screen" id="phoneScreen">
@@ -438,9 +441,12 @@
           <div id="admTab-finance" class="sub-tab-section" style="display:none;">
             <div class="card" id="admCard-customerResetPin" style="border: 1.5px solid var(--warning); background:#FFFDE7; margin-bottom:14px;">
               <h2 class="card-title" style="color:var(--warning);"><i class="fa-solid fa-unlock-keyhole"></i> تعيين PIN جديد لعميل 🔒</h2>
-              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، أدخل رقمه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">إذا نسي العميل رمزه، اختر رقمه من القائمة أو ابحث عنه وقم بتعيين 4 أرقام جديدة له ليتمكن من الدخول.</p>
               <div class="input-group">
-                <input type="tel" id="adminCustomerResetPinPhone" class="input-field" placeholder="رقم هاتف العميل (01xxxxxxxxx)" maxlength="15">
+                <select class="select-field" id="adminCustomerResetPinSelect" onchange="handleAdminCustomerResetPinSelectChange()"></select>
+              </div>
+              <div class="input-group">
+                <input type="tel" id="adminCustomerResetPinPhone" class="input-field" placeholder="ابحث أو اكتب رقم هاتف العميل (01xxxxxxxxx)" maxlength="15" oninput="filterAdminCustomerResetPinDropdown()">
               </div>
               <div class="input-group">
                 <input type="number" id="adminCustomerResetPinValue" class="input-field" placeholder="رمز PIN الجديد (4 أرقام)" maxlength="4">
@@ -743,7 +749,6 @@
       </div>
     </div>
   </div>
-
   <script>
     'use strict';
     function escapeHtml(str) {
@@ -754,7 +759,7 @@
     const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V35';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
-    let toastTimer = null, actionLock = false;
+    let toastTimer = null, actionLock = false, lastInteractedElement = null;
     let isPricingDirty = false, customModalCallback = null, isCloudSyncInFlight = false, lastCloudStateFingerprint = '';
     let adminRealtimeClient = null, adminRealtimeInitialized = false, adminRealtimeDebounce = null;
     let adminLeafletMap = null, adminLeafletMarkers = [];
@@ -764,6 +769,11 @@
     const ADMIN_PERM_LABELS = { viewDashboard: '📊 لوحة المعلومات', viewCaptains: '🛵 عرض الكباتن', manageCaptains: '✅ إدارة الكباتن', viewOrders: '📦 عرض الطلبات', manageOrders: '⚖️ إدارة الطلبات', manageWallets: '💰 المحافظ', manageCommissions: '🎯 العمولات', managePricing: '🗺️ التسعير', manageSettings: '📢 الإعدادات' };
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
     const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
+
+    document.addEventListener('pointerdown', function(e) {
+      const target = e.target.closest('button, a, select, input, label, textarea');
+      if (target && !target.closest('#toast')) lastInteractedElement = target;
+    }, true);
 
     let SESSION = (() => {
       try {
@@ -819,6 +829,15 @@
       return '';
     }
     function resolveOrderClientPhone(o) { if(!o)return''; if(o.clientPhone&&isValidEgyptianPhone(o.clientPhone))return normalizePhone(o.clientPhone); if(o.customerPhone&&isValidEgyptianPhone(o.customerPhone))return normalizePhone(o.customerPhone); if(o.tripType==='fetch'&&o.recipientPhone&&isValidEgyptianPhone(o.recipientPhone))return normalizePhone(o.recipientPhone); if(o.senderPhone&&isValidEgyptianPhone(o.senderPhone))return normalizePhone(o.senderPhone); return''; }
+
+    function getAllKnownCustomerPhones() {
+      const p = new Set(Object.keys(STATE.customers || {}).filter(isValidEgyptianPhone));
+      (STATE.orders || []).forEach(o => {
+        const c = resolveOrderClientPhone(o);
+        if (isValidEgyptianPhone(c)) p.add(c);
+      });
+      return Array.from(p);
+    }
 
     // تفعيل Supabase Realtime WebSockets للتحديث الفوري في لوحة الإدارة
     function setupAdminSupabaseRealtime(cfg) {
@@ -899,10 +918,27 @@
 
     function showToast(msg, type='auto') {
       const toast = document.getElementById('toast'), tMsg = document.getElementById('toastMsg'), tIcon = document.getElementById('toastIcon');
-      if(!toast) return; tMsg.innerText = msg;
-      const isWarn = type==='warn' || /(غير|أقل|عفواً|برجاء|اكتب|إجباري|موقوف|مرفوض|خطأ|تعذر|صيانة|⚠️|⛔|❌)/.test(msg);
-      toast.className = `toast-box ${isWarn?'toast-warning':'toast-success'} show`;
+      const mockup = document.getElementById('phoneMockup') || document.querySelector('.phone-mockup');
+      if(!toast || !tMsg) return;
+      tMsg.innerText = msg;
+      const isWarn = type==='warn' || /(غير|أقل|عفواً|برجاء|اكتب|إجباري|موقوف|مرفوض|خطأ|تعذر|صيانة|موجود|⚠️|⛔|❌)/.test(msg);
+      toast.className = `toast-box ${isWarn?'toast-warning':'toast-success'}`;
       if(tIcon) { tIcon.className = isWarn?'fa-solid fa-circle-exclamation':'fa-solid fa-circle-check'; tIcon.style.color = isWarn?'#FF8A80':'#4CAF50'; }
+
+      let targetTop = 24;
+      if (mockup && lastInteractedElement && document.body.contains(lastInteractedElement)) {
+        const mockupRect = mockup.getBoundingClientRect();
+        const elRect = lastInteractedElement.getBoundingClientRect();
+        if (elRect.width > 0 && elRect.height > 0) {
+          const relativeY = elRect.top - mockupRect.top - 62;
+          const minTop = 16;
+          const maxTop = Math.max(minTop, mockup.clientHeight - 125);
+          targetTop = Math.max(minTop, Math.min(relativeY, maxTop));
+        }
+      }
+      toast.style.top = `${Math.round(targetTop)}px`;
+      toast.classList.add('show');
+
       if(toastTimer) clearTimeout(toastTimer);
       toastTimer = setTimeout(()=>toast.classList.remove('show'), 3600);
     }
@@ -996,7 +1032,7 @@
       const b=document.getElementById('customActionModalConfirmBtn'); b.innerText=confirmText; b.style.background=isDanger?'var(--danger)':'var(--primary)';
       customModalCallback = function() {
         const v = document.getElementById('customActionModalInput').value.trim();
-        if(needInput&&!v){ showToast('اكتب السبب أولاً ⚠️','warn'); return; }
+        if(needInput&&!v){ showToast('برجاء كتابة القيمة أو التفاصيل أولاً ⚠️','warn'); return; }
         closeCustomActionModal(); if(typeof onConfirm==='function') onConfirm(v);
       };
       b.onclick = customModalCallback; document.getElementById('customActionModal').classList.add('show');
@@ -1355,11 +1391,43 @@
       });
     }
 
+    function handleAdminCustomerResetPinSelectChange() {
+      const sel = document.getElementById('adminCustomerResetPinSelect');
+      const phoneInp = document.getElementById('adminCustomerResetPinPhone');
+      if (sel && phoneInp && sel.value) {
+        phoneInp.value = sel.value;
+      }
+    }
+
+    function filterAdminCustomerResetPinDropdown() {
+      const sel = document.getElementById('adminCustomerResetPinSelect');
+      const phoneInp = document.getElementById('adminCustomerResetPinPhone');
+      if (!sel) return;
+      const q = normalizeDigits(phoneInp?.value || '').trim();
+      const allPhones = getAllKnownCustomerPhones();
+      const filtered = q ? allPhones.filter(ph => ph.includes(q)) : allPhones;
+      const prevVal = sel.value;
+      sel.innerHTML = filtered.length === 0
+        ? `<option value="">-- اختر عميل من المسجلين (أو اكتب الرقم بالأسفل) --</option>`
+        : `<option value="">-- اختر عميل من القائمة (${filtered.length}) --</option>` + filtered.map(ph => {
+            const cRec = STATE.customers[ph];
+            const pts = cRec && cRec.points ? ` (${cRec.points} نقطة)` : '';
+            return `<option value="${escapeHtml(ph)}">${escapeHtml(ph)}${pts}</option>`;
+          }).join('');
+      const cleanTyped = normalizePhone(q);
+      if (filtered.includes(cleanTyped)) {
+        sel.value = cleanTyped;
+      } else if (prevVal && filtered.includes(prevVal)) {
+        sel.value = prevVal;
+      }
+    }
+
     function adminExecuteCustomerPinReset() {
       withActionLock(async () => {
-        const ph = normalizePhone(document.getElementById('adminCustomerResetPinPhone')?.value);
+        const typedVal = document.getElementById('adminCustomerResetPinPhone')?.value || document.getElementById('adminCustomerResetPinSelect')?.value || '';
+        const ph = normalizePhone(typedVal);
         const pin = normalizeDigits(document.getElementById('adminCustomerResetPinValue')?.value);
-        if(!isValidEgyptianPhone(ph)) { showToast('اكتب رقم هاتف العميل بشكل صحيح (01...) 📱⚠️','warn'); return; }
+        if(!isValidEgyptianPhone(ph)) { showToast('اختر العميل من القائمة أو اكتب رقم هاتفه بشكل صحيح (01...) 📱⚠️','warn'); return; }
         if(!isValidPin(pin)) { showToast('رمز PIN يجب أن يكون 4 أرقام بالضبط 🔒⚠️','warn'); return; }
 
         openCustomActionModal({
@@ -1371,6 +1439,9 @@
             if(ok && data.success) {
               document.getElementById('adminCustomerResetPinPhone').value = '';
               document.getElementById('adminCustomerResetPinValue').value = '';
+              const sel = document.getElementById('adminCustomerResetPinSelect');
+              if (sel) sel.value = '';
+              filterAdminCustomerResetPinDropdown();
               showToast(data.message || 'تم تعيين رمز الـ PIN للعميل بنجاح 🔒✅', 'ok');
             } else showToast((data&&data.message)||'تعذر تصفير الـ PIN ⚠️', 'warn');
           }
@@ -1650,10 +1721,58 @@
 
     function adminAddNewZone() {
       withActionLock(async () => {
-        const z = document.getElementById('newZoneNameInput')?.value.trim(); if(!z||(Array.isArray(STATE.zones)&&STATE.zones.includes(z)))return;
-        const nz = [...(Array.isArray(STATE.zones)?STATE.zones:DEFAULT_ZONES), z]; const np = {...STATE.pricing, [`${z}|${z}`]:35};
+        const z = document.getElementById('newZoneNameInput')?.value.trim();
+        if(!z) { showToast('برجاء كتابة اسم المنطقة أولاً ⚠️','warn'); return; }
+        const currentZones = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
+        if(currentZones.includes(z)) { showToast('هذه المنطقة مضافة بالفعل ⚠️','warn'); return; }
+        const nz = [...currentZones, z];
+        const np = {...STATE.pricing, [`${z}|${z}`]:35};
+        currentZones.forEach(existingZ => {
+          if (np[`${z}|${existingZ}`] === undefined) np[`${z}|${existingZ}`] = 50;
+          if (np[`${existingZ}|${z}`] === undefined) np[`${existingZ}|${z}`] = 50;
+        });
         const {ok, data}=await apiRequest('/api/admin/settings','POST',{zones:nz,pricing:np});
-        if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${escapeHtml(z)} ✅`,'ok'); }
+        if(ok&&data.success){ document.getElementById('newZoneNameInput').value=''; showToast(`تمت إضافة ${escapeHtml(z)} وتسعير مساراتها مبدئياً ✅`,'ok'); }
+      });
+    }
+
+    function adminEditZoneByIndex(i) {
+      const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
+      const oldName = zonesArr[i];
+      if (!oldName) return;
+      openCustomActionModal({
+        title: `تعديل اسم المنطقة (${escapeHtml(oldName)}) ✏️`,
+        message: 'اكتب الاسم الجديد للمنطقة الجغرافية (سيتم تحديث اسمها في المسارات تلقائياً):',
+        needInput: true,
+        inputPlaceholder: 'اسم المنطقة الجديد...',
+        defaultValue: oldName,
+        confirmText: 'حفظ التعديل ✅',
+        onConfirm: async (newVal) => {
+          const cleanNew = (newVal || '').trim();
+          if (!cleanNew || cleanNew === oldName) return;
+          if (zonesArr.some((z, idx) => idx !== i && z === cleanNew)) {
+            showToast('اسم المنطقة الجديد موجود بالفعل ⚠️', 'warn');
+            return;
+          }
+          withActionLock(async () => {
+            const nz = zonesArr.map((z, idx) => idx === i ? cleanNew : z);
+            const np = {};
+            Object.keys(STATE.pricing || {}).forEach(k => {
+              const parts = k.split('|');
+              if (parts.length === 2) {
+                const nf = parts[0] === oldName ? cleanNew : parts[0];
+                const nt = parts[1] === oldName ? cleanNew : parts[1];
+                np[`${nf}|${nt}`] = STATE.pricing[k];
+              } else {
+                np[k] = STATE.pricing[k];
+              }
+            });
+            isPricingDirty = false;
+            const {ok, data} = await apiRequest('/api/admin/settings', 'POST', { zones: nz, pricing: np });
+            if (ok && data.success) showToast(`تم تعديل المنطقة إلى (${escapeHtml(cleanNew)}) بنجاح ✏️✅`, 'ok');
+            else showToast('تعذر تعديل اسم المنطقة ⚠️', 'warn');
+          });
+        }
       });
     }
 
@@ -1675,11 +1794,94 @@
       });
     }
 
+    function adminEditPackageWeight(i) {
+      const list = STATE.settings.packageTypes || DEFAULT_PACKAGE_TYPES;
+      const oldWeight = list[i];
+      if (!oldWeight) return;
+      openCustomActionModal({
+        title: 'تعديل حجم / وزن الطرد ✏️',
+        message: 'عدّل وصف حجم أو وزن الطرد:',
+        needInput: true,
+        inputPlaceholder: 'وصف الوزن الجديد...',
+        defaultValue: oldWeight,
+        confirmText: 'حفظ التعديل ✅',
+        onConfirm: async (newVal) => {
+          const cleanNew = (newVal || '').trim();
+          if (!cleanNew || cleanNew === oldWeight) return;
+          withActionLock(async () => {
+            const nw = list.map((w, idx) => idx === i ? cleanNew : w);
+            const {ok, data} = await apiRequest('/api/admin/settings', 'POST', { packageTypes: nw });
+            if (ok && data.success) showToast('تم تعديل وصف الوزن بنجاح ✏️✅', 'ok');
+            else showToast('تعذر تعديل الوزن ⚠️', 'warn');
+          });
+        }
+      });
+    }
+
     function adminDeletePackageWeight(i) {
-      withActionLock(async () => {
-        const nw = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).filter((_,x)=>x!==i);
-        const {ok, data}=await apiRequest('/api/admin/settings','POST',{packageTypes:nw});
-        if(ok&&data.success)showToast('تم الحذف ✅','ok');
+      openCustomActionModal({
+        title: 'حذف حجم / وزن طرد 🗑️',
+        message: 'هل أنت متأكد من حذف هذا الوصف من قائمة الأوزان؟',
+        confirmText: 'حذف ⛔',
+        isDanger: true,
+        onConfirm: async () => {
+          withActionLock(async () => {
+            const nw = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).filter((_,x)=>x!==i);
+            const {ok, data}=await apiRequest('/api/admin/settings','POST',{packageTypes:nw});
+            if(ok&&data.success)showToast('تم الحذف ✅','ok');
+          });
+        }
+      });
+    }
+
+    function handleRoutePriceInput(inputEl) {
+      isPricingDirty = true;
+      if (!inputEl) return;
+      inputEl.dataset.manual = 'true';
+      const routeKey = inputEl.getAttribute('data-route') || '';
+      const parts = routeKey.split('|');
+      if (parts.length !== 2) return;
+      const fromZ = parts[0];
+      const toZ = parts[1];
+      if (fromZ === toZ) return;
+      const reverseKey = `${toZ}|${fromZ}`;
+      const allInputs = document.querySelectorAll('.route-price-input');
+      allInputs.forEach(otherInp => {
+        if (otherInp !== inputEl && otherInp.getAttribute('data-route') === reverseKey) {
+          if (otherInp.dataset.manual !== 'true') {
+            otherInp.value = inputEl.value;
+          }
+        }
+      });
+    }
+
+    function adminEditSingleRouteModal(routeKey) {
+      if (!routeKey) return;
+      const parts = routeKey.split('|');
+      const fromZ = parts[0] || '';
+      const toZ = parts[1] || '';
+      const reverseKey = `${toZ}|${fromZ}`;
+      let curInput = null;
+      document.querySelectorAll('.route-price-input').forEach(inp => {
+        if (inp.getAttribute('data-route') === routeKey) curInput = inp;
+      });
+      const currentVal = curInput ? curInput.value : (STATE.pricing[routeKey] || 40);
+      openCustomActionModal({
+        title: `تعديل تسعيرة المسار 🏷️`,
+        message: `من (${escapeHtml(fromZ)}) إلى (${escapeHtml(toZ)})${fromZ !== toZ ? ` — سيتم تسعير المسار العكسي تلقائياً بنفس السعر ما لم يكن معدلاً بشكل منفصل` : ''}:`,
+        needInput: true,
+        inputPlaceholder: 'السعر بالجنيه...',
+        defaultValue: String(currentVal),
+        confirmText: 'تحديث السعر ✅',
+        onConfirm: (val) => {
+          const num = roundMoney(val);
+          if (num <= 0) { showToast('برجاء إدخال سعر صحيح أكبر من صفر ⚠️', 'warn'); return; }
+          if (curInput) {
+            curInput.value = num;
+            handleRoutePriceInput(curInput);
+          }
+          showToast(`تم تحديث سعر المسار (${escapeHtml(fromZ)} ↔ ${escapeHtml(toZ)}) إلى ${num} ج — اضغط «حفظ واعتماد التسعيرة» للتأكيد النهائي 💡`, 'ok');
+        }
       });
     }
 
@@ -1816,16 +2018,18 @@
 
     function renderAdminZonesTable() {
       const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
-      document.getElementById('zonesTableBody').innerHTML = zonesArr.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td><button class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button></td></tr>`).join('');
+      document.getElementById('zonesTableBody').innerHTML = zonesArr.map((z,i)=>`<tr><td><strong>${escapeHtml(z)}</strong></td><td><div style="display:flex; gap:6px; align-items:center;"><button type="button" class="btn-edit" onclick="adminEditZoneByIndex(${i})">تعديل ✏️</button><button type="button" class="btn-danger" onclick="adminDeleteZoneByIndex(${i})">حذف</button></div></td></tr>`).join('');
     }
 
-    function renderAdminPackageWeightsTable() { document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td><button class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button></td></tr>`).join(''); }
+    function renderAdminPackageWeightsTable() {
+      document.getElementById('packageWeightsTableBody').innerHTML = (STATE.settings.packageTypes||DEFAULT_PACKAGE_TYPES).map((w,i)=>`<tr><td><strong>${escapeHtml(w)}</strong></td><td><div style="display:flex; gap:6px; align-items:center;"><button type="button" class="btn-edit" onclick="adminEditPackageWeight(${i})">تعديل ✏️</button><button type="button" class="btn-danger" onclick="adminDeletePackageWeight(${i})">حذف</button></div></td></tr>`).join('');
+    }
 
     function renderAdminPricingTable() {
       if(isPricingDirty||(document.activeElement&&document.activeElement.classList.contains('route-price-input')))return;
       const zonesArr = Array.isArray(STATE.zones)&&STATE.zones.length>0 ? STATE.zones : DEFAULT_ZONES;
       const r=[]; zonesArr.forEach(f=>zonesArr.forEach(t=>r.push({f,t,k:`${f}|${t}`})));
-      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="isPricingDirty=true" style="width:80px; padding:4px;"></td></tr>`).join('');
+      document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><div style="display:flex; gap:6px; align-items:center;"><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="handleRoutePriceInput(this)" style="width:76px; padding:5px 6px;"><button type="button" class="btn-edit" style="padding:5px 8px; font-size:11px;" onclick="adminEditSingleRouteModal('${escapeHtml(x.k)}')" title="تعديل السعر">تعديل ✏️</button></div></td></tr>`).join('');
     }
 
     function renderAdminCaptainDirectoryDropdown() {
@@ -1835,9 +2039,17 @@
     }
 
     function renderAdminCustomerDirectory() {
-      const s = document.getElementById('adminCustomerSelect'); if(!s||document.activeElement===s)return;
-      const p = new Set(Object.keys(STATE.customers).filter(isValidEgyptianPhone)); STATE.orders.forEach(o=>{const c=resolveOrderClientPhone(o); if(isValidEgyptianPhone(c))p.add(c);});
-      const pv = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+Array.from(p).map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join(''); if(pv)s.value=pv;
+      const allPhones = getAllKnownCustomerPhones();
+      const s = document.getElementById('adminCustomerSelect');
+      if (s && document.activeElement !== s) {
+        const pv = s.value;
+        s.innerHTML = `<option value="">-- اختر --</option>` + allPhones.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');
+        if (pv && allPhones.includes(pv)) s.value = pv;
+      }
+      const pinSel = document.getElementById('adminCustomerResetPinSelect');
+      if (pinSel && document.activeElement !== pinSel) {
+        filterAdminCustomerResetPinDropdown();
+      }
       renderAdminSelectedCustomerSummary();
     }
 
