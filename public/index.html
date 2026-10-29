@@ -779,6 +779,14 @@
                 </button>
               </div>
               <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد وعلى ضمان الله 💪🍇</button>
+
+              <!-- إطار مساعدة التسجيل عبر الواتساب برسالة تلقائية في نهاية صفحة تسجيل كابتن جديد -->
+              <div style="margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(123, 63, 82, 0.22); border-radius: 12px; background: #FAF7F4; text-align: center;">
+                <p style="font-size: 11.5px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">لو عندك مشكلة فى التسجيل ابعتلنا دلوقتى واحنا نساعدك</p>
+                <a id="regCaptainHelpWhatsappLink" href="https://wa.me/201507800875?text=%D8%A7%D9%86%D8%A7%20%D9%85%D8%AD%D8%AA%D8%A7%D8%AC%20%D9%85%D8%B3%D8%A7%D8%B9%D8%AF%D8%A9%20%D9%81%D9%89%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%84%D9%84%D8%A5%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%85%D8%B9%20%D9%83%D8%A8%D8%A7%D8%AA%D9%86%20%D8%A7%D9%84%D8%B1%D8%AC%D9%84%20%D8%A7%D9%84%D8%B9%D9%86%D8%A7%D8%A8%D9%89" target="_blank" class="btn-main" style="background: #25D366; padding: 9px 14px; font-size: 12px; box-shadow: 0 3px 10px rgba(37, 211, 102, 0.25); text-decoration: none;">
+                  <i class="fa-brands fa-whatsapp" style="font-size: 15px;"></i> ابعتلنا ع الواتساب 💬
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -1049,33 +1057,6 @@
       } catch (e) {}
     }
 
-    function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'اعتمد ونفّذ ✅', isDanger = false, onConfirm }) {
-      const modal = document.getElementById('customActionModal'); const titleEl = document.getElementById('customActionModalTitle');
-      const msgEl = document.getElementById('customActionModalMessage'); const inpWrap = document.getElementById('customActionModalInputWrap');
-      const inpEl = document.getElementById('customActionModalInput'); const confBtn = document.getElementById('customActionModalConfirmBtn');
-      if (!modal) return;
-      if (titleEl) { titleEl.innerText = title || 'تأكيد الخطوة دي'; titleEl.style.color = isDanger ? 'var(--danger)' : 'var(--primary)'; }
-      if (msgEl) msgEl.innerText = message || '';
-      if (inpWrap) inpWrap.style.display = needInput ? 'block' : 'none';
-      if (inpEl) { inpEl.value = defaultValue || ''; inpEl.placeholder = inputPlaceholder || 'اكتب السبب أو التفاصيل هنا...'; }
-      if (confBtn) { confBtn.innerText = confirmText; confBtn.style.background = isDanger ? 'var(--danger)' : 'var(--primary)'; }
-      customModalCallback = function() {
-        const val = inpEl ? inpEl.value.trim() : '';
-        if (needInput && !val) { showToast('اكتب السبب أو التفاصيل الأول يا غالي ⚠️', 'warn'); return; }
-        closeCustomActionModal();
-        if (typeof onConfirm === 'function') onConfirm(val);
-      };
-      if (confBtn) confBtn.onclick = customModalCallback;
-      modal.classList.add('show');
-      if (needInput && inpEl) setTimeout(() => inpEl.focus(), 80);
-    }
-
-    function closeCustomActionModal() {
-      const modal = document.getElementById('customActionModal');
-      if (modal) modal.classList.remove('show');
-      customModalCallback = null;
-    }
-
     function getDefaultSession() {
       return { currentRole: 'customer', currentCustTab: 'home', currentCourTab: 'home', isAppInstalled: window.matchMedia('(display-mode: standalone)').matches || Boolean(window.navigator.standalone), activeCourierPhone: null, savedCustomerPhone: '', authenticatedCustomerPhone: '', currentTripType: 'send' };
     }
@@ -1159,8 +1140,8 @@
       const cleanCheck = normalizePhone(phoneToCheck || getActiveCustomerPhoneForPricing());
       if (!isValidEgyptianPhone(cleanCheck)) return false;
       return Boolean(
-        (STATE.authenticatedCustomerPhone && normalizePhone(STATE.authenticatedCustomerPhone) === cleanCheck) ||
-        (STATE.customerProfile.savedPhone && normalizePhone(STATE.customerProfile.savedPhone) === cleanCheck && STATE.customers[cleanCheck])
+        STATE.authenticatedCustomerPhone &&
+        normalizePhone(STATE.authenticatedCustomerPhone) === cleanCheck
       );
     }
 
@@ -1574,6 +1555,32 @@
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
+function openCustomActionModal({ title, message, needInput = false, inputPlaceholder = '', defaultValue = '', confirmText = 'اعتمد ونفّذ ✅', isDanger = false, onConfirm }) {
+      const modal = document.getElementById('customActionModal'); const titleEl = document.getElementById('customActionModalTitle');
+      const msgEl = document.getElementById('customActionModalMessage'); const inpWrap = document.getElementById('customActionModalInputWrap');
+      const inpEl = document.getElementById('customActionModalInput'); const confBtn = document.getElementById('customActionModalConfirmBtn');
+      if (!modal) return;
+      if (titleEl) { titleEl.innerText = title || 'تأكيد الخطوة دي'; titleEl.style.color = isDanger ? 'var(--danger)' : 'var(--primary)'; }
+      if (msgEl) msgEl.innerText = message || '';
+      if (inpWrap) inpWrap.style.display = needInput ? 'block' : 'none';
+      if (inpEl) { inpEl.value = defaultValue || ''; inpEl.placeholder = inputPlaceholder || 'اكتب السبب أو التفاصيل هنا...'; }
+      if (confBtn) { confBtn.innerText = confirmText; confBtn.style.background = isDanger ? 'var(--danger)' : 'var(--primary)'; }
+      customModalCallback = function() {
+        const val = inpEl ? inpEl.value.trim() : '';
+        if (needInput && !val) { showToast('اكتب السبب أو التفاصيل الأول يا غالي ⚠️', 'warn'); return; }
+        closeCustomActionModal();
+        if (typeof onConfirm === 'function') onConfirm(val);
+      };
+      if (confBtn) confBtn.onclick = customModalCallback;
+      modal.classList.add('show');
+      if (needInput && inpEl) setTimeout(() => inpEl.focus(), 80);
+    }
+
+    function closeCustomActionModal() {
+      const modal = document.getElementById('customActionModal');
+      if (modal) modal.classList.remove('show');
+      customModalCallback = null;
+    }
 
     function openCourierOrderMapModal(orderId) {
       const o = STATE.orders.find(x => x.id === orderId);
@@ -1654,7 +1661,7 @@
       document.getElementById('publicLeafletMapModal')?.classList.remove('show');
     }
 
-    // ==================== نظام كوبونات الخصم للعميل (Promo Codes) ====================
+    // ==================== نظام كوبونات الخصم للعميل (Promo Codes) مع دعم عدد مرات الاستخدام ====================
     function validateSavedPromoCodeLocally() {
       if (!savedPromoCodeObj || !savedPromoCodeObj.code) return;
       const now = Date.now();
@@ -1670,9 +1677,26 @@
           return;
         }
         const activePhone = getActiveCustomerPhoneForPricing();
-        if (activePhone && Array.isArray(match.usedBy) && match.usedBy.includes(activePhone)) {
-          persistSavedPromoCode(null);
-          return;
+        const isCustomTarget = Boolean(match.targetPhone && match.targetPhone !== 'all');
+        const maxUses = isCustomTarget ? Math.max(1, Number(match.maxUses) || 1) : 1;
+
+        if (activePhone) {
+          if (isCustomTarget && normalizePhone(match.targetPhone) !== activePhone) {
+            persistSavedPromoCode(null);
+            return;
+          }
+          const usedCnt = (match.usageCounts && typeof match.usageCounts === 'object' && match.usageCounts[activePhone] !== undefined)
+            ? Math.max(0, Number(match.usageCounts[activePhone]) || 0)
+            : (Array.isArray(match.usedBy) && match.usedBy.includes(activePhone) ? maxUses : 0);
+
+          if (usedCnt >= maxUses) {
+            persistSavedPromoCode(null);
+            return;
+          }
+          savedPromoCodeObj.maxUses = maxUses;
+          savedPromoCodeObj.usedCount = usedCnt;
+          savedPromoCodeObj.remainingUses = Math.max(0, maxUses - usedCnt);
+          try { localStorage.setItem(SAVED_PROMO_KEY, JSON.stringify(savedPromoCodeObj)); } catch (e) {}
         }
       }
       renderSavedPromoUI();
@@ -1687,8 +1711,11 @@
         const remHours = savedPromoCodeObj.expiresAt
           ? Math.max(1, Math.ceil((Number(savedPromoCodeObj.expiresAt) - Date.now()) / 3600000))
           : 24;
+        const maxUses = Math.max(1, Number(savedPromoCodeObj.maxUses) || 1);
+        const remUses = savedPromoCodeObj.remainingUses !== undefined ? Number(savedPromoCodeObj.remainingUses) : maxUses;
+        const usesNote = maxUses > 1 ? ` • متبقي ${remUses} من ${maxUses} مرات` : '';
         box.style.display = 'flex';
-        txt.innerText = `🎟️ كود شغال ومتشال معاك (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (شغال لـ ${remHours} س)`;
+        txt.innerText = `🎟️ كود شغال ومتشال معاك (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (شغال لـ ${remHours} س${usesNote})`;
         if (inp && document.activeElement !== inp) inp.value = savedPromoCodeObj.code;
       } else {
         box.style.display = 'none';
@@ -1760,12 +1787,50 @@
       window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    function reportActualAppInstallOnce() {
+      try {
+        if (localStorage.getItem('ENNABY_INSTALL_REPORTED_V1') === '1') return;
+        localStorage.setItem('ENNABY_INSTALL_REPORTED_V1', '1');
+      } catch (e) {}
+      fetch(`${API_BASE}/api/analytics/install`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: CLIENT_DEVICE_ID })
+      }).catch(() => {});
+    }
+
     window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredInstallPrompt = e; renderGlobalBannersAndSettings(); });
-    window.addEventListener('appinstalled', function() { deferredInstallPrompt = null; STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('نورتنا يا باشا! تطبيق الرجل العنابي نزل على تليفونك بنجاح 🛵🎉', 'ok'); });
+    window.addEventListener('appinstalled', function() {
+      deferredInstallPrompt = null;
+      STATE.isAppInstalled = true;
+      saveSession();
+      renderGlobalBannersAndSettings();
+      reportActualAppInstallOnce();
+      showToast('نورتنا يا باشا! تطبيق الرجل العنابي نزل على تليفونك بنجاح 🛵🎉', 'ok');
+    });
     function installAppLocally() {
-      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('التطبيق متثبت وجاهز على تليفونك أصلاً يا باشا! 🛵✨', 'ok'); return; }
-      if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then((choiceResult) => { if (choiceResult && choiceResult.outcome === 'accepted') { STATE.isAppInstalled = true; saveSession(); renderGlobalBannersAndSettings(); showToast('نورت يا باشا.. ثواني والتطبيق يركب على تليفونك 🛵🎉', 'ok'); } deferredInstallPrompt = null; }); } 
-      else { window.location.href = '/install'; }
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        STATE.isAppInstalled = true;
+        saveSession();
+        renderGlobalBannersAndSettings();
+        reportActualAppInstallOnce();
+        showToast('التطبيق متثبت وجاهز على تليفونك أصلاً يا باشا! 🛵✨', 'ok');
+        return;
+      }
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult && choiceResult.outcome === 'accepted') {
+            STATE.isAppInstalled = true;
+            saveSession();
+            renderGlobalBannersAndSettings();
+            reportActualAppInstallOnce();
+            showToast('نورت يا باشا.. ثواني والتطبيق يركب على تليفونك 🛵🎉', 'ok');
+          }
+          deferredInstallPrompt = null;
+        });
+      } else { window.location.href = '/install'; }
     }
 
     function updateBottomNavVisibility() {
@@ -1841,7 +1906,13 @@
       }
       const waNum = getSupportWhatsapp();
       const custWaLink = document.getElementById('custSupportWhatsappLink'); const courWaLink = document.getElementById('courierSupportWhatsappLink');
-      if (custWaLink) custWaLink.href = `https://wa.me/${waNum}`; if (courWaLink) courWaLink.href = `https://wa.me/${waNum}`;
+      const regHelpWaLink = document.getElementById('regCaptainHelpWhatsappLink');
+      if (custWaLink) custWaLink.href = `https://wa.me/${waNum}`;
+      if (courWaLink) courWaLink.href = `https://wa.me/${waNum}`;
+      if (regHelpWaLink) {
+        const helpMsg = 'انا محتاج مساعدة فى التسجيل للإنضمام مع كباتن الرجل العنابى';
+        regHelpWaLink.href = `https://wa.me/${waNum}?text=${encodeURIComponent(helpMsg)}`;
+      }
       const isMaint = Boolean(STATE.settings && STATE.settings.maintenanceMode);
       const custMaintAlert = document.getElementById('customerMaintenanceAlert'); const orderFormCard = document.getElementById('customerOrderFormCard');
       if (custMaintAlert) custMaintAlert.style.display = isMaint ? 'block' : 'none';
@@ -1984,8 +2055,9 @@
         const walletDiscount = availableWallet > 0 ? roundMoney(Math.min(availableWallet, fare)) : 0;
         let promoDiscount = 0;
         if (savedPromoCodeObj && savedPromoCodeObj.code) {
-          const matchesTarget = !savedPromoCodeObj.targetPhone || savedPromoCodeObj.targetPhone === 'all' || savedPromoCodeObj.targetPhone === custPhone;
-          if (matchesTarget) {
+          const matchesTarget = !savedPromoCodeObj.targetPhone || savedPromoCodeObj.targetPhone === 'all' || normalizePhone(savedPromoCodeObj.targetPhone) === custPhone;
+          const hasRemUses = savedPromoCodeObj.remainingUses === undefined || Number(savedPromoCodeObj.remainingUses) > 0;
+          if (matchesTarget && hasRemUses) {
             const remAfterWallet = Math.max(0, roundMoney(fare - walletDiscount));
             promoDiscount = roundMoney(Math.min(roundMoney(savedPromoCodeObj.discountAmount || 0), remAfterWallet));
           }
@@ -2075,9 +2147,22 @@
             syncInlineMapMarkers();
             updateGpsPillsUI();
             if (activePromoCode) {
-              persistSavedPromoCode(null);
+              if (savedPromoCodeObj && String(savedPromoCodeObj.code).toUpperCase() === String(activePromoCode).toUpperCase()) {
+                const maxU = Math.max(1, Number(savedPromoCodeObj.maxUses) || 1);
+                const remU = (savedPromoCodeObj.remainingUses !== undefined ? Number(savedPromoCodeObj.remainingUses) : maxU) - 1;
+                if (remU <= 0) {
+                  persistSavedPromoCode(null);
+                } else {
+                  savedPromoCodeObj.remainingUses = remU;
+                  savedPromoCodeObj.usedCount = (Number(savedPromoCodeObj.usedCount) || 0) + 1;
+                  persistSavedPromoCode(savedPromoCodeObj);
+                }
+              }
+              validateSavedPromoCodeLocally();
               const pInp = document.getElementById('orderPromoCodeInput');
-              if (pInp) pInp.value = '';
+              if (pInp) {
+                pInp.value = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : '';
+              }
             }
             switchCustTab('orders'); showToast(data.message || 'طلبك طار ع الرادار بنجاح يا باشا 🚀', 'ok');
           } else {
@@ -2595,6 +2680,7 @@
 
     async function initApp() {
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
+      if (STATE.isAppInstalled) reportActualAppInstallOnce();
       setupDelegatedEvents(); populateAllZoneDropdowns();
       initCustomerInlineLeafletMap();
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) { const senderInput = document.getElementById('orderSenderPhone'); if (senderInput) senderInput.value = STATE.customerProfile.savedPhone; }

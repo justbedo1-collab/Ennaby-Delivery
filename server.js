@@ -16,7 +16,9 @@ const app = express();
 // ==========================================
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+// [FIX-01] قراءة مفتاح Supabase العام فقط وحظر أي سقوط احتياطي على المفتاح السري نهائياً
+const rawAnonKey = (process.env.APP_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+const SUPABASE_ANON_KEY = (rawAnonKey && !rawAnonKey.startsWith('sb_secret_') && rawAnonKey !== SUPABASE_KEY) ? rawAnonKey : '';
 const JWT_SECRET = process.env.JWT_SECRET || 'ENNABY_SUPER_SECRET_KEY_V31_2026';
 const CAPTAIN_DOCS_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'captain-docs';
 
@@ -111,9 +113,26 @@ const DEFAULT_PRICING = {
   'طلخا|جديلة': 70, 'جديلة|طلخا': 70, 'سندوب|جديلة': 70, 'جديلة|سندوب': 70
 };
 
+const ACTIVE_COURIER_ORDER_STATUSES = [
+  'تم قبول الطلب',
+  'الكابتن وصل للاستلام',
+  'استلم الطرد وفي السكة',
+  'الكابتن وصل للتسليم'
+];
+
+const ALLOWED_ADVANCE_STATUSES = [
+  'الكابتن وصل للاستلام',
+  'استلم الطرد وفي السكة',
+  'الكابتن وصل للتسليم'
+];
+
 // خريطة تتبع العملاء المتواجدين حالياً على المنصة (Presence Heartbeat)
 const customerPresenceMap = new Map();
 const PRESENCE_TTL_MS = 45000; // 45 ثانية
+
+// أقفال تزامن لمنع تجاوز الحد الأقصى لاستخدام الكوبون بالطلبات المتزامنة، ومنع تكرار إشعارات Push اللحظية
+const promoRedeemLocks = new Set();
+const recentAdminPushDedupeMap = new Map();
 
 function touchCustomerPresence(req, explicitClientId = null) {
   try {
@@ -156,6 +175,18 @@ function roundMoney(val) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
+function normalizePhoneServer(raw) {
+  if (raw === null || raw === undefined) return '';
+  let s = String(raw)
+    .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+    .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776))
+    .replace(/[\s\-()]/g, '');
+  if (s.startsWith('+20')) s = '0' + s.slice(3);
+  else if (s.startsWith('0020')) s = '0' + s.slice(4);
+  else if (s.startsWith('20') && s.length === 12) s = '0' + s.slice(2);
+  return s;
+}
+
 function formatArabicTripsText(count) {
   const n = Math.max(1, Number(count) || 2);
   if (n === 1) return 'مشوار واحد';
@@ -175,6 +206,181 @@ function formatCairoTime(dateInput = Date.now()) {
     });
   } catch (e) {
     return new Date(dateInput).toLocaleTimeString('ar-EG');
+  }
+}
+
+// استخراج تاريخ اليوم بتوقيت القاهرة بصيغة YYYY-MM-DD لتخزين مؤشرات الأداء السنوية (365 يوماً)
+function getCairoDateKey(dateInput = Date.now()) {
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Africa/Cairo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(d);
+    const y = parts.find(p => p.type === 'year')?.value;
+    const m = parts.find(p => p.type === 'month')?.value;
+    const day = parts.find(p => p.type === 'day')?.value;
+    if (y && m && day) return `${y}-${m}-${day}`;
+  } catch (e) {}
+  return new Date().toISOString().slice(0, 10);
+}
+
+// دوال مساعدة لحساب عدد مرات استخدام الكوبون لكل عميل بدقة وتوافق مع السجل القديم
+function getPromoMaxUsesForPhone(promo) {
+  if (!promo) return 1;
+  const isCustomTarget = Boolean(promo.targetPhone && promo.targetPhone !== 'all');
+  if (isCustomTarget) {
+    return Math.max(1, parseInt(promo.maxUses, 10) || 1);
+  }
+  return Math.max(1, parseInt(promo.maxUses, 10) || 1);
+}
+
+function getPromoPhoneUsedCount(promo, phone) {
+  const cleanPh = normalizePhoneServer(phone);
+  if (!promo || !cleanPh) return 0;
+  if (promo.usageCounts && typeof promo.usageCounts === 'object' && promo.usageCounts[cleanPh] !== undefined) {
+    return Math.max(0, parseInt(promo.usageCounts[cleanPh], 10) || 0);
+  }
+  const usedBy = Array.isArray(promo.usedBy) ? promo.usedBy : [];
+  return usedBy.filter(p => normalizePhoneServer(p) === cleanPh).length;
+}
+
+function normalizePromoCodeObject(promo) {
+  if (!promo || typeof promo !== 'object') return null;
+  const cleanTarget = (!promo.targetPhone || promo.targetPhone === 'all') ? 'all' : normalizePhoneServer(promo.targetPhone);
+  const maxUses = cleanTarget === 'all' ? 1 : Math.max(1, parseInt(promo.maxUses, 10) || 1);
+  const rawCounts = (promo.usageCounts && typeof promo.usageCounts === 'object') ? { ...promo.usageCounts } : {};
+  const rawUsedBy = Array.isArray(promo.usedBy) ? promo.usedBy : [];
+
+  rawUsedBy.forEach(ph => {
+    const cPh = normalizePhoneServer(ph);
+    if (cPh && rawCounts[cPh] === undefined) {
+      rawCounts[cPh] = 1;
+    }
+  });
+
+  const normalizedCounts = {};
+  Object.entries(rawCounts).forEach(([ph, cnt]) => {
+    const cPh = normalizePhoneServer(ph);
+    const nCnt = Math.max(0, parseInt(cnt, 10) || 0);
+    if (cPh && nCnt > 0) normalizedCounts[cPh] = nCnt;
+  });
+
+  const syncedUsedBy = Object.keys(normalizedCounts).filter(ph => normalizedCounts[ph] >= maxUses);
+
+  return {
+    ...promo,
+    code: String(promo.code || '').trim().toUpperCase(),
+    discountAmount: roundMoney(promo.discountAmount || 0),
+    targetPhone: cleanTarget,
+    maxUses,
+    usageCounts: normalizedCounts,
+    usedBy: syncedUsedBy
+  };
+}
+
+// تنظيف وتجميع بيانات مؤشرات الأداء لمدة 400 يوم (شاملاً الطلبات المؤكدة، التحميلات، العملاء، والكباتن)
+function sanitizeAnalyticsHistory(rawHistory = {}, rawCustomersRows = [], rawCaptainsRows = [], rawOrdersRows = []) {
+  const cutoffMs = Date.now() - 400 * 24 * 60 * 60 * 1000;
+  const cutoffKey = getCairoDateKey(cutoffMs);
+
+  const cleanBucket = (bucket) => {
+    const out = {};
+    if (bucket && typeof bucket === 'object') {
+      for (const [k, v] of Object.entries(bucket)) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(k) && k >= cutoffKey) {
+          const num = Math.max(0, Number(v) || 0);
+          if (num > 0) out[k] = num;
+        }
+      }
+    }
+    return out;
+  };
+
+  const installs = cleanBucket(rawHistory.installs);
+  const customers = cleanBucket(rawHistory.customers);
+  const captains = cleanBucket(rawHistory.captains);
+  const completedOrders = cleanBucket(rawHistory.completedOrders);
+
+  // دمج التواريخ الفعلية المسجلة في الجداول لضمان دقة الرسم البياني التاريخي
+  const dbCustCounts = {};
+  (rawCustomersRows || []).forEach(r => {
+    if (r && r.created_at) {
+      const k = getCairoDateKey(r.created_at);
+      if (k >= cutoffKey) dbCustCounts[k] = (dbCustCounts[k] || 0) + 1;
+    }
+  });
+  for (const [k, cnt] of Object.entries(dbCustCounts)) {
+    customers[k] = Math.max(customers[k] || 0, cnt);
+  }
+
+  const dbCapCounts = {};
+  (rawCaptainsRows || []).forEach(r => {
+    if (r && r.created_at) {
+      const k = getCairoDateKey(r.created_at);
+      if (k >= cutoffKey) dbCapCounts[k] = (dbCapCounts[k] || 0) + 1;
+    }
+  });
+  for (const [k, cnt] of Object.entries(dbCapCounts)) {
+    captains[k] = Math.max(captains[k] || 0, cnt);
+  }
+
+  const dbOrdCounts = {};
+  (rawOrdersRows || []).forEach(r => {
+    if (r && r.status === 'مكتمل') {
+      const ts = r.created_at || r.createdAt;
+      if (ts) {
+        const k = getCairoDateKey(ts);
+        if (k >= cutoffKey) dbOrdCounts[k] = (dbOrdCounts[k] || 0) + 1;
+      }
+    }
+  });
+  for (const [k, cnt] of Object.entries(dbOrdCounts)) {
+    completedOrders[k] = Math.max(completedOrders[k] || 0, cnt);
+  }
+
+  return { installs, customers, captains, completedOrders };
+}
+
+// تسجيل حدث إحصائي جديد (installs | customers | captains | completedOrders) في سجل الـ 365 يوماً
+async function recordAnalyticsMetricEvent(metricType, incrementBy = 1, extraPartialIncentives = {}) {
+  try {
+    const rawState = await fetchRawDatabaseState(true);
+    const prevSettings = rawState.settings || {};
+    const todayKey = getCairoDateKey();
+    const rawSavedHistory = (rawState.storedIncentives && rawState.storedIncentives.analyticsHistory) || {};
+    const hadSavedToday = Boolean(rawSavedHistory[metricType] && rawSavedHistory[metricType][todayKey] !== undefined);
+    const prevSavedVal = Number(rawSavedHistory[metricType]?.[todayKey]) || 0;
+
+    const history = sanitizeAnalyticsHistory(
+      prevSettings.analyticsHistory || {},
+      rawState.rawCustomersRows || [],
+      rawState.rawCaptains || [],
+      rawState.rawOrdersRows || rawState.orders || []
+    );
+    const inc = Math.max(1, Number(incrementBy) || 1);
+
+    if (!history[metricType]) history[metricType] = {};
+    const dbSyncedVal = Number(history[metricType][todayKey]) || 0;
+    history[metricType][todayKey] = hadSavedToday
+      ? Math.max(prevSavedVal + inc, dbSyncedVal)
+      : (dbSyncedVal > 0 ? dbSyncedVal : inc);
+
+    const partial = { ...extraPartialIncentives, analyticsHistory: history };
+    if (metricType === 'installs') {
+      const sumInstalls = Object.values(history.installs).reduce((a, b) => a + (Number(b) || 0), 0);
+      partial.appInstallsCount = Math.max((Number(prevSettings.appInstallsCount) || 0) + inc, sumInstalls);
+    }
+
+    await saveIncentivesToDatabase(rawState, partial);
+    invalidateStateCache();
+    return partial.appInstallsCount || prevSettings.appInstallsCount || 0;
+  } catch (e) {
+    console.warn('Analytics record warning:', e.message);
+    return 0;
   }
 }
 
@@ -258,7 +464,6 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     o => o.assignedCourierPhone === captainRow.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض')
   );
 
-  // حساب عدد الطلبات في النوافذ الزمنية المتتالية (النافذة الحالية = 0، النافذة السابقة = 1، وهكذا)
   const totalWindowsToCheck = Math.max(diamondWeeksTarget + 2, 8);
   const weeklyCounts = [];
   for (let w = 0; w < totalWindowsToCheck; w++) {
@@ -270,7 +475,6 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
 
   const currentWeekOrders = weeklyCounts[0] || 0;
 
-  // حساب عدد النوافذ المتتالية المكتملة قبل النافذة الحالية مباشرة (ابتداءً من w = 1)
   let pastConsecutiveWeeks = 0;
   for (let w = 1; w < weeklyCounts.length; w++) {
     if (weeklyCounts[w] >= weeklyTarget) {
@@ -292,15 +496,11 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
       autoTier = 'platinum';
     }
   } else {
-    // تطبيق مبدأ الهبوط التدريجي الآمن (Graceful Demotion):
-    // إذا كان الكابتن قد حقق المستوى الماسي في النوافذ السابقة مباشرة وأخفق في النافذة الحالية،
-    // يهبط خطوة واحدة فقط إلى البلاتيني 🥈 (فرصة أمان) بدلاً من السقوط المباشر للبرونزي 🥉
     if (pastConsecutiveWeeks >= diamondWeeksTarget) {
       autoTier = 'platinum';
       gracefulDemotion = true;
       consecutiveQualifiedWeeks = pastConsecutiveWeeks;
     } else {
-      // إذا كان بلاتينياً أو برونزياً وأخفق في النافذة الحالية، يهبط خطوة واحدة إلى البرونزي 🥉
       autoTier = 'bronze';
       consecutiveQualifiedWeeks = 0;
     }
@@ -318,7 +518,6 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
 
   const tierInfo = tierMetaMap[finalTier] || tierMetaMap.bronze;
 
-  // حساب عمولة المنصة الفعلية (شاملة وقت الذروة إن وجد، ثم خصم المستوى أو العمولة الفردية)
   const surgeInfo = getActiveSurgeInfo(s);
   const basePlatformFee = roundMoney(s.platformFee ?? 7);
   const surgedPlatformFee = surgeInfo.isActive
@@ -359,7 +558,6 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
   };
 }
 
-// تحويل مسار الصورة النسبي المخزن في قاعدة البيانات أو Storage إلى رابط عام كامل
 function resolveCaptainPhotoUrl(rawVal) {
   if (!rawVal || typeof rawVal !== 'string') return null;
   const s = rawVal.trim();
@@ -383,7 +581,6 @@ function resolveCaptainPhotoUrl(rawVal) {
   return `${cleanBase}/storage/v1/object/public/${CAPTAIN_DOCS_BUCKET}/${cleanPath}`;
 }
 
-// رفع صورة Base64 إلى Supabase Storage (captain-docs/captains) وإرجاع الرابط العام
 async function uploadCaptainDocToStorage(phone, docKey, dataUrl) {
   if (!dataUrl || typeof dataUrl !== 'string') return null;
   if (!dataUrl.startsWith('data:image/')) {
@@ -425,16 +622,15 @@ function invalidateStateCache() {
   stateCache.lastFetched = 0;
 }
 
+// [FIX-03] إنشاء حساب الأدمن الرئيسي عند عدم وجوده فقط دون الكتابة فوق بياناته عند إعادة تشغيل السيرفر
 async function ensureMasterAdminSeeded() {
   try {
-    const initUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
-    const initPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
-    const hashed = await bcrypt.hash(String(initPass), 10);
-
-    const { data: existing } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
-
+    const { data: existing } = await supabase.from('admins').select('username').eq('is_master', true).maybeSingle();
     if (!existing) {
-      await supabase.from('admins').upsert([{
+      const initUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
+      const initPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
+      const hashed = await bcrypt.hash(String(initPass), 10);
+      await supabase.from('admins').insert([{
         username: initUser,
         name: 'الأدمن الرئيسي',
         password_hash: hashed,
@@ -443,16 +639,9 @@ async function ensureMasterAdminSeeded() {
         permissions: {}
       }]);
       console.log('✅ تم إنشاء حساب الأدمن الرئيسي لأول مرة بنجاح.');
-    } else {
-      await supabase.from('admins').update({
-        username: initUser,
-        password_hash: hashed,
-        status: 'نشط'
-      }).eq('is_master', true);
-      console.log('🔄 تم تحديث ومزامنة بيانات الأدمن الرئيسي مع ملف .env بنجاح.');
     }
   } catch (err) {
-    console.warn('Admin seed/sync warning:', err.message);
+    console.warn('Admin seed warning:', err.message);
   }
 }
 ensureMasterAdminSeeded();
@@ -491,10 +680,33 @@ function getAuthenticatedCustomerFromCookie(req) {
     const token = req.cookies && req.cookies.customer_session;
     if (!token) return null;
     const dec = jwt.verify(token, JWT_SECRET);
-    return dec && dec.phone ? String(dec.phone).trim() : null;
+    return dec && dec.phone ? normalizePhoneServer(dec.phone) : null;
   } catch (e) {
     return null;
   }
+}
+
+function getAuthenticatedCaptainFromCookie(req) {
+  try {
+    const token = req.cookies && req.cookies.captain_session;
+    if (!token) return null;
+    const dec = jwt.verify(token, JWT_SECRET);
+    return dec && dec.phone ? normalizePhoneServer(dec.phone) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// التحقق من ملكية العميل للطلب (عبر كوكي الجلسة أو مطابقة رقم صاحب الطلب)
+function verifyCustomerOrderOwnership(req, orderRow) {
+  if (!orderRow) return false;
+  const orderOwnerPhone = normalizePhoneServer(orderRow.customer_phone || orderRow.client_phone);
+  if (!orderOwnerPhone) return false;
+  const cookiePhone = getAuthenticatedCustomerFromCookie(req);
+  const bodyPhone = normalizePhoneServer(req.body && (req.body.clientPhone || req.body.customerPhone || req.body.phone));
+  if (cookiePhone && cookiePhone === orderOwnerPhone) return true;
+  if (!cookiePhone && bodyPhone && bodyPhone === orderOwnerPhone) return true;
+  return false;
 }
 
 function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders = [], settings = {}) {
@@ -529,13 +741,13 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     lifetimeNetEarnings: roundMoney(c.lifetime_net_earnings || 0),
     walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 40) : [],
     adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : []),
-    // بيانات مستوى الكابتن، الهبوط التدريجي، وشريط التقدم الحي
+    createdAt: c.created_at ? new Date(c.created_at).getTime() : null,
     tier: tierData.tier,
     autoTier: tierData.autoTier,
     isManualTier: tierData.isManualTier,
     gracefulDemotion: tierData.gracefulDemotion,
     tierName: tierData.tierName,
-    tierEmoji: tierData.tierEmoji,
+    tierEmoji: tierInfoSafeEmoji(tierData),
     tierBadgeText: tierData.tierBadgeText,
     tierDiscount: tierData.tierDiscount,
     tierColor: tierData.tierColor,
@@ -547,6 +759,10 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     tierProgressPct: tierData.tierProgressPct,
     effectiveFee: tierData.effectiveFee
   };
+}
+
+function tierInfoSafeEmoji(tierData) {
+  return (tierData && tierData.tierEmoji) ? tierData.tierEmoji : '🥉';
 }
 
 function mapOrderRow(o) {
@@ -590,7 +806,39 @@ function mapOrderRow(o) {
   };
 }
 
-// تنظيف تلقائي ذكي للطلبات التي تجاوزت المهلة كل دقيقتين بدون الحاجة لـ Vercel Pro Cron
+// استرجاع استخدام واحد من الكوبون عند إلغاء الطلب
+async function releasePromoCodeUsageForCancelledOrder(promoCode, customerPhone) {
+  const cleanCode = String(promoCode || '').trim().toUpperCase();
+  const cleanPhone = normalizePhoneServer(customerPhone);
+  if (!cleanCode || !cleanPhone) return;
+  try {
+    const rawState = await fetchRawDatabaseState(true);
+    const promoList = Array.isArray(rawState.settings.promoCodes)
+      ? rawState.settings.promoCodes.map(normalizePromoCodeObject).filter(Boolean)
+      : [];
+    const pIdx = promoList.findIndex(p => p.code === cleanCode);
+    if (pIdx === -1) return;
+
+    const promoObj = promoList[pIdx];
+    const currentUsed = getPromoPhoneUsedCount(promoObj, cleanPhone);
+    const nextUsed = Math.max(0, currentUsed - 1);
+    const counts = { ...(promoObj.usageCounts || {}) };
+    if (nextUsed > 0) {
+      counts[cleanPhone] = nextUsed;
+    } else {
+      delete counts[cleanPhone];
+    }
+    const maxUses = getPromoMaxUsesForPhone(promoObj);
+    promoList[pIdx] = {
+      ...promoObj,
+      usageCounts: counts,
+      usedBy: Object.keys(counts).filter(ph => counts[ph] >= maxUses)
+    };
+    await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
+  } catch (e) {}
+}
+
+// [FIX-08] تنظيف تلقائي متزامن للطلبات التي تجاوزت المهلة لضمان اكتمال التنفيذ على Vercel Serverless
 async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
   const now = Date.now();
   if (now - lastLazyCleanupRun < 120000) return 0;
@@ -602,7 +850,7 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
 
     const cutoff = new Date(now - mins * 60000).toISOString();
     const { data: expired } = await supabase.from('orders')
-      .update({ status: 'ملغي (تجاوز مهلة الانتظار)' })
+      .update({ status: 'ملغي (تجاوز مهلة الانتظار)', fee_refunded: true })
       .eq('status', 'في انتظار كابتن')
       .lt('created_at', cutoff)
       .select();
@@ -622,6 +870,13 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
             p_reason: `رد تعويض مهلة طلب ${order.id}`
           });
         }
+        if (meta.promoCode && custPhone) {
+          await releasePromoCodeUsageForCancelledOrder(meta.promoCode, custPhone);
+        }
+        notifyAdminsPush('platform', {
+          title: `⏳ إلغاء تلقائي لطلب (${order.id})`,
+          body: `تجاوز الطلب مهلة الانتظار (${mins} دقيقة) دون قبول وتم إلغاؤه تلقائياً.`
+        });
       }
       invalidateStateCache();
       return expired.length;
@@ -630,7 +885,6 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
   return 0;
 }
 
-// فهرسة ملفات الكباتن الموجودة في Supabase Storage (captain-docs/captains) لضمان ظهورها دائماً
 async function fetchCaptainStorageFilesMap() {
   const storageMap = {};
   try {
@@ -663,11 +917,15 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     return stateCache.raw;
   }
 
+  // [FIX-08] تنفيذ وانتظار تنظيف الطلبات المنتهية بـ await قبل قراءة جدول الطلبات لضمان اكتمال العملية على Vercel
+  const cachedTimeoutMins = stateCache.raw?.settings?.waitingTimeoutMinutes ?? Number(process.env.WAITING_TIMEOUT_MINUTES || 30);
+  await runLazyExpiredOrdersCleanup(cachedTimeoutMins);
+
   const [settingsRes, customersRes, captainsRes, ordersRes, adminsRes, logsRes, storageFilesMap] = await Promise.all([
     supabase.from('settings').select('*').eq('id', 1).maybeSingle(),
     supabase.from('customers').select('*'),
     supabase.from('captains').select('*').order('created_at', { ascending: false }),
-    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(350),
+    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
     supabase.from('admins').select('*').order('created_at', { ascending: true }),
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50),
     fetchCaptainStorageFilesMap()
@@ -697,7 +955,6 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const referralRequiredOrders = Math.max(1, Number(storedIncentives.referralRequiredOrders ?? 2));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
 
-  // إعدادات مستويات الكباتن الديناميكية (شاملة نافذة الأيام وعدد الأيام المتتالية للماسي)
   const tierWeeklyOrdersTarget = Math.max(1, Number(storedIncentives.tierWeeklyOrdersTarget ?? 25));
   const tierDaysWindow = Math.max(1, Number(storedIncentives.tierDaysWindow ?? 7));
   const tierConsecutiveDaysForDiamond = Math.max(
@@ -711,13 +968,30 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     ? storedIncentives.tierManualOverrides
     : {};
 
-  // إعدادات وقت الذروة (Surge Pricing)
   const surgePercent = Math.max(0, Number(storedIncentives.surgePercent ?? 0));
   const surgeEndTime = Math.max(0, Number(storedIncentives.surgeEndTime ?? 0));
   const surgeDurationMinutes = Math.max(1, Number(storedIncentives.surgeDurationMinutes ?? 30));
 
-  // قائمة كوبونات الخصم الديناميكية (Promo Codes)
-  const promoCodes = Array.isArray(storedIncentives.promoCodes) ? storedIncentives.promoCodes : [];
+  const promoCodes = Array.isArray(storedIncentives.promoCodes)
+    ? storedIncentives.promoCodes.map(normalizePromoCodeObject).filter(Boolean)
+    : [];
+
+  const adminPushMasterEnabled = storedIncentives.adminPushMasterEnabled !== false;
+  const adminPushCustomersEnabled = storedIncentives.adminPushCustomersEnabled !== false;
+  const adminPushCaptainsEnabled = storedIncentives.adminPushCaptainsEnabled !== false;
+
+  const rawCustomersRows = customersRes.data || [];
+  const rawCaptainsRows = captainsRes.data || [];
+  const rawOrdersRows = ordersRes.data || [];
+  const analyticsHistory = sanitizeAnalyticsHistory(
+    storedIncentives.analyticsHistory || {},
+    rawCustomersRows,
+    rawCaptainsRows,
+    rawOrdersRows
+  );
+  const sumHistoryInstalls = Object.values(analyticsHistory.installs || {}).reduce((a, b) => a + (Number(b) || 0), 0);
+  const appInstallsCount = Math.max(Number(storedIncentives.appInstallsCount || 0), sumHistoryInstalls);
+  const installedClientIds = Array.isArray(storedIncentives.installedClientIds) ? storedIncentives.installedClientIds.slice(-2000) : [];
 
   const settings = {
     platformFee: roundMoney(sRow.platform_fee ?? 7),
@@ -743,6 +1017,12 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     surgeEndTime,
     surgeDurationMinutes,
     promoCodes,
+    adminPushMasterEnabled,
+    adminPushCustomersEnabled,
+    adminPushCaptainsEnabled,
+    appInstallsCount,
+    installedClientIds,
+    analyticsHistory,
     supportWhatsapp: sRow.support_whatsapp || '201507800875',
     broadcastMessage: sRow.broadcast_message || '',
     broadcastTarget,
@@ -759,21 +1039,20 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     ? roundMoney(settings.platformFee * (1 + surgeInfo.surgePercent / 100))
     : settings.platformFee;
 
-  runLazyExpiredOrdersCleanup(settings.waitingTimeoutMinutes);
-
   const zones = Array.isArray(sRow.zones) && sRow.zones.length > 0 ? sRow.zones : DEFAULT_ZONES;
   const pricing = Object.keys(rawPricingObj).length > 0 ? rawPricingObj : { ...DEFAULT_PRICING };
 
   const customersMap = {};
-  (customersRes.data || []).forEach(c => {
+  rawCustomersRows.forEach(c => {
     customersMap[c.phone] = {
       walletBalance: roundMoney(c.wallet_balance ?? 0),
       points: Number(c.points ?? 0),
+      createdAt: c.created_at ? new Date(c.created_at).getTime() : null,
       walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 30) : []
     };
   });
 
-  const mappedOrders = (ordersRes.data || []).map(mapOrderRow);
+  const mappedOrders = rawOrdersRows.map(mapOrderRow);
 
   const rawData = {
     settings,
@@ -781,7 +1060,9 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     zones,
     pricing,
     customers: customersMap,
-    rawCaptains: captainsRes.data || [],
+    rawCustomersRows,
+    rawCaptains: rawCaptainsRows,
+    rawOrdersRows,
     storageFilesMap: storageFilesMap || {},
     orders: mappedOrders,
     adminAccounts: (adminsRes.data || []).map(a => ({
@@ -805,7 +1086,6 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   return rawData;
 }
 
-// دالة مساعدة لحفظ الكائن __incentives داخل جدول settings بأمان تام
 async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraSettingsColumns = {}, customBasePricing = null) {
   const prevSettings = rawState.settings || {};
   const mergedIncentives = {
@@ -826,6 +1106,12 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
     surgeEndTime: Math.max(0, Number(prevSettings.surgeEndTime ?? 0)),
     surgeDurationMinutes: Math.max(1, Number(prevSettings.surgeDurationMinutes ?? 30)),
     promoCodes: Array.isArray(prevSettings.promoCodes) ? prevSettings.promoCodes : [],
+    adminPushMasterEnabled: prevSettings.adminPushMasterEnabled !== false,
+    adminPushCustomersEnabled: prevSettings.adminPushCustomersEnabled !== false,
+    adminPushCaptainsEnabled: prevSettings.adminPushCaptainsEnabled !== false,
+    appInstallsCount: Math.max(0, Number(prevSettings.appInstallsCount ?? 0)),
+    installedClientIds: Array.isArray(prevSettings.installedClientIds) ? prevSettings.installedClientIds.slice(-2000) : [],
+    analyticsHistory: prevSettings.analyticsHistory || { installs: {}, customers: {}, captains: {}, completedOrders: {} },
     ...partialIncentives
   };
 
@@ -841,12 +1127,22 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
   return mergedIncentives;
 }
 
+// [FIX-02] تنقية استجابة /api/bootstrap للعامة وحجب الكوبونات وسجل العملاء والبيانات الحساسة للكباتن عن غير أصحابها
 async function buildClientState(req, forceRefresh = false) {
   touchCustomerPresence(req);
   const raw = await fetchRawDatabaseState(forceRefresh);
-  const isAdmin = isRequestFromAdminView(req);
+  const isAdminView = isRequestFromAdminView(req);
   const adminToken = getAuthenticatedAdminFromCookie(req);
   const authenticatedCustomerPhone = getAuthenticatedCustomerFromCookie(req);
+  const authenticatedCaptainPhone = getAuthenticatedCaptainFromCookie(req);
+
+  let verifiedAdminAccount = null;
+  if (adminToken && adminToken.username) {
+    verifiedAdminAccount = (raw.adminAccounts || []).find(
+      a => a.username.toLowerCase() === String(adminToken.username).toLowerCase() && a.status !== 'معطل'
+    ) || null;
+  }
+  const isAuthenticatedAdmin = Boolean(isAdminView && verifiedAdminAccount);
 
   const surgeInfo = getActiveSurgeInfo(raw.settings);
   const clientSettings = {
@@ -858,9 +1154,32 @@ async function buildClientState(req, forceRefresh = false) {
       : raw.settings.platformFee
   };
 
-  const mappedCaptains = raw.rawCaptains.map(c =>
-    mapCaptainRow(c, isAdmin, raw.storageFilesMap, raw.orders, clientSettings)
-  );
+  delete clientSettings.installedClientIds;
+
+  // عدم إرسال سجل التحليلات التفصيلي أو قائمة الكوبونات إلا للمسؤول المصرح له
+  if (!isAuthenticatedAdmin) {
+    delete clientSettings.analyticsHistory;
+    delete clientSettings.promoCodes;
+  }
+
+  const mappedCaptains = raw.rawCaptains.map(c => {
+    const isSelfCaptain = Boolean(authenticatedCaptainPhone && normalizePhoneServer(c.phone) === authenticatedCaptainPhone);
+    const row = mapCaptainRow(c, isAuthenticatedAdmin, raw.storageFilesMap, raw.orders, clientSettings);
+    if (!isAuthenticatedAdmin && !isSelfCaptain) {
+      row.nationalId = '';
+      row.walletTransactions = [];
+      row.adminNotices = [];
+      row.customFeeReason = null;
+    }
+    return row;
+  });
+
+  let filteredCustomers = {};
+  if (isAuthenticatedAdmin) {
+    filteredCustomers = raw.customers;
+  } else if (authenticatedCustomerPhone && raw.customers[authenticatedCustomerPhone]) {
+    filteredCustomers = { [authenticatedCustomerPhone]: raw.customers[authenticatedCustomerPhone] };
+  }
 
   const availableCaptainsCount = mappedCaptains.filter(c => c.status === 'معتمد' && c.isAvailable).length;
   const onlineCustomersCount = getOnlineCustomersCount();
@@ -869,7 +1188,7 @@ async function buildClientState(req, forceRefresh = false) {
     settings: clientSettings,
     zones: raw.zones,
     pricing: raw.pricing,
-    customers: raw.customers,
+    customers: filteredCustomers,
     captains: mappedCaptains,
     orders: raw.orders,
     availableCaptainsCount,
@@ -879,14 +1198,14 @@ async function buildClientState(req, forceRefresh = false) {
       supabaseUrl: SUPABASE_URL || '',
       supabaseAnonKey: SUPABASE_ANON_KEY || ''
     },
-    adminAccounts: isAdmin ? raw.adminAccounts : [],
-    auditLogs: isAdmin ? raw.auditLogs : [],
-    authenticatedAdminUsername: adminToken ? adminToken.username : null
+    adminAccounts: isAuthenticatedAdmin ? raw.adminAccounts : [],
+    auditLogs: isAuthenticatedAdmin ? raw.auditLogs : [],
+    authenticatedAdminUsername: verifiedAdminAccount ? verifiedAdminAccount.username : null
   };
 }
 
 // ==========================================
-// 4. محرك إشعارات الموبايل (Web Push Notifications)
+// 4. محرك إشعارات الموبايل (Web Push Notifications) + رادار الأدمن اللحظي
 // ==========================================
 async function sendPushNotificationToPhone(phone, payloadObj) {
   if (!phone) return;
@@ -902,6 +1221,81 @@ async function sendPushNotificationToPhone(phone, payloadObj) {
     if (err.statusCode === 410 || err.statusCode === 404) {
       await supabase.from('push_subscriptions').delete().eq('phone', phone);
     }
+  }
+}
+
+async function notifyAdminsPush(category = 'platform', payloadObj = {}) {
+  try {
+    const rawState = await fetchRawDatabaseState(false);
+    const s = rawState.settings || {};
+
+    if (s.adminPushMasterEnabled === false) return;
+    if (category === 'customer' && s.adminPushCustomersEnabled === false) return;
+    if (category === 'captain' && s.adminPushCaptainsEnabled === false) return;
+
+    const dedupeKey = `${category}|${payloadObj.title || ''}|${payloadObj.body || ''}`;
+    const nowTs = Date.now();
+    const lastSentTs = recentAdminPushDedupeMap.get(dedupeKey) || 0;
+    if (nowTs - lastSentTs < 3000) return;
+    recentAdminPushDedupeMap.set(dedupeKey, nowTs);
+    if (recentAdminPushDedupeMap.size > 200) {
+      for (const [k, ts] of recentAdminPushDedupeMap.entries()) {
+        if (nowTs - ts > 10000) recentAdminPushDedupeMap.delete(k);
+      }
+    }
+
+    const allowedAdminUsers = new Set();
+    const envMasterUser = String(process.env.INITIAL_ADMIN_USER || 'ennaby1').trim().toLowerCase();
+    allowedAdminUsers.add(envMasterUser);
+
+    (rawState.adminAccounts || []).forEach(a => {
+      if (!a || a.status === 'معطل') return;
+      if (a.isMaster || (a.permissions && a.permissions.receiveAdminPush)) {
+        allowedAdminUsers.add(String(a.username || '').trim().toLowerCase());
+      }
+    });
+
+    const { data: adminSubs } = await supabase
+      .from('push_subscriptions')
+      .select('phone, subscription')
+      .like('phone', 'admin:%');
+
+    if (!adminSubs || adminSubs.length === 0) return;
+
+    const targetSubs = adminSubs.filter(sub => {
+      const rawPhoneKey = String(sub.phone || '');
+      const parts = rawPhoneKey.split(':');
+      const uname = String(parts[1] || '').trim().toLowerCase();
+      return uname && allowedAdminUsers.has(uname);
+    });
+
+    if (targetSubs.length === 0) return;
+
+    const payloadStr = JSON.stringify({
+      title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
+      body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
+      url: payloadObj.url || '/admin'
+    });
+
+    const expiredKeys = [];
+    await Promise.allSettled(
+      targetSubs.map(async (subRow) => {
+        if (!subRow || !subRow.subscription) return;
+        try {
+          await webpush.sendNotification(subRow.subscription, payloadStr);
+        } catch (err) {
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            expiredKeys.push(subRow.phone);
+          }
+        }
+      })
+    );
+
+    if (expiredKeys.length > 0) {
+      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+    }
+  } catch (e) {
+    console.warn('Admin push notify warning:', e.message);
   }
 }
 
@@ -933,14 +1327,16 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
     const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
     if (!allSubs || allSubs.length === 0) return 0;
 
-    let targetSubs = allSubs;
+    const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
+
+    let targetSubs = publicSubs;
     if (target === 'captains' || target === 'customers') {
       const { data: captainsRows } = await supabase.from('captains').select('phone');
       const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
       if (target === 'captains') {
-        targetSubs = allSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+        targetSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
       } else if (target === 'customers') {
-        targetSubs = allSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+        targetSubs = publicSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
       }
     }
 
@@ -965,19 +1361,80 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
 }
 
 app.post('/api/push/subscribe', async (req, res) => {
-  const { phone, subscription } = req.body || {};
-  if (!phone || !subscription) {
-    return res.status(400).json({ success: false });
+  try {
+    const { phone, subscription } = req.body || {};
+    if (!phone || !subscription) {
+      return res.status(400).json({ success: false });
+    }
+    let cleanKey = String(phone).trim();
+
+    if (cleanKey.startsWith('admin:')) {
+      const adminToken = getAuthenticatedAdminFromCookie(req);
+      if (!adminToken || !adminToken.username) {
+        return res.status(401).json({ success: false, message: 'يرجى تسجيل دخول المسؤول أولاً 🔒' });
+      }
+      const { data: adminRow } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('username', adminToken.username)
+        .maybeSingle();
+
+      if (!adminRow || adminRow.status === 'معطل') {
+        return res.status(403).json({ success: false, message: 'حساب المسؤول غير نشط ⛔' });
+      }
+      if (!adminRow.is_master && !(adminRow.permissions && adminRow.permissions.receiveAdminPush)) {
+        return res.status(403).json({ success: false, message: 'ليس لديك صلاحية استقبال إشعارات الرادار ⛔' });
+      }
+      const parts = cleanKey.split(':');
+      const deviceSuffix = parts[2] ? String(parts[2]).trim() : 'default';
+      cleanKey = `admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`;
+    } else {
+      cleanKey = normalizePhoneServer(cleanKey);
+    }
+
+    await supabase.from('push_subscriptions').upsert([{
+      phone: cleanKey,
+      subscription,
+      updated_at: new Date().toISOString()
+    }]);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false });
   }
-  await supabase.from('push_subscriptions').upsert([{
-    phone: String(phone).trim(),
-    subscription,
-    updated_at: new Date().toISOString()
-  }]);
-  res.json({ success: true });
 });
 
-// نبضة اتصال العميل لتحديث عداد العملاء المتواجدين حالياً
+app.post('/api/analytics/install', async (req, res) => {
+  try {
+    const rawClientId = String((req.body && req.body.clientId) || (req.query && req.query.clientId) || '').trim();
+    const rawState = await fetchRawDatabaseState(true);
+    const prevInstalledIds = Array.isArray(rawState.settings?.installedClientIds)
+      ? rawState.settings.installedClientIds
+      : [];
+
+    if (rawClientId && prevInstalledIds.includes(rawClientId)) {
+      const state = await buildClientState(req, false);
+      return res.json({
+        success: true,
+        alreadyCounted: true,
+        appInstallsCount: rawState.settings?.appInstallsCount || 0,
+        state
+      });
+    }
+
+    const updatedIds = rawClientId ? [...prevInstalledIds.slice(-1999), rawClientId] : prevInstalledIds;
+    const newTotal = await recordAnalyticsMetricEvent('installs', 1, { installedClientIds: updatedIds });
+
+    notifyAdminsPush('customer', {
+      title: '📲 تثبيت فعلي جديد للتطبيق!',
+      body: `قام مستخدم بتثبيت تطبيق الرجل العنابي على هاتفه الآن (إجمالي التثبيتات الفعلية: ${newTotal}) 🚀`
+    });
+    const state = await buildClientState(req, true);
+    res.json({ success: true, appInstallsCount: newTotal, state });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
 app.post('/api/presence/ping', (req, res) => {
   touchCustomerPresence(req, req.body && req.body.clientId);
   res.json({ success: true, onlineCustomersCount: getOnlineCustomersCount() });
@@ -996,12 +1453,11 @@ app.get('/api/bootstrap', async (req, res) => {
   }
 });
 
-// التحقق من كود الخصم للعميل قبل الطلب أو لحفظه في محفظة الكوبونات
 app.post('/api/promo-codes/validate', async (req, res) => {
   try {
     const { code, clientPhone } = req.body || {};
     const cleanCode = String(code || '').trim().toUpperCase();
-    const cleanPhone = String(clientPhone || '').trim();
+    const cleanPhone = normalizePhoneServer(clientPhone);
 
     if (!cleanCode) {
       return res.status(400).json({ success: false, message: 'اكتب كود الخصم الأول يا باشا! 🎟️⚠️' });
@@ -1019,19 +1475,31 @@ app.post('/api/promo-codes/validate', async (req, res) => {
       return res.status(400).json({ success: false, message: 'يا خسارة! فترة سماح الكود ده خلصت خلاص ⏳❌' });
     }
 
-    if (promo.targetPhone && promo.targetPhone !== 'all') {
+    const isCustomTarget = Boolean(promo.targetPhone && promo.targetPhone !== 'all');
+    const maxUses = getPromoMaxUsesForPhone(promo);
+
+    if (isCustomTarget) {
       if (!cleanPhone) {
         return res.status(400).json({ success: false, message: 'اكتب رقم تليفونك في خانة الراسل الأول عشان نتحقق من الكود 📱⚠️' });
       }
-      if (promo.targetPhone !== cleanPhone) {
+      if (normalizePhoneServer(promo.targetPhone) !== cleanPhone) {
         return res.status(403).json({ success: false, message: 'الكود ده مخصوص لعميل تاني بالاسم يا باشا 😅🔒' });
       }
     }
 
-    const usedBy = Array.isArray(promo.usedBy) ? promo.usedBy : [];
-    if (cleanPhone && usedBy.includes(cleanPhone)) {
-      return res.status(400).json({ success: false, message: 'أنت استخدمت الكود ده قبل كده في مشوار سابق يا باشا 😎✅' });
+    const usedCount = cleanPhone ? getPromoPhoneUsedCount(promo, cleanPhone) : 0;
+    const remainingUses = Math.max(0, maxUses - usedCount);
+
+    if (cleanPhone && usedCount >= maxUses) {
+      const limitMsg = maxUses > 1
+        ? `استهلكت الحد الأقصى المسموح به لهذا الكود (${maxUses} مرات استخدام) يا باشا 😎✅`
+        : 'أنت استخدمت الكود ده قبل كده في مشوار سابق يا باشا 😎✅';
+      return res.status(400).json({ success: false, message: limitMsg });
     }
+
+    const usageHint = (isCustomTarget && maxUses > 1)
+      ? ` (متاح ليك استخدامه ${remainingUses} من ${maxUses} مرات)`
+      : '';
 
     res.json({
       success: true,
@@ -1039,9 +1507,12 @@ app.post('/api/promo-codes/validate', async (req, res) => {
         code: promo.code,
         discountAmount: roundMoney(promo.discountAmount),
         targetPhone: promo.targetPhone || 'all',
+        maxUses,
+        usedCount,
+        remainingUses,
         expiresAt: promo.expiresAt || null
       },
-      message: `مبروك يا باشا! 🎉 الكود (${promo.code}) شغال وهيديك خصم ${promo.discountAmount} جنيه وتقدر تحتفظ بيه لحد انتهاء فترة السماح 🛵💸`
+      message: `مبروك يا باشا! 🎉 الكود (${promo.code}) شغال وهيديك خصم ${promo.discountAmount} جنيه${usageHint} وتقدر تحتفظ بيه لحد انتهاء فترة السماح 🛵💸`
     });
   } catch (err) {
     res.status(500).json({ success: false, message: 'تعذر التحقق من الكود حالياً ⚠️' });
@@ -1049,7 +1520,7 @@ app.post('/api/promo-codes/validate', async (req, res) => {
 });
 
 // ==========================================
-// 6. حماية التخمين (Rate Limiter) والمصادقة
+// 6. حماية التخمين (Rate Limiter) والمصادقة والصلاحيات
 // ==========================================
 async function checkRateLimit(phone) {
   const { data: attempt } = await supabase.from('login_attempts').select('*').eq('phone', phone).maybeSingle();
@@ -1093,26 +1564,53 @@ async function authenticateCaptain(req, res, next) {
 
 async function authenticateAdmin(req, res, next) {
   try {
-    const token = req.cookies.admin_session;
-    if (token) {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const { data: admin } = await supabase.from('admins').select('*').eq('username', decoded.username).maybeSingle();
-      if (admin && admin.status !== 'معطل') {
-        req.admin = admin;
-        return next();
-      }
+    const token = req.cookies && req.cookies.admin_session;
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'يرجى تسجيل دخول المسؤول أولاً 🔒' });
     }
-    const { data: masterAdmin } = await supabase.from('admins').select('*').eq('is_master', true).limit(1).maybeSingle();
-    if (masterAdmin) {
-      req.admin = masterAdmin;
-      return next();
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded || !decoded.username) {
+      return res.status(401).json({ success: false, message: 'جلسة المسؤول غير صالحة 🔒' });
     }
-    req.admin = { username: process.env.INITIAL_ADMIN_USER || 'ennaby1', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
+
+    const { data: admin } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('username', decoded.username)
+      .maybeSingle();
+
+    if (!admin) {
+      res.clearCookie('admin_session');
+      return res.status(401).json({ success: false, message: 'حساب المسؤول غير موجود 🔒' });
+    }
+
+    if (admin.status === 'معطل') {
+      res.clearCookie('admin_session');
+      return res.status(403).json({ success: false, message: 'تم تعطيل حساب المسؤول من الإدارة ⛔' });
+    }
+
+    req.admin = admin;
     next();
   } catch (err) {
-    req.admin = { username: process.env.INITIAL_ADMIN_USER || 'ennaby1', name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
-    next();
+    return res.status(401).json({ success: false, message: 'انتهت جلسة المسؤول، يرجى تسجيل الدخول مجدداً 🔒' });
   }
+}
+
+function requireAdminPerm(req, res, permKeys = []) {
+  const adm = req.admin;
+  if (!adm || adm.status === 'معطل') {
+    res.status(403).json({ success: false, message: 'حساب المسؤول غير مصرح له ⛔' });
+    return false;
+  }
+  if (adm.is_master || adm.isMaster) return true;
+  const keys = Array.isArray(permKeys) ? permKeys : [permKeys];
+  const perms = adm.permissions || {};
+  const hasAny = keys.some(k => Boolean(perms[k]));
+  if (!hasAny) {
+    res.status(403).json({ success: false, message: 'عفواً، ليس لديك صلاحية لتنفيذ هذا الإجراء في غرفة العمليات ⛔' });
+    return false;
+  }
+  return true;
 }
 
 // ==========================================
@@ -1130,53 +1628,41 @@ app.post('/api/auth/admin/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'برجاء إدخال اسم المستخدم وكلمة المرور ⚠️' });
     }
 
-    const envUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
-    const envPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
-
     let { data: admin } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
 
-    if (username.toLowerCase() === envUser.toLowerCase() && password === envPass) {
-      const hashed = await bcrypt.hash(String(envPass), 10);
-      if (!admin) {
-        const { data: masterRow } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
-        if (masterRow) {
-          const { data: updatedMaster } = await supabase.from('admins').update({
-            username: envUser,
-            password_hash: hashed,
-            status: 'نشط'
-          }).eq('is_master', true).select().maybeSingle();
-          admin = updatedMaster || masterRow;
-        } else {
-          const { data: createdMaster } = await supabase.from('admins').insert([{
-            username: envUser,
-            name: 'الأدمن الرئيسي',
-            password_hash: hashed,
-            is_master: true,
-            status: 'نشط',
-            permissions: {}
-          }]).select().maybeSingle();
-          admin = createdMaster;
-        }
-      }
-      if (!admin) {
-        admin = { username: envUser, name: 'الأدمن الرئيسي', is_master: true, status: 'نشط', permissions: {} };
-      }
-    } else {
-      if (!admin) {
+    if (!admin) {
+      // [FIX-03] لا يتم الإنشاء من .env إلا إذا لم يكن هناك أي حساب أدمن رئيسي مسجل في القاعدة إطلاقاً
+      const { data: existingMaster } = await supabase.from('admins').select('*').eq('is_master', true).maybeSingle();
+      const envUser = (process.env.INITIAL_ADMIN_USER || 'ennaby1').trim();
+      const envPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
+
+      if (!existingMaster && username.toLowerCase() === envUser.toLowerCase() && password === envPass) {
+        const hashed = await bcrypt.hash(String(envPass), 10);
+        const { data: createdMaster } = await supabase.from('admins').insert([{
+          username: envUser,
+          name: 'الأدمن الرئيسي',
+          password_hash: hashed,
+          is_master: true,
+          status: 'نشط',
+          permissions: {}
+        }]).select().maybeSingle();
+        admin = createdMaster;
+      } else {
         return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة! ⚠️' });
       }
+    } else {
       if (admin.status === 'معطل') {
         return res.status(403).json({ success: false, message: 'حساب المسؤول معطل من الإدارة ⛔' });
       }
       const valid = await bcrypt.compare(String(password), admin.password_hash || '');
-      const isMasterWithEnvPass = Boolean(admin.is_master) && password === envPass;
-      if (!valid && !isMasterWithEnvPass) {
+      if (!valid) {
         return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة! ⚠️' });
       }
     }
 
     const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('admin_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+    req.cookies = { ...req.cookies, admin_session: token };
 
     req.query = { ...req.query, role: 'admin' };
     invalidateStateCache();
@@ -1202,7 +1688,8 @@ app.post('/api/auth/admin/login', async (req, res) => {
 });
 
 app.post('/api/auth/customer/login', async (req, res) => {
-  const { phone, pin } = req.body || {};
+  const { phone: rawPhone, pin } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   if (!phone || !pin) return res.status(400).json({ success: false, message: 'بيانات غير مكتملة' });
 
   const rateLimit = await checkRateLimit(phone);
@@ -1219,6 +1706,12 @@ app.post('/api/auth/customer/login', async (req, res) => {
       points: 0,
       wallet_transactions: []
     }]).select().single();
+
+    await recordAnalyticsMetricEvent('customers', 1);
+    notifyAdminsPush('customer', {
+      title: '👑 تسجيل عميل جديد!',
+      body: `انضم عميل جديد لمنصة الرجل العنابي برقم: ${phone}`
+    });
 
     touchCustomerPresence(req, `cust_${phone}`);
     invalidateStateCache();
@@ -1247,10 +1740,12 @@ app.post('/api/auth/customer/login', async (req, res) => {
 app.post('/api/captains/register', async (req, res) => {
   try {
     const {
-      phone, password, fullName, nationalId, primaryZone,
+      phone: rawPhone, password, fullName, nationalId, primaryZone,
       vehicleType, plateNumber, idFrontPhoto, idBackPhoto,
       vehiclePhoto, referredByPhone
     } = req.body || {};
+
+    const phone = normalizePhoneServer(rawPhone);
 
     if (!phone || !password || !fullName || !nationalId || !vehicleType) {
       return res.status(400).json({ success: false, message: 'برجاء استكمال جميع البيانات الإجبارية ونوع المركبة ⚠️' });
@@ -1258,6 +1753,11 @@ app.post('/api/captains/register', async (req, res) => {
 
     const rawState = await fetchRawDatabaseState(false);
     const { data: existing } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
+
+    if (!existing && rawState.settings.allowCaptainRegistration === false) {
+      return res.status(403).json({ success: false, message: 'باب تسجيل الكباتن الجدد مغلق حالياً لاكتمال العدد 🛵' });
+    }
+
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
     const [uploadedFrontUrl, uploadedBackUrl, uploadedVehicleUrl] = await Promise.all([
@@ -1289,14 +1789,19 @@ app.post('/api/captains/register', async (req, res) => {
       if (updErr) {
         return res.status(400).json({ success: false, message: 'تعذر تحديث المستندات، حاول مرة أخرى ⚠️' });
       }
+      notifyAdminsPush('captain', {
+        title: '📄 إعادة رفع مستندات كابتن',
+        body: `قام الكابتن ${fullName} (${phone}) بتحديث مستنداته وينتظر المراجعة الآن.`
+      });
       invalidateStateCache();
       const state = await buildClientState(req, true);
       return res.json({ success: true, message: 'تم إعادة إرسال مستنداتك للمراجعة بنجاح ⏳', state });
     }
 
     let validReferrer = null;
-    if (rawState.settings.referralRewardActive !== false && referredByPhone && referredByPhone !== phone) {
-      const { data: refCap } = await supabase.from('captains').select('phone').eq('phone', referredByPhone).maybeSingle();
+    const cleanRefPhone = normalizePhoneServer(referredByPhone);
+    if (rawState.settings.referralRewardActive !== false && cleanRefPhone && cleanRefPhone !== phone) {
+      const { data: refCap } = await supabase.from('captains').select('phone').eq('phone', cleanRefPhone).maybeSingle();
       if (refCap) validReferrer = refCap.phone;
     }
 
@@ -1328,6 +1833,12 @@ app.post('/api/captains/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'فشل إتمام التسجيل.. تأكد من صحة البيانات المدخلة' });
     }
 
+    await recordAnalyticsMetricEvent('captains', 1);
+    notifyAdminsPush('captain', {
+      title: '🛵 تسجيل كابتن جديد للمراجعة!',
+      body: `الكابتن: ${fullName} (${phone}) — المركبة: ${vehicleType} — المنطقة: ${primaryZone || 'المنصورة'}`
+    });
+
     invalidateStateCache();
     const state = await buildClientState(req, true);
     res.json({ success: true, message: 'تم إرسال طلبك بنجاح وسيتم مراجعته من الإدارة قريباً ⏳', state });
@@ -1338,7 +1849,8 @@ app.post('/api/captains/register', async (req, res) => {
 });
 
 app.post('/api/auth/captain/login', async (req, res) => {
-  const { phone, password } = req.body || {};
+  const { phone: rawPhone, password } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   const rateLimit = await checkRateLimit(phone);
   if (rateLimit.locked) return res.status(403).json({ success: false, message: rateLimit.message });
 
@@ -1366,6 +1878,7 @@ app.post('/api/auth/captain/login', async (req, res) => {
 
   const token = jwt.sign({ phone: cap.phone, role: 'captain', session_version: cap.session_version || 1 }, JWT_SECRET, { expiresIn: '14d' });
   res.cookie('captain_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 14 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  req.cookies = { ...req.cookies, captain_session: token };
   const state = await buildClientState(req, false);
   res.json({ success: true, message: 'منور الميدان يا بطل 🛵', state });
 });
@@ -1384,13 +1897,16 @@ app.post('/api/auth/admin/logout', (req, res) => {
 // 8. مسارات إنشاء وإدارة الطلبات (العميل والكابتن)
 // ==========================================
 app.post('/api/orders', async (req, res) => {
+  let activeLockKey = null;
   try {
     const {
-      clientPhone, pin, tripType, pickupZone, pickupAddress,
+      clientPhone: rawClientPhone, pin, tripType, pickupZone, pickupAddress,
       dropoffZone, dropoffAddress, customerNotes, packageType,
       payer, senderPhone, recipientPhone,
       pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode
     } = req.body || {};
+
+    const clientPhone = normalizePhoneServer(rawClientPhone);
 
     if (!clientPhone || !pickupAddress || !dropoffAddress) {
       return res.status(400).json({ success: false, message: 'برجاء استكمال كافة بيانات وعناوين الطلب ⚠️' });
@@ -1401,9 +1917,8 @@ app.post('/api/orders', async (req, res) => {
       return res.status(403).json({ success: false, message: 'المنصة في وضع الصيانة الطارئة حالياً 🛠️' });
     }
 
-    // التحقق من جلسة العميل: لا يُطلب رمز الـ PIN إذا كانت جلسة العميل نشطة لنفس الرقم
-    const sessionCustPhone = getAuthenticatedCustomerFromCookie(req);
-    const isSessionTrustedForPhone = Boolean(sessionCustPhone && sessionCustPhone === String(clientPhone).trim());
+    const sessionCustPhone = normalizePhoneServer(getAuthenticatedCustomerFromCookie(req));
+    const isSessionTrustedForPhone = Boolean(sessionCustPhone && sessionCustPhone === clientPhone);
     const cleanPin = String(pin || '').trim();
 
     let { data: cust } = await supabase.from('customers').select('*').eq('phone', clientPhone).maybeSingle();
@@ -1424,6 +1939,12 @@ app.post('/api/orders', async (req, res) => {
         wallet_transactions: []
       }]).select().single();
       cust = createdCust;
+
+      await recordAnalyticsMetricEvent('customers', 1);
+      notifyAdminsPush('customer', {
+        title: '👑 تسجيل عميل جديد!',
+        body: `عميل جديد انضم للمنصة مع أول طلب برقم: ${clientPhone}`
+      });
     } else if (!isSessionTrustedForPhone) {
       if (!/^[0-9]{4}$/.test(cleanPin)) {
         return res.status(401).json({
@@ -1455,7 +1976,6 @@ app.post('/api/orders', async (req, res) => {
     const routeKey = `${pickupZone}|${dropoffZone}`;
     const baseRouteFare = roundMoney(rawState.pricing[routeKey] ?? 40);
 
-    // تطبيق زيادة وقت الذروة (Surge Pricing) على أجرة المشوار وعمولة المنصة تلقائياً
     const surgeInfo = getActiveSurgeInfo(rawState.settings);
     const originalFare = surgeInfo.isActive
       ? roundMoney(baseRouteFare * (1 + surgeInfo.surgePercent / 100))
@@ -1466,34 +1986,74 @@ app.post('/api/orders', async (req, res) => {
       ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
       : basePlatformFee;
 
-    // 1. خصم المحفظة التلقائي
     const availableWallet = Math.max(0, roundMoney(cust.wallet_balance || 0));
     const walletDiscount = availableWallet > 0 ? roundMoney(Math.min(availableWallet, originalFare)) : 0;
 
-    // 2. خصم الكوبون (Promo Code) إن وجد وكان صالحاً
     let promoDiscount = 0;
     let appliedPromoCode = null;
+    let updatedPromoListToSave = null;
     const cleanPromo = String(promoCode || '').trim().toUpperCase();
 
     if (cleanPromo) {
-      const promoList = Array.isArray(rawState.settings.promoCodes) ? rawState.settings.promoCodes : [];
-      const promoIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === cleanPromo && p.active !== false);
-      if (promoIdx !== -1) {
-        const promoObj = promoList[promoIdx];
-        const notExpired = !promoObj.expiresAt || Date.now() <= Number(promoObj.expiresAt);
-        const matchesTarget = !promoObj.targetPhone || promoObj.targetPhone === 'all' || promoObj.targetPhone === clientPhone;
-        const usedBy = Array.isArray(promoObj.usedBy) ? promoObj.usedBy : [];
-        const notUsedYet = !usedBy.includes(clientPhone);
+      activeLockKey = `${cleanPromo}:${clientPhone}`;
+      if (promoRedeemLocks.has(activeLockKey)) {
+        return res.status(429).json({ success: false, message: 'جاري معالجة طلبك بالكود حالياً، انتظر لحظة يا باشا ⏳' });
+      }
+      promoRedeemLocks.add(activeLockKey);
 
-        if (notExpired && matchesTarget && notUsedYet) {
-          const remainingFareAfterWallet = Math.max(0, roundMoney(originalFare - walletDiscount));
-          promoDiscount = roundMoney(Math.min(roundMoney(promoObj.discountAmount || 0), remainingFareAfterWallet));
-          if (promoDiscount > 0) {
-            appliedPromoCode = promoObj.code;
-            promoList[promoIdx].usedBy = [...usedBy, clientPhone];
-            await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
-          }
-        }
+      const freshRawState = await fetchRawDatabaseState(true);
+      const promoList = Array.isArray(freshRawState.settings.promoCodes)
+        ? freshRawState.settings.promoCodes.map(normalizePromoCodeObject).filter(Boolean)
+        : [];
+      const promoIdx = promoList.findIndex(p => p && p.code === cleanPromo && p.active !== false);
+
+      // [FIX-07] إرجاع رسالة خطأ صريحة عند إرسال كود خصم غير صحيح بدلاً من تجاهله بصمت
+      if (promoIdx === -1) {
+        promoRedeemLocks.delete(activeLockKey);
+        activeLockKey = null;
+        return res.status(400).json({ success: false, message: 'كود الخصم المدخل غير صحيح أو انتهت صلاحيته يا باشا 🎟️⚠️' });
+      }
+
+      const promoObj = promoList[promoIdx];
+      const notExpired = !promoObj.expiresAt || Date.now() <= Number(promoObj.expiresAt);
+      const matchesTarget = !promoObj.targetPhone || promoObj.targetPhone === 'all' || normalizePhoneServer(promoObj.targetPhone) === clientPhone;
+      const maxUses = getPromoMaxUsesForPhone(promoObj);
+      const currentUses = getPromoPhoneUsedCount(promoObj, clientPhone);
+
+      if (!notExpired) {
+        promoRedeemLocks.delete(activeLockKey);
+        activeLockKey = null;
+        return res.status(400).json({ success: false, message: 'انتهت صلاحية كود الخصم المحدد ⏳⚠️' });
+      }
+      if (!matchesTarget) {
+        promoRedeemLocks.delete(activeLockKey);
+        activeLockKey = null;
+        return res.status(403).json({ success: false, message: 'كود الخصم هذا مخصص لرقم عميل آخر 🔒⚠️' });
+      }
+      if (currentUses >= maxUses) {
+        promoRedeemLocks.delete(activeLockKey);
+        activeLockKey = null;
+        return res.status(400).json({
+          success: false,
+          message: maxUses > 1
+            ? `لقد استهلكت جميع مرات الاستخدام المسموح بها لهذا الكود (${maxUses} مرات) ⚠️`
+            : 'لقد استخدمت كود الخصم هذا من قبل ⚠️'
+        });
+      }
+
+      const remainingFareAfterWallet = Math.max(0, roundMoney(originalFare - walletDiscount));
+      promoDiscount = roundMoney(Math.min(roundMoney(promoObj.discountAmount || 0), remainingFareAfterWallet));
+      if (promoDiscount > 0) {
+        appliedPromoCode = promoObj.code;
+        const nextUses = currentUses + 1;
+        const nextUsageCounts = { ...(promoObj.usageCounts || {}), [clientPhone]: nextUses };
+        const nextUsedBy = Object.keys(nextUsageCounts).filter(ph => nextUsageCounts[ph] >= maxUses);
+        promoList[promoIdx] = {
+          ...promoObj,
+          usageCounts: nextUsageCounts,
+          usedBy: nextUsedBy
+        };
+        updatedPromoListToSave = { rawState: freshRawState, promoList };
       }
     }
 
@@ -1505,14 +2065,6 @@ app.post('/api/orders', async (req, res) => {
     let orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`;
     while (existingIds.has(orderId)) {
       orderId = `#ORD-${Math.floor(10000 + Math.random() * 90000)}`;
-    }
-
-    if (walletDiscount > 0) {
-      await supabase.rpc('adjust_customer_wallet_atomic', {
-        p_phone: clientPhone,
-        p_amount: -Math.abs(walletDiscount),
-        p_reason: `خصم رصيد محفظة على طلب ${orderId}`
-      });
     }
 
     const storedNotesWithMeta = encodeOrderMetaIntoNotes(customerNotes || '', {
@@ -1551,13 +2103,41 @@ app.post('/api/orders', async (req, res) => {
     }]);
 
     if (ordErr) {
+      if (activeLockKey) {
+        promoRedeemLocks.delete(activeLockKey);
+        activeLockKey = null;
+      }
       return res.status(400).json({ success: false, message: 'تعذر تسجيل الطلب، حاول مرة أخرى ⚠️' });
+    }
+
+    if (walletDiscount > 0) {
+      await supabase.rpc('adjust_customer_wallet_atomic', {
+        p_phone: clientPhone,
+        p_amount: -Math.abs(walletDiscount),
+        p_reason: `خصم رصيد محفظة على طلب ${orderId}`
+      });
+    }
+
+    if (updatedPromoListToSave) {
+      await saveIncentivesToDatabase(updatedPromoListToSave.rawState, {
+        promoCodes: updatedPromoListToSave.promoList
+      });
+    }
+
+    if (activeLockKey) {
+      promoRedeemLocks.delete(activeLockKey);
+      activeLockKey = null;
     }
 
     invalidateStateCache();
     broadcastPushToAvailableCaptains({
       title: 'أوردر جديد على الرادار يانجم! 📡🛵',
       body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج.. الحق اقبله قبل ما يطير! 🚀`
+    });
+
+    notifyAdminsPush('customer', {
+      title: `🚀 طلب جديد على الرادار (${orderId})`,
+      body: `العميل (${clientPhone}) طلب (${tripType === 'fetch' ? 'هاتلي' : 'طرد'}) من ${pickupZone} (${pickupAddress}) إلى ${dropoffZone} (${dropoffAddress}) — الكاش: ${finalFare} ج`
     });
 
     const state = await buildClientState(req, true);
@@ -1569,12 +2149,12 @@ app.post('/api/orders', async (req, res) => {
       state
     });
   } catch (err) {
+    if (activeLockKey) promoRedeemLocks.delete(activeLockKey);
     console.error('Create order error:', err);
     res.status(500).json({ success: false, message: 'حدث خطأ أثناء تأكيد الطلب ⚠️' });
   }
 });
 
-// قبول الكابتن للطلب (مع تطبيق خصم مستوى الكابتن + نسبة وقت الذروة أوتوماتيكياً)
 app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   if (!cap.is_available || cap.status !== 'معتمد') {
@@ -1584,7 +2164,7 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   const { data: activeOrders } = await supabase.from('orders')
     .select('id')
     .eq('assigned_courier_phone', cap.phone)
-    .in('status', ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم']);
+    .in('status', ACTIVE_COURIER_ORDER_STATUSES);
 
   if (activeOrders && activeOrders.length > 0) {
     return res.status(400).json({ success: false, message: 'معاك مشوار جاري بالفعل يا بطل، خلصه الأول 🛵⚠️' });
@@ -1648,20 +2228,31 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     body: `الكابتن ${cap.full_name} (${tierData.tierBadgeText}) لقط الأوردر (${req.params.id}) وطاير عليك فوراً! 🚀`
   });
 
+  notifyAdminsPush('captain', {
+    title: `✅ قبول طلب (${req.params.id})`,
+    body: `الكابتن ${cap.full_name} (${cap.phone}) قبل الطلب من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone} (العمولة: ${fee} ج)`
+  });
+
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تم قبول الطلب.. توكل على الله 🛵', state });
 });
 
+// [FIX-05] التحقق من أن الحالة الجديدة مسموحة وأن الطلب نشط وغير ملغي قبل ترقيته
 app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   const { nextStatus } = req.body || {};
+  if (!ALLOWED_ADVANCE_STATUSES.includes(nextStatus)) {
+    return res.status(400).json({ success: false, message: 'حالة التحديث غير صالحة ⚠️' });
+  }
+
   const { data, error } = await supabase.from('orders')
     .update({ status: nextStatus })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', req.user.phone)
+    .in('status', ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة'])
     .select();
 
   if (error || !data || !data.length) {
-    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة' });
+    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة (الطلب غير نشط أو ملغي) ⚠️' });
   }
 
   invalidateStateCache();
@@ -1676,10 +2267,16 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
     body: funnyBody
   });
 
+  notifyAdminsPush('captain', {
+    title: `📍 تحديث خط سير (${order.id})`,
+    body: `الكابتن ${req.user.full_name} (${req.user.phone}) حدّث الحالة إلى: ${nextStatus}`
+  });
+
   const state = await buildClientState(req, true);
   res.json({ success: true, message: `تم التحديث: ${nextStatus} 🛵✅`, state });
 });
 
+// [FIX-05] التأكد من أن الطلب في حالة توصيل نشطة وغير ملغي قبل إتمامه
 app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   const rawBefore = await fetchRawDatabaseState(false);
@@ -1689,11 +2286,11 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     .update({ status: 'مكتمل' })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', cap.phone)
-    .neq('status', 'مكتمل')
+    .in('status', ACTIVE_COURIER_ORDER_STATUSES)
     .select();
 
   if (error || !data || !data.length) {
-    return res.status(400).json({ success: false, message: 'تعذر إنهاء الطلب' });
+    return res.status(400).json({ success: false, message: 'تعذر إنهاء الطلب (الطلب غير نشط أو تم إلغاؤه) ⚠️' });
   }
 
   const order = data[0];
@@ -1741,7 +2338,6 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
       });
     }
 
-    // التحقق من ترقية مستوى الكابتن بعد إتمام هذا الطلب
     const newTierData = computeCaptainTierAndFee(freshCap, rawState.orders, s);
     const capNotices = Array.isArray(freshCap.admin_notices) ? freshCap.admin_notices : [];
 
@@ -1763,7 +2359,6 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
       });
     }
 
-    // التحقق من مكافأة دعوة الأصدقاء بعدد المشاوير الديناميكي
     const referralActive = s.referralRewardActive !== false;
     const referralRewardAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
     const requiredReferralTrips = Math.max(1, Number(s.referralRequiredOrders ?? 2));
@@ -1823,6 +2418,11 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     body: `عدينا على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر (${order.id}) اتسلم يا باشا! متنساش تقيم الكابتن الجدع ⭐🛵`
   });
 
+  notifyAdminsPush('captain', {
+    title: `🎉 اكتمال توصيل الطلب (${order.id})`,
+    body: `سلّم الكابتن ${cap.full_name} (${cap.phone}) الطلب بنجاح للعميل (${custPhone}) — صافي الكابتن: ${order.courier_net} ج`
+  });
+  await recordAnalyticsMetricEvent('completedOrders', 1);
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تسلم إيدك يا بطل! تم التسليم 🛵💨', state });
 });
@@ -1861,6 +2461,11 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
     });
   }
 
+  notifyAdminsPush('captain', {
+    title: `🔄 اعتذار كابتن عن طلب (${order.id})`,
+    body: `تنازل الكابتن ${req.user.full_name} (${req.user.phone}) عن الطلب وعاد للرادار${req.body?.reason ? ' — السبب: ' + req.body.reason : ''}`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تم إعادة الطلب للرادار 🔄', state });
@@ -1879,7 +2484,12 @@ app.post('/api/captain/availability', authenticateCaptain, async (req, res) => {
       message: 'حسابك غير معتمد حالياً لتفعيل الاستعداد ⚠️'
     });
   }
-  await supabase.from('captains').update({ is_available: Boolean(req.body.isAvailable) }).eq('phone', req.user.phone);
+  const isAvail = Boolean(req.body.isAvailable);
+  await supabase.from('captains').update({ is_available: isAvail }).eq('phone', req.user.phone);
+  notifyAdminsPush('captain', {
+    title: '📡 تغيير حالة استعداد كابتن',
+    body: `الكابتن ${req.user.full_name} (${req.user.phone}) أصبح الآن: ${isAvail ? 'متاح على الرادار 🟢' : 'في استراحة 🔴'}`
+  });
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تم تحديث حالة الاستعداد 📡✅', state });
@@ -1894,10 +2504,15 @@ app.post('/api/captain/notices/:noticeId/dismiss', authenticateCaptain, async (r
   res.json({ success: true, state });
 });
 
+// [FIX-06] التحقق من ملكية العميل للطلب قبل الإلغاء
 app.post('/api/orders/:id/cancel', async (req, res) => {
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
   if (!existing || !['في انتظار كابتن', 'تم قبول الطلب'].includes(existing.status)) {
     return res.status(400).json({ success: false, message: 'لا يمكن الإلغاء.. الطلب قيد التنفيذ ⚠️' });
+  }
+
+  if (!verifyCustomerOrderOwnership(req, existing)) {
+    return res.status(403).json({ success: false, message: 'غير مصرح لك بإلغاء هذا الطلب 🔒⚠️' });
   }
 
   const { data: updated, error } = await supabase.from('orders')
@@ -1914,7 +2529,6 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
   const custPhone = order.customer_phone || order.client_phone;
   const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
 
-  // رد رصيد المحفظة فقط، وإتاحة كود الخصم للعميل مرة أخرى طالما لم تنتهِ فترة السماح
   const refundWalletAmt = meta.walletDiscount > 0
     ? meta.walletDiscount
     : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
@@ -1928,13 +2542,7 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
   }
 
   if (meta.promoCode && custPhone) {
-    const rawState = await fetchRawDatabaseState(true);
-    const promoList = Array.isArray(rawState.settings.promoCodes) ? rawState.settings.promoCodes : [];
-    const pIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === String(meta.promoCode).toUpperCase());
-    if (pIdx !== -1 && Array.isArray(promoList[pIdx].usedBy)) {
-      promoList[pIdx].usedBy = promoList[pIdx].usedBy.filter(ph => ph !== custPhone);
-      await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
-    }
+    await releasePromoCodeUsageForCancelledOrder(meta.promoCode, custPhone);
   }
 
   if (order.assigned_courier_phone) {
@@ -1958,37 +2566,138 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
     });
   }
 
+  notifyAdminsPush('customer', {
+    title: `❌ إلغاء طلب من العميل (${order.id})`,
+    body: `ألغى العميل (${custPhone}) الطلب من ${order.pickup_zone} إلى ${order.dropoff_zone}`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تم الإلغاء ورصيدك وكودك محفوظين يا نجم ✅', state });
 });
 
+// [FIX-06] التحقق من ملكية العميل للطلب واكتماله قبل التقييم
 app.post('/api/orders/:id/rate', async (req, res) => {
+  const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
+  if (!existing) {
+    return res.status(404).json({ success: false, message: 'الطلب غير موجود ⚠️' });
+  }
+  if (!verifyCustomerOrderOwnership(req, existing)) {
+    return res.status(403).json({ success: false, message: 'غير مصرح لك بتقييم هذا الطلب 🔒⚠️' });
+  }
+  if (existing.status !== 'مكتمل') {
+    return res.status(400).json({ success: false, message: 'لا يمكن تقييم الطلب قبل اكتمال التسليم ⚠️' });
+  }
+  if (existing.rating !== null && existing.rating !== undefined) {
+    return res.status(400).json({ success: false, message: 'تم تقييم هذا المشوار مسبقاً يا باشا ⭐' });
+  }
+
   const rating = Math.min(5, Math.max(1, Number(req.body.rating) || 5));
   await supabase.from('orders').update({ rating }).eq('id', req.params.id);
+  notifyAdminsPush('customer', {
+    title: `⭐ تقييم جديد للطلب (${req.params.id})`,
+    body: `قام العميل بتقييم الكابتن بـ ${rating} نجوم.`
+  });
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
+// [FIX-06] التحقق من ملكية العميل للطلب واكتماله قبل تقديم اعتراض
 app.post('/api/orders/:id/dispute', async (req, res) => {
   const reason = String(req.body.reason || '').trim();
   if (!reason) return res.status(400).json({ success: false, message: 'اكتب سبب الاعتراض ⚠️' });
+
+  const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
+  if (!existing) {
+    return res.status(404).json({ success: false, message: 'الطلب غير موجود ⚠️' });
+  }
+  if (!verifyCustomerOrderOwnership(req, existing)) {
+    return res.status(403).json({ success: false, message: 'غير مصرح لك بتقديم اعتراض على هذا الطلب 🔒⚠️' });
+  }
+  if (existing.status !== 'مكتمل') {
+    return res.status(400).json({ success: false, message: 'الاعتراض متاح فقط بعد تسليم الطلب واكتماله ⚠️' });
+  }
+  if (existing.dispute_reason) {
+    return res.status(400).json({ success: false, message: 'تم تسجيل اعتراض على هذا الطلب مسبقاً ⚠️' });
+  }
+
   await supabase.from('orders').update({
     dispute_reason: reason,
     status: 'قيد مراجعة الاعتراض'
   }).eq('id', req.params.id);
 
+  notifyAdminsPush('customer', {
+    title: `⚠️ اعتراض وشكوى على طلب (${req.params.id})`,
+    body: `سجّل العميل اعتراضاً: "${reason}" — يرجى المراجعة من غرفة العمليات.`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 // ==========================================
-// 9. مسارات غرفة العمليات المركزية (Admin)
+// 9. مسارات غرفة العمليات المركزية (Admin) مع التحقق الصارم من الصلاحيات
 // ==========================================
 app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   const body = req.body || {};
+
+  const isChangingPushSwitches =
+    body.adminPushMasterEnabled !== undefined ||
+    body.adminPushCustomersEnabled !== undefined ||
+    body.adminPushCaptainsEnabled !== undefined;
+
+  if (isChangingPushSwitches && !req.admin.is_master) {
+    return res.status(403).json({
+      success: false,
+      message: 'عفواً، التحكم في مفاتيح إشعارات Push الرئيسية متاح للأدمن الرئيسي فقط 👑⛔'
+    });
+  }
+
+  if (body.platformFee !== undefined && !requireAdminPerm(req, res, ['manageCommissions'])) return;
+
+  if (
+    (body.tierWeeklyOrdersTarget !== undefined ||
+      body.tierDaysWindow !== undefined ||
+      body.tierConsecutiveDaysForDiamond !== undefined ||
+      body.tierWeeksForDiamond !== undefined ||
+      body.tierPlatinumDiscount !== undefined ||
+      body.tierDiamondDiscount !== undefined ||
+      body.tierManualOverride !== undefined) &&
+    !requireAdminPerm(req, res, ['manageCaptains', 'manageCommissions'])
+  ) {
+    return;
+  }
+
+  if (
+    (Array.isArray(body.zones) ||
+      body.pricing !== undefined ||
+      Array.isArray(body.packageTypes) ||
+      body.surgeAction !== undefined) &&
+    !requireAdminPerm(req, res, ['managePricing', 'manageSettings'])
+  ) {
+    return;
+  }
+
+  if (
+    (body.broadcastMessage !== undefined ||
+      body.broadcastTarget !== undefined ||
+      body.supportWhatsapp !== undefined ||
+      body.waitingTimeoutMinutes !== undefined ||
+      body.maintenanceMode !== undefined ||
+      body.allowCaptainRegistration !== undefined ||
+      body.welcomeBonusActive !== undefined ||
+      body.welcomeBonusAmount !== undefined ||
+      body.referralRewardActive !== undefined ||
+      body.referralRewardAmount !== undefined ||
+      body.referralRequiredOrders !== undefined ||
+      body.loyaltyField !== undefined) &&
+    !requireAdminPerm(req, res, ['manageSettings', 'manageWallets'])
+  ) {
+    return;
+  }
+
   const rawState = await fetchRawDatabaseState(true);
   const prevSettings = rawState.settings || {};
   const updates = {};
@@ -2023,7 +2732,10 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (body.referralRequiredOrders !== undefined) partialIncentives.referralRequiredOrders = Math.max(1, Number(body.referralRequiredOrders));
   if (body.broadcastTarget !== undefined) partialIncentives.broadcastTarget = String(body.broadcastTarget).trim();
 
-  // تحديثات مستويات الكباتن الديناميكية (الطلبات، نافذة الأيام، والأيام المتتالية للماسي)
+  if (body.adminPushMasterEnabled !== undefined) partialIncentives.adminPushMasterEnabled = Boolean(body.adminPushMasterEnabled);
+  if (body.adminPushCustomersEnabled !== undefined) partialIncentives.adminPushCustomersEnabled = Boolean(body.adminPushCustomersEnabled);
+  if (body.adminPushCaptainsEnabled !== undefined) partialIncentives.adminPushCaptainsEnabled = Boolean(body.adminPushCaptainsEnabled);
+
   if (body.tierWeeklyOrdersTarget !== undefined) {
     partialIncentives.tierWeeklyOrdersTarget = Math.max(1, Number(body.tierWeeklyOrdersTarget));
   }
@@ -2056,7 +2768,6 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     partialIncentives.tierManualOverrides = curOverrides;
   }
 
-  // تحديثات وقت الذروة (Surge Pricing) بالعداد التنازلي
   if (body.surgeAction === 'start') {
     const pct = Math.max(1, Number(body.surgePercent ?? 20));
     const mins = Math.max(1, Number(body.surgeDurationMinutes ?? 30));
@@ -2080,6 +2791,8 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     auditDetails = `تفعيل وقت الذروة (+${partialIncentives.surgePercent}%) لمدة ${partialIncentives.surgeDurationMinutes} دقيقة`;
   } else if (body.surgeAction === 'stop') {
     auditDetails = 'إيقاف وقت الذروة والعودة للتسعير الطبيعي';
+  } else if (isChangingPushSwitches) {
+    auditDetails = `تحديث مفاتيح إشعارات Push الأدمن (العام: ${updatedIncentives.adminPushMasterEnabled ? 'مفعل' : 'متوقف'} | العملاء: ${updatedIncentives.adminPushCustomersEnabled ? 'مفعل' : 'متوقف'} | الكباتن: ${updatedIncentives.adminPushCaptainsEnabled ? 'مفعل' : 'متوقف'})`;
   } else if (body.tierWeeklyOrdersTarget !== undefined || body.tierPlatinumDiscount !== undefined || body.tierDaysWindow !== undefined) {
     auditDetails = `تحديث مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب خلال ${updatedIncentives.tierDaysWindow} يوم - الماسي ${updatedIncentives.tierConsecutiveDaysForDiamond} يوم - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
   } else if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
@@ -2091,38 +2804,59 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   }
   await logAdminAudit('تحديث إعدادات', 'المنصة', auditDetails, req.admin.name);
 
+  if (!isChangingPushSwitches) {
+    notifyAdminsPush('platform', {
+      title: `⚙️ تحديث إعدادات المنصة`,
+      body: `${auditDetails} (بواسطة: ${req.admin.name})`
+    });
+  }
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
-// إدارة كوبونات الخصم الديناميكية (إضافة / تعميم أو تخصيص لعميل / إرسال إشعارات Push)
 app.post('/api/admin/promo-codes', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageWallets', 'manageSettings'])) return;
   try {
-    const { code, discountAmount, targetPhone = 'all', validHours = 48 } = req.body || {};
+    const { code, discountAmount, targetPhone = 'all', validHours = 48, maxUses = 1 } = req.body || {};
     const cleanCode = String(code || '').trim().toUpperCase().replace(/\s+/g, '');
     const amt = roundMoney(discountAmount);
     const hours = Math.max(1, Number(validHours) || 48);
-    const cleanTarget = (!targetPhone || targetPhone === 'all') ? 'all' : String(targetPhone).trim();
+    const cleanTarget = (!targetPhone || targetPhone === 'all') ? 'all' : normalizePhoneServer(targetPhone);
+    const allowedUses = cleanTarget === 'all' ? 1 : Math.max(1, parseInt(maxUses, 10) || 1);
 
     if (!cleanCode || amt <= 0) {
       return res.status(400).json({ success: false, message: 'اكتب اسم الكود وقيمة الخصم بشكل صحيح يا باشا ⚠️' });
     }
+    if (cleanTarget !== 'all' && !/^01[0125][0-9]{8}$/.test(cleanTarget)) {
+      return res.status(400).json({ success: false, message: 'رقم هاتف العميل المخصص غير صحيح ⚠️' });
+    }
 
     const rawState = await fetchRawDatabaseState(true);
-    const promoList = Array.isArray(rawState.settings.promoCodes) ? [...rawState.settings.promoCodes] : [];
-    const existingIdx = promoList.findIndex(p => p && String(p.code).toUpperCase() === cleanCode);
+    const promoList = Array.isArray(rawState.settings.promoCodes)
+      ? rawState.settings.promoCodes.map(normalizePromoCodeObject).filter(Boolean)
+      : [];
+    const existingIdx = promoList.findIndex(p => p && p.code === cleanCode);
 
     const expiresAt = Date.now() + hours * 3600000;
+    const prevObj = existingIdx !== -1 ? promoList[existingIdx] : null;
+    const preservedCounts = (prevObj && prevObj.targetPhone === cleanTarget && prevObj.usageCounts)
+      ? { ...prevObj.usageCounts }
+      : {};
+    const syncedUsedBy = Object.keys(preservedCounts).filter(ph => preservedCounts[ph] >= allowedUses);
+
     const newPromoObj = {
       code: cleanCode,
       discountAmount: amt,
       targetPhone: cleanTarget,
+      maxUses: allowedUses,
+      usageCounts: preservedCounts,
       validHours: hours,
       expiresAt,
-      usedBy: existingIdx !== -1 ? (promoList[existingIdx].usedBy || []) : [],
+      usedBy: syncedUsedBy,
       active: true,
-      createdAt: Date.now()
+      createdAt: prevObj?.createdAt || Date.now()
     };
 
     if (existingIdx !== -1) {
@@ -2139,18 +2873,20 @@ app.post('/api/admin/promo-codes', authenticateAdmin, async (req, res) => {
         body: `استخدم كود (${cleanCode}) واكسب خصم فوري ${amt} جنيه على مشوارك! الكود شغال معاك لمدة ${hours} ساعة 🛵💨`
       });
     } else {
+      const usesNote = allowedUses > 1 ? ` (متاح ليك استخدامه ${allowedUses} مرات)` : '';
       sendPushNotificationToPhone(cleanTarget, {
         title: 'هدية خاصة ليك يا باشا مصر! 🎟️👑',
-        body: `إدارة الرجل العنابي عملتلك كود خصم مخصوص (${cleanCode}) بقيمة ${amt} جنيه! تقدر تستخدمه خلال ${hours} ساعة 😎🛵`
+        body: `إدارة الرجل العنابي عملتلك كود خصم مخصوص (${cleanCode}) بقيمة ${amt} جنيه${usesNote}! تقدر تستخدمه خلال ${hours} ساعة 😎🛵`
       });
     }
 
-    await logAdminAudit(
-      'إصدار كود خصم',
-      cleanCode,
-      `خصم ${amt} ج — المستهدف: ${cleanTarget === 'all' ? 'جميع العملاء' : cleanTarget} (صالح لـ ${hours} ساعة)`,
-      req.admin.name
-    );
+    const targetDesc = cleanTarget === 'all' ? 'جميع العملاء' : `${cleanTarget} (${allowedUses} مرات استخدام)`;
+    const detailsTxt = `خصم ${amt} ج — المستهدف: ${targetDesc} (صالح لـ ${hours} ساعة)`;
+    await logAdminAudit('إصدار كود خصم', cleanCode, detailsTxt, req.admin.name);
+    notifyAdminsPush('platform', {
+      title: `🎟️ إصدار كود خصم (${cleanCode})`,
+      body: `${detailsTxt} (بواسطة: ${req.admin.name})`
+    });
 
     invalidateStateCache();
     const state = await buildClientState(req, true);
@@ -2165,6 +2901,7 @@ app.post('/api/admin/promo-codes', authenticateAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/promo-codes/delete', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageWallets', 'manageSettings'])) return;
   const { code } = req.body || {};
   const cleanCode = String(code || '').trim().toUpperCase();
   const rawState = await fetchRawDatabaseState(true);
@@ -2172,6 +2909,10 @@ app.post('/api/admin/promo-codes/delete', authenticateAdmin, async (req, res) =>
 
   await saveIncentivesToDatabase(rawState, { promoCodes: promoList });
   await logAdminAudit('حذف كود خصم', cleanCode, 'إلغاء وحذف كود الخصم', req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🗑️ حذف كود خصم (${cleanCode})`,
+    body: `تم إلغاء وحذف الكود بواسطة: ${req.admin.name}`
+  });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -2179,6 +2920,7 @@ app.post('/api/admin/promo-codes/delete', authenticateAdmin, async (req, res) =>
 });
 
 app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageWallets'])) return;
   const { phone, amount } = req.body || {};
   const amt = roundMoney(amount);
   if (!phone || amt <= 0) return res.status(400).json({ success: false });
@@ -2189,7 +2931,7 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
     p_reason: 'شحن رصيد من الإدارة ⚡'
   });
 
-  const { data: cap } = await supabase.from('captains').select('admin_notices').eq('phone', phone).maybeSingle();
+  const { data: cap } = await supabase.from('captains').select('full_name, admin_notices').eq('phone', phone).maybeSingle();
   if (cap) {
     const notices = Array.isArray(cap.admin_notices) ? cap.admin_notices : [];
     notices.unshift({
@@ -2207,12 +2949,18 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
     body: `نزل في محفظتك ${amt} جنيه من إدارة الرجل العنابي.. ربنا يرزقك يا بطل 🛵💪`
   });
 
+  notifyAdminsPush('platform', {
+    title: `💰 شحن محفظة كابتن (${amt} ج)`,
+    body: `تم شحن ${amt} ج للكابتن ${cap?.full_name || ''} (${phone}) بواسطة: ${req.admin.name}`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageWallets'])) return;
   const { phone, amount, reason } = req.body || {};
   const amt = roundMoney(amount);
   if (!phone || amt <= 0 || !reason) return res.status(400).json({ success: false });
@@ -2223,7 +2971,7 @@ app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res
     p_reason: `خصم إداري: ${reason}`
   });
 
-  const { data: cap } = await supabase.from('captains').select('admin_notices').eq('phone', phone).maybeSingle();
+  const { data: cap } = await supabase.from('captains').select('full_name, admin_notices').eq('phone', phone).maybeSingle();
   if (cap) {
     const notices = Array.isArray(cap.admin_notices) ? cap.admin_notices : [];
     notices.unshift({
@@ -2241,13 +2989,20 @@ app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res
   });
 
   await logAdminAudit('خصم من كابتن', phone, `خصم ${amt} ج - السبب: ${reason}`, req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `⛔ خصم إداري من كابتن (${amt} ج)`,
+    body: `خصم ${amt} ج من الكابتن ${cap?.full_name || ''} (${phone}) — السبب: ${reason} (بواسطة: ${req.admin.name})`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req, res) => {
-  const { phone, amount, reason } = req.body || {};
+  if (!requireAdminPerm(req, res, ['manageWallets'])) return;
+  const { phone: rawPhone, amount, reason } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   const amt = roundMoney(amount);
   if (!phone || amt <= 0) return res.status(400).json({ success: false });
 
@@ -2261,6 +3016,7 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req
       points: 0,
       wallet_transactions: []
     }]);
+    await recordAnalyticsMetricEvent('customers', 1);
   }
 
   await supabase.rpc('adjust_customer_wallet_atomic', {
@@ -2275,12 +3031,18 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req
     body: `نزل في محفظتك ${amt} جنيه رصيد هدية من الرجل العنابي هيتخصم أوتوماتيك في طلبك الجاي فوراً! 😍🛵`
   });
 
+  notifyAdminsPush('platform', {
+    title: `🎁 إضافة رصيد لعميل (${amt} ج)`,
+    body: `تم إضافة ${amt} ج لمحفظة العميل (${phone}) — ${reason || 'هدية'} (بواسطة: ${req.admin.name})`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageCommissions'])) return;
   const { phone, customFee, reason, reset } = req.body || {};
   const updates = reset
     ? { custom_fee: null, custom_fee_reason: null }
@@ -2296,12 +3058,18 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
     });
   }
 
+  notifyAdminsPush('platform', {
+    title: `🎯 تحديث عمولة كابتن (${phone})`,
+    body: `${reset ? 'إرجاع الكابتن للعمولة العامة/المستويات' : `تخصيص عمولة ${customFee} ج — ${reason || ''}`} (بواسطة: ${req.admin.name})`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageCaptains'])) return;
   const { status, reason } = req.body || {};
   const phone = req.params.phone;
 
@@ -2375,6 +3143,10 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
   }
 
   await logAdminAudit('حالة كابتن', phone, `تغيير الحالة إلى ${status}${reason ? ' - السبب: ' + reason : ''}`, req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🛵 تحديث حالة كابتن (${status})`,
+    body: `الكابتن ${currentCap.full_name} (${phone}) أصبح: ${status}${reason ? ' — السبب: ' + reason : ''} (بواسطة: ${req.admin.name})`
+  });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -2382,11 +3154,12 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
 });
 
 app.post('/api/admin/captains/reset-password', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageCaptains'])) return;
   const { phone, newPass } = req.body || {};
   if (!phone || !newPass || String(newPass).length < 4) {
     return res.status(400).json({ success: false, message: 'كلمة المرور قصيرة جداً ⚠️' });
   }
-  const { data: cap } = await supabase.from('captains').select('session_version').eq('phone', phone).maybeSingle();
+  const { data: cap } = await supabase.from('captains').select('full_name, session_version').eq('phone', phone).maybeSingle();
   if (!cap) return res.status(404).json({ success: false, message: 'الكابتن غير موجود ⚠️' });
 
   const hashed = await bcrypt.hash(String(newPass), 10);
@@ -2397,6 +3170,10 @@ app.post('/api/admin/captains/reset-password', authenticateAdmin, async (req, re
 
   await clearFailedAttempts(phone);
   await logAdminAudit('تصفير باسورد كابتن', phone, 'تعيين كلمة مرور جديدة للكابتن', req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🔑 تغيير باسورد كابتن (${phone})`,
+    body: `تم تعيين كلمة مرور جديدة للكابتن ${cap.full_name || ''} بواسطة: ${req.admin.name}`
+  });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -2404,7 +3181,9 @@ app.post('/api/admin/captains/reset-password', authenticateAdmin, async (req, re
 });
 
 app.post('/api/admin/customers/reset-pin', authenticateAdmin, async (req, res) => {
-  const { phone, newPin } = req.body || {};
+  if (!requireAdminPerm(req, res, ['manageWallets', 'manageSettings'])) return;
+  const { phone: rawPhone, newPin } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   if (!phone || !/^[0-9]{4}$/.test(String(newPin || '').trim())) {
     return res.status(400).json({ success: false, message: 'رمز الـ PIN يجب أن يكون 4 أرقام ⚠️' });
   }
@@ -2421,21 +3200,33 @@ app.post('/api/admin/customers/reset-pin', authenticateAdmin, async (req, res) =
       points: 0,
       wallet_transactions: []
     }]);
+    await recordAnalyticsMetricEvent('customers', 1);
   }
 
   await clearFailedAttempts(phone);
   await logAdminAudit('تصفير PIN عميل', phone, 'تعيين رمز PIN جديد للعميل', req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🔒 تصفير PIN عميل (${phone})`,
+    body: `تم تعيين رمز PIN جديد للعميل (${phone}) بواسطة: ${req.admin.name}`
+  });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, message: 'تم تعيين رمز الـ PIN للعميل بنجاح 🔒✅', state });
 });
 
+// [FIX-04] منع تكرار عداد الطلبات المكتملة ومعالجة الاسترداد المالي الإداري بدقة
 app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageOrders'])) return;
   const { action, reason } = req.body || {};
   const orderId = req.params.id;
   const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).maybeSingle();
   if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+
+  const isAlreadyCancelled = String(order.status || '').includes('ملغي');
+  if ((action === 'cancel' || action === 'resolve_cancel' || action === 'radar') && isAlreadyCancelled) {
+    return res.status(400).json({ success: false, message: 'الطلب ملغي بالفعل مسبقاً ⚠️' });
+  }
 
   const custPhone = order.customer_phone || order.client_phone;
   const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
@@ -2475,6 +3266,9 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
         p_reason: `رد خصم لطلب ملغي إدارياً ${order.id}`
       });
     }
+    if (meta.promoCode && custPhone && !isAlreadyCancelled) {
+      await releasePromoCodeUsageForCancelledOrder(meta.promoCode, custPhone);
+    }
     if (order.assigned_courier_phone && !order.fee_refunded) {
       if (order.fee_deducted && order.platform_fee > 0) {
         await supabase.rpc('adjust_captain_wallet_atomic', {
@@ -2483,7 +3277,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
           p_reason: `رد عمولة لطلب ملغي إدارياً ${order.id}`
         });
       }
-      if (order.discount_applied > 0 && action === 'cancel') {
+      if (order.discount_applied > 0 && (action === 'cancel' || action === 'resolve_cancel')) {
         await supabase.rpc('adjust_captain_wallet_atomic', {
           p_phone: order.assigned_courier_phone,
           p_amount: -Math.abs(roundMoney(order.discount_applied)),
@@ -2497,26 +3291,42 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
       admin_resolution_note: reason || 'تم إلغاء الطلب بواسطة الإدارة'
     }).eq('id', orderId);
   } else if (action === 'resolve_complete') {
+    const wasAlreadyCompletedBeforeDispute = (order.status === 'مكتمل' || order.status === 'قيد مراجعة الاعتراض');
     await supabase.from('orders').update({
       status: 'مكتمل',
       admin_resolution_note: 'تمت المراجعة واعتماد اكتمال الطلب بواسطة الإدارة ✅'
     }).eq('id', orderId);
+    if (!wasAlreadyCompletedBeforeDispute) {
+      await recordAnalyticsMetricEvent('completedOrders', 1);
+    }
   }
 
   await logAdminAudit('تدخل في طلب', orderId, `الإجراء: ${action} ${reason ? '- ' + reason : ''}`, req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `⚖️ تدخل إداري في طلب (${orderId})`,
+    body: `الإجراء: ${action}${reason ? ' — السبب: ' + reason : ''} (بواسطة: ${req.admin.name})`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
+// [FIX-03] إلزام التحقق من كلمة المرور الحالية عند تحديث بيانات الأدمن الرئيسي
 app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
+  if (!req.admin || !req.admin.is_master) {
+    return res.status(403).json({ success: false, message: 'هذا الإجراء مخصص للأدمن الرئيسي فقط 👑⛔' });
+  }
   const { name, username, currentPassword, newPassword } = req.body || {};
+  if (!currentPassword) {
+    return res.status(400).json({ success: false, message: 'برجاء إدخال كلمة المرور الحالية للتأكيد ⚠️' });
+  }
+
   const { data: master } = await supabase.from('admins').select('*').eq('is_master', true).limit(1).maybeSingle();
 
-  if (master && currentPassword) {
-    const valid = await bcrypt.compare(String(currentPassword), master.password_hash);
-    const envPass = (process.env.INITIAL_ADMIN_PASS || '01023024988').trim();
-    if (!valid && currentPassword !== envPass) {
+  if (master) {
+    const valid = await bcrypt.compare(String(currentPassword), master.password_hash || '');
+    if (!valid) {
       return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة ⚠️' });
     }
   }
@@ -2532,7 +3342,7 @@ app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
   if (master) {
     await supabase.from('admins').update(updates).eq('username', master.username);
   } else {
-    updates.password_hash = updates.password_hash || await bcrypt.hash(process.env.INITIAL_ADMIN_PASS || '01023024988', 10);
+    updates.password_hash = updates.password_hash || await bcrypt.hash(String(currentPassword), 10);
     updates.is_master = true;
     updates.status = 'نشط';
     await supabase.from('admins').insert([updates]);
@@ -2540,6 +3350,7 @@ app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
 
   const newToken = jwt.sign({ username: updates.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
   res.cookie('admin_session', newToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  req.cookies = { ...req.cookies, admin_session: newToken };
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
@@ -2547,6 +3358,9 @@ app.post('/api/admin/accounts/master', authenticateAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/accounts/sub', authenticateAdmin, async (req, res) => {
+  if (!req.admin || !req.admin.is_master) {
+    return res.status(403).json({ success: false, message: 'إدارة حسابات وصلاحيات المسؤولين متاحة للأدمن الرئيسي فقط 👑⛔' });
+  }
   const { origUsername, name, username, password, permissions } = req.body || {};
   if (!name || !username) return res.status(400).json({ success: false, message: 'الاسم واسم المستخدم مطلوبان ⚠️' });
 
@@ -2569,26 +3383,37 @@ app.post('/api/admin/accounts/sub', authenticateAdmin, async (req, res) => {
   }
 
   await logAdminAudit('إدارة مسؤولين', username, origUsername ? 'تعديل صلاحيات مسؤول' : 'إضافة مسؤول جديد', req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🛡️ ${origUsername ? 'تعديل صلاحيات مسؤول' : 'إضافة مسؤول فرعي جديد'}`,
+    body: `المسؤول: ${name} (@${username}) — بواسطة: ${req.admin.name}`
+  });
+
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
 app.post('/api/admin/accounts/:username/toggle', authenticateAdmin, async (req, res) => {
+  if (!req.admin || !req.admin.is_master) {
+    return res.status(403).json({ success: false, message: 'تغيير حالة المسؤولين متاح للأدمن الرئيسي فقط 👑⛔' });
+  }
   const targetUser = req.params.username;
-  const { data: acc } = await supabase.from('admins').select('status').eq('username', targetUser).maybeSingle();
-  if (!acc) return res.status(404).json({ success: false });
+  const { data: acc } = await supabase.from('admins').select('status, is_master').eq('username', targetUser).maybeSingle();
+  if (!acc || acc.is_master) return res.status(404).json({ success: false });
 
   const newStatus = acc.status === 'نشط' ? 'معطل' : 'نشط';
   await supabase.from('admins').update({ status: newStatus }).eq('username', targetUser);
   await logAdminAudit('حالة مسؤول', targetUser, `تغيير الحالة إلى ${newStatus}`, req.admin.name);
+  notifyAdminsPush('platform', {
+    title: `🛡️ تغيير حالة مسؤول (@${targetUser})`,
+    body: `تم تغيير حالة المسؤول إلى: ${newStatus} (بواسطة: ${req.admin.name})`
+  });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
 });
 
-// إرسال إشعار عام للهواتف (Web Push Broadcast) - حصرياً للأدمن الرئيسي فقط
 app.post('/api/admin/push-broadcast', authenticateAdmin, async (req, res) => {
   try {
     if (!req.admin || !req.admin.is_master) {
@@ -2607,21 +3432,22 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, async (req, res) => {
     }
 
     const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
-    if (!allSubs || allSubs.length === 0) {
+    const publicSubs = (allSubs || []).filter(s => !String(s.phone || '').startsWith('admin:'));
+    if (publicSubs.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'لا توجد هواتف مشتركة في الإشعارات حالياً ⚠️'
       });
     }
 
-    let targetSubs = allSubs;
+    let targetSubs = publicSubs;
     if (target === 'captains' || target === 'customers') {
       const { data: captainsRows } = await supabase.from('captains').select('phone');
       const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
       if (target === 'captains') {
-        targetSubs = allSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+        targetSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
       } else if (target === 'customers') {
-        targetSubs = allSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+        targetSubs = publicSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
       }
     }
 

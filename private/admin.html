@@ -94,6 +94,16 @@
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); }
+    /* تنسيقات قسم مؤشرات التقدم والرسم البياني التفاعلي */
+    .analytics-chart-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 14px; padding: 12px 10px 8px; margin-top: 8px; }
+    .analytics-bars-wrap { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 150px; padding-top: 22px; padding-bottom: 6px; border-bottom: 1.5px solid #E2D5DA; overflow-x: auto; }
+    .analytics-bar-col { flex: 1; min-width: 24px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+    .analytics-bar-val { font-size: 10px; font-weight: 900; color: var(--primary); margin-bottom: 3px; line-height: 1; }
+    .analytics-bar-fill { width: 100%; max-width: 24px; border-radius: 6px 6px 2px 2px; transition: height 0.35s ease; min-height: 4px; }
+    .analytics-bar-lbl { font-size: 9.5px; font-weight: 800; color: var(--text-muted); margin-top: 5px; white-space: nowrap; text-align: center; }
+    .trend-pill-up { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; }
+    .trend-pill-down { background: #FFEBEE; color: #D32F2F; border: 1px solid #FFCDD2; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; }
+    .trend-pill-neutral { background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
   </style>
 </head>
 <body>
@@ -202,6 +212,59 @@
                 <span class="kpi-label">الطلبات الملغية ❌</span>
                 <div class="kpi-value" style="color:var(--danger);" id="adminStatOrdersCancelledCount">0</div>
               </div>
+              <div class="card kpi-card" style="border-right:4px solid #00ACC1; grid-column: span 2;">
+                <span class="kpi-label">عدد تحميلات وتثبيت التطبيق 📲</span>
+                <div class="kpi-value" style="color:#00838F;" id="adminStatAppInstallsCount">0 تحميل</div>
+                <div class="kpi-sub" style="color:var(--text-muted);">إجمالي عمليات التثبيت الفعلية للتطبيق على هواتف العملاء والكباتن</div>
+              </div>
+            </div>
+
+            <!-- قسم مؤشرات التقدم والأداء السنوي (365 يوماً) بالرسم البياني التفاعلي -->
+            <div class="card" id="admCard-progressIndicators" style="border: 2px solid #00838F; background: #FAFEFF;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                <h2 class="card-title" style="margin:0; color:#006064;"><i class="fa-solid fa-chart-column"></i> مؤشرات التقدم 📊</h2>
+                <span class="badge" style="background:#E0F7FA; color:#006064; border:1px solid #80DEEA;">سجل 12 شهراً 📅</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1.45fr 1fr; gap:8px; margin-bottom:10px;">
+                <div>
+                  <label class="input-label" for="adminAnalyticsMetricSelect" style="font-size:10.5px;">اختر مؤشر الأداء:</label>
+                  <select id="adminAnalyticsMetricSelect" class="select-field" style="padding:9px 10px; font-size:11.5px; background:#fff;" onchange="renderAdminProgressAnalytics()">
+                    <option value="installs">📲 مؤشر أداء تحميلات التطبيق</option>
+                    <option value="customers">👑 مؤشر أداء تسجيل عملاء جدد</option>
+                    <option value="captains">🛵 مؤشر أداء تسجيل كباتن جدد</option>
+                    <option value="completedOrders">✅ مؤشر أداء الطلبات المؤكدة</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="input-label" for="adminAnalyticsRangeSelect" style="font-size:10.5px;">الفترة الزمنية:</label>
+                  <select id="adminAnalyticsRangeSelect" class="select-field" style="padding:9px 10px; font-size:11.5px; background:#fff;" onchange="renderAdminProgressAnalytics()">
+                    <option value="1">آخر يوم (اليوم)</option>
+                    <option value="7" selected>آخر 7 أيام</option>
+                    <option value="30">آخر 30 يومًا</option>
+                    <option value="current_month">الشهر الحالي</option>
+                    <option value="prev_month">الشهر السابق</option>
+                    <option value="365">مقارنة الأشهر والسنوات (12 شهراً)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="adminAnalyticsComparisonBox" style="background:#fff; border:1px solid #B2EBF2; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <div>
+                  <span style="font-size:10.5px; color:var(--text-muted); font-weight:700; display:block;" id="adminAnalyticsPeriodTitle">إجمالي الفترة المحددة:</span>
+                  <strong style="font-size:18px; font-weight:900; color:#006064;" id="adminAnalyticsCurrentTotalVal">0</strong>
+                  <small style="font-size:10.5px; color:var(--text-muted); margin-right:4px;" id="adminAnalyticsPrevTotalNote">(الفترة السابقة: 0)</small>
+                </div>
+                <div id="adminAnalyticsTrendBadgeWrap"></div>
+              </div>
+
+              <div class="analytics-chart-box">
+                <div id="adminAnalyticsChartBars" class="analytics-bars-wrap"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:10px; color:var(--text-muted); font-weight:700;">
+                  <span id="adminAnalyticsChartFooterRight">الرسم البياني اليومي للمؤشر</span>
+                  <span id="adminAnalyticsChartFooterLeft">يتم حفظ البيانات لمدة 12 شهراً</span>
+                </div>
+              </div>
             </div>
 
             <div class="card" id="admCard-platformControls" style="border: 2px solid var(--primary); background: #FFFDFD;">
@@ -242,6 +305,47 @@
               <div class="switch-wrapper" style="margin-top:8px; border:1px solid #E9DCE0;">
                 <div><strong style="font-size:12.5px; display:block; color:var(--primary);">فتح باب تسجيل كباتن جدد 🛵</strong></div>
                 <label class="switch"><input type="checkbox" id="adminAllowCaptainRegSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
+              </div>
+            </div>
+
+            <!-- قسم تشغيل وإيقاف إشعارات Push الأدمن اللحظية لحركات المنصة والعملاء والكباتن -->
+            <div class="card" id="admCard-adminPushControls" style="border: 2px solid #2E7D32; background: #FAFFFA;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <h2 class="card-title" style="margin:0; color:var(--success);"><i class="fa-solid fa-satellite-dish"></i> رادار إشعارات Push الأدمن اللحظية 🔔</h2>
+                <span class="badge badge-pending" id="adminDevicePushStatusBadge">غير مربوط بهذا الهاتف</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+                استقبل إشعاراً لحظياً على هاتفك بأي عملية تتم على المنصة (طلبات، خطوط سير، محافظ، تسجيل عملاء أو كباتن، وتحميلات التطبيق) وتحكم في تشغيلها أو إيقافها في أي وقت.
+              </p>
+
+              <button type="button" class="btn-main" id="adminEnableDevicePushBtn" style="background:var(--success); margin-bottom:12px; padding:10px; font-size:12.5px;" onclick="adminEnableDevicePushSubscription()">
+                <i class="fa-solid fa-bell"></i> تفعيل واستقبال إشعارات الرادار على هذا الجهاز 📲
+              </button>
+
+              <div id="adminPushMasterSwitchesWrap">
+                <div class="switch-wrapper" style="margin-bottom:8px; border:1.5px solid #A5D6A7; background:#E8F5E9;">
+                  <div>
+                    <strong style="font-size:12.5px; display:block; color:#1B5E20;">تشغيل أو إيقاف إشعارات حركة المنصة بالكامل 🌐</strong>
+                    <small style="font-size:10px; color:#2E7D32;">المفتاح الرئيسي لكل تنبيهات العمليات والمحافظ والإدارة</small>
+                  </div>
+                  <label class="switch"><input type="checkbox" id="adminPushMasterSwitch" checked onchange="adminToggleRealtimePushSettings()"><span class="slider"></span></label>
+                </div>
+
+                <div class="switch-wrapper" style="margin-bottom:8px; border:1px solid #E9DCE0;">
+                  <div>
+                    <strong style="font-size:12.5px; display:block; color:var(--primary);">تشغيل أو إيقاف إشعارات حركة العملاء 👑</strong>
+                    <small style="font-size:10px; color:var(--text-muted);">طلبات جديدة، إلغاء، تقييم، اعتراضات، تسجيل عميل، أو تحميل تطبيق</small>
+                  </div>
+                  <label class="switch"><input type="checkbox" id="adminPushCustomersSwitch" checked onchange="adminToggleRealtimePushSettings()"><span class="slider"></span></label>
+                </div>
+
+                <div class="switch-wrapper" style="border:1px solid #E9DCE0;">
+                  <div>
+                    <strong style="font-size:12.5px; display:block; color:#0277BD;">تشغيل أو إيقاف إشعارات حركة الكباتن 🛵</strong>
+                    <small style="font-size:10px; color:var(--text-muted);">تسجيل كابتن جديد، قبول طلبات، تحديثات خط السير، وتنازل عن طلب</small>
+                  </div>
+                  <label class="switch"><input type="checkbox" id="adminPushCaptainsSwitch" checked onchange="adminToggleRealtimePushSettings()"><span class="slider"></span></label>
+                </div>
               </div>
             </div>
 
@@ -325,6 +429,8 @@
                     <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:8px;">صلاحيات المسؤول:</strong>
                     <div style="display:flex; flex-direction:column; gap:6px;">
                       <label><input type="checkbox" id="permSwitch-viewDashboard"> 📊 عرض الإحصائيات</label>
+                      <label><input type="checkbox" id="permSwitch-viewAnalytics"> 📈 مؤشرات التقدم وتحميلات التطبيق</label>
+                      <label><input type="checkbox" id="permSwitch-receiveAdminPush"> 🔔 إشعارات حركة المنصة اللحظية (Push)</label>
                       <label><input type="checkbox" id="permSwitch-viewCaptains"> 🛵 عرض الكباتن</label>
                       <label><input type="checkbox" id="permSwitch-manageCaptains"> ✅ إدارة الكباتن</label>
                       <label><input type="checkbox" id="permSwitch-viewOrders"> 📦 عرض الطلبات</label>
@@ -468,14 +574,14 @@
               <button class="btn-main" style="background:var(--success);" onclick="adminExecuteCustomerCompensation()">إضافة رصيد للعميل ✅</button>
             </div>
 
-            <!-- كارت نظام كوبونات الخصم الديناميكي (للكل أو لعميل محدد) -->
+            <!-- كارت نظام كوبونات الخصم الديناميكي (للكل أو لعميل محدد مع عدد مرات الاستخدام المسموح بها) -->
             <div class="card" id="admCard-promoCodes" style="border: 2px solid #8E24AA; background: #FCF8FF;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h2 class="card-title" style="margin:0; color:#6A1B9A;"><i class="fa-solid fa-ticket"></i> كوبونات وأكواد الخصم 🎟️</h2>
                 <span class="badge badge-delivering">إشعار فوري 📲</span>
               </div>
               <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
-                أنشئ كود خصم عام لكل العملاء أو مخصص لعميل بعينه، ويقدر العميل يحتفظ بالكود لحد انتهاء فترة السماح!
+                أنشئ كود خصم عام لكل العملاء أو مخصص لعميل بعينه بعدد مرات استخدام محدد، ويقدر العميل يحتفظ بالكود لحد انتهاء فترة السماح!
               </p>
               <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
                 <div>
@@ -501,8 +607,16 @@
                 </div>
               </div>
               <div id="adminPromoCustomPhoneWrap" style="display:none; margin-bottom:10px;">
-                <label class="input-label" style="font-size:10.5px;">رقم هاتف العميل المخصوص 📱:</label>
-                <input type="tel" id="adminPromoTargetPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
+                <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:8px;">
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">رقم هاتف العميل المخصوص 📱:</label>
+                    <input type="tel" id="adminPromoTargetPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10.5px;">عدد مرات الاستخدام المسموح بها:</label>
+                    <input type="number" id="adminPromoMaxUsesInput" class="input-field" placeholder="مثال: 5" value="1" min="1">
+                  </div>
+                </div>
               </div>
               <button type="button" class="btn-main" style="background:#6A1B9A; margin-bottom:12px;" onclick="adminCreatePromoCode()">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> تفعيل الكود وإرسال إشعار للعملاء 🚀
@@ -757,6 +871,8 @@
     }
 
     const SESSION_KEY = 'ENNABY_ADMIN_SESSION_V35';
+    const ADMIN_DEVICE_ID_KEY = 'ENNABY_ADMIN_PUSH_DEVICE_ID_V1';
+    const PUBLIC_VAPID_KEY = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
     const API_BASE = (window.location.origin && window.location.origin.startsWith('http')) ? window.location.origin : 'http://localhost:3000';
     
     let toastTimer = null, actionLock = false, lastInteractedElement = null;
@@ -765,10 +881,47 @@
     let adminLeafletMap = null, adminLeafletMarkers = [];
 
     const DEFAULT_ZONES = ['المنصورة', 'طلخا', 'سندوب', 'جديلة'];
-    const ADMIN_PERM_KEYS = ['viewDashboard', 'viewCaptains', 'manageCaptains', 'viewOrders', 'manageOrders', 'manageWallets', 'manageCommissions', 'managePricing', 'manageSettings'];
-    const ADMIN_PERM_LABELS = { viewDashboard: '📊 لوحة المعلومات', viewCaptains: '🛵 عرض الكباتن', manageCaptains: '✅ إدارة الكباتن', viewOrders: '📦 عرض الطلبات', manageOrders: '⚖️ إدارة الطلبات', manageWallets: '💰 المحافظ', manageCommissions: '🎯 العمولات', managePricing: '🗺️ التسعير', manageSettings: '📢 الإعدادات' };
+    const ADMIN_PERM_KEYS = [
+      'viewDashboard',
+      'viewAnalytics',
+      'receiveAdminPush',
+      'viewCaptains',
+      'manageCaptains',
+      'viewOrders',
+      'manageOrders',
+      'manageWallets',
+      'manageCommissions',
+      'managePricing',
+      'manageSettings'
+    ];
+    const ADMIN_PERM_LABELS = {
+      viewDashboard: '📊 لوحة المعلومات',
+      viewAnalytics: '📈 مؤشرات التقدم والتحميلات',
+      receiveAdminPush: '🔔 إشعارات حركة المنصة (Push)',
+      viewCaptains: '🛵 عرض الكباتن',
+      manageCaptains: '✅ إدارة الكباتن',
+      viewOrders: '📦 عرض الطلبات',
+      manageOrders: '⚖️ إدارة الطلبات',
+      manageWallets: '💰 المحافظ',
+      manageCommissions: '🎯 العمولات',
+      managePricing: '🗺️ التسعير',
+      manageSettings: '📢 الإعدادات'
+    };
     const DEFAULT_PACKAGE_TYPES = ['طرد خفيف (أقل من 3 كجم) - شنطة أو ورق', 'طرد متوسط (3 إلى 8 كجم) - كرتونة', 'أكل أو حلويات (حاجة حساسة ع الميزان)'];
     const ACTIVE_COURIER_STATUSES = ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة', 'الكابتن وصل للتسليم'];
+
+    const ADMIN_DEVICE_ID = (() => {
+      try {
+        let id = localStorage.getItem(ADMIN_DEVICE_ID_KEY);
+        if (!id) {
+          id = 'admdev_' + Math.random().toString(36).slice(2, 9) + '_' + Date.now().toString(36);
+          localStorage.setItem(ADMIN_DEVICE_ID_KEY, id);
+        }
+        return id;
+      } catch (e) {
+        return 'admdev_default';
+      }
+    })();
 
     document.addEventListener('pointerdown', function(e) {
       const target = e.target.closest('button, a, select, input, label, textarea');
@@ -839,6 +992,24 @@
       return Array.from(p);
     }
 
+    function getCairoDateKeyClient(dateInput = Date.now()) {
+      try {
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
+        const parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Africa/Cairo',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(d);
+        const y = parts.find(p => p.type === 'year')?.value;
+        const m = parts.find(p => p.type === 'month')?.value;
+        const day = parts.find(p => p.type === 'day')?.value;
+        if (y && m && day) return `${y}-${m}-${day}`;
+      } catch (e) {}
+      return new Date().toISOString().slice(0, 10);
+    }
+
     // تفعيل Supabase Realtime WebSockets للتحديث الفوري في لوحة الإدارة
     function setupAdminSupabaseRealtime(cfg) {
       if (adminRealtimeInitialized || !cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
@@ -864,6 +1035,11 @@
       if(bdy!==null) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(bdy); }
       const res = await fetch(`${API_BASE}${ep}`, opts);
       const data = await res.json().catch(()=>({}));
+      if(res.status === 401 && !ep.includes('/auth/admin/login')) {
+        STATE.activeAdminUser = null;
+        saveSession();
+        renderAdminScreen();
+      }
       if(data && data.state) {
         try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch(e){}
         applyCloudStateSnapshot(data.state);
@@ -962,6 +1138,358 @@
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
     function hasAdminPerm(key, adm=null) { const a = adm||getActiveAdmin(); if(!a||a.status==='معطل')return false; if(a.isMaster)return true; return Boolean(a.permissions&&a.permissions[key]); }
 
+    // ==================== ربط جهاز الأدمن بإشعارات Push اللحظية ومفاتيح التحكم الثلاثة ====================
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    async function checkAdminDevicePushSubscriptionStatus(silentAutoSubscribe = false) {
+      const badge = document.getElementById('adminDevicePushStatusBadge');
+      const btn = document.getElementById('adminEnableDevicePushBtn');
+      const activeAdm = getActiveAdmin();
+      if (!activeAdm || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        if (badge) { badge.className = 'badge badge-rejected'; badge.innerText = 'غير مدعوم بالمتصفح'; }
+        return;
+      }
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        const sub = await reg.pushManager.getSubscription();
+        if (sub && Notification.permission === 'granted') {
+          if (badge) { badge.className = 'badge badge-completed'; badge.innerText = 'مربوط ونشط على هذا الهاتف 📲✅'; }
+          if (btn) { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> تحديث ربط إشعارات الرادار على هذا الجهاز 📲'; }
+          if (silentAutoSubscribe) {
+            const adminKey = `admin:${String(activeAdm.username).toLowerCase()}:${ADMIN_DEVICE_ID}`;
+            fetch(`${API_BASE}/api/push/subscribe`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: adminKey, subscription: sub })
+            }).catch(() => {});
+          }
+        } else {
+          if (badge) { badge.className = 'badge badge-pending'; badge.innerText = 'غير مفعل على هذا الجهاز'; }
+          if (btn) { btn.innerHTML = '<i class="fa-solid fa-bell"></i> تفعيل واستقبال إشعارات الرادار على هذا الجهاز 📲'; }
+        }
+      } catch (e) {}
+    }
+
+    function adminEnableDevicePushSubscription() {
+      withActionLock(async () => {
+        const activeAdm = getActiveAdmin();
+        if (!activeAdm) return;
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+          showToast('متصفحك الحالي لا يدعم إشعارات الـ Push الخارجية ⚠️', 'warn');
+          return;
+        }
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً 🔔⚠️', 'warn');
+            return;
+          }
+          const reg = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+          let sub = await reg.pushManager.getSubscription();
+          if (!sub) {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+            });
+          }
+          const adminKey = `admin:${String(activeAdm.username).toLowerCase()}:${ADMIN_DEVICE_ID}`;
+          const { ok } = await apiRequest('/api/push/subscribe', 'POST', {
+            phone: adminKey,
+            subscription: sub
+          });
+          if (ok) {
+            await checkAdminDevicePushSubscriptionStatus(false);
+            showToast('تم ربط هاتفك برادار إشعارات غرفة العمليات اللحظية بنجاح! 🔔📲✅', 'ok');
+          } else {
+            showToast('تعذر حفظ اشتراك الإشعارات، حاول مرة أخرى ⚠️', 'warn');
+          }
+        } catch (err) {
+          showToast('تعذر تفعيل الإشعارات على هذا الجهاز، تأكد من فتح الموقع عبر HTTPS أو تثبيت التطبيق ⚠️', 'warn');
+        }
+      });
+    }
+
+    function adminToggleRealtimePushSettings() {
+      if (!isMasterAdmin()) {
+        showToast('عفواً، التحكم في مفاتيح إشعارات Push الرئيسية متاح للأدمن الرئيسي فقط 👑⛔', 'warn');
+        renderAdminDynamicSettingsInputs();
+        return;
+      }
+      withActionLock(async () => {
+        const masterSw = document.getElementById('adminPushMasterSwitch');
+        const custSw = document.getElementById('adminPushCustomersSwitch');
+        const capSw = document.getElementById('adminPushCaptainsSwitch');
+
+        const adminPushMasterEnabled = Boolean(masterSw?.checked);
+        const adminPushCustomersEnabled = Boolean(custSw?.checked);
+        const adminPushCaptainsEnabled = Boolean(capSw?.checked);
+
+        if (custSw) custSw.disabled = !adminPushMasterEnabled;
+        if (capSw) capSw.disabled = !adminPushMasterEnabled;
+
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          adminPushMasterEnabled,
+          adminPushCustomersEnabled,
+          adminPushCaptainsEnabled
+        });
+
+        if (ok && data && data.success) {
+          if (!adminPushMasterEnabled) {
+            showToast('تم إيقاف إشعارات حركة المنصة بالكامل مؤقتاً 🔕', 'ok');
+          } else {
+            showToast('تم تحديث إعدادات رادار إشعارات Push الأدمن بنجاح 🔔✅', 'ok');
+          }
+        } else {
+          showToast((data && data.message) || 'تعذر تحديث إعدادات إشعارات الأدمن ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== قسم مؤشرات التقدم والأداء السنوي (365 يوماً) والرسم البياني ====================
+    function buildMetricDailyMap(metricKey) {
+      const historyObj = (STATE.settings && STATE.settings.analyticsHistory) || {};
+      const bucket = (historyObj[metricKey] && typeof historyObj[metricKey] === 'object') ? { ...historyObj[metricKey] } : {};
+
+      if (metricKey === 'completedOrders') {
+        const ordCounts = {};
+        (STATE.orders || []).forEach(o => {
+          if (o && o.status === 'مكتمل' && o.createdAt) {
+            const k = getCairoDateKeyClient(o.createdAt);
+            ordCounts[k] = (ordCounts[k] || 0) + 1;
+          }
+        });
+        Object.keys(ordCounts).forEach(k => {
+          bucket[k] = Math.max(Number(bucket[k] || 0), ordCounts[k]);
+        });
+      } else if (metricKey === 'captains') {
+        const capCounts = {};
+        (STATE.captains || []).forEach(c => {
+          if (c && c.createdAt) {
+            const k = getCairoDateKeyClient(c.createdAt);
+            capCounts[k] = (capCounts[k] || 0) + 1;
+          }
+        });
+        Object.keys(capCounts).forEach(k => {
+          bucket[k] = Math.max(Number(bucket[k] || 0), capCounts[k]);
+        });
+      } else if (metricKey === 'customers') {
+        const custCounts = {};
+        Object.values(STATE.customers || {}).forEach(c => {
+          if (c && c.createdAt) {
+            const k = getCairoDateKeyClient(c.createdAt);
+            custCounts[k] = (custCounts[k] || 0) + 1;
+          }
+        });
+        Object.keys(custCounts).forEach(k => {
+          bucket[k] = Math.max(Number(bucket[k] || 0), custCounts[k]);
+        });
+      }
+      return bucket;
+    }
+
+    function renderAdminProgressAnalytics() {
+      const metricSel = document.getElementById('adminAnalyticsMetricSelect');
+      const rangeSel = document.getElementById('adminAnalyticsRangeSelect');
+      const barsContainer = document.getElementById('adminAnalyticsChartBars');
+      const curTotalEl = document.getElementById('adminAnalyticsCurrentTotalVal');
+      const prevNoteEl = document.getElementById('adminAnalyticsPrevTotalNote');
+      const periodTitleEl = document.getElementById('adminAnalyticsPeriodTitle');
+      const trendWrapEl = document.getElementById('adminAnalyticsTrendBadgeWrap');
+      const footerRightEl = document.getElementById('adminAnalyticsChartFooterRight');
+      if (!barsContainer || !metricSel || !rangeSel) return;
+
+      const metric = metricSel.value || 'installs';
+      const rangeVal = String(rangeSel.value || '7');
+      const dailyMap = buildMetricDailyMap(metric);
+
+      const metricColors = {
+        installs: '#00838F',
+        customers: '#E65100',
+        captains: '#0277BD',
+        completedOrders: '#2E7D32'
+      };
+      const metricUnits = {
+        installs: 'تحميل',
+        customers: 'عميل',
+        captains: 'كابتن',
+        completedOrders: 'طلب مؤكد'
+      };
+      const barColor = metricColors[metric] || 'var(--primary)';
+      const unitLabel = metricUnits[metric] || '';
+
+      const nowMs = Date.now();
+      const dayMs = 24 * 60 * 60 * 1000;
+      const todayKeyStr = getCairoDateKeyClient(nowMs);
+      const [curYear, curMonth, curDay] = todayKeyStr.split('-').map(Number);
+
+      let chartPoints = [];
+      let currentPeriodSum = 0;
+      let previousPeriodSum = 0;
+      let comparePeriodName = 'الأسبوع الفائت';
+
+      if (rangeVal === 'current_month') {
+        comparePeriodName = 'الفترة المكافئة من الشهر السابق';
+        const curMonthName = new Date(curYear, curMonth - 1, 1).toLocaleDateString('ar-EG', { month: 'long' });
+        if (periodTitleEl) periodTitleEl.innerText = `إجمالي الشهر الحالي (${curMonthName} — حتى يوم ${curDay}):`;
+        if (footerRightEl) footerRightEl.innerText = `التقدم اليومي خلال شهر ${curMonthName}`;
+
+        const prevMonthDate = new Date(curYear, curMonth - 2, 1);
+        const prevYear = prevMonthDate.getFullYear();
+        const prevMonth = prevMonthDate.getMonth() + 1;
+        const daysInPrevMonth = new Date(prevYear, prevMonth, 0).getDate();
+
+        for (let d = 1; d <= curDay; d++) {
+          const kCur = `${curYear}-${String(curMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const val = Number(dailyMap[kCur]) || 0;
+          currentPeriodSum += val;
+          chartPoints.push({
+            key: kCur,
+            label: `${d}/${curMonth}`,
+            value: val,
+            isHighlight: true
+          });
+          if (d <= daysInPrevMonth) {
+            const kPrev = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            previousPeriodSum += (Number(dailyMap[kPrev]) || 0);
+          }
+        }
+      } else if (rangeVal === 'prev_month') {
+        const prevMonthDate = new Date(curYear, curMonth - 2, 1);
+        const pYear = prevMonthDate.getFullYear();
+        const pMonth = prevMonthDate.getMonth() + 1;
+        const daysInPMonth = new Date(pYear, pMonth, 0).getDate();
+        const pMonthName = prevMonthDate.toLocaleDateString('ar-EG', { month: 'long' });
+
+        const beforePrevDate = new Date(curYear, curMonth - 3, 1);
+        const bpYear = beforePrevDate.getFullYear();
+        const bpMonth = beforePrevDate.getMonth() + 1;
+        const bpMonthName = beforePrevDate.toLocaleDateString('ar-EG', { month: 'long' });
+        const daysInBpMonth = new Date(bpYear, bpMonth, 0).getDate();
+
+        comparePeriodName = `شهر ${bpMonthName}`;
+        if (periodTitleEl) periodTitleEl.innerText = `إجمالي الشهر السابق (${pMonthName}):`;
+        if (footerRightEl) footerRightEl.innerText = `التقدم اليومي خلال شهر ${pMonthName} كاملاً`;
+
+        for (let d = 1; d <= daysInPMonth; d++) {
+          const kCur = `${pYear}-${String(pMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const val = Number(dailyMap[kCur]) || 0;
+          currentPeriodSum += val;
+          chartPoints.push({
+            key: kCur,
+            label: `${d}/${pMonth}`,
+            value: val,
+            isHighlight: true
+          });
+        }
+        for (let d = 1; d <= daysInBpMonth; d++) {
+          const kPrev = `${bpYear}-${String(bpMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          previousPeriodSum += (Number(dailyMap[kPrev]) || 0);
+        }
+      } else if (rangeVal === '365') {
+        comparePeriodName = 'الشهر السابق';
+        if (periodTitleEl) periodTitleEl.innerText = 'أداء الشهر الحالي (ومقارنة الـ 12 شهراً):';
+        if (footerRightEl) footerRightEl.innerText = 'الرسم البياني الشهري (مقارنة الأشهر على مدار 12 شهراً)';
+
+        const nowDate = new Date(curYear, curMonth - 1, 1);
+        const monthsList = [];
+        for (let m = 11; m >= 0; m--) {
+          const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - m, 1);
+          const ymKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const monthLabel = d.toLocaleDateString('ar-EG', { month: 'short' });
+          monthsList.push({ ymKey, label: monthLabel, value: 0, isHighlight: true });
+        }
+
+        Object.entries(dailyMap).forEach(([dateKey, val]) => {
+          const ym = String(dateKey).slice(0, 7);
+          const targetMonth = monthsList.find(x => x.ymKey === ym);
+          if (targetMonth) targetMonth.value += (Number(val) || 0);
+        });
+
+        chartPoints = monthsList;
+        currentPeriodSum = monthsList[monthsList.length - 1]?.value || 0;
+        previousPeriodSum = monthsList[monthsList.length - 2]?.value || 0;
+      } else {
+        const rangeDays = Number(rangeVal) || 7;
+        if (rangeDays === 1) {
+          comparePeriodName = 'أمس';
+          if (periodTitleEl) periodTitleEl.innerText = 'إجمالي اليوم (مقارنة بأمس):';
+          if (footerRightEl) footerRightEl.innerText = 'مقارنة اليوم مع آخر 7 أيام';
+        } else if (rangeDays === 7) {
+          comparePeriodName = 'الأسبوع الفائت';
+          if (periodTitleEl) periodTitleEl.innerText = 'إجمالي آخر 7 أيام:';
+          if (footerRightEl) footerRightEl.innerText = 'التقدم اليومي خلال آخر 7 أيام';
+        } else {
+          comparePeriodName = 'الـ 30 يوماً السابقة';
+          if (periodTitleEl) periodTitleEl.innerText = 'إجمالي آخر 30 يومًا:';
+          if (footerRightEl) footerRightEl.innerText = 'التقدم اليومي خلال آخر 30 يومًا';
+        }
+
+        for (let i = 0; i < rangeDays; i++) {
+          const kCur = getCairoDateKeyClient(nowMs - i * dayMs);
+          const kPrev = getCairoDateKeyClient(nowMs - (i + rangeDays) * dayMs);
+          currentPeriodSum += (Number(dailyMap[kCur]) || 0);
+          previousPeriodSum += (Number(dailyMap[kPrev]) || 0);
+        }
+
+        const displayDaysCount = rangeDays === 1 ? 7 : rangeDays;
+        for (let i = displayDaysCount - 1; i >= 0; i--) {
+          const ts = nowMs - i * dayMs;
+          const k = getCairoDateKeyClient(ts);
+          const dObj = new Date(ts);
+          const lbl = i === 0 ? 'اليوم' : (i === 1 && rangeDays <= 7 ? 'أمس' : dObj.toLocaleDateString('ar-EG', { day: 'numeric', month: 'numeric' }));
+          chartPoints.push({
+            key: k,
+            label: lbl,
+            value: Number(dailyMap[k]) || 0,
+            isHighlight: rangeDays === 1 ? (i === 0) : true
+          });
+        }
+      }
+
+      if (curTotalEl) curTotalEl.innerText = `${currentPeriodSum} ${unitLabel}`;
+      if (prevNoteEl) prevNoteEl.innerText = `(${comparePeriodName}: ${previousPeriodSum})`;
+
+      const diff = currentPeriodSum - previousPeriodSum;
+      let pct = 0;
+      if (previousPeriodSum > 0) {
+        pct = Math.round((diff / previousPeriodSum) * 100);
+      } else if (currentPeriodSum > 0) {
+        pct = 100;
+      }
+
+      if (trendWrapEl) {
+        if (diff > 0) {
+          trendWrapEl.innerHTML = `<span class="trend-pill-up"><i class="fa-solid fa-arrow-trend-up"></i> +${pct}% (+${diff} زيادة عن ${comparePeriodName})</span>`;
+        } else if (diff < 0) {
+          trendWrapEl.innerHTML = `<span class="trend-pill-down"><i class="fa-solid fa-arrow-trend-down"></i> ${pct}% (${diff} نقصان عن ${comparePeriodName})</span>`;
+        } else {
+          trendWrapEl.innerHTML = `<span class="trend-pill-neutral"><i class="fa-solid fa-equals"></i> 0% (نفس مستوى ${comparePeriodName})</span>`;
+        }
+      }
+
+      const maxVal = Math.max(1, ...chartPoints.map(p => p.value));
+      barsContainer.innerHTML = chartPoints.map(pt => {
+        const heightPct = pt.value > 0 ? Math.max(10, Math.round((pt.value / maxVal) * 100)) : 4;
+        const opacityStyle = pt.isHighlight === false ? 'opacity:0.45;' : '';
+        return `<div class="analytics-bar-col" style="${opacityStyle}" title="${escapeHtml(pt.label)}: ${pt.value} ${unitLabel}">
+          <span class="analytics-bar-val">${pt.value}</span>
+          <div class="analytics-bar-fill" style="height:${heightPct}%; background:${pt.value > 0 ? barColor : '#D7CCC8'};"></div>
+          <span class="analytics-bar-lbl">${escapeHtml(pt.label)}</span>
+        </div>`;
+      }).join('');
+    }
+
     function handleAdminLoginSubmit() {
       withActionLock(async () => {
         const username = (document.getElementById('adminLoginUser')?.value || '').trim();
@@ -982,6 +1510,7 @@
             document.getElementById('adminLoginPass').value = '';
             renderAdminScreen();
             switchAdminTab(STATE.currentAdminTab || 'home');
+            checkAdminDevicePushSubscriptionStatus(true);
             showToast(data.message || 'تم تسجيل الدخول بنجاح 🛡️✅', 'ok');
           } else {
             if (errBox) {
@@ -1053,8 +1582,11 @@
         if (el) el.style.display = show ? displayType : 'none';
       };
 
-      toggleEl('admCard-kpiStats', hasAdminPerm('viewDashboard', adm), 'grid');
+      toggleEl('admCard-kpiStats', hasAdminPerm('viewDashboard', adm) || hasAdminPerm('viewAnalytics', adm), 'grid');
+      toggleEl('admCard-progressIndicators', hasAdminPerm('viewAnalytics', adm) || hasAdminPerm('viewDashboard', adm));
       toggleEl('admCard-platformControls', hasAdminPerm('manageSettings', adm));
+      toggleEl('admCard-adminPushControls', isMaster || hasAdminPerm('receiveAdminPush', adm));
+      toggleEl('adminPushMasterSwitchesWrap', isMaster);
       toggleEl('admCard-pushBroadcast', isMaster);
       toggleEl('admCard-captainReview', hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-captainTiers', hasAdminPerm('manageCaptains', adm) || hasAdminPerm('manageCommissions', adm));
@@ -1110,8 +1642,8 @@
       renderAdminCustomerDirectory();
       renderAdminFinancialLedger();
       renderAdminDashboardData();
+      renderAdminProgressAnalytics();
     }
-
     // ==================== مستويات الكباتن الديناميكية (شاملة الأيام والهبوط التدريجي الآمن) ====================
     function updateAdminTiersLiveNote() {
       const wOrd = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
@@ -1168,7 +1700,7 @@
       });
     }
 
-    // ==================== كوبونات الخصم الديناميكية ====================
+    // ==================== كوبونات الخصم الديناميكية (مع عدد مرات الاستخدام المسموح بها للرقم المخصص) ====================
     function toggleAdminPromoTargetPhone() {
       const sel = document.getElementById('adminPromoTargetSelect')?.value || 'all';
       const wrap = document.getElementById('adminPromoCustomPhoneWrap');
@@ -1182,6 +1714,8 @@
         const targetMode = document.getElementById('adminPromoTargetSelect')?.value || 'all';
         const customPhone = normalizePhone(document.getElementById('adminPromoTargetPhoneInput')?.value || '');
         const validHours = Math.max(1, Number(document.getElementById('adminPromoValidHoursInput')?.value || 48));
+        const maxUsesRaw = Number(normalizeDigits(document.getElementById('adminPromoMaxUsesInput')?.value || 1));
+        const maxUses = targetMode === 'custom' ? Math.max(1, Math.floor(maxUsesRaw || 1)) : 1;
 
         if (!code || discountAmount <= 0) {
           showToast('اكتب اسم الكود وقيمة الخصم بالجنيه الأول يا باشا! 🎟️⚠️', 'warn');
@@ -1191,18 +1725,25 @@
           showToast('اكتب رقم موبايل العميل المخصوص بشكل صحيح (01...) 📱⚠️', 'warn');
           return;
         }
+        if (targetMode === 'custom' && (!Number.isFinite(maxUsesRaw) || maxUsesRaw < 1)) {
+          showToast('حدد عدد مرات الاستخدام المسموح بها للرقم (1 أو أكثر) ⚠️', 'warn');
+          return;
+        }
 
         const targetPhone = targetMode === 'custom' ? customPhone : 'all';
         const { ok, data } = await apiRequest('/api/admin/promo-codes', 'POST', {
           code,
           discountAmount,
           targetPhone,
-          validHours
+          validHours,
+          maxUses
         });
 
         if (ok && data && data.success) {
           document.getElementById('adminPromoCodeInput').value = '';
           document.getElementById('adminPromoAmountInput').value = '';
+          const maxUsesInp = document.getElementById('adminPromoMaxUsesInput');
+          if (maxUsesInp) maxUsesInp.value = '1';
           showToast(data.message || 'تم تفعيل الكود وإرسال الإشعارات بنجاح 🎟️✅', 'ok');
         } else {
           showToast((data && data.message) || 'تعذر إنشاء كود الخصم ⚠️', 'warn');
@@ -1239,13 +1780,30 @@
       box.innerHTML = list.map(p => {
         const isExpired = p.expiresAt && now > Number(p.expiresAt);
         const remHours = p.expiresAt ? Math.max(0, Math.ceil((Number(p.expiresAt) - now) / 3600000)) : 0;
-        const usedCnt = Array.isArray(p.usedBy) ? p.usedBy.length : 0;
-        const targetLabel = (!p.targetPhone || p.targetPhone === 'all') ? '📢 لكل العملاء' : `👑 عميل: ${escapeHtml(p.targetPhone)}`;
+        const isCustomTarget = Boolean(p.targetPhone && p.targetPhone !== 'all');
+        const maxUses = isCustomTarget ? Math.max(1, Number(p.maxUses) || 1) : 1;
+        let usageSummaryHtml = '';
+
+        if (isCustomTarget) {
+          const cleanTargetPh = normalizePhone(p.targetPhone);
+          const usedByTarget = (p.usageCounts && typeof p.usageCounts === 'object' && p.usageCounts[cleanTargetPh] !== undefined)
+            ? Math.max(0, Number(p.usageCounts[cleanTargetPh]) || 0)
+            : (Array.isArray(p.usedBy) ? p.usedBy.filter(ph => normalizePhone(ph) === cleanTargetPh).length : 0);
+          const remUses = Math.max(0, maxUses - usedByTarget);
+          usageSummaryHtml = `استُخدم: <strong>${usedByTarget} من ${maxUses}</strong> (متبقي: <strong style="color:${remUses > 0 ? 'var(--success)' : 'var(--danger)'};">${remUses}</strong>)`;
+        } else {
+          const totalUsedCnt = (p.usageCounts && typeof p.usageCounts === 'object')
+            ? Object.values(p.usageCounts).reduce((s, v) => s + (Number(v) || 0), 0)
+            : (Array.isArray(p.usedBy) ? p.usedBy.length : 0);
+          usageSummaryHtml = `استُخدم: <strong>${totalUsedCnt} مرة</strong>`;
+        }
+
+        const targetLabel = !isCustomTarget ? '📢 لكل العملاء' : `👑 عميل: ${escapeHtml(p.targetPhone)}`;
         return `<div style="background:#fff; border:1px solid ${isExpired ? '#FFCDD2' : '#CE93D8'}; border-radius:10px; padding:8px 10px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <strong style="color:#6A1B9A; font-size:12.5px;">🎟️ ${escapeHtml(p.code)}</strong>
             <span class="badge ${isExpired ? 'badge-rejected' : 'badge-completed'}" style="margin-right:4px;">خصم ${p.discountAmount} ج</span>
-            <div style="color:#555; margin-top:3px;">${targetLabel} | استُخدم: <strong>${usedCnt} مرة</strong> | ${isExpired ? '<span style="color:var(--danger);">منتهي ⌛</span>' : `متبقي: <strong>${remHours} ساعة</strong>`}</div>
+            <div style="color:#555; margin-top:3px;">${targetLabel} | ${usageSummaryHtml} | ${isExpired ? '<span style="color:var(--danger);">منتهي ⌛</span>' : `متبقي: <strong>${remHours} ساعة</strong>`}</div>
           </div>
           <button type="button" class="btn-danger" style="padding:5px 8px; font-size:11px;" onclick="adminDeletePromoCode('${escapeHtml(p.code)}')">حذف ✕</button>
         </div>`;
@@ -1973,6 +2531,18 @@
       if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
       if(document.getElementById('adminWelcomeBonusSwitch')) document.getElementById('adminWelcomeBonusSwitch').checked = s.welcomeBonusActive!==false;
       if(document.getElementById('adminReferralRewardSwitch')) document.getElementById('adminReferralRewardSwitch').checked = s.referralRewardActive!==false;
+
+      // تحديث مفاتيح التحكم الثلاثة في إشعارات Push الأدمن
+      const masterPushOn = s.adminPushMasterEnabled !== false;
+      const custPushOn = s.adminPushCustomersEnabled !== false;
+      const capPushOn = s.adminPushCaptainsEnabled !== false;
+      const masterPushSw = document.getElementById('adminPushMasterSwitch');
+      const custPushSw = document.getElementById('adminPushCustomersSwitch');
+      const capPushSw = document.getElementById('adminPushCaptainsSwitch');
+      if (masterPushSw) masterPushSw.checked = masterPushOn;
+      if (custPushSw) { custPushSw.checked = custPushOn; custPushSw.disabled = !masterPushOn; }
+      if (capPushSw) { capPushSw.checked = capPushOn; capPushSw.disabled = !masterPushOn; }
+
       updateIncentivesLivePreview();
       updateAdminTiersLiveNote();
     }
@@ -2107,6 +2677,10 @@
       if(document.getElementById('adminStatOnlineCustomersCount')) document.getElementById('adminStatOnlineCustomersCount').innerText = `${STATE.onlineCustomersCount || 0} عميل`;
       if(document.getElementById('adminStatTotalCustomersCount')) document.getElementById('adminStatTotalCustomersCount').innerText = `${custPhonesSet.size} عميل`;
       if(document.getElementById('adminStatActiveOrdersCount')) document.getElementById('adminStatActiveOrdersCount').innerText = activeOrders.length;
+      if(document.getElementById('adminStatAppInstallsCount')) {
+        const instCnt = Math.max(0, Number(STATE.settings?.appInstallsCount || 0));
+        document.getElementById('adminStatAppInstallsCount').innerText = `${instCnt} تحميل`;
+      }
       
       const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
       const capBadge = document.getElementById('admNavCaptainsBadge');
@@ -2153,6 +2727,9 @@
       switchAdminTab(STATE.currentAdminTab || 'home');
       await syncFromCloudServer();
       renderAdminScreen();
+      if (getActiveAdmin()) {
+        checkAdminDevicePushSubscriptionStatus(true);
+      }
       setInterval(() => { if (!document.hidden && getActiveAdmin()) syncFromCloudServer(); }, 8000);
       document.addEventListener('visibilitychange', () => { if (!document.hidden && getActiveAdmin()) syncFromCloudServer(); });
     }

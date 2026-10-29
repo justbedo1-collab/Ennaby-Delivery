@@ -116,11 +116,43 @@
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
     const iosTip = document.getElementById('iosTip');
+    const CLIENT_PRESENCE_KEY = 'ENNABY_CLIENT_PRESENCE_ID_V1';
+
+    function getOrCreateClientDeviceId() {
+      try {
+        let id = localStorage.getItem(CLIENT_PRESENCE_KEY);
+        if (!id) {
+          id = 'cid_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now();
+          localStorage.setItem(CLIENT_PRESENCE_KEY, id);
+        }
+        return id;
+      } catch (e) {
+        return 'cid_' + Math.random().toString(36).slice(2, 10);
+      }
+    }
+
+    function reportActualAppInstallOnce() {
+      try {
+        if (localStorage.getItem('ENNABY_INSTALL_REPORTED_V1') === '1') return;
+        localStorage.setItem('ENNABY_INSTALL_REPORTED_V1', '1');
+      } catch (e) {}
+      fetch('/api/analytics/install', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: getOrCreateClientDeviceId() })
+      }).catch(() => {});
+    }
 
     // كشف أجهزة iOS لإظهار الطريقة اليدوية
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIos) {
       iosTip.style.display = 'block';
+    }
+
+    // إذا تم فتح الصفحة من داخل التطبيق المثبت بالفعل (Standalone)
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      reportActualAppInstallOnce();
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -129,12 +161,19 @@
       installBtn.style.display = 'flex';
     });
 
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      installBtn.innerText = 'ألف مبروك.. التطبيق نور شاشتك! 🎉';
+      reportActualAppInstallOnce();
+    });
+
     installBtn.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
           installBtn.innerText = 'ألف مبروك.. التطبيق نور شاشتك! 🎉';
+          reportActualAppInstallOnce();
         }
         deferredPrompt = null;
       } else if (!isIos) {
