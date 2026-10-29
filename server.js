@@ -86,21 +86,35 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمسارات المحددة وتجنب عرض كود الخادم كنص
+// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط وحظر كشف ملفات الجذر مثل server.js و .env
+const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
+ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
+  app.get(`/${assetName}`, (req, res) => {
+    const pubPath = path.join(__dirname, 'public', assetName);
+    const rootPath = path.join(__dirname, assetName);
+    if (fs.existsSync(pubPath)) return res.sendFile(pubPath);
+    if (fs.existsSync(rootPath)) return res.sendFile(rootPath);
+    if (assetName === 'logo-1.png') {
+      const jpgFallback = fs.existsSync(path.join(__dirname, 'public', 'logo-1.jpg'))
+        ? path.join(__dirname, 'public', 'logo-1.jpg')
+        : path.join(__dirname, 'logo-1.jpg');
+      if (fs.existsSync(jpgFallback)) return res.sendFile(jpgFallback);
+    }
+    res.status(404).end();
+  });
+});
+
 app.get('/', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
 app.get('/index.html', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
 
 app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) => {
-  const filePath = resolveHtmlFilePath('admin.html');
-  res.sendFile(filePath);
+  res.sendFile(resolveHtmlFilePath('admin.html'));
 });
 
 app.get(['/install', '/install.html'], (req, res) => {
-  const filePath = resolveHtmlFilePath('install.html');
-  res.sendFile(filePath);
+  res.sendFile(resolveHtmlFilePath('install.html'));
 });
 
-app.use(express.static(path.join(__dirname)));
 if (fs.existsSync(path.join(__dirname, 'public'))) {
   app.use(express.static(path.join(__dirname, 'public')));
 }
@@ -133,6 +147,13 @@ const ALLOWED_ADVANCE_STATUSES = [
   'استلم الطرد وفي السكة',
   'الكابتن وصل للتسليم'
 ];
+
+// [NEW-LOGIC-01] خريطة التسلسل الإجباري لحالات خط سير الطلب
+const REQUIRED_PREV_STATUS_FOR_ADVANCE = {
+  'الكابتن وصل للاستلام': 'تم قبول الطلب',
+  'استلم الطرد وفي السكة': 'الكابتن وصل للاستلام',
+  'الكابتن وصل للتسليم': 'استلم الطرد وفي السكة'
+};
 
 // خريطة تتبع العملاء المتواجدين حالياً على المنصة (Presence Heartbeat)
 const customerPresenceMap = new Map();
@@ -193,6 +214,10 @@ function normalizePhoneServer(raw) {
   else if (s.startsWith('0020')) s = '0' + s.slice(4);
   else if (s.startsWith('20') && s.length === 12) s = '0' + s.slice(2);
   return s;
+}
+
+function isValidEgyptianPhoneServer(phone) {
+  return /^01[0125][0-9]{8}$/.test(normalizePhoneServer(phone));
 }
 
 function formatArabicTripsText(count) {
@@ -705,16 +730,13 @@ function getAuthenticatedCaptainFromCookie(req) {
   }
 }
 
-// التحقق من ملكية العميل للطلب (عبر كوكي الجلسة أو مطابقة رقم صاحب الطلب)
+// [FIX-06 & NEW-SEC-03] التحقق الصارم من ملكية العميل للطلب عبر كوكي الجلسة الموثق فقط
 function verifyCustomerOrderOwnership(req, orderRow) {
   if (!orderRow) return false;
   const orderOwnerPhone = normalizePhoneServer(orderRow.customer_phone || orderRow.client_phone);
   if (!orderOwnerPhone) return false;
   const cookiePhone = getAuthenticatedCustomerFromCookie(req);
-  const bodyPhone = normalizePhoneServer(req.body && (req.body.clientPhone || req.body.customerPhone || req.body.phone));
-  if (cookiePhone && cookiePhone === orderOwnerPhone) return true;
-  if (!cookiePhone && bodyPhone && bodyPhone === orderOwnerPhone) return true;
-  return false;
+  return Boolean(cookiePhone && cookiePhone === orderOwnerPhone);
 }
 
 function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders = [], settings = {}) {
@@ -1135,7 +1157,7 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
   return mergedIncentives;
 }
 
-// [FIX-02] تنقية استجابة /api/bootstrap للعامة وحجب الكوبونات وسجل العملاء والبيانات الحساسة للكباتن عن غير أصحابها
+// [FIX-02 & NEW-SEC-02] تنقية استجابة /api/bootstrap بالكامل وعزل بيانات العملاء والكباتن والطلبات حسب الجلسة الموثقة
 async function buildClientState(req, forceRefresh = false) {
   touchCustomerPresence(req);
   const raw = await fetchRawDatabaseState(forceRefresh);
@@ -1170,17 +1192,26 @@ async function buildClientState(req, forceRefresh = false) {
     delete clientSettings.promoCodes;
   }
 
-  const mappedCaptains = raw.rawCaptains.map(c => {
-    const isSelfCaptain = Boolean(authenticatedCaptainPhone && normalizePhoneServer(c.phone) === authenticatedCaptainPhone);
-    const row = mapCaptainRow(c, isAuthenticatedAdmin, raw.storageFilesMap, raw.orders, clientSettings);
-    if (!isAuthenticatedAdmin && !isSelfCaptain) {
-      row.nationalId = '';
-      row.walletTransactions = [];
-      row.adminNotices = [];
-      row.customFeeReason = null;
-    }
-    return row;
-  });
+  const includeCapPhotos = Boolean(
+    isAuthenticatedAdmin &&
+    verifiedAdminAccount &&
+    (verifiedAdminAccount.isMaster ||
+      (verifiedAdminAccount.permissions &&
+        (verifiedAdminAccount.permissions.viewCaptains || verifiedAdminAccount.permissions.manageCaptains)))
+  );
+
+  const allMappedCaptains = raw.rawCaptains.map(c =>
+    mapCaptainRow(c, includeCapPhotos, raw.storageFilesMap, raw.orders, clientSettings)
+  );
+  const availableCaptainsCount = allMappedCaptains.filter(c => c.status === 'معتمد' && c.isAvailable).length;
+  const onlineCustomersCount = getOnlineCustomersCount();
+
+  // عزل قائمة الكباتن: الأدمن يرى الكباتن، والكابتن المسجل يرى ملفه الشخصي فقط، والعميل لا يستلم قائمة الكباتن
+  const filteredCaptains = isAuthenticatedAdmin
+    ? allMappedCaptains
+    : (authenticatedCaptainPhone
+        ? allMappedCaptains.filter(c => normalizePhoneServer(c.phone) === authenticatedCaptainPhone)
+        : []);
 
   let filteredCustomers = {};
   if (isAuthenticatedAdmin) {
@@ -1189,16 +1220,49 @@ async function buildClientState(req, forceRefresh = false) {
     filteredCustomers = { [authenticatedCustomerPhone]: raw.customers[authenticatedCustomerPhone] };
   }
 
-  const availableCaptainsCount = mappedCaptains.filter(c => c.status === 'معتمد' && c.isAvailable).length;
-  const onlineCustomersCount = getOnlineCustomersCount();
+  // عزل قائمة الطلبات وحجب أرقام الهواتف في الطلبات المتاحة على الرادار أو المنتهية للكابتن
+  let filteredOrders = [];
+  if (isAuthenticatedAdmin) {
+    filteredOrders = raw.orders;
+  } else {
+    const seenIds = new Set();
+    raw.orders.forEach(o => {
+      const ownerPh = normalizePhoneServer(o.clientPhone || o.customerPhone);
+      const isCustOwner = Boolean(authenticatedCustomerPhone && ownerPh === authenticatedCustomerPhone);
+      const isAssignedCap = Boolean(authenticatedCaptainPhone && normalizePhoneServer(o.assignedCourierPhone) === authenticatedCaptainPhone);
+      const isWaitingRadar = Boolean(authenticatedCaptainPhone && o.status === 'في انتظار كابتن');
+
+      if (isCustOwner) {
+        if (!seenIds.has(o.id)) {
+          seenIds.add(o.id);
+          filteredOrders.push(o);
+        }
+      } else if (isAssignedCap || isWaitingRadar) {
+        if (!seenIds.has(o.id)) {
+          seenIds.add(o.id);
+          const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || String(o.status || '').includes('ملغي');
+          const hidePhonesForCap = isWaitingRadar || isFinished;
+          filteredOrders.push(hidePhonesForCap ? {
+            ...o,
+            customerPhone: '',
+            clientPhone: '',
+            senderPhone: '',
+            recipientPhone: ''
+          } : o);
+        }
+      }
+    });
+  }
+
+  const canViewAuditAndAdmins = Boolean(isAuthenticatedAdmin && verifiedAdminAccount && verifiedAdminAccount.isMaster);
 
   return {
     settings: clientSettings,
     zones: raw.zones,
     pricing: raw.pricing,
     customers: filteredCustomers,
-    captains: mappedCaptains,
-    orders: raw.orders,
+    captains: filteredCaptains,
+    orders: filteredOrders,
     availableCaptainsCount,
     onlineCustomersCount,
     authenticatedCustomerPhone,
@@ -1206,8 +1270,8 @@ async function buildClientState(req, forceRefresh = false) {
       supabaseUrl: SUPABASE_URL || '',
       supabaseAnonKey: SUPABASE_ANON_KEY || ''
     },
-    adminAccounts: isAuthenticatedAdmin ? raw.adminAccounts : [],
-    auditLogs: isAuthenticatedAdmin ? raw.auditLogs : [],
+    adminAccounts: canViewAuditAndAdmins ? raw.adminAccounts : (isAuthenticatedAdmin && verifiedAdminAccount ? [verifiedAdminAccount] : []),
+    auditLogs: canViewAuditAndAdmins ? raw.auditLogs : [],
     authenticatedAdminUsername: verifiedAdminAccount ? verifiedAdminAccount.username : null
   };
 }
@@ -1368,6 +1432,7 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
   }
 }
 
+// [NEW-SEC-04] التحقق من ملكية الرقم أو جلسة الأدمن قبل ربط إشعارات Web Push
 app.post('/api/push/subscribe', async (req, res) => {
   try {
     const { phone, subscription } = req.body || {};
@@ -1398,6 +1463,17 @@ app.post('/api/push/subscribe', async (req, res) => {
       cleanKey = `admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`;
     } else {
       cleanKey = normalizePhoneServer(cleanKey);
+      if (!isValidEgyptianPhoneServer(cleanKey)) {
+        return res.status(400).json({ success: false, message: 'رقم الهاتف غير صالح ⚠️' });
+      }
+      const custPhone = getAuthenticatedCustomerFromCookie(req);
+      const capPhone = getAuthenticatedCaptainFromCookie(req);
+      if (cleanKey !== custPhone && cleanKey !== capPhone) {
+        const { data: pendingCap } = await supabase.from('captains').select('status').eq('phone', cleanKey).maybeSingle();
+        if (!pendingCap || pendingCap.status !== 'قيد المراجعة') {
+          return res.status(403).json({ success: false, message: 'غير مصرح بربط الإشعارات لهذا الرقم 🔒' });
+        }
+      }
     }
 
     await supabase.from('push_subscriptions').upsert([{
@@ -1698,7 +1774,10 @@ app.post('/api/auth/admin/login', async (req, res) => {
 app.post('/api/auth/customer/login', async (req, res) => {
   const { phone: rawPhone, pin } = req.body || {};
   const phone = normalizePhoneServer(rawPhone);
-  if (!phone || !pin) return res.status(400).json({ success: false, message: 'بيانات غير مكتملة' });
+  const cleanPin = String(pin || '').trim();
+  if (!isValidEgyptianPhoneServer(phone) || !/^[0-9]{4}$/.test(cleanPin)) {
+    return res.status(400).json({ success: false, message: 'بيانات الهاتف أو رمز الـ PIN غير صحيحة ⚠️' });
+  }
 
   const rateLimit = await checkRateLimit(phone);
   if (rateLimit.locked) return res.status(403).json({ success: false, message: rateLimit.message });
@@ -1706,7 +1785,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
   const { data: user } = await supabase.from('customers').select('*').eq('phone', phone).maybeSingle();
 
   if (!user) {
-    const hashedPin = await bcrypt.hash(String(pin), 10);
+    const hashedPin = await bcrypt.hash(cleanPin, 10);
     const { data: newUser } = await supabase.from('customers').insert([{
       phone,
       pin_hash: hashedPin,
@@ -1730,7 +1809,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
     return res.json({ success: true, message: 'تم فتح حسابك وتفعيل جلستك الدائمة بنجاح 👑', state });
   }
 
-  const valid = await bcrypt.compare(String(pin), user.pin_hash);
+  const valid = await bcrypt.compare(cleanPin, user.pin_hash);
   if (!valid) {
     await recordFailedAttempt(phone, rateLimit.attemptData);
     return res.status(401).json({ success: false, message: 'الرقم السري غير صحيح ⚠️' });
@@ -1755,7 +1834,7 @@ app.post('/api/captains/register', async (req, res) => {
 
     const phone = normalizePhoneServer(rawPhone);
 
-    if (!phone || !password || !fullName || !nationalId || !vehicleType) {
+    if (!isValidEgyptianPhoneServer(phone) || !password || !fullName || !nationalId || !vehicleType) {
       return res.status(400).json({ success: false, message: 'برجاء استكمال جميع البيانات الإجبارية ونوع المركبة ⚠️' });
     }
 
@@ -1910,14 +1989,19 @@ app.post('/api/orders', async (req, res) => {
     const {
       clientPhone: rawClientPhone, pin, tripType, pickupZone, pickupAddress,
       dropoffZone, dropoffAddress, customerNotes, packageType,
-      payer, senderPhone, recipientPhone,
+      payer, senderPhone: rawSenderPhone, recipientPhone: rawRecipientPhone,
       pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode
     } = req.body || {};
 
     const clientPhone = normalizePhoneServer(rawClientPhone);
+    const senderPhone = normalizePhoneServer(rawSenderPhone || clientPhone);
+    const recipientPhone = normalizePhoneServer(rawRecipientPhone || '');
 
-    if (!clientPhone || !pickupAddress || !dropoffAddress) {
-      return res.status(400).json({ success: false, message: 'برجاء استكمال كافة بيانات وعناوين الطلب ⚠️' });
+    if (!isValidEgyptianPhoneServer(clientPhone) || !pickupAddress || !dropoffAddress) {
+      return res.status(400).json({ success: false, message: 'برجاء استكمال كافة بيانات وعناوين الطلب ورقم الهاتف بشكل صحيح ⚠️' });
+    }
+    if (!isValidEgyptianPhoneServer(senderPhone) || !isValidEgyptianPhoneServer(recipientPhone)) {
+      return res.status(400).json({ success: false, message: 'برجاء إدخال أرقام هواتف مصرية صحيحة للراسل والمستلم 📱⚠️' });
     }
 
     const rawState = await fetchRawDatabaseState(true);
@@ -1982,7 +2066,10 @@ app.post('/api/orders', async (req, res) => {
     req.cookies = { ...req.cookies, customer_session: custToken };
 
     const routeKey = `${pickupZone}|${dropoffZone}`;
-    const baseRouteFare = roundMoney(rawState.pricing[routeKey] ?? 40);
+    if (rawState.pricing[routeKey] === undefined) {
+      return res.status(400).json({ success: false, message: 'مسار المناطق المحدد غير مدعوم حالياً في التسعير ⚠️' });
+    }
+    const baseRouteFare = roundMoney(rawState.pricing[routeKey]);
 
     const surgeInfo = getActiveSurgeInfo(rawState.settings);
     const originalFare = surgeInfo.isActive
@@ -2098,8 +2185,8 @@ app.post('/api/orders', async (req, res) => {
       customer_notes: storedNotesWithMeta,
       package_type: packageType || DEFAULT_PACKAGE_TYPES[0],
       payer: payer || 'الراسل',
-      sender_phone: senderPhone || clientPhone,
-      recipient_phone: recipientPhone || '',
+      sender_phone: senderPhone,
+      recipient_phone: recipientPhone,
       original_fare: originalFare,
       discount_applied: discountApplied,
       fare: finalFare,
@@ -2245,10 +2332,11 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: 'تم قبول الطلب.. توكل على الله 🛵', state });
 });
 
-// [FIX-05] التحقق من أن الحالة الجديدة مسموحة وأن الطلب نشط وغير ملغي قبل ترقيته
+// [FIX-05 & NEW-LOGIC-01] فرض التسلسل الصارم لحالات خط سير الطلب والتأكد من أنه نشط وغير ملغي
 app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   const { nextStatus } = req.body || {};
-  if (!ALLOWED_ADVANCE_STATUSES.includes(nextStatus)) {
+  const requiredPrevStatus = REQUIRED_PREV_STATUS_FOR_ADVANCE[nextStatus];
+  if (!requiredPrevStatus) {
     return res.status(400).json({ success: false, message: 'حالة التحديث غير صالحة ⚠️' });
   }
 
@@ -2256,11 +2344,11 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
     .update({ status: nextStatus })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', req.user.phone)
-    .in('status', ['تم قبول الطلب', 'الكابتن وصل للاستلام', 'استلم الطرد وفي السكة'])
+    .eq('status', requiredPrevStatus)
     .select();
 
   if (error || !data || !data.length) {
-    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة (الطلب غير نشط أو ملغي) ⚠️' });
+    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة (يرجى الالتزام بتسلسل خط السير أو التأكد من أن الطلب نشط) ⚠️' });
   }
 
   invalidateStateCache();
@@ -2284,7 +2372,7 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   res.json({ success: true, message: `تم التحديث: ${nextStatus} 🛵✅`, state });
 });
 
-// [FIX-05] التأكد من أن الطلب في حالة توصيل نشطة وغير ملغي قبل إتمامه
+// [FIX-05 & NEW-LOGIC-01] التأكد من وصول الكابتن لمرحلة «الكابتن وصل للتسليم» قبل إتمام الطلب
 app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
   const cap = req.user;
   const rawBefore = await fetchRawDatabaseState(false);
@@ -2294,11 +2382,11 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     .update({ status: 'مكتمل' })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', cap.phone)
-    .in('status', ACTIVE_COURIER_ORDER_STATUSES)
+    .eq('status', 'الكابتن وصل للتسليم')
     .select();
 
   if (error || !data || !data.length) {
-    return res.status(400).json({ success: false, message: 'تعذر إنهاء الطلب (الطلب غير نشط أو تم إلغاؤه) ⚠️' });
+    return res.status(400).json({ success: false, message: 'تعذر إنهاء الطلب (يجب الوصول لمكان التسليم أولاً أو التأكد من أن الطلب نشط) ⚠️' });
   }
 
   const order = data[0];
@@ -2512,7 +2600,7 @@ app.post('/api/captain/notices/:noticeId/dismiss', authenticateCaptain, async (r
   res.json({ success: true, state });
 });
 
-// [FIX-06] التحقق من ملكية العميل للطلب قبل الإلغاء
+// [FIX-06 & NEW-SEC-03] التحقق الصارم من ملكية العميل للطلب عبر كوكي الجلسة قبل الإلغاء
 app.post('/api/orders/:id/cancel', async (req, res) => {
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
   if (!existing || !['في انتظار كابتن', 'تم قبول الطلب'].includes(existing.status)) {
@@ -2584,7 +2672,7 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
   res.json({ success: true, message: 'تم الإلغاء ورصيدك وكودك محفوظين يا نجم ✅', state });
 });
 
-// [FIX-06] التحقق من ملكية العميل للطلب واكتماله قبل التقييم
+// [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل التقييم
 app.post('/api/orders/:id/rate', async (req, res) => {
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
   if (!existing) {
@@ -2611,7 +2699,7 @@ app.post('/api/orders/:id/rate', async (req, res) => {
   res.json({ success: true, state });
 });
 
-// [FIX-06] التحقق من ملكية العميل للطلب واكتماله قبل تقديم اعتراض
+// [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل تقديم اعتراض
 app.post('/api/orders/:id/dispute', async (req, res) => {
   const reason = String(req.body.reason || '').trim();
   if (!reason) return res.status(400).json({ success: false, message: 'اكتب سبب الاعتراض ⚠️' });
@@ -2837,7 +2925,7 @@ app.post('/api/admin/promo-codes', authenticateAdmin, async (req, res) => {
     if (!cleanCode || amt <= 0) {
       return res.status(400).json({ success: false, message: 'اكتب اسم الكود وقيمة الخصم بشكل صحيح يا باشا ⚠️' });
     }
-    if (cleanTarget !== 'all' && !/^01[0125][0-9]{8}$/.test(cleanTarget)) {
+    if (cleanTarget !== 'all' && !isValidEgyptianPhoneServer(cleanTarget)) {
       return res.status(400).json({ success: false, message: 'رقم هاتف العميل المخصص غير صحيح ⚠️' });
     }
 
@@ -2929,7 +3017,8 @@ app.post('/api/admin/promo-codes/delete', authenticateAdmin, async (req, res) =>
 
 app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res) => {
   if (!requireAdminPerm(req, res, ['manageWallets'])) return;
-  const { phone, amount } = req.body || {};
+  const { phone: rawPhone, amount } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   const amt = roundMoney(amount);
   if (!phone || amt <= 0) return res.status(400).json({ success: false });
 
@@ -2969,7 +3058,8 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
 
 app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res) => {
   if (!requireAdminPerm(req, res, ['manageWallets'])) return;
-  const { phone, amount, reason } = req.body || {};
+  const { phone: rawPhone, amount, reason } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   const amt = roundMoney(amount);
   if (!phone || amt <= 0 || !reason) return res.status(400).json({ success: false });
 
@@ -3012,7 +3102,7 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req
   const { phone: rawPhone, amount, reason } = req.body || {};
   const phone = normalizePhoneServer(rawPhone);
   const amt = roundMoney(amount);
-  if (!phone || amt <= 0) return res.status(400).json({ success: false });
+  if (!isValidEgyptianPhoneServer(phone) || amt <= 0) return res.status(400).json({ success: false });
 
   const { data: existing } = await supabase.from('customers').select('phone').eq('phone', phone).maybeSingle();
   if (!existing) {
@@ -3051,7 +3141,8 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, async (req
 
 app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) => {
   if (!requireAdminPerm(req, res, ['manageCommissions'])) return;
-  const { phone, customFee, reason, reset } = req.body || {};
+  const { phone: rawPhone, customFee, reason, reset } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   const updates = reset
     ? { custom_fee: null, custom_fee_reason: null }
     : { custom_fee: roundMoney(customFee), custom_fee_reason: reason || 'تخصيص من الإدارة' };
@@ -3079,7 +3170,7 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
 app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res) => {
   if (!requireAdminPerm(req, res, ['manageCaptains'])) return;
   const { status, reason } = req.body || {};
-  const phone = req.params.phone;
+  const phone = normalizePhoneServer(req.params.phone);
 
   const { data: currentCap } = await supabase.from('captains').select('*').eq('phone', phone).maybeSingle();
   if (!currentCap) {
@@ -3163,7 +3254,8 @@ app.post('/api/admin/captains/:phone/status', authenticateAdmin, async (req, res
 
 app.post('/api/admin/captains/reset-password', authenticateAdmin, async (req, res) => {
   if (!requireAdminPerm(req, res, ['manageCaptains'])) return;
-  const { phone, newPass } = req.body || {};
+  const { phone: rawPhone, newPass } = req.body || {};
+  const phone = normalizePhoneServer(rawPhone);
   if (!phone || !newPass || String(newPass).length < 4) {
     return res.status(400).json({ success: false, message: 'كلمة المرور قصيرة جداً ⚠️' });
   }
@@ -3192,8 +3284,8 @@ app.post('/api/admin/customers/reset-pin', authenticateAdmin, async (req, res) =
   if (!requireAdminPerm(req, res, ['manageWallets', 'manageSettings'])) return;
   const { phone: rawPhone, newPin } = req.body || {};
   const phone = normalizePhoneServer(rawPhone);
-  if (!phone || !/^[0-9]{4}$/.test(String(newPin || '').trim())) {
-    return res.status(400).json({ success: false, message: 'رمز الـ PIN يجب أن يكون 4 أرقام ⚠️' });
+  if (!isValidEgyptianPhoneServer(phone) || !/^[0-9]{4}$/.test(String(newPin || '').trim())) {
+    return res.status(400).json({ success: false, message: 'رقم الهاتف أو رمز الـ PIN (4 أرقام) غير صالح ⚠️' });
   }
   const hashedPin = await bcrypt.hash(String(newPin).trim(), 10);
   const { data: existing } = await supabase.from('customers').select('phone').eq('phone', phone).maybeSingle();

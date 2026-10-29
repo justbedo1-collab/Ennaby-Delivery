@@ -3,7 +3,18 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "private/**",
+          "public/**",
+          "*.html",
+          "*.png",
+          "*.jpg",
+          "*.json",
+          "sw.js"
+        ]
+      }
     }
   ],
   "routes": [
