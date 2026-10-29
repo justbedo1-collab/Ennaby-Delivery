@@ -1,43 +1,21 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
   "crons": [
     {
       "path": "/api/cron/cleanup-orders",
       "schedule": "0 0 * * *"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/admin",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/admins",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/admin.html",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/private/admin.html",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/install",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/install.html",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/",
-      "destination": "/server.js"
     }
   ]
 }
