@@ -86,11 +86,19 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمسارات المحددة (شاملاً مجلد private)
+// تقديم الملفات الثابتة وصفحات التطبيق بأولوية للمسارات المحددة وتجنب عرض كود الخادم كنص
 app.get('/', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
 app.get('/index.html', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
-app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) => res.sendFile(resolveHtmlFilePath('admin.html')));
-app.get(['/install', '/install.html'], (req, res) => res.sendFile(resolveHtmlFilePath('install.html')));
+
+app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) => {
+  const filePath = resolveHtmlFilePath('admin.html');
+  res.sendFile(filePath);
+});
+
+app.get(['/install', '/install.html'], (req, res) => {
+  const filePath = resolveHtmlFilePath('install.html');
+  res.sendFile(filePath);
+});
 
 app.use(express.static(path.join(__dirname)));
 if (fs.existsSync(path.join(__dirname, 'public'))) {
