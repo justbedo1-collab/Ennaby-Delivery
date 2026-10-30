@@ -1130,9 +1130,9 @@
       if (!STATE.activeAdminUser) return null;
       if (Array.isArray(STATE.adminAccounts) && STATE.adminAccounts.length > 0) {
         const found = STATE.adminAccounts.find(a => a.username.toLowerCase() === String(STATE.activeAdminUser).toLowerCase());
-        if (found) return found;
+        return found || null;
       }
-      return { name: 'الأدمن الرئيسي', username: STATE.activeAdminUser, isMaster: true, status: 'نشط', permissions: {} };
+      return { name: STATE.activeAdminUser, username: STATE.activeAdminUser, isMaster: false, status: 'نشط', permissions: {} };
     }
 
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
@@ -1601,7 +1601,7 @@
       toggleEl('admCard-customFee', hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-incentivesManage', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-loyaltyPoints', hasAdminPerm('manageSettings', adm) || hasAdminPerm('manageWallets', adm));
-      toggleEl('admCard-financialLedger', hasAdminPerm('manageWallets', adm) || hasAdminPerm('viewDashboard', adm));
+      toggleEl('admCard-financialLedger', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-ordersManage', hasAdminPerm('viewOrders', adm) || hasAdminPerm('manageOrders', adm));
       toggleEl('admCard-surgePricing', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-packageWeights', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));

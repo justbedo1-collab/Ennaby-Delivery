@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>الرجل العنابي 🛵 | من أي حتة لأي حتة 😎</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,13 +57,13 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg-canvas); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; color: var(--text-main); overflow-x: hidden; padding-bottom: 0; margin: 0; }
-    .in-app-role-bar { width: 100%; padding: 6px 14px 8px; background: var(--bg-canvas); border-bottom: 1px solid rgba(123, 63, 82, 0.08); display: flex; justify-content: center; z-index: 45; }
+    .in-app-role-bar { width: 100%; padding: calc(6px + env(safe-area-inset-top, 0px)) 14px 8px; background: var(--bg-canvas); border-bottom: 1px solid rgba(123, 63, 82, 0.08); display: flex; justify-content: center; z-index: 45; }
     .role-pills { display: flex; background: rgba(123, 63, 82, 0.08); padding: 3px; border-radius: 50px; border: 1px solid rgba(123, 63, 82, 0.14); width: 100%; max-width: 380px; justify-content: space-between; }
     .role-btn { background: transparent; border: none; color: var(--text-muted); padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; transition: all 0.25s ease; white-space: nowrap; }
     .role-btn.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(123, 63, 82, 0.25); }
     .device-container { width: 100vw; height: 100vh; height: 100dvh; display: flex; justify-content: center; align-items: stretch; }
     .phone-mockup { width: 100vw; max-width: 100vw; height: 100vh; height: 100dvh; background: var(--bg-canvas); border-radius: 0; box-shadow: none; border: none; position: relative; display: flex; flex-direction: column; overflow: hidden; }
-    .phone-screen { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; position: relative; padding-bottom: 85px; }
+    .phone-screen { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; position: relative; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); }
     .phone-screen::-webkit-scrollbar { width: 4px; }
     .phone-screen::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     .view-container { display: none; flex-direction: column; gap: 16px; padding: 16px; animation: fadeIn 0.3s ease-in-out; }
@@ -132,7 +132,7 @@
     .upload-preview-container { position: relative; width: 100%; height: 100px; border-radius: 10px; overflow: hidden; display: none; }
     .upload-preview-container img { width: 100%; height: 100%; object-fit: cover; }
     .remove-upload-btn { position: absolute; top: 5px; left: 5px; background: rgba(211, 47, 47, 0.85); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03); z-index: 60; }
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03); z-index: 60; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 6px; position: relative; flex: 1; }
     .nav-item i { font-size: 16px; }
     .nav-item.active { color: var(--primary); }
@@ -468,12 +468,27 @@
                 <strong style="font-size:13px;" id="custTotalOrdersCount">0 مشوار</strong>
               </div>
             </div>
+            <!-- قسم أكواد الخصم السارية في تبويب حسابي بنفس لون وتصميم خانة البروموكود -->
+            <div class="card" id="custActivePromoCodesCard" style="background:#FCF8FF; border:1.5px dashed #8E24AA; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="font-size:13.5px; font-weight:900; color:#6A1B9A; margin:0; display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-ticket"></i> أكواد الخصم السارية 🎟️
+                </h3>
+                <span class="badge badge-delivering" id="custActivePromosCountBadge">0 متاح</span>
+              </div>
+              <div id="custActivePromoCodesList" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="color:#6A1B9A; opacity:0.8; font-size:11.5px; text-align:center; padding:6px; font-weight:700;">
+                  مفيش أكواد خصم سارية دلوقتي يا باشا.. أول ما ينزلك كود هيظهرلك هنا فوراً! 😍🎟️
+                </div>
+              </div>
+            </div>
             <div class="card">
               <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
               <div id="custWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
                 <div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>
               </div>
             </div>
+            
             <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 style="font-size:14px; font-weight:900; color:var(--primary); margin:0;">🍇 عنابي بوينتس للعملاء</h3>
@@ -1071,7 +1086,7 @@
       currentRole: SESSION.currentRole === 'courier' ? 'courier' : 'customer',
       currentCustTab: SESSION.currentCustTab || 'home', currentCourTab: SESSION.currentCourTab || 'home',
       isAppInstalled: SESSION.isAppInstalled, activeCourierPhone: SESSION.activeCourierPhone,
-      authenticatedCustomerPhone: SESSION.authenticatedCustomerPhone || SESSION.savedCustomerPhone || '',
+      authenticatedCustomerPhone: '',
       currentTripType: SESSION.currentTripType || 'send',
       realtimeConfig: null,
       settings: {
@@ -1223,6 +1238,8 @@
           const senderInp = document.getElementById('orderSenderPhone');
           if (senderInp && !senderInp.value.trim()) senderInp.value = STATE.authenticatedCustomerPhone;
         }
+      } else {
+        STATE.authenticatedCustomerPhone = '';
       }
       if (cloudState.realtimeConfig) {
         STATE.realtimeConfig = cloudState.realtimeConfig;
@@ -1661,45 +1678,162 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       document.getElementById('publicLeafletMapModal')?.classList.remove('show');
     }
 
-    // ==================== نظام كوبونات الخصم للعميل (Promo Codes) مع دعم عدد مرات الاستخدام ====================
-    function validateSavedPromoCodeLocally() {
-      if (!savedPromoCodeObj || !savedPromoCodeObj.code) return;
+    // ==================== نظام كوبونات الخصم للعميل (Promo Codes) والعد التنازلي والنسخ السريع ====================
+    let promoCountdownIntervalId = null;
+
+    function formatPromoCountdownText(expiresAt) {
+      if (!expiresAt) return 'مفتوح المدة ⏳';
+      const diffMs = Number(expiresAt) - Date.now();
+      if (diffMs <= 0) return 'انتهى الوقت ⌛';
+      const totalSec = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(mins).padStart(2, '0');
+      const sStr = String(secs).padStart(2, '0');
+      return days > 0 ? `${days} يوم و ${hStr}:${mStr}:${sStr}` : `${hStr}:${mStr}:${sStr}`;
+    }
+
+    function copyCustomerPromoCode(code) {
+      const cleanCode = String(code || '').trim().toUpperCase();
+      if (!cleanCode) return;
+      const promoInp = document.getElementById('orderPromoCodeInput');
+      if (promoInp) promoInp.value = cleanCode;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cleanCode).then(() => {
+          showToast(`تم نسخ كود الخصم (${cleanCode}) بنجاح! تقدر تشغّله في طلبك دلوقتي 🎟️📋`, 'ok');
+        }).catch(() => {
+          showToast(`تم تجهيز كود الخصم (${cleanCode}) في خانة البروموكود! 🎟️✅`, 'ok');
+        });
+      } else {
+        try {
+          const tempTa = document.createElement('textarea');
+          tempTa.value = cleanCode;
+          document.body.appendChild(tempTa);
+          tempTa.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempTa);
+        } catch (e) {}
+        showToast(`تم نسخ كود الخصم (${cleanCode}) بنجاح! 🎟️📋`, 'ok');
+      }
+    }
+
+    function renderCustomerProfilePromoCodes() {
+      const listEl = document.getElementById('custActivePromoCodesList');
+      const badgeEl = document.getElementById('custActivePromosCountBadge');
+      if (!listEl) return;
+
       const now = Date.now();
-      if (savedPromoCodeObj.expiresAt && now > Number(savedPromoCodeObj.expiresAt)) {
-        persistSavedPromoCode(null);
+      const activePhone = normalizePhone(STATE.customerProfile?.savedPhone || STATE.authenticatedCustomerPhone || getActiveCustomerPhoneForPricing());
+      const rawPromos = Array.isArray(STATE.settings?.availablePromoCodes)
+        ? STATE.settings.availablePromoCodes
+        : (Array.isArray(STATE.settings?.promoCodes) ? STATE.settings.promoCodes : []);
+
+      const validPromos = rawPromos.filter(p => {
+        if (!p || p.active === false) return false;
+        if (p.expiresAt && now >= Number(p.expiresAt)) return false;
+        const isTargetAll = !p.targetPhone || p.targetPhone === 'all';
+        const isTargetCustom = Boolean(activePhone && normalizePhone(p.targetPhone) === activePhone);
+        if (!isTargetAll && !isTargetCustom) return false;
+        const remUses = p.remainingUses !== undefined ? Number(p.remainingUses) : Math.max(1, Number(p.maxUses) || 1);
+        return remUses > 0;
+      });
+
+      if (badgeEl) {
+        badgeEl.innerText = `${validPromos.length} متاح`;
+      }
+
+      if (validPromos.length === 0) {
+        listEl.innerHTML = `<div style="color:#6A1B9A; opacity:0.8; font-size:11.5px; text-align:center; padding:6px; font-weight:700;">
+          مفيش أكواد خصم سارية دلوقتي يا باشا.. أول ما ينزلك كود هيظهرلك هنا فوراً! 😍🎟️
+        </div>`;
         return;
       }
-      const serverPromos = Array.isArray(STATE.settings?.promoCodes) ? STATE.settings.promoCodes : [];
-      if (serverPromos.length > 0) {
-        const match = serverPromos.find(p => p && String(p.code).toUpperCase() === String(savedPromoCodeObj.code).toUpperCase() && p.active !== false);
-        if (!match || (match.expiresAt && now > Number(match.expiresAt))) {
+
+      listEl.innerHTML = validPromos.map(p => {
+        const isCustom = Boolean(p.targetPhone && p.targetPhone !== 'all');
+        const maxUses = Math.max(1, Number(p.maxUses) || 1);
+        const remUses = p.remainingUses !== undefined ? Number(p.remainingUses) : maxUses;
+        const usageText = maxUses > 1
+          ? `متبقي <strong>${remUses} من ${maxUses}</strong> مرات استخدام`
+          : 'صالح للاستخدام مرة واحدة';
+
+        return `<div style="background:#FFFFFF; border:1.5px solid #CE93D8; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; box-shadow:0 2px 6px rgba(106,27,154,0.06);">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong style="font-size:14px; font-weight:900; color:#6A1B9A; letter-spacing:0.8px;">${escapeHtml(p.code)}</strong>
+              <span class="badge badge-completed" style="font-size:10.5px;">خصم ${roundMoney(p.discountAmount)} ج</span>
+              <span class="badge ${isCustom ? 'badge-delivering' : 'badge-accepted'}" style="font-size:10px;">${isCustom ? '👑 مخصوص ليك' : '📢 عام'}</span>
+            </div>
+            <div style="font-size:11px; color:#4A148C; margin-top:4px; font-weight:700;">
+              🎯 ${usageText}
+            </div>
+            <div style="font-size:11px; color:#D32F2F; margin-top:3px; font-weight:800; display:flex; align-items:center; gap:4px;">
+              <i class="fa-regular fa-clock"></i>
+              <span>ينتهي خلال:</span>
+              <span class="js-promo-countdown" data-expires="${Number(p.expiresAt || 0)}" style="direction:ltr; display:inline-block;">${formatPromoCountdownText(p.expiresAt)}</span>
+            </div>
+          </div>
+          <button type="button" onclick="copyCustomerPromoCode('${escapeHtml(p.code)}')" style="background:#6A1B9A; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:5px; flex-shrink:0; box-shadow:0 2px 8px rgba(106,27,154,0.25);">
+            <i class="fa-solid fa-copy"></i> نسخ
+          </button>
+        </div>`;
+      }).join('');
+    }
+
+    function startPromoCountdownTicker() {
+      if (promoCountdownIntervalId) clearInterval(promoCountdownIntervalId);
+      promoCountdownIntervalId = setInterval(() => {
+        const nodes = document.querySelectorAll('.js-promo-countdown');
+        if (!nodes.length) return;
+        let anyExpiredNow = false;
+        const now = Date.now();
+        nodes.forEach(el => {
+          const exp = Number(el.getAttribute('data-expires') || 0);
+          if (exp > 0 && now >= exp) {
+            anyExpiredNow = true;
+          } else {
+            el.innerText = formatPromoCountdownText(exp);
+          }
+        });
+        if (anyExpiredNow) {
+          validateSavedPromoCodeLocally();
+          renderCustomerProfilePromoCodes();
+          calculateDeliveryPrice();
+        }
+      }, 1000);
+    }
+
+    function validateSavedPromoCodeLocally() {
+      const now = Date.now();
+      const serverPromos = Array.isArray(STATE.settings?.availablePromoCodes)
+        ? STATE.settings.availablePromoCodes
+        : (Array.isArray(STATE.settings?.promoCodes) ? STATE.settings.promoCodes : []);
+
+      if (savedPromoCodeObj && savedPromoCodeObj.code) {
+        if (savedPromoCodeObj.expiresAt && now > Number(savedPromoCodeObj.expiresAt)) {
           persistSavedPromoCode(null);
+          renderCustomerProfilePromoCodes();
           return;
         }
-        const activePhone = getActiveCustomerPhoneForPricing();
-        const isCustomTarget = Boolean(match.targetPhone && match.targetPhone !== 'all');
-        const maxUses = isCustomTarget ? Math.max(1, Number(match.maxUses) || 1) : 1;
-
-        if (activePhone) {
-          if (isCustomTarget && normalizePhone(match.targetPhone) !== activePhone) {
+        if (Array.isArray(STATE.settings?.availablePromoCodes)) {
+          const match = serverPromos.find(p => p && String(p.code).toUpperCase() === String(savedPromoCodeObj.code).toUpperCase());
+          if (!match || (match.expiresAt && now > Number(match.expiresAt)) || (match.remainingUses !== undefined && Number(match.remainingUses) <= 0)) {
             persistSavedPromoCode(null);
+            renderCustomerProfilePromoCodes();
             return;
           }
-          const usedCnt = (match.usageCounts && typeof match.usageCounts === 'object' && match.usageCounts[activePhone] !== undefined)
-            ? Math.max(0, Number(match.usageCounts[activePhone]) || 0)
-            : (Array.isArray(match.usedBy) && match.usedBy.includes(activePhone) ? maxUses : 0);
-
-          if (usedCnt >= maxUses) {
-            persistSavedPromoCode(null);
-            return;
-          }
-          savedPromoCodeObj.maxUses = maxUses;
-          savedPromoCodeObj.usedCount = usedCnt;
-          savedPromoCodeObj.remainingUses = Math.max(0, maxUses - usedCnt);
+          savedPromoCodeObj.maxUses = Math.max(1, Number(match.maxUses) || 1);
+          savedPromoCodeObj.usedCount = Number(match.usedCount) || 0;
+          savedPromoCodeObj.remainingUses = Number(match.remainingUses);
           try { localStorage.setItem(SAVED_PROMO_KEY, JSON.stringify(savedPromoCodeObj)); } catch (e) {}
         }
       }
       renderSavedPromoUI();
+      renderCustomerProfilePromoCodes();
     }
 
     function renderSavedPromoUI() {
@@ -2630,6 +2764,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const progPct = Math.min(100, Math.round(((prof.points || 0) / custThreshold) * 100)); if (progEl) progEl.style.width = `${progPct}%`; if (cntEl) cntEl.innerText = `${myOrders.length} مشوار`;
       const cPerOrd = document.getElementById('custRulePointsPerOrder'); const cTarget = document.getElementById('custRulePointsTarget'); const cCash = document.getElementById('custRuleRewardCash');
       if (cPerOrd) cPerOrd.innerText = `${custPtsPerOrder} نقط عنابي`; if (cTarget) cTarget.innerText = `${custThreshold} نقطة`; if (cCash) cCash.innerText = `${custRewardCash} جنيه كاش فوري`;
+      renderCustomerProfilePromoCodes();
+      if (!promoCountdownIntervalId) startPromoCountdownTicker();
       const txContainer = document.getElementById('custWalletTransactionsList');
       if (txContainer) {
         const txList = prof.walletTransactions || [];
