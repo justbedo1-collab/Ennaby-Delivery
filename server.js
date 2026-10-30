@@ -2623,27 +2623,33 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
 });
 
 app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
+  const reason = String(req.body?.reason || '').trim();
+  if (!reason) {
+    return res.status(400).json({ success: false, message: 'برجاء كتابة سبب الاعتذار وإلغاء الاستلام أولاً ⚠️' });
+  }
+
   const { data: releasedRows, error } = await supabase.from('orders')
     .update({
       status: 'في انتظار كابتن',
       assigned_courier_phone: null,
-      fee_refunded: true
+      fee_refunded: true,
+      admin_resolution_note: `اعتذار الكابتن (${req.user.full_name}): ${reason}`
     })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', req.user.phone)
-    .eq('status', 'تم قبول الطلب')
+    .in('status', ['تم قبول الطلب', 'الكابتن وصل للاستلام'])
     .select();
 
   const order = releasedRows && releasedRows[0];
   if (error || !order) {
-    return res.status(400).json({ success: false, message: 'لا يمكن التنازل في هذه المرحلة ⚠️' });
+    return res.status(400).json({ success: false, message: 'لا يمكن التنازل عن الطلب بعد استلام الطرد فعلياً ⚠️' });
   }
 
   if (order.fee_deducted && order.platform_fee > 0) {
     await supabase.rpc('adjust_captain_wallet_atomic', {
       p_phone: req.user.phone,
       p_amount: roundMoney(order.platform_fee),
-      p_reason: `رد عمولة للتنازل عن طلب ${order.id}`
+      p_reason: `رد عمولة للاعتذار عن طلب ${order.id}`
     });
   }
 
@@ -2651,18 +2657,38 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
     await supabase.rpc('adjust_captain_wallet_atomic', {
       p_phone: req.user.phone,
       p_amount: -Math.abs(roundMoney(order.discount_applied)),
-      p_reason: `استرداد فرق خصم للتنازل عن طلب ${order.id}`
+      p_reason: `استرداد فرق خصم للاعتذار عن طلب ${order.id}`
     });
   }
 
+  await logAdminAudit(
+    'اعتذار كابتن عن طلب',
+    order.id,
+    `اعتذر الكابتن ${req.user.full_name} (${req.user.phone}) وعاد الطلب للرادار — السبب: ${reason}`,
+    req.user.full_name
+  );
+
   notifyAdminsPush('captain', {
     title: `🔄 اعتذار كابتن عن طلب (${order.id})`,
-    body: `تنازل الكابتن ${req.user.full_name} (${req.user.phone}) عن الطلب وعاد للرادار${req.body?.reason ? ' — السبب: ' + req.body.reason : ''}`
+    body: `اعتذر الكابتن ${req.user.full_name} (${req.user.phone}) وعاد الطلب للرادار — السبب: ${reason}`
+  });
+
+  const custPhone = order.customer_phone || order.client_phone;
+  if (custPhone) {
+    sendPushNotificationToPhone(custPhone, {
+      title: `تحديث بخصوص طلبك (${order.id}) 🔄`,
+      body: `اعتذر الكابتن عن استلام الطلب (${reason})، وتمت إعادة طلبك للرادار فوراً لاختيار كابتن آخر 🛵`
+    });
+  }
+
+  broadcastPushToAvailableCaptains({
+    title: 'أوردر عاد للرادار الآن! 📡🛵',
+    body: `طلب (${order.id}) من ${order.pickup_zone} إلى ${order.dropoff_zone} متاح الآن على الرادار.. الحق اقبله! 🚀`
   });
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, message: 'تم إعادة الطلب للرادار 🔄', state });
+  res.json({ success: true, message: 'تم تسجيل اعتذارك وإبلاغ الإدارة وإعادة الطلب للرادار 🔄', state });
 });
 
 app.post('/api/captain/availability', authenticateCaptain, async (req, res) => {
@@ -2810,10 +2836,16 @@ app.post('/api/orders/:id/dispute', async (req, res) => {
     return res.status(403).json({ success: false, message: 'غير مصرح لك بتقديم اعتراض على هذا الطلب 🔒⚠️' });
   }
   if (existing.status !== 'مكتمل') {
-    return res.status(400).json({ success: false, message: 'الاعتراض متاح فقط بعد تسليم الطلب واكتماله ⚠️' });
+    return res.status(400).json({ success: false, message: 'الاعتراض متاح فقط بعد تسليم الطلب ⚠️' });
+  }
+  if (existing.rating !== null && existing.rating !== undefined) {
+    return res.status(400).json({
+      success: false,
+      message: 'لقد قمت بتأكيد استلام الطلب وتقييم الكابتن بالفعل، ولا يجوز تقديم شكوى بعد إتمام التقييم ⭐✅'
+    });
   }
   if (existing.dispute_reason) {
-    return res.status(400).json({ success: false, message: 'تم تسجيل اعتراض على هذا الطلب مسبقاً ⚠️' });
+    return res.status(400).json({ success: false, message: 'تم تسجيل اعتراض على هذا الطلب مسبقاً ولا يجوز تكرار الشكوى ⚠️' });
   }
 
   await supabase.from('orders').update({
@@ -3478,7 +3510,15 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
         fee_refunded: true,
         admin_resolution_note: reason ? `إعادة للرادار: ${reason}` : null
       }).eq('id', orderId);
-    } else if (action === 'cancel' || action === 'resolve_cancel') {
+    } else if (action === 'resolve_cancel' || (action === 'cancel' && order.status === 'قيد مراجعة الاعتراض')) {
+      // إلغاء إداري بعد شكوى العميل (الكابتن بالفعل سلّم المشوار وقبض الحساب من العميل، فلا تُرد عمولة المنصة للكابتن أبداً، ويمكن للإدارة تعويض العميل يدوياً من قسم المحافظ)
+      await supabase.from('orders').update({
+        status: 'ملغي إدارياً',
+        fee_refunded: false,
+        admin_resolution_note: reason || 'تم إلغاء الطلب إدارياً بناءً على شكوى العميل (مع احتفاظ المنصة بعمولتها)'
+      }).eq('id', orderId);
+    } else if (action === 'cancel') {
+      // إلغاء إداري لطلب جارٍ قبل التسليم
       const refundWalletAmt = meta.walletDiscount > 0
         ? meta.walletDiscount
         : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
@@ -3498,10 +3538,10 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
           await supabase.rpc('adjust_captain_wallet_atomic', {
             p_phone: order.assigned_courier_phone,
             p_amount: roundMoney(order.platform_fee),
-            p_reason: `رد عمولة لطلب ملغي إدارياً ${order.id}`
+            p_reason: `رد عمولة لطلب ملغي إدارياً قبل التسليم ${order.id}`
           });
         }
-        if (order.discount_applied > 0 && (action === 'cancel' || action === 'resolve_cancel')) {
+        if (order.discount_applied > 0) {
           await supabase.rpc('adjust_captain_wallet_atomic', {
             p_phone: order.assigned_courier_phone,
             p_amount: -Math.abs(roundMoney(order.discount_applied)),

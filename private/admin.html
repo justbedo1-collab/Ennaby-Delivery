@@ -574,51 +574,62 @@
               <button class="btn-main" style="background:var(--success);" onclick="adminExecuteCustomerCompensation()">إضافة رصيد للعميل ✅</button>
             </div>
 
-            <!-- كارت نظام كوبونات الخصم الديناميكي (للكل أو لعميل محدد مع عدد مرات الاستخدام المسموح بها) -->
+            <!-- كارت نظام كوبونات الخصم الديناميكي بتصميم متناسق وقائمة منسدلة + بحث للعميل المخصص -->
             <div class="card" id="admCard-promoCodes" style="border: 2px solid #8E24AA; background: #FCF8FF;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h2 class="card-title" style="margin:0; color:#6A1B9A;"><i class="fa-solid fa-ticket"></i> كوبونات وأكواد الخصم 🎟️</h2>
-                <span class="badge badge-delivering">إشعار فوري 📲</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+                <h2 class="card-title" style="margin:0; font-size:14.5px; color:#6A1B9A;"><i class="fa-solid fa-ticket"></i> كوبونات وأكواد الخصم 🎟️</h2>
+                <span class="badge badge-delivering" style="white-space:nowrap; flex-shrink:0;">إشعار فوري 📲</span>
               </div>
-              <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+              <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
                 أنشئ كود خصم عام لكل العملاء أو مخصص لعميل بعينه بعدد مرات استخدام محدد، ويقدر العميل يحتفظ بالكود لحد انتهاء فترة السماح!
               </p>
-              <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
+
+              <!-- الصف الأول: كود الخصم + قيمة الخصم -->
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:end; margin-bottom:10px;">
                 <div>
-                  <label class="input-label" style="font-size:10.5px;">كود الخصم (مثال ENNABY15):</label>
-                  <input type="text" id="adminPromoCodeInput" class="input-field" placeholder="ENNABY15" style="text-transform:uppercase; font-weight:800;">
+                  <label class="input-label" for="adminPromoCodeInput" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">كود الخصم (مثال EN15):</label>
+                  <input type="text" id="adminPromoCodeInput" class="input-field" placeholder="ENNABY15" style="height:42px; font-size:13px; background:#fff; border-color:#D1C4E9; text-transform:uppercase; font-weight:800;">
                 </div>
                 <div>
-                  <label class="input-label" style="font-size:10.5px;">قيمة الخصم (بالجنيه):</label>
-                  <input type="number" id="adminPromoAmountInput" class="input-field" placeholder="15" min="1">
+                  <label class="input-label" for="adminPromoAmountInput" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">قيمة الخصم (بالجنيه):</label>
+                  <input type="number" id="adminPromoAmountInput" class="input-field" placeholder="15" min="1" style="height:42px; font-size:13px; background:#fff; border-color:#D1C4E9; font-weight:700;">
                 </div>
               </div>
-              <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
+
+              <!-- الصف الثاني: الفئة المستهدفة + فترة السماح -->
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:end; margin-bottom:10px;">
                 <div>
-                  <label class="input-label" style="font-size:10.5px;">لمن يُتاح هذا الكود؟</label>
-                  <select id="adminPromoTargetSelect" class="select-field" onchange="toggleAdminPromoTargetPhone()">
-                    <option value="all">📢 تعميم لجميع العملاء</option>
-                    <option value="custom">👑 عميل محدد برقم هاتفه</option>
+                  <label class="input-label" for="adminPromoTargetSelect" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">لمن يُتاح هذا الكود؟</label>
+                  <select id="adminPromoTargetSelect" class="select-field" onchange="toggleAdminPromoTargetPhone()" style="height:42px; font-size:12px; background:#fff; border-color:#D1C4E9; padding:0 10px;">
+                    <option value="all">📢 لجميع العملاء</option>
+                    <option value="custom">👑 عميل محدد برقمه</option>
                   </select>
                 </div>
                 <div>
-                  <label class="input-label" style="font-size:10.5px;">فترة السماح (بالساعات):</label>
-                  <input type="number" id="adminPromoValidHoursInput" class="input-field" placeholder="48" value="48" min="1">
+                  <label class="input-label" for="adminPromoValidHoursInput" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">فترة السماح (ساعات):</label>
+                  <input type="number" id="adminPromoValidHoursInput" class="input-field" placeholder="48" value="48" min="1" style="height:42px; font-size:13px; background:#fff; border-color:#D1C4E9; font-weight:700;">
                 </div>
               </div>
-              <div id="adminPromoCustomPhoneWrap" style="display:none; margin-bottom:10px;">
-                <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:8px;">
+
+              <!-- قسم تخصيص العميل: قائمة منسدلة للعملاء + خانة بحث/كتابة الرقم + عدد مرات الاستخدام في صف متناسق تماماً -->
+              <div id="adminPromoCustomPhoneWrap" style="display:none; background:#F3E5F5; border:1px dashed #AB47BC; border-radius:14px; padding:10px; margin-bottom:12px;">
+                <div style="margin-bottom:8px;">
+                  <label class="input-label" for="adminPromoCustomerSelect" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block;">اختر رقم العميل من القائمة المسجلة 📋:</label>
+                  <select id="adminPromoCustomerSelect" class="select-field" onchange="handleAdminPromoCustomerSelectChange()" style="height:42px; font-size:12.5px; background:#fff; border-color:#CE93D8;"></select>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:end;">
                   <div>
-                    <label class="input-label" style="font-size:10.5px;">رقم هاتف العميل المخصوص 📱:</label>
-                    <input type="tel" id="adminPromoTargetPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
+                    <label class="input-label" for="adminPromoTargetPhoneInput" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">أو ابحث/اكتب الرقم 📱:</label>
+                    <input type="tel" id="adminPromoTargetPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15" oninput="filterAdminPromoCustomerDropdown()" style="height:42px; font-size:13px; background:#fff; border-color:#CE93D8;">
                   </div>
                   <div>
-                    <label class="input-label" style="font-size:10.5px;">عدد مرات الاستخدام المسموح بها:</label>
-                    <input type="number" id="adminPromoMaxUsesInput" class="input-field" placeholder="مثال: 5" value="1" min="1">
+                    <label class="input-label" for="adminPromoMaxUsesInput" style="font-size:11.5px; font-weight:800; color:#4A148C; margin-bottom:5px; display:block; white-space:nowrap;">مرات الاستخدام المسموحة:</label>
+                    <input type="number" id="adminPromoMaxUsesInput" class="input-field" placeholder="مثال: 5" value="1" min="1" style="height:42px; font-size:13px; background:#fff; border-color:#CE93D8; font-weight:700;">
                   </div>
                 </div>
               </div>
-              <button type="button" class="btn-main" style="background:#6A1B9A; margin-bottom:12px;" onclick="adminCreatePromoCode()">
+
+              <button type="button" class="btn-main" style="background:#6A1B9A; margin-bottom:12px; height:44px; font-size:13.5px;" onclick="adminCreatePromoCode()">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> تفعيل الكود وإرسال إشعار للعملاء 🚀
               </button>
               <div style="border-top:1px dashed #E1BEE7; padding-top:8px;">
@@ -1705,6 +1716,38 @@
       const sel = document.getElementById('adminPromoTargetSelect')?.value || 'all';
       const wrap = document.getElementById('adminPromoCustomPhoneWrap');
       if (wrap) wrap.style.display = sel === 'custom' ? 'block' : 'none';
+      if (sel === 'custom') filterAdminPromoCustomerDropdown();
+    }
+
+    function handleAdminPromoCustomerSelectChange() {
+      const sel = document.getElementById('adminPromoCustomerSelect');
+      const phoneInp = document.getElementById('adminPromoTargetPhoneInput');
+      if (sel && phoneInp && sel.value) {
+        phoneInp.value = sel.value;
+      }
+    }
+
+    function filterAdminPromoCustomerDropdown() {
+      const sel = document.getElementById('adminPromoCustomerSelect');
+      const phoneInp = document.getElementById('adminPromoTargetPhoneInput');
+      if (!sel) return;
+      const q = normalizeDigits(phoneInp?.value || '').trim();
+      const allPhones = getAllKnownCustomerPhones();
+      const filtered = q ? allPhones.filter(ph => ph.includes(q)) : allPhones;
+      const prevVal = sel.value;
+      sel.innerHTML = filtered.length === 0
+        ? `<option value="">-- لا يوجد عميل مطابق (اكتب الرقم بالأسفل) --</option>`
+        : `<option value="">-- اختر عميل من المسجلين (${filtered.length}) --</option>` + filtered.map(ph => {
+            const cRec = STATE.customers[ph];
+            const pts = cRec && cRec.points ? ` (${cRec.points} نقطة)` : '';
+            return `<option value="${escapeHtml(ph)}">${escapeHtml(ph)}${pts}</option>`;
+          }).join('');
+      const cleanTyped = normalizePhone(q);
+      if (filtered.includes(cleanTyped)) {
+        sel.value = cleanTyped;
+      } else if (prevVal && filtered.includes(prevVal)) {
+        sel.value = prevVal;
+      }
     }
 
     function adminCreatePromoCode() {
@@ -1712,7 +1755,8 @@
         const code = (document.getElementById('adminPromoCodeInput')?.value || '').trim().toUpperCase();
         const discountAmount = roundMoney(document.getElementById('adminPromoAmountInput')?.value || 0);
         const targetMode = document.getElementById('adminPromoTargetSelect')?.value || 'all';
-        const customPhone = normalizePhone(document.getElementById('adminPromoTargetPhoneInput')?.value || '');
+        const rawPhoneVal = document.getElementById('adminPromoTargetPhoneInput')?.value || document.getElementById('adminPromoCustomerSelect')?.value || '';
+        const customPhone = normalizePhone(rawPhoneVal);
         const validHours = Math.max(1, Number(document.getElementById('adminPromoValidHoursInput')?.value || 48));
         const maxUsesRaw = Number(normalizeDigits(document.getElementById('adminPromoMaxUsesInput')?.value || 1));
         const maxUses = targetMode === 'custom' ? Math.max(1, Math.floor(maxUsesRaw || 1)) : 1;
@@ -1722,7 +1766,7 @@
           return;
         }
         if (targetMode === 'custom' && !isValidEgyptianPhone(customPhone)) {
-          showToast('اكتب رقم موبايل العميل المخصوص بشكل صحيح (01...) 📱⚠️', 'warn');
+          showToast('اختر رقم العميل من القائمة أو اكتب رقمه بشكل صحيح (01...) 📱⚠️', 'warn');
           return;
         }
         if (targetMode === 'custom' && (!Number.isFinite(maxUsesRaw) || maxUsesRaw < 1)) {
@@ -2588,6 +2632,10 @@
       if (pinSel && document.activeElement !== pinSel) {
         filterAdminCustomerResetPinDropdown();
       }
+      const promoCustSel = document.getElementById('adminPromoCustomerSelect');
+      if (promoCustSel && document.activeElement !== promoCustSel) {
+        filterAdminPromoCustomerDropdown();
+      }
       renderAdminSelectedCustomerSummary();
     }
 
@@ -2714,10 +2762,11 @@
           <br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>
           الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج
           ${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}
+          ${o.adminResolutionNote?`<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:4px 8px; border-radius:6px; font-weight:700; margin-top:4px;">📝 ملاحظة/سبب: ${escapeHtml(o.adminResolutionNote)}</div>`:''}
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
             ${hasGps ? `<button type="button" class="btn-secondary" style="padding:5px 10px; font-size:11px; background:#E1F5FE; color:#0277BD;" onclick="openAdminOrderMapModal('${escapeHtml(o.id)}')"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
             ${canManageOrd && ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}
-            ${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء وتعويض ❌</button>`:''}
+            ${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء الطلب إدارياً ❌</button>`:''}
           </div>
         </div>`;
       }).join('');
