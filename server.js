@@ -3515,7 +3515,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
       await supabase.from('orders').update({
         status: 'ملغي إدارياً',
         fee_refunded: false,
-        admin_resolution_note: reason || 'تم إلغاء الطلب إدارياً بناءً على شكوى العميل (مع احتفاظ المنصة بعمولتها)'
+        admin_resolution_note: reason || 'شكوتك تمت مراجعتها من قبل الادارة وجارى التحقيق مع الطرف الآخر '
       }).eq('id', orderId);
     } else if (action === 'cancel') {
       // إلغاء إداري لطلب جارٍ قبل التسليم
