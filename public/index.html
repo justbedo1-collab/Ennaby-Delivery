@@ -155,6 +155,18 @@
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
     .yellow-discount-note { background: #FFFDE7; border: 1.5px solid #FBC02D; padding: 8px 10px; font-size: 11.5px; margin: 8px 0; border-radius: 10px; font-weight: 800; color: #5D4037; line-height: 1.5; }
     .sub-tab-section { display: flex; flex-direction: column; gap: 14px; animation: fadeIn 0.25s ease-in-out; }
+    /* صندوق التمرير الداخلي الأنيق لكشف حساب المحفظة وسجل الهدايا (آخر 10 حركات) */
+    .wallet-log-scroll-box { max-height: 235px; overflow-y: auto; overflow-x: hidden; background: #FAF7F4; border: 1.5px solid #E9DCE0; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .wallet-log-scroll-box::-webkit-scrollbar { width: 4px; }
+    .wallet-log-scroll-box::-webkit-scrollbar-track { background: transparent; }
+    .wallet-log-scroll-box::-webkit-scrollbar-thumb { background: #D1B8C0; border-radius: 10px; }
+    .wallet-tx-item { background: #FFFFFF; border: 1px solid rgba(123, 63, 82, 0.08); border-radius: 10px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(123, 63, 82, 0.03); flex-shrink: 0; }
+    .wallet-tx-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+    .wallet-tx-title { font-size: 11.5px; font-weight: 800; color: var(--text-main); line-height: 1.4; word-break: break-word; }
+    .wallet-tx-time { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+    .wallet-tx-amount { font-size: 12px; font-weight: 900; padding: 4px 9px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: rtl; }
+    .wallet-tx-amount.tx-plus { background: #E8F5E9; color: var(--success); border: 1px solid #C8E6C9; }
+    .wallet-tx-amount.tx-minus { background: #FFEBEE; color: var(--danger); border: 1px solid #FFCDD2; }
   </style>
 </head>
 <body>
@@ -482,10 +494,13 @@
                 </div>
               </div>
             </div>
-            <div class="card">
-              <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
-              <div id="custWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
-                <div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>
+            <div class="card" style="padding: 14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
+                <span style="background:var(--accent); color:var(--primary); padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:800;">آخر 10 حركات</span>
+              </div>
+              <div id="custWalletTransactionsList" class="wallet-log-scroll-box">
+                <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>
               </div>
             </div>
             
@@ -724,10 +739,13 @@
                 <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة معانا</h3>
                 <div id="courierProfileDetailsBox" style="font-size:12px; line-height:1.8; color:var(--text-main);"></div>
               </div>
-              <div class="card">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة (آخر الحركات)</h3>
-                <div id="courierWalletTransactionsList" style="font-size:11px; display:flex; flex-direction:column; gap:6px;">
-                  <div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
+              <div class="card" style="padding: 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
+                  <span style="background:var(--accent); color:var(--primary); padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:800;">آخر 10 حركات</span>
+                </div>
+                <div id="courierWalletTransactionsList" class="wallet-log-scroll-box">
+                  <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
                 </div>
               </div>
             </div>
@@ -2682,7 +2700,18 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           profDetails.innerHTML = `<div>👤 الاسم: <strong>${escapeHtml(courier.fullName)}</strong> <span class="badge ${tierCls}" style="margin-right:4px;">${escapeHtml(tierBadgeTxt)}</span></div><div>📱 رقم الموبايل: <strong>${escapeHtml(courier.phone)}</strong></div><div>📍 منطقة الشغل: <strong>${escapeHtml(courier.primaryZone)}</strong></div><div>🛵 المركبة: <strong>${escapeHtml(courier.vehicleType)}</strong> (${escapeHtml(courier.plateNumber || 'معفي')})</div>`;
         }
         const transList = document.getElementById('courierWalletTransactionsList');
-        if (transList) { const list = courier.walletTransactions || []; transList.innerHTML = list.length === 0 ? `<div style="text-align:center; color:#888;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>` : list.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join(''); }
+        if (transList) {
+          const list = (courier.walletTransactions || []).slice(0, 10);
+          transList.innerHTML = list.length === 0
+            ? `<div style="text-align:center; color:var(--text-muted); padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>`
+            : list.map(t => `<div class="wallet-tx-item">
+                <div class="wallet-tx-info">
+                  <span class="wallet-tx-title">${escapeHtml(t.title)}</span>
+                  <span class="wallet-tx-time">${escapeHtml(formatTxTime(t))}</span>
+                </div>
+                <span class="wallet-tx-amount ${t.type === 'خصم' ? 'tx-minus' : 'tx-plus'}">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</span>
+              </div>`).join('');
+        }
         renderCourierHistoryOrders(courier);
       }
       updateBottomNavVisibility();
@@ -2772,8 +2801,16 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (!promoCountdownIntervalId) startPromoCountdownTicker();
       const txContainer = document.getElementById('custWalletTransactionsList');
       if (txContainer) {
-        const txList = prof.walletTransactions || [];
-        txContainer.innerHTML = txList.length === 0 ? `<div style="color:var(--text-muted); text-align:center;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>` : txList.map(t => `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed #eee;"><span>${escapeHtml(t.title)} <small style="color:var(--text-muted);">(${escapeHtml(formatTxTime(t))})</small></span><strong style="color:${t.type === 'خصم' ? 'var(--danger)' : 'var(--success)'};">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</strong></div>`).join('');
+        const txList = (prof.walletTransactions || []).slice(0, 10);
+        txContainer.innerHTML = txList.length === 0
+          ? `<div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>`
+          : txList.map(t => `<div class="wallet-tx-item">
+              <div class="wallet-tx-info">
+                <span class="wallet-tx-title">${escapeHtml(t.title)}</span>
+                <span class="wallet-tx-time">${escapeHtml(formatTxTime(t))}</span>
+              </div>
+              <span class="wallet-tx-amount ${t.type === 'خصم' ? 'tx-minus' : 'tx-plus'}">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</span>
+            </div>`).join('');
       }
     }
 
