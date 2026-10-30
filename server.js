@@ -3515,7 +3515,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
       await supabase.from('orders').update({
         status: 'تمت التسوية الإدارية',
         fee_refunded: false,
-        admin_resolution_note: reason || 'شكوتك تمت مراجعتها من قبل الادارة وجارى التحقيق مع الطرف الآخر '
+        admin_resolution_note: reason || ' شكوتك تمت مراجعتها من قبل الادارة وجارى التحقيق مع الطرف الآخر "سيتم تعوضيك بالشكل المناسب" '
       }).eq('id', orderId);
     } else if (action === 'cancel') {
       // إلغاء إداري لطلب جارٍ قبل التسليم
