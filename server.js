@@ -1831,38 +1831,58 @@ app.post('/api/auth/admin/login', async (req, res) => {
 });
 
 app.post('/api/auth/customer/login', async (req, res) => {
-  const { phone: rawPhone, pin } = req.body || {};
-  const phone = normalizePhoneServer(rawPhone);
-  const cleanPin = String(pin || '').trim();
-  if (!isValidEgyptianPhoneServer(phone) || !/^[0-9]{4}$/.test(cleanPin)) {
-    return res.status(400).json({ success: false, message: 'بيانات الهاتف أو رمز الـ PIN غير صحيحة ⚠️' });
+  try {
+    const { phone: rawPhone, pin } = req.body || {};
+    const phone = normalizePhoneServer(rawPhone);
+    const cleanPin = String(pin || '')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776))
+      .trim();
+
+    if (!isValidEgyptianPhoneServer(phone) || !/^[0-9]{4}$/.test(cleanPin)) {
+      return res.status(400).json({ success: false, message: 'بيانات الهاتف أو رمز الـ PIN غير صحيحة ⚠️' });
+    }
+
+    const rateLimit = await checkRateLimit(phone);
+    if (rateLimit.locked) return res.status(403).json({ success: false, message: rateLimit.message });
+
+    let { data: user } = await supabase.from('customers').select('*').eq('phone', phone).maybeSingle();
+
+    if (!user) {
+      const hashedPin = await bcrypt.hash(cleanPin, 10);
+      const { data: createdUser, error: insErr } = await supabase.from('customers').upsert([{
+        phone,
+        pin_hash: hashedPin,
+        wallet_balance: 0,
+        points: 0,
+        wallet_transactions: []
+      }], { onConflict: 'phone' }).select().single();
+
+      if (insErr || !createdUser) {
+        return res.status(400).json({ success: false, message: 'تعذر فتح الحساب حالياً، حاول مرة أخرى ⚠️' });
+      }
+      user = createdUser;
+      await recordAnalyticsMetricEvent('customers', 1);
+    } else {
+      const valid = await bcrypt.compare(cleanPin, String(user.pin_hash || ''));
+      if (!valid) {
+        await recordFailedAttempt(phone, rateLimit.attemptData);
+        return res.status(401).json({ success: false, message: 'رمز الـ PIN السري غير صحيح! تأكد من الـ 4 أرقام يا باشا 🔒⚠️' });
+      }
+    }
+
+    await clearFailedAttempts(phone);
+    touchCustomerPresence(req, `cust_${phone}`);
+    invalidateStateCache();
+    const token = jwt.sign({ phone: user.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '90d' });
+    res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 90 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+    req.cookies = { ...req.cookies, customer_session: token };
+    const state = await buildClientState(req, true);
+    res.json({ success: true, message: 'تم استرجاع حسابك وتفعيل جلستك الدائمة بنجاح يا باشا 👑', state });
+  } catch (err) {
+    console.error('Customer login error:', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ أثناء تسجيل الدخول، جرب مرة أخرى ⚠️' });
   }
-
-  const rateLimit = await checkRateLimit(phone);
-  if (rateLimit.locked) return res.status(403).json({ success: false, message: rateLimit.message });
-
-  const { data: user } = await supabase.from('customers').select('*').eq('phone', phone).maybeSingle();
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: 'رقم الموبايل ده ملوش حساب مسجل عندنا لسه يا باشا! اطلب أول مشوار ليك من «الرئيسية» وهنفتحلك حسابك فوراً 🛵👑'
-    });
-  }
-
-  const valid = await bcrypt.compare(cleanPin, user.pin_hash || '');
-  if (!valid) {
-    await recordFailedAttempt(phone, rateLimit.attemptData);
-    return res.status(401).json({ success: false, message: 'رمز الـ PIN السري غير صحيح! تأكد من الـ 4 أرقام يا باشا 🔒⚠️' });
-  }
-
-  await clearFailedAttempts(phone);
-  touchCustomerPresence(req, `cust_${phone}`);
-  const token = jwt.sign({ phone: user.phone, role: 'customer' }, JWT_SECRET, { expiresIn: '90d' });
-  res.cookie('customer_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 90 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-  req.cookies = { ...req.cookies, customer_session: token };
-  const state = await buildClientState(req, false);
-  res.json({ success: true, message: 'تم استرجاع حسابك وتفعيل جلستك الدائمة بنجاح يا باشا 👑', state });
 });
 
 app.post('/api/captains/register', async (req, res) => {
