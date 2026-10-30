@@ -1246,13 +1246,6 @@ async function buildClientState(req, forceRefresh = false) {
     if (!isMasterAdm && !admPerms.manageWallets && !admPerms.manageSettings) {
       delete clientSettings.promoCodes;
     }
-  } else {
-    if (!isMasterAdm && !admPerms.viewAnalytics && !admPerms.viewDashboard) {
-      delete clientSettings.analyticsHistory;
-    }
-    if (!isMasterAdm && !admPerms.manageWallets && !admPerms.manageSettings) {
-      delete clientSettings.promoCodes;
-    }
   }
 
   const allMappedCaptains = raw.rawCaptains.map(c => {
