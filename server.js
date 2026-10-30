@@ -3513,7 +3513,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
     } else if (action === 'resolve_cancel' || (action === 'cancel' && order.status === 'قيد مراجعة الاعتراض')) {
       // إلغاء إداري بعد شكوى العميل (الكابتن بالفعل سلّم المشوار وقبض الحساب من العميل، فلا تُرد عمولة المنصة للكابتن أبداً، ويمكن للإدارة تعويض العميل يدوياً من قسم المحافظ)
       await supabase.from('orders').update({
-        status: 'ملغي إدارياً',
+        status: 'تمت التسوية الإدارية',
         fee_refunded: false,
         admin_resolution_note: reason || 'شكوتك تمت مراجعتها من قبل الادارة وجارى التحقيق مع الطرف الآخر '
       }).eq('id', orderId);
