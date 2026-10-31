@@ -20,9 +20,20 @@
   <meta property="og:image" content="https://ennaby-delivery.vercel.app/icon-512.png">
   <meta property="og:url" content="https://ennaby-delivery.vercel.app">
 
-  <!-- إعدادات تطبيق الويب (PWA) -->
+  <!-- إعدادات تطبيق الويب (PWA) الأساسية -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#7B3F52">
+
+  <!-- إعدادات التوافق المخصصة لهواتف آبل (iOS) لحل مشكلة الشاشة البيضاء والأيقونة -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="العنابى دليفرى">
+
+  <!-- أيقونة التطبيق التي ستظهر على شاشة آيفون الرئيسية -->
+  <link rel="apple-touch-icon" href="/icon-192.png">
+
+  <!-- صورة شاشة التحميل (Splash Screen) لمنع ظهور الشاشة البيضاء -->
+  <link rel="apple-touch-startup-image" href="/icon-512.png">
 
   <!-- تسجيل المشغل الخلفي (Service Worker) -->
   <script>
