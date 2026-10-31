@@ -117,25 +117,37 @@
     .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; text-align: center; }
     .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.25); }
     .inline-leaflet-canvas { width: 100%; height: 195px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
-    /* تصميم متناسق وموحد لكارت الاستلام وكارت التسليم */
-    .route-party-card { border-radius: 16px; padding: 14px; margin-bottom: 10px; transition: all 0.25s ease; box-shadow: 0 3px 12px rgba(123, 63, 82, 0.05); }
-    .route-party-pickup { background: #FDFBFC; border: 1.5px solid #E6D6DC; border-right: 4.5px solid var(--primary); }
-    .route-party-dropoff { background: #F9FDF9; border: 1.5px solid #C8E6C9; border-right: 4.5px solid var(--success); }
-    .route-party-header { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px dashed rgba(123, 63, 82, 0.16); }
-    .route-party-dropoff .route-party-header { border-bottom-color: rgba(46, 125, 50, 0.2); }
-    .route-party-badge { font-size: 12.5px; font-weight: 900; padding: 0; background: transparent !important; display: inline-flex; align-items: center; gap: 6px; line-height: 1.4; }
-    .route-party-subtitle { font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 0; line-height: 1.4; }
-    .route-party-connector { display: flex; align-items: center; justify-content: center; margin: -4px 0 6px; color: var(--primary); font-size: 13px; opacity: 0.65; }
-    .route-fields-grid { display: grid; grid-template-columns: 122px 1fr; gap: 8px; align-items: end; margin-bottom: 10px; }
-    .route-field-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-    .route-field-label { font-size: 11.5px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+    /* تصميم متناسق وموحد وعصري لكارت الاستلام وكارت التسليم (ترتيب رأسي كامل للموبايل) */
+    .route-party-card { border-radius: 18px; padding: 16px; margin-bottom: 0; transition: all 0.25s ease; position: relative; }
+    .route-party-pickup { background: linear-gradient(180deg, #FFFFFF 0%, #FDF9FA 100%); border: 1.5px solid #E5D4DA; border-right: 5px solid var(--primary); box-shadow: 0 6px 18px rgba(123, 63, 82, 0.06); }
+    .route-party-dropoff { background: linear-gradient(180deg, #FFFFFF 0%, #F6FBF7 100%); border: 1.5px solid #C8E6C9; border-right: 5px solid var(--success); box-shadow: 0 6px 18px rgba(46, 125, 50, 0.06); margin-bottom: 14px; }
+    .route-party-header { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 14px; padding-bottom: 11px; border-bottom: 1px dashed rgba(123, 63, 82, 0.18); }
+    .route-party-dropoff .route-party-header { border-bottom-color: rgba(46, 125, 50, 0.22); }
+    .route-step-top-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+    .route-step-number { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #FFFFFF; flex-shrink: 0; }
+    .route-step-number.step-pickup { background: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.28); }
+    .route-step-number.step-dropoff { background: var(--success); box-shadow: 0 2px 6px rgba(46, 125, 50, 0.28); }
+    .route-party-badge { font-size: 13px; font-weight: 900; padding: 4px 12px; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px; line-height: 1.35; }
+    .route-party-pickup .route-party-badge { background: var(--accent); color: var(--primary); }
+    .route-party-dropoff .route-party-badge { background: #E8F5E9; color: var(--success); }
+    .route-party-subtitle { font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin: 0 4px 0 0; line-height: 1.4; }
+    .route-fields-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 12px; }
+    .route-field-col { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; }
+    .route-field-label { font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
     .route-party-dropoff .route-field-label { color: var(--success); }
-    .route-party-card .input-field, .route-party-card .select-field { height: 44px; background: #FFFFFF !important; border: 1.5px solid #E2D5DA; border-radius: 12px; font-size: 13px; font-weight: 700; padding: 0 12px; }
-    .route-party-dropoff .input-field, .route-party-dropoff .select-field { border-color: #C5E1A5; }
-    .route-party-card .input-field:focus, .route-party-card .select-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.08); }
-    .route-party-dropoff .input-field:focus, .route-party-dropoff .select-field:focus { border-color: var(--success); box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08); }
-    .zone-select-box { appearance: none; -webkit-appearance: none; padding: 0 10px 0 26px !important; font-weight: 900 !important; color: var(--primary) !important; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237B3F52' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: left 8px center !important; background-size: 14px !important; }
-    .route-party-dropoff .zone-select-box { color: var(--success) !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232E7D32' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important; }
+    .route-party-card .input-field, .route-party-card .select-field { width: 100%; height: 48px; background-color: #FFFFFF !important; border: 1.5px solid #E2D5DA; border-radius: 12px; font-size: 13.5px; font-weight: 700; color: var(--text-main); padding: 0 14px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .route-party-dropoff .input-field, .route-party-dropoff .select-field { border-color: #C8E6C9; }
+    .route-party-card .input-field::placeholder { color: #9E9498; font-weight: 600; font-size: 12.5px; }
+    .route-party-card .input-field:focus, .route-party-card .select-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.1); }
+    .route-party-dropoff .input-field:focus, .route-party-dropoff .select-field:focus { border-color: var(--success); box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
+    .route-select-wrap { position: relative; width: 100%; }
+    .zone-select-box { appearance: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; background-image: none !important; padding: 0 14px 0 38px !important; font-weight: 800 !important; color: var(--primary) !important; cursor: pointer; }
+    .route-party-dropoff .zone-select-box { color: var(--success) !important; }
+    .route-select-arrow { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 13px; color: var(--primary); }
+    .route-party-dropoff .route-select-arrow { color: var(--success); }
+    .route-party-connector { display: flex; align-items: center; justify-content: center; margin: 10px 0; position: relative; }
+    .route-party-connector::before { content: ""; position: absolute; left: 22%; right: 22%; height: 1px; border-top: 1.5px dashed rgba(123, 63, 82, 0.22); z-index: 1; }
+    .route-connector-badge { width: 34px; height: 34px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid var(--accent); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 3px 8px rgba(123, 63, 82, 0.12); z-index: 2; }
     /* شريط تقدم مستوى الكابتن الحي */
     .tier-live-progress-wrap { background: linear-gradient(135deg, #FFFFFF, #F5FBFF); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 10px 12px; }
     .tier-live-progress-track { background: #E1F5FE; border-radius: 50px; height: 9px; width: 100%; overflow: hidden; margin: 6px 0; border: 1px solid #B3E5FC; }
@@ -275,27 +287,33 @@
                   💡 لو معرفتش تحدد مكانك ع الخريطة ولا يهمك يا باشا، اكتب العنوان بإيدك بالتفصيل تحت! ✍️
                 </div>
               </div>
-              <!-- الكارت الأول: بيانات وعنوان وتليفون نقطة الاستلام (تصميم شبكي متناسق وموحد) -->
+              <!-- الكارت الأول: بيانات المرسل ومكان الاستلام (تصميم رأسي عصري وموحد) -->
               <div class="route-party-card route-party-pickup" id="pickupPartyCard">
                 <div class="route-party-header">
-                  <span class="route-party-badge" id="pickupPartyBadgeTitle" style="color:var(--primary);">
-                    <i class="fa-solid fa-box-archive"></i> أول حاجة: بيانات الراسل ومكان الاستلام 📦
-                  </span>
+                  <div class="route-step-top-row">
+                    <span class="route-step-number step-pickup">1</span>
+                    <span class="route-party-badge" id="pickupPartyBadgeTitle">
+                      <i class="fa-solid fa-box-archive"></i> أول حاجة: بيانات الراسل ومكان الاستلام 📦
+                    </span>
+                  </div>
                   <span class="route-party-subtitle" id="pickupZoneLabel">هناخد الطرد منين؟ (عنوانك يا باشا)</span>
                 </div>
 
                 <div class="route-fields-grid">
                   <div class="route-field-col">
                     <label class="route-field-label" for="pickupZone"><i class="fa-solid fa-location-dot"></i> المنطقة:</label>
-                    <select class="select-field zone-select-box" id="pickupZone" onchange="handleZoneChange()"></select>
+                    <div class="route-select-wrap">
+                      <select class="select-field zone-select-box" id="pickupZone" onchange="handleZoneChange()"></select>
+                      <i class="fa-solid fa-chevron-down route-select-arrow"></i>
+                    </div>
                   </div>
                   <div class="route-field-col">
                     <label class="route-field-label" for="pickupAddress"><i class="fa-solid fa-road"></i> العنوان بالتفصيل:</label>
-                    <input type="text" id="pickupAddress" class="input-field" placeholder="مثلاً: حي الجامعة، ش جيهان">
+                    <input type="text" id="pickupAddress" class="input-field" placeholder="مثلاً: حي الجامعة، شارع جيهان، عمارة 12">
                   </div>
                 </div>
 
-                <div class="gps-captured-pill" id="pickupGpsCapturedPill" style="margin-bottom:8px;">
+                <div class="gps-captured-pill" id="pickupGpsCapturedPill" style="margin-bottom:10px;">
                   <span id="pickupGpsCapturedText">✅ لقطنا لوكيشن الاستلام ع الخريطة بالمللي!</span>
                   <button type="button" onclick="clearCapturedGps('pickup')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">مسح ✕</button>
                 </div>
@@ -308,29 +326,40 @@
                 </div>
               </div>
 
-              <div class="route-party-connector"><i class="fa-solid fa-angles-down"></i></div>
+              <!-- فاصل بصري أنيق بين بطاقة الإرسال وبطاقة الاستلام -->
+              <div class="route-party-connector" aria-hidden="true">
+                <div class="route-connector-badge">
+                  <i class="fa-solid fa-arrow-down-long"></i>
+                </div>
+              </div>
 
-              <!-- الكارت الثاني: بيانات وعنوان وتليفون نقطة التسليم (تصميم شبكي متناسق وموحد) -->
+              <!-- الكارت الثاني: بيانات المستلم ومكان التسليم (تصميم رأسي عصري وموحد) -->
               <div class="route-party-card route-party-dropoff" id="dropoffPartyCard">
                 <div class="route-party-header">
-                  <span class="route-party-badge" id="dropoffPartyBadgeTitle" style="color:var(--success);">
-                    <i class="fa-solid fa-location-dot"></i> تاني حاجة: بيانات المستلم ومكان التسليم 🎯
-                  </span>
+                  <div class="route-step-top-row">
+                    <span class="route-step-number step-dropoff">2</span>
+                    <span class="route-party-badge" id="dropoffPartyBadgeTitle">
+                      <i class="fa-solid fa-location-dot"></i> تاني حاجة: بيانات المستلم ومكان التسليم 🎯
+                    </span>
+                  </div>
                   <span class="route-party-subtitle" id="dropoffZoneLabel">هنسلمه لمين وفين؟ (عنوان وتليفون المستلم)</span>
                 </div>
 
                 <div class="route-fields-grid">
                   <div class="route-field-col">
                     <label class="route-field-label" for="dropoffZone"><i class="fa-solid fa-location-dot"></i> المنطقة:</label>
-                    <select class="select-field zone-select-box" id="dropoffZone" onchange="handleZoneChange()"></select>
+                    <div class="route-select-wrap">
+                      <select class="select-field zone-select-box" id="dropoffZone" onchange="handleZoneChange()"></select>
+                      <i class="fa-solid fa-chevron-down route-select-arrow"></i>
+                    </div>
                   </div>
                   <div class="route-field-col">
                     <label class="route-field-label" for="dropoffAddress"><i class="fa-solid fa-road"></i> العنوان بالتفصيل:</label>
-                    <input type="text" id="dropoffAddress" class="input-field" placeholder="مثلاً: توريل، كوبري جديلة">
+                    <input type="text" id="dropoffAddress" class="input-field" placeholder="مثلاً: توريل، كوبري جديلة، بجوار المحطة">
                   </div>
                 </div>
 
-                <div class="gps-captured-pill" id="dropoffGpsCapturedPill" style="margin-bottom:8px;">
+                <div class="gps-captured-pill" id="dropoffGpsCapturedPill" style="margin-bottom:10px;">
                   <span id="dropoffGpsCapturedText">✅ لقطنا لوكيشن التسليم ع الخريطة بالمللي!</span>
                   <button type="button" onclick="clearCapturedGps('dropoff')" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer; flex-shrink:0;">مسح ✕</button>
                 </div>
