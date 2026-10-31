@@ -1459,17 +1459,43 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
     if (!allSubs || allSubs.length === 0) return 0;
 
     const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
+    const { data: captainsRows } = await supabase.from('captains').select('phone');
+    const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
 
-    let targetSubs = publicSubs;
-    if (target === 'captains' || target === 'customers') {
-      const { data: captainsRows } = await supabase.from('captains').select('phone');
-      const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
-      if (target === 'captains') {
-        targetSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
-      } else if (target === 'customers') {
-        targetSubs = publicSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+    // معرفة جميع نقاط الاتصال (Endpoints) المربوطة بأرقام مسجلة (عميل أو كابتن) لمنع إرسال إشعارات "غير المسجلين" لمن سجل بالفعل
+    const registeredEndpoints = new Set();
+    publicSubs.forEach(s => {
+      const ph = String(s.phone || '').trim();
+      if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
+        registeredEndpoints.add(s.subscription.endpoint);
       }
+    });
+
+    let filteredSubs = publicSubs;
+    if (target === 'captains') {
+      filteredSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+    } else if (target === 'customers') {
+      filteredSubs = publicSubs.filter(s => {
+        const ph = String(s.phone || '').trim();
+        return !ph.startsWith('guest:') && !captainPhones.has(ph);
+      });
+    } else if (target === 'unregistered') {
+      filteredSubs = publicSubs.filter(s => {
+        const ph = String(s.phone || '').trim();
+        const ep = s.subscription && s.subscription.endpoint;
+        return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
+      });
     }
+
+    // إزالة أي تكرار لنفس الجهاز (Endpoint) حتى لا يصل الإشعار مرتين لنفس الهاتف أبداً
+    const seenEndpoints = new Set();
+    const targetSubs = filteredSubs.filter(s => {
+      if (!s || !s.subscription) return false;
+      const ep = s.subscription.endpoint || s.phone;
+      if (seenEndpoints.has(ep)) return false;
+      seenEndpoints.add(ep);
+      return true;
+    });
 
     const payloadStr = JSON.stringify({
       title: payloadObj.title || 'الرجل العنابي 🛵',
@@ -1480,7 +1506,6 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
     let sent = 0;
     await Promise.allSettled(
       targetSubs.map(async s => {
-        if (!s || !s.subscription) return;
         await webpush.sendNotification(s.subscription, payloadStr);
         sent++;
       })
@@ -1491,16 +1516,19 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
   }
 }
 
-// [NEW-SEC-04] التحقق من ملكية الرقم أو جلسة الأدمن قبل ربط إشعارات Web Push
+// [NEW-SEC-04] التحقق من ملكية الرقم أو جلسة الأدمن أو تسجيل الجهاز كزائر غير مسجل لإشعارات Web Push
 app.post('/api/push/subscribe', async (req, res) => {
   try {
-    const { phone, subscription } = req.body || {};
-    if (!phone || !subscription) {
+    const { phone, clientId, subscription } = req.body || {};
+    if (!subscription || typeof subscription !== 'object' || !subscription.endpoint) {
       return res.status(400).json({ success: false });
     }
-    let cleanKey = String(phone).trim();
 
-    if (cleanKey.startsWith('admin:')) {
+    let rawPhoneStr = phone ? String(phone).trim() : '';
+    const cleanClientId = String(clientId || '').trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+    let cleanKey = '';
+
+    if (rawPhoneStr.startsWith('admin:')) {
       const adminToken = getAuthenticatedAdminFromCookie(req);
       if (!adminToken || !adminToken.username) {
         return res.status(401).json({ success: false, message: 'يرجى تسجيل دخول المسؤول أولاً 🔒' });
@@ -1517,11 +1545,27 @@ app.post('/api/push/subscribe', async (req, res) => {
       if (!adminRow.is_master && !(adminRow.permissions && adminRow.permissions.receiveAdminPush)) {
         return res.status(403).json({ success: false, message: 'ليس لديك صلاحية استقبال إشعارات الرادار ⛔' });
       }
-      const parts = cleanKey.split(':');
+      const parts = rawPhoneStr.split(':');
       const deviceSuffix = parts[2] ? String(parts[2]).trim() : 'default';
       cleanKey = `admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`;
+    } else if (!rawPhoneStr || rawPhoneStr.startsWith('guest:')) {
+      // إذا كان الهاتف يمتلك جلسة عميل أو كابتن نشطة، نربطه برقمه المسجل مباشرةً
+      const custPhone = getAuthenticatedCustomerFromCookie(req);
+      const capPhone = getAuthenticatedCaptainFromCookie(req);
+      if (capPhone || custPhone) {
+        cleanKey = capPhone || custPhone;
+        if (cleanClientId) {
+          await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
+        }
+      } else {
+        const guestId = cleanClientId || rawPhoneStr.replace(/^guest:/, '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+        if (!guestId) {
+          return res.status(400).json({ success: false });
+        }
+        cleanKey = `guest:${guestId}`;
+      }
     } else {
-      cleanKey = normalizePhoneServer(cleanKey);
+      cleanKey = normalizePhoneServer(rawPhoneStr);
       if (!isValidEgyptianPhoneServer(cleanKey)) {
         return res.status(400).json({ success: false, message: 'رقم الهاتف غير صالح ⚠️' });
       }
@@ -1532,6 +1576,10 @@ app.post('/api/push/subscribe', async (req, res) => {
         if (!pendingCap || pendingCap.status !== 'قيد المراجعة') {
           return res.status(403).json({ success: false, message: 'غير مصرح بربط الإشعارات لهذا الرقم 🔒' });
         }
+      }
+      // حذف سجل الزائر المؤقت لهذا الجهاز فور تسجيله برقم هاتف رسمي لمنع تكرار الإشعارات
+      if (cleanClientId) {
+        await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
       }
     }
 
@@ -3735,21 +3783,47 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, async (req, res) => {
       });
     }
 
-    let targetSubs = publicSubs;
-    if (target === 'captains' || target === 'customers') {
-      const { data: captainsRows } = await supabase.from('captains').select('phone');
-      const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
-      if (target === 'captains') {
-        targetSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
-      } else if (target === 'customers') {
-        targetSubs = publicSubs.filter(s => !captainPhones.has(String(s.phone).trim()));
+    const { data: captainsRows } = await supabase.from('captains').select('phone');
+    const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
+
+    const registeredEndpoints = new Set();
+    publicSubs.forEach(s => {
+      const ph = String(s.phone || '').trim();
+      if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
+        registeredEndpoints.add(s.subscription.endpoint);
       }
+    });
+
+    let filteredSubs = publicSubs;
+    if (target === 'captains') {
+      filteredSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+    } else if (target === 'customers') {
+      filteredSubs = publicSubs.filter(s => {
+        const ph = String(s.phone || '').trim();
+        return !ph.startsWith('guest:') && !captainPhones.has(ph);
+      });
+    } else if (target === 'unregistered') {
+      filteredSubs = publicSubs.filter(s => {
+        const ph = String(s.phone || '').trim();
+        const ep = s.subscription && s.subscription.endpoint;
+        return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
+      });
     }
+
+    // منع إرسال الإشعار مرتين لنفس الهاتف إذا كان له أكثر من سجل
+    const seenEndpoints = new Set();
+    const targetSubs = filteredSubs.filter(s => {
+      if (!s || !s.subscription) return false;
+      const ep = s.subscription.endpoint || s.phone;
+      if (seenEndpoints.has(ep)) return false;
+      seenEndpoints.add(ep);
+      return true;
+    });
 
     if (targetSubs.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'لا توجد هواتف مسجلة لهذه الفئة حالياً ⚠️'
+        message: 'لا توجد هواتف نشطة مسجلة ضمن هذه الفئة حالياً ⚠️'
       });
     }
 
@@ -3780,7 +3854,12 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, async (req, res) => {
       await supabase.from('push_subscriptions').delete().in('phone', expiredPhones);
     }
 
-    const targetLabels = { all: 'الجميع', customers: 'العملاء', captains: 'الكباتن' };
+    const targetLabels = {
+      all: 'جميع الهواتف المحملة للتطبيق',
+      unregistered: 'الزوار غير المسجلين',
+      customers: 'العملاء المسجلين',
+      captains: 'الكباتن المسجلين'
+    };
     await logAdminAudit(
       'إشعار موبايل عام',
       targetLabels[target] || 'الجميع',

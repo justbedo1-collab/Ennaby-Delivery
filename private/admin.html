@@ -361,9 +361,10 @@
               <div class="input-group">
                 <label class="input-label" for="adminPushTargetSelect">الفئة المستهدفة بالإشعار:</label>
                 <select id="adminPushTargetSelect" class="select-field">
-                  <option value="all">📢 الجميع (كل العملاء والكباتن)</option>
-                  <option value="customers">👑 العملاء فقط</option>
-                  <option value="captains">🛵 الكباتن فقط</option>
+                  <option value="all">📲 جميع الهواتف المحملة للتطبيق (الكل: مسجلين + غير مسجلين)</option>
+                  <option value="unregistered">👋 الزوار المحملين للتطبيق (غير المسجلين فقط — لتذكيرهم بالتسجيل)</option>
+                  <option value="customers">👑 العملاء المسجلين فقط</option>
+                  <option value="captains">🛵 الكباتن المسجلين فقط</option>
                 </select>
               </div>
               <div class="input-group">
@@ -1947,9 +1948,10 @@
       }
 
       const targetLabels = {
-        all: 'الجميع (كل العملاء والكباتن)',
-        customers: 'العملاء فقط 👑',
-        captains: 'الكباتن فقط 🛵'
+        all: 'جميع الهواتف المحملة للتطبيق (مسجلين وغير مسجلين) 📲',
+        unregistered: 'الزوار المحملين للتطبيق (غير المسجلين فقط) 👋',
+        customers: 'العملاء المسجلين فقط 👑',
+        captains: 'الكباتن المسجلين فقط 🛵'
       };
 
       openCustomActionModal({
