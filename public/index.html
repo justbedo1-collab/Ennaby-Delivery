@@ -202,6 +202,12 @@
     .wallet-tx-amount { font-size: 12px; font-weight: 900; padding: 4px 9px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: rtl; }
     .wallet-tx-amount.tx-plus { background: #E8F5E9; color: var(--success); border: 1px solid #C8E6C9; }
     .wallet-tx-amount.tx-minus { background: #FFEBEE; color: var(--danger); border: 1px solid #FFCDD2; }
+
+    /* إصلاح مشكلة تقطع الحروف العربية في النص الإرشادي على هواتف آبل */
+    #orderCustomerPin::placeholder, 
+    #custProfilePinSyncInput::placeholder {
+      letter-spacing: normal !important;
+    }
   </style>
 </head>
 <body>
