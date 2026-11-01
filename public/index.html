@@ -26,11 +26,42 @@
 
   <!-- إعدادات التوافق المخصصة لهواتف آبل (iOS) لحل مشكلة الشاشة البيضاء والأيقونة -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="العنابى دليفرى">
 
-  <!-- أيقونة التطبيق التي ستظهر على شاشة آيفون الرئيسية -->
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <!-- أيقونة التطبيق وشاشة البداية الفورية على شاشة آيفون الرئيسية -->
+  <link rel="apple-touch-icon" href="/icon-512.png">
+  <link rel="apple-touch-startup-image" href="/icon-512.png">
+  <script>
+    // توليد شاشة البداية الأصلية لهواتف آيفون (iOS Startup Image) بنفس مقاس الشاشة لمنع الشاشة البيضاء لحظة الضغط
+    (function () {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (!isIOS) return;
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = '/icon-512.png';
+      img.onload = function () {
+        try {
+          var dpr = window.devicePixelRatio || 2;
+          var w = window.screen.width * dpr;
+          var h = window.screen.height * dpr;
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FAF7F4';
+          ctx.fillRect(0, 0, w, h);
+          var iconSize = Math.min(w, h) * 0.55;
+          ctx.drawImage(img, (w - iconSize) / 2, (h - iconSize) / 2 - (h * 0.04), iconSize, iconSize);
+          var link = document.querySelector('link[rel="apple-touch-startup-image"]') || document.createElement('link');
+          link.rel = 'apple-touch-startup-image';
+          link.href = canvas.toDataURL('image/png');
+          document.head.appendChild(link);
+        } catch (e) {}
+      };
+    })();
+  </script>
 
   <!-- تسجيل المشغل الخلفي (Service Worker) -->
   <script>
@@ -209,18 +240,11 @@
 </head>
 <body>
 
-  <!-- شاشة تحميل مخصصة متجاوبة لتغطي الشاشة البيضاء (خاصة في آبل) -->
-  <div id="ios-splash-screen" style="position: fixed; inset: 0; background: var(--bg-canvas); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.35s ease;">
-    <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 240px; max-width: 65vw; height: auto; max-height: 240px; object-fit: contain; animation: pulse 1.2s infinite;">
-    <h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
-    <span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الدنيا...</span>
-    <style>
-      @keyframes pulse {
-        0% { transform: scale(0.95); opacity: 0.85; }
-        50% { transform: scale(1.03); opacity: 1; }
-        100% { transform: scale(0.95); opacity: 0.85; }
-      }
-    </style>
+  <!-- شاشة التحميل الموحدة لجميع الهواتف والأجهزة (تظهر من بداية الفتح حتى اكتمال التحميل) -->
+  <div id="ios-splash-screen" style="position: fixed; inset: 0; background: #FAF7F4; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease;">
+    <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 195px; height: 195px; object-fit: contain;">
+    <h2 style="color: var(--primary); margin-top: 14px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
+    <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
   </div>
 
 
@@ -902,7 +926,7 @@
                   <i class="fa-solid fa-gem"></i> دوس هنا عشان تعرف شروط المستويات وخصم العمولة 📋
                 </button>
               </div>
-              <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد وعلى ضمان الله 💪🍇</button>
+              <button class="btn-main" id="submitCaptainRegBtn" onclick="submitCaptainRegistration()">موافق على العهد  💪🍇</button>
 
               <!-- إطار مساعدة التسجيل عبر الواتساب برسالة تلقائية في نهاية صفحة تسجيل كابتن جديد -->
               <div style="margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(123, 63, 82, 0.22); border-radius: 12px; background: #FAF7F4; text-align: center;">
@@ -2971,16 +2995,17 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       });
     }
 
+function hideUnifiedSplashScreen() {
+      const splash = document.getElementById('ios-splash-screen');
+      if (!splash) return;
+      splash.style.pointerEvents = 'none';
+      splash.style.opacity = '0';
+      setTimeout(() => splash.remove(), 300);
+    }
+
     async function initApp() {
-      // إخفاء شاشة التحميل المخصصة بسلاسة وسرعة دون حجب اللمس
-      setTimeout(() => {
-        const splash = document.getElementById('ios-splash-screen');
-        if (splash) {
-          splash.style.pointerEvents = 'none';
-          splash.style.opacity = '0';
-          setTimeout(() => splash.remove(), 350);
-        }
-      }, 1000);
+      // حد أقصى للأمان (1.8 ثانية) لإخفاء شاشة التحميل حتى لو كان الإنترنت بطيئاً عند المستخدم
+      const splashSafetyTimer = setTimeout(hideUnifiedSplashScreen, 1800);
 
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
       if (STATE.isAppInstalled) reportActualAppInstallOnce();
@@ -2992,6 +3017,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       renderSavedPromoUI();
       calculateDeliveryPrice();
       await syncFromCloudServer(true);
+
+      // إخفاء شاشة التحميل فوراً بمجرد جاهزية البيانات والواجهة
+      clearTimeout(splashSafetyTimer);
+      hideUnifiedSplashScreen();
       switchRole(STATE.currentRole === 'courier' ? 'courier' : 'customer');
       switchCustTab(STATE.currentCustTab || 'home');
       if (getActiveCourier()) {
