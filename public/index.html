@@ -490,29 +490,37 @@
                   💡 الكود بيفضل متشال معاك في تليفونك لحد ما تستخدمه أو وقته يخلص!
                 </small>
               </div>
-              <div class="price-preview-banner" id="priceBanner">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="price-preview-banner" id="priceBanner" style="padding:14px; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                   <div>
-                    <span style="font-size:11px; font-weight:700; color:var(--text-muted); display:block;">أجرة التوصيل هتبقى حوالي:</span>
-                    <div style="font-size:22px; font-weight:900; color:var(--primary); line-height:1.2;">
-                      <span id="estimatedPrice">--</span> <span id="priceCurrency">جنيه</span>
-                    </div>
-                    <div id="customerDiscountBannerNotice" style="display:none; font-size:11px; font-weight:800; color:var(--success); margin-top:2px;">
-                      🎁 مبروك! هيتخصم رصيد هدية من محفظتك فوراً
+                    <span style="font-size:11.5px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:2px;">أجرة التوصيل الصافية:</span>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                      <div style="font-size:24px; font-weight:900; color:var(--primary); line-height:1.1;">
+                        <span id="estimatedPrice">--</span> <span id="priceCurrency" style="font-size:14px;">جنيه</span>
+                      </div>
+                      <span id="originalPriceStrike" style="display:none; font-size:12px; font-weight:800; color:var(--text-muted); text-decoration:line-through;"></span>
                     </div>
                   </div>
-                  <div style="text-align:left; font-size:11px; font-weight:700; color:var(--primary);">
-                    <span id="routeDescription">اختار المسار</span><br>
-                    <small style="color:var(--text-muted); font-size:10px;">الكابتن هيكوش عليهم حلال عليه 😂💲</small>
+                  <div style="text-align:left; background:rgba(255,255,255,0.85); border:1px solid rgba(123,63,82,0.18); padding:6px 10px; border-radius:10px;">
+                    <span id="routeDescription" style="font-size:11.5px; font-weight:900; color:var(--primary); display:block; white-space:nowrap;">اختار المسار</span>
+                    <small style="color:var(--text-muted); font-size:10px; font-weight:700; display:block; white-space:nowrap;">الكابتن هيكوش عليهم حلال عليه 😂💲</small>
                   </div>
                 </div>
-                <div id="priceHumorMessage" style="font-size:11px; font-weight:700; color:#5F2E3E; background:rgba(255,255,255,0.7); padding:6px 10px; border-radius:8px; line-height:1.4; margin-top:8px;">
+                <div id="customerDiscountBannerNotice" style="display:none; background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:7px 10px; border-radius:9px; font-size:11.5px; font-weight:800; line-height:1.5; text-align:right;">
+                  🎁 مبروك! هيتخصم رصيد هدية من محفظتك فوراً
+                </div>
+                <div id="priceHumorMessage" style="font-size:11px; font-weight:700; color:#5F2E3E; background:rgba(255,255,255,0.75); padding:7px 10px; border-radius:9px; line-height:1.5;">
                   صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وده هيبلغك بيه الكابتن العنابي لو فيه زيادة 🛵
                 </div>
               </div>
               <button class="btn-main" id="submitOrderBtn" onclick="createNewCustomerOrder()">
                 <i class="fa-solid fa-rocket"></i> تأكيد الطلب دلوقتي
               </button>
+              <div style="text-align:center; margin-top:10px;">
+                <button type="button" onclick="openLegalTermsModal()" style="background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:800; cursor:pointer; text-decoration:underline;">
+                  🛡️ سياسة الخصوصية وشروط الاستخدام والإلغاء والتعويض
+                </button>
+              </div>
             </div>
           </div>
           <div id="custTab-orders" class="sub-tab-section" style="display:none;">
@@ -543,6 +551,9 @@
                   <li>لو الكابتن حصل منه مشكلة أو أي موقف مش حلو ابعتلنا من خلال زرار الدعم، مع العلم إننا مش هنقتله 😂 إحنا هنمسكه السلك عريان ⚡⚡</li>
                 </ul>
               </div>
+              <button type="button" class="btn-secondary" style="width:100%; margin-top:12px; font-size:12px;" onclick="openLegalTermsModal()">
+                <i class="fa-solid fa-scale-balanced"></i> سياسة الخصوصية وشروط الاستخدام والإلغاء ⚖️
+              </button>
             </div>
           </div>
           <div id="custTab-profile" class="sub-tab-section" style="display:none;">
@@ -1023,6 +1034,39 @@
     </div>
   </div>
   <div class="custom-modal" id="customActionModal" style="z-index: 1800;"><div class="modal-content-card"><h3 id="customActionModalTitle" style="font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px;">تأكيد الخطوة دي</h3><p id="customActionModalMessage" style="font-size:12.5px; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></p><div id="customActionModalInputWrap" style="display:none; margin-bottom:12px;"><input type="text" id="customActionModalInput" class="input-field" placeholder="اكتب السبب أو التفاصيل هنا..."></div><div style="display:flex; gap:8px;"><button type="button" class="btn-main" id="customActionModalConfirmBtn">اعتمد ونفّذ ✅</button><button type="button" class="btn-secondary" id="customActionModalCancelBtn" onclick="closeCustomActionModal()">تراجع</button></div></div></div>
+
+  <!-- نافذة سياسة الخصوصية وشروط الاستخدام والإلغاء والتعويض -->
+  <div class="custom-modal" id="legalTermsModal" style="z-index: 1980;" onclick="if(event.target === this) closeLegalTermsModal()">
+    <div class="modal-content-card" style="max-width:430px; padding:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px dashed #E9DCE0; padding-bottom:8px;">
+        <h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;"><i class="fa-solid fa-scale-balanced"></i> الشروط القانونية وسياسة الخصوصية</h3>
+        <button type="button" onclick="closeLegalTermsModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11.5px; line-height:1.75; color:var(--text-main); display:flex; flex-direction:column; gap:10px; max-height:68vh; overflow-y:auto; padding-left:4px;">
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">1️⃣ تعريف المنصة ونطاق الخدمة:</strong>
+          منصة «الرجل العنابي دليفري» هي منصة تقنية ذكية تعمل في مدينة المنصورة ومحافظة الدقهلية للربط المباشر بين العملاء والكباتن المستقلين لتوصيل الطلبات والمشاوير المشروعة قانوناً.
+        </div>
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">2️⃣ سياسة الإلغاء واسترداد الخصومات والكوبونات:</strong>
+          • يحق للعميل إلغاء الطلب مجاناً طالما لم يستلم الكابتن الطرد فعلياً.<br>
+          • في حال إلغاء الطلب قبل اكتماله أو اعتذار الكابتن، يعود رصيد المحفظة المخصوم وكود الخصم تلقائياً وبأمان تام إلى حساب العميل.<br>
+          • بعد تأكيد استلام الطلب وتقييم الكابتن، يعتبر المشوار مكتملاً ومغلقاً نهائياً.
+        </div>
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">3️⃣ المحظورات ومسؤولية المحتوى والمشتريات:</strong>
+          • يُحظر قطعياً إرسال أي مواد مخالفة للقانون المصري أو مواد خطرة أو قابلة للاشتعال أو مبالغ نقدية/مجوهرات ثمينة، ويتحمل المرسل المسؤولية القانونية الكاملة عن محتوى الطرد.<br>
+          • في طلبات «هاتلي حاجة ليا»، تقتصر تسعيرة المنصة على أجرة التوصيل فقط، وتتم محاسبة قيمة المشتريات نقداً بين العميل والكابتن بموجب الفاتورة.
+        </div>
+        <div style="background:#E8F5E9; border:1px solid #A5D6A7; border-radius:10px; padding:10px; color:#1B5E20;">
+          <strong style="display:block; margin-bottom:3px;">4️⃣ حماية البيانات والخصوصية (قانون 151 لسنة 2020):</strong>
+          • تُحفظ أرقام الهواتف ومستندات التحقق من هوية الكباتن في خوادم سحابية مشفرة، وتُخفى أرقام هواتف العملاء والمستلمين تلقائياً من سجل الكابتن فور انتهاء المشوار.<br>
+          • يحق لأي مستخدم طلب تحديث أو حذف بياناته المسجلة في أي وقت عبر التواصل المباشر مع الدعم الفني على واتساب المنصة.
+        </div>
+      </div>
+      <button type="button" class="btn-main" style="margin-top:12px;" onclick="closeLegalTermsModal()">قرأت الشروط وموافق يا باشا ✅</button>
+    </div>
+  </div>
   <script>
     'use strict';
     const SESSION_KEY = 'ENNABY_PUBLIC_SESSION_V35';
@@ -2334,10 +2378,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function handleZoneChange() { calculateDeliveryPrice(); }
     function calculateDeliveryPrice() {
       const pZoneEl = document.getElementById('pickupZone'); const dZoneEl = document.getElementById('dropoffZone'); const priceSpan = document.getElementById('estimatedPrice');
+      const strikeSpan = document.getElementById('originalPriceStrike');
       const discountNotice = document.getElementById('customerDiscountBannerNotice'); const submitBtn = document.getElementById('submitOrderBtn'); const routeDescEl = document.getElementById('routeDescription');
       if (!pZoneEl || !dZoneEl || !priceSpan || !submitBtn) return null;
       const pZone = pZoneEl.value || STATE.zones[0] || 'المنصورة'; const dZone = dZoneEl.value || STATE.zones[0] || 'المنصورة'; const routeKey = `${pZone}|${dZone}`;
-      if (routeDescEl) routeDescEl.innerText = `من ${pZone} لـ ${dZone}`;
+      if (routeDescEl) routeDescEl.innerText = `📍 من ${pZone} ⬅️ ${dZone}`;
       if (STATE.pricing[routeKey] !== undefined) {
         const baseFare = Math.max(0, roundMoney(STATE.pricing[routeKey]));
         const s = STATE.settings || {};
@@ -2360,13 +2405,24 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const totalDiscount = roundMoney(walletDiscount + promoDiscount);
         const finalFare = Math.max(0, roundMoney(fare - totalDiscount));
         priceSpan.innerText = finalFare;
+        if (strikeSpan) {
+          if (totalDiscount > 0) {
+            strikeSpan.style.display = 'inline';
+            strikeSpan.innerText = `بدل ${fare} ج`;
+          } else {
+            strikeSpan.style.display = 'none';
+          }
+        }
         if (discountNotice) {
           if (totalDiscount > 0) {
             discountNotice.style.display = 'block';
-            const parts = [];
-            if (walletDiscount > 0) parts.push(`${walletDiscount} ج محفظة`);
-            if (promoDiscount > 0) parts.push(`${promoDiscount} ج كود ${savedPromoCodeObj.code}`);
-            discountNotice.innerText = `🎁 يا بختك يا عم! هيتخصملك ${totalDiscount} ج (${parts.join(' + ')}) فوراً (بدل ${fare} ج)`;
+            if (walletDiscount > 0 && promoDiscount > 0) {
+              discountNotice.innerText = `🎁 اتخصملك ${totalDiscount} جنيه فوري (${walletDiscount} ج من محفظتك + ${promoDiscount} ج بكود ${savedPromoCodeObj.code})!`;
+            } else if (walletDiscount > 0) {
+              discountNotice.innerText = `🎁 اتخصملك ${walletDiscount} جنيه فوري من رصيد محفظتك على المشوار ده!`;
+            } else {
+              discountNotice.innerText = `🎟️ اتخصملك ${promoDiscount} جنيه فوري بكود الخصم (${savedPromoCodeObj.code})!`;
+            }
           } else if (s.surgeActive && Number(s.surgePercent) > 0) {
             discountNotice.style.display = 'block';
             discountNotice.innerText = `⚡ شامل زيادة وقت الذروة المؤقتة (+${s.surgePercent}%)`;
@@ -2376,7 +2432,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         }
         submitBtn.disabled = false; return { originalFare: fare, finalFare, discount: totalDiscount };
       }
-      priceSpan.innerText = 'مش متحدد'; if (discountNotice) discountNotice.style.display = 'none'; submitBtn.disabled = true; return null;
+      priceSpan.innerText = 'مش متحدد';
+      if (strikeSpan) strikeSpan.style.display = 'none';
+      if (discountNotice) discountNotice.style.display = 'none';
+      submitBtn.disabled = true; return null;
     }
 
     function createNewCustomerOrder() {
@@ -2475,12 +2534,31 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     }
 
     function customerCancelOrder(orderId) {
-      openCustomActionModal({ title: 'إلغاء الطلب ❌', message: `متأكد يا باشا إنك عاوز تلغي الطلب (${orderId})؟`, confirmText: 'أيوة، الغي الطلب', isDanger: true,
+      const targetOrd = STATE.orders.find(o => o.id === orderId);
+      const hasDiscount = targetOrd && Number(targetOrd.discountApplied) > 0;
+      const confirmSubMsg = hasDiscount
+        ? `متأكد يا باشا إنك عاوز تلغي الطلب (${orderId})؟\n(اطمن: خصمك الـ ${targetOrd.discountApplied} ج هيرجع لمحفظتك/كودك فوراً لأن الطلب مكتملش 🎁)`
+        : `متأكد يا باشا إنك عاوز تلغي الطلب (${orderId})؟`;
+
+      openCustomActionModal({ title: 'إلغاء الطلب ❌', message: confirmSubMsg, confirmText: 'أيوة، الغي الطلب', isDanger: true,
         onConfirm: () => {
           withActionLock(async () => {
             const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/cancel`, 'POST', { clientPhone: STATE.customerProfile.savedPhone || '' });
-            if (ok && data.success) { showToast(data.message || `خلاص لغينا طلبك (${orderId}) يا باشا ✅`, 'ok'); } 
-            else { showToast((data && data.message) || 'مقدرناش نلغي الطلب دلوقتي ⚠️', 'warn'); }
+            if (ok && data.success) {
+              // إذا كان الطلب الملغي يحتوي على كود خصم، نعيد تفعيله تلقائياً في هاتف العميل
+              const restoredCode = data.restoredPromoCode || (targetOrd && targetOrd.promoCode);
+              if (restoredCode) {
+                const availPromos = Array.isArray(STATE.settings?.availablePromoCodes) ? STATE.settings.availablePromoCodes : [];
+                const matchedPromo = availPromos.find(p => p && String(p.code).toUpperCase() === String(restoredCode).toUpperCase());
+                if (matchedPromo) {
+                  persistSavedPromoCode(matchedPromo);
+                }
+              }
+              calculateDeliveryPrice();
+              showToast(data.message || `خلاص لغينا طلبك (${orderId}) وخصمك رجعلك يا باشا ✅`, 'ok');
+            } else {
+              showToast((data && data.message) || 'مقدرناش نلغي الطلب دلوقتي ⚠️', 'warn');
+            }
           });
         }
       });
@@ -2610,9 +2688,46 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       });
     }
 
+    function openLegalTermsModal() {
+      document.getElementById('legalTermsModal')?.classList.add('show');
+    }
+
+    function closeLegalTermsModal() {
+      document.getElementById('legalTermsModal')?.classList.remove('show');
+    }
+
     function handleFileUpload(event, type) {
-      const file = event.target.files && event.target.files[0]; if (!file) return;
-      compressImageDataUrl(file).then(compressedDataUrl => { tempCaptainFiles[type] = compressedDataUrl; const phEl = document.getElementById(`${type}Placeholder`); const pvEl = document.getElementById(`${type}Preview`); const imEl = document.getElementById(`${type}Img`); if (phEl) phEl.style.display = 'none'; if (pvEl) pvEl.style.display = 'block'; if (imEl) imEl.src = compressedDataUrl; showToast('تمام يا بطل! الصورة اترفعت واتظبطت بنجاح 📷✅', 'ok'); }).catch(() => { event.target.value = ''; showToast('الصورة دي مش راضية تفتح، جرب تختار صورة تانية واضحة ⚠️', 'warn'); });
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type || !file.type.startsWith('image/')) {
+        event.target.value = '';
+        showToast('اختار ملف صورة واضح (JPG أو PNG) يا بطل 📷⚠️', 'warn');
+        return;
+      }
+      compressImageDataUrl(file).then(compressedDataUrl => {
+        tempCaptainFiles[type] = compressedDataUrl;
+        const phEl = document.getElementById(`${type}Placeholder`);
+        const pvEl = document.getElementById(`${type}Preview`);
+        const imEl = document.getElementById(`${type}Img`);
+        if (phEl) phEl.style.display = 'none';
+        if (pvEl) {
+          pvEl.style.display = 'block';
+          const approxKb = Math.max(1, Math.round((compressedDataUrl.length * 0.75) / 1024));
+          let statusBadge = pvEl.querySelector('.upload-ready-badge');
+          if (!statusBadge) {
+            statusBadge = document.createElement('span');
+            statusBadge.className = 'upload-ready-badge';
+            statusBadge.style.cssText = 'position:absolute; bottom:5px; right:5px; background:rgba(46,125,50,0.92); color:#fff; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:20px; pointer-events:none;';
+            pvEl.appendChild(statusBadge);
+          }
+          statusBadge.innerText = `✅ جاهزة (${approxKb} KB)`;
+        }
+        if (imEl) imEl.src = compressedDataUrl;
+        showToast('تمام يا بطل! الصورة اتضغطت وجاهزة للرفع بنجاح 📷✅', 'ok');
+      }).catch(() => {
+        event.target.value = '';
+        showToast('الصورة دي مش راضية تفتح، جرب تختار صورة تانية واضحة ⚠️', 'warn');
+      });
     }
 
     function removeUploadedFile(type) { tempCaptainFiles[type] = null; const fileInput = document.getElementById(`${type}FileInput`); if (fileInput) fileInput.value = ''; const placeholder = document.getElementById(`${type}Placeholder`); if (placeholder) placeholder.style.display = 'block'; const preview = document.getElementById(`${type}Preview`); if (preview) preview.style.display = 'none'; }
@@ -2780,7 +2895,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (tierProgBox) tierProgBox.innerHTML = detailedStatusHtml;
         const availSw = document.getElementById('courierAvailabilitySwitch'); const statusTxt = document.getElementById('courierStatusText');
         if (availSw) { availSw.checked = courier.status === 'قيد المراجعة' ? false : Boolean(courier.isAvailable); }
-        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال أوردرات البشوات' : 'إنت قافل الرادار في استراحة مؤقتة ومش بتستقبل طلبات'; }
+        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال أوردرات البشوات 📡' : 'انت دلوقتى فى استراحة افتح رادار الطلبات فى اى وقت عشان تبدأ شغل 🚀'; }
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
           const rawNotices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
@@ -2892,22 +3007,37 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && o.status !== 'تمت التسوية الإدارية' && !String(o.status || '').includes('ملغي')).length;
       if (badgeEl) { badgeEl.innerText = activeCount; badgeEl.style.display = activeCount > 0 ? 'flex' : 'none'; }
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
-      // عرض آخر 10 طلبات فقط لتخفيف التحميل داخل الصفحة
       const recentCustomerOrders = myOrders.slice(0, 10);
       container.innerHTML = recentCustomerOrders.map(o => {
         const canCancel = o.status === 'في انتظار كابتن' || o.status === 'تم قبول الطلب';
         const isDelivered = o.status === 'مكتمل';
+        const isCancelled = String(o.status || '').includes('ملغي');
+        const isCaptainApology = Boolean(o.adminResolutionNote && String(o.adminResolutionNote).startsWith('اعتذار الكابتن'));
         const canRate = isDelivered && o.rating === null;
-        // بمجرد تقييم الكابتن وتأكيد الاستلام (أو تقديم شكوى سابقة) يختفي زر الشكوى نهائياً
-        const canDispute = isDelivered && o.rating === null && !o.disputeReason && !o.adminResolutionNote;
+        const canDispute = isDelivered && o.rating === null && !o.disputeReason && (!o.adminResolutionNote || isCaptainApology);
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let statusTextForCustomer = o.status;
-        if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو 🛵';
+        if (o.status === 'في انتظار كابتن' && isCaptainApology) statusTextForCustomer = 'الكابتن السابق اعتذر عن المشوار، وطلبك رجع ع الرادار لكابتن تاني فوراً 🔄🛵';
+        else if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو 🛵';
         else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يا نجم العالم وطاير بيه في السكة 🚀';
         else if (o.status === 'الكابتن وصل للتسليم') statusTextForCustomer = 'الكابتن وصل بالمصلحة تحت العنوان وجاهز للتسليم 🔔';
         else if (o.status === 'قيد مراجعة الاعتراض') statusTextForCustomer = 'شكوتك وصلت لغرفة العمليات وجاري مراجعتها وإنصافك فوراً 🛡️';
         else if (o.status === 'تمت التسوية الإدارية') statusTextForCustomer = 'تمت مراجعة شكوتك وتسويتها إدارياً وحقك محفوظ يا باشا ⚖️✅';
-        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${o.discountApplied > 0 ? `<div style="color:var(--success); font-weight:700;">🎁 اتخصملك هدية: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>` : ''}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800;">رد وقرار الإدارة: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
+
+        let discountLineHtml = '';
+        if (o.discountApplied > 0) {
+          if (isCancelled) {
+            discountLineHtml = `<div style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:6px 9px; border-radius:8px; margin-top:4px; font-weight:800;">🔄 اطمن يا باشا: خصمك (${o.discountApplied} ج${o.promoCode ? ` / كود ${escapeHtml(o.promoCode)}` : ''}) رجعلك تاني ولسه معاك لأن الطلب مكتملش 🎁✅</div>`;
+          } else if (o.status === 'في انتظار كابتن' && isCaptainApology) {
+            discountLineHtml = `<div style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:6px 9px; border-radius:8px; margin-top:4px; font-weight:800;">🎁 خصمك (-${o.discountApplied} ج${o.promoCode ? ` شامل كود ${escapeHtml(o.promoCode)}` : ''}) لسه شغال ومحفوظ معاك في الطلب، ولو لغيت الطلب هيرجع لمحفظتك/كودك فوراً ✅</div>`;
+          } else {
+            discountLineHtml = `<div style="color:var(--success); font-weight:700;">🎁 اتخصملك هدية: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>`;
+          }
+        }
+
+        const noteTitleLabel = isCaptainApology ? 'سبب اعتذار الكابتن السابق' : 'رد وقرار الإدارة';
+
+        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${discountLineHtml}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800; margin-top:3px;">${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
       }).join('');
     }
 

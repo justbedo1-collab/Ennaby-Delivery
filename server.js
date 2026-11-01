@@ -34,13 +34,59 @@ try {
 }
 
 // ==========================================
-// 2. إعدادات الحماية والـ Middleware
+// 2. إعدادات الحماية القياسية (Security Headers) ودرع مكافحة الإغراق (Rate Limiting)
 // ==========================================
+const apiRateLimitBuckets = new Map();
+
+function createIpRateLimiter(maxRequests, windowMs, errorMessage) {
+  return (req, res, next) => {
+    try {
+      const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'anon').split(',')[0].trim();
+      const key = `${req.path}:${ip}`;
+      const now = Date.now();
+      const record = apiRateLimitBuckets.get(key);
+
+      if (!record || now - record.start > windowMs) {
+        apiRateLimitBuckets.set(key, { count: 1, start: now });
+        if (apiRateLimitBuckets.size > 3000) {
+          for (const [k, v] of apiRateLimitBuckets.entries()) {
+            if (now - v.start > windowMs) apiRateLimitBuckets.delete(k);
+          }
+        }
+        return next();
+      }
+
+      record.count += 1;
+      if (record.count > maxRequests) {
+        return res.status(429).json({
+          success: false,
+          message: errorMessage || 'طلبات كثيرة متتالية في وقت قصير، يرجى الانتظار دقيقة والمحاولة مجدداً ⏳⚠️'
+        });
+      }
+      next();
+    } catch (e) {
+      next();
+    }
+  };
+}
+
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(self), microphone=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://nominatim.openstreetmap.org https://*.supabase.co wss://*.supabase.co https://unpkg.com https://cdn.jsdelivr.net; frame-ancestors 'self';"
+  );
   next();
 });
+
+// حماية المسارات العامة الحساسة ضد التخمين أو الإغراق الآلي (Bots)
+app.use('/api/promo-codes/validate', createIpRateLimiter(12, 60 * 1000, 'حاولت تجربة أكواد كثيرة بسرعة يا باشا.. انتظر دقيقة وجرب تاني 🎟️⏳'));
+app.use('/api/orders', createIpRateLimiter(15, 60 * 1000, 'تم إرسال طلبات متتالية كثيرة، انتظر لحظات وحاول مجدداً 🛵⏳'));
+app.use('/api/captains/register', createIpRateLimiter(6, 10 * 60 * 1000, 'تم إرسال عدة طلبات تسجيل من نفس الجهاز، يرجى الانتظار قليلاً ⏳'));
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' && process.env.ALLOWED_ORIGIN ? process.env.ALLOWED_ORIGIN : true,
@@ -906,15 +952,21 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
           await supabase.rpc('adjust_customer_wallet_atomic', {
             p_phone: custPhone,
             p_amount: roundMoney(refundWalletAmt),
-            p_reason: `رد تعويض مهلة طلب ${order.id}`
+            p_reason: `رد المبلغ التعويضي لمحفظتك لعدم اكتمال طلب ${order.id}`
           });
         }
         if (meta.promoCode && custPhone) {
           await releasePromoCodeUsageForCancelledOrder(meta.promoCode, custPhone);
         }
+        if (custPhone && (refundWalletAmt > 0 || meta.promoCode)) {
+          sendPushNotificationToPhone(custPhone, {
+            title: `خصمك لسه معاك يا باشا! 🎁✅`,
+            body: `عشان الطلب (${order.id}) مكتملش وعدى وقت الانتظار، رجّعنالك خصمك (${roundMoney(order.discount_applied)} ج) لمحفظتك/كودك تاني تقدر تستخدمه في أي وقت 😎🛵`
+          });
+        }
         notifyAdminsPush('platform', {
           title: `⏳ إلغاء تلقائي لطلب (${order.id})`,
-          body: `تجاوز الطلب مهلة الانتظار (${mins} دقيقة) دون قبول وتم إلغاؤه تلقائياً.`
+          body: `تجاوز الطلب مهلة الانتظار (${mins} دقيقة) دون قبول وتم إلغاؤه تلقائياً ورد خصم العميل.`
         });
       }
       invalidateStateCache();
@@ -2434,7 +2486,8 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
         platform_fee: fee,
         courier_net: courierNet,
         fee_deducted: fee > 0,
-        fee_refunded: false
+        fee_refunded: false,
+        admin_resolution_note: null
       })
       .eq('id', req.params.id)
       .eq('status', 'في انتظار كابتن')
@@ -2680,6 +2733,7 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
     .update({
       status: 'في انتظار كابتن',
       assigned_courier_phone: null,
+      fee_deducted: false,
       fee_refunded: true,
       admin_resolution_note: `اعتذار الكابتن (${req.user.full_name}): ${reason}`
     })
@@ -2705,7 +2759,7 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
     await supabase.rpc('adjust_captain_wallet_atomic', {
       p_phone: req.user.phone,
       p_amount: -Math.abs(roundMoney(order.discount_applied)),
-      p_reason: `استرداد فرق خصم للاعتذار عن طلب ${order.id}`
+      p_reason: `خصم تعويض خصم العميل لعدم اكتمال استلام طلب ${order.id}`
     });
   }
 
@@ -2723,9 +2777,12 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
 
   const custPhone = order.customer_phone || order.client_phone;
   if (custPhone) {
+    const hasDisc = roundMoney(order.discount_applied || 0) > 0;
     sendPushNotificationToPhone(custPhone, {
-      title: `تحديث بخصوص طلبك (${order.id}) 🔄`,
-      body: `اعتذر الكابتن عن استلام الطلب (${reason})، وتمت إعادة طلبك للرادار فوراً لاختيار كابتن آخر 🛵`
+      title: hasDisc ? `تحديث بخصوص طلبك (${order.id}) وخصمك لسه معاك! 🎁🔄` : `تحديث بخصوص طلبك (${order.id}) 🔄`,
+      body: hasDisc
+        ? `اعتذر الكابتن عن استلام الطلب (${reason}) وعاد للرادار لاختيار كابتن آخر.. وخصمك (${roundMoney(order.discount_applied)} ج) لسه محفوظ معاك بالكامل لأن الطلب مكتملش 🛵✅`
+        : `اعتذر الكابتن عن استلام الطلب (${reason})، وتمت إعادة طلبك للرادار فوراً لاختيار كابتن آخر 🛵`
     });
   }
 
@@ -2736,7 +2793,7 @@ app.post('/api/orders/:id/release', authenticateCaptain, async (req, res) => {
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, message: 'تم تسجيل اعتذارك وإبلاغ الإدارة وإعادة الطلب للرادار 🔄', state });
+  res.json({ success: true, message: 'تم تسجيل اعتذارك وخصم تعويض الخصم ورد العمولة وإعادة الطلب للرادار 🔄', state });
 });
 
 app.post('/api/captain/availability', authenticateCaptain, async (req, res) => {
@@ -2772,7 +2829,7 @@ app.post('/api/captain/notices/:noticeId/dismiss', authenticateCaptain, async (r
   res.json({ success: true, state });
 });
 
-// [FIX-06 & NEW-SEC-03] التحقق الصارم من ملكية العميل للطلب عبر كوكي الجلسة قبل الإلغاء
+// [FIX-06 & NEW-SEC-03] التحقق الصارم من ملكية العميل للطلب عبر كوكي الجلسة قبل الإلغاء ورد الخصم والكوبون كاملاً
 app.post('/api/orders/:id/cancel', async (req, res) => {
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
   if (!existing || !['في انتظار كابتن', 'تم قبول الطلب'].includes(existing.status)) {
@@ -2805,7 +2862,7 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
     await supabase.rpc('adjust_customer_wallet_atomic', {
       p_phone: custPhone,
       p_amount: roundMoney(refundWalletAmt),
-      p_reason: `استرداد خصم محفظة لطلب ملغي ${order.id}`
+      p_reason: `رد المبلغ التعويضي لمحفظتك لإلغاء طلب ${order.id}`
     });
   }
 
@@ -2825,12 +2882,20 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
       await supabase.rpc('adjust_captain_wallet_atomic', {
         p_phone: order.assigned_courier_phone,
         p_amount: -Math.abs(roundMoney(order.discount_applied)),
-        p_reason: `إلغاء تعويض خصم لطلب ملغي ${order.id}`
+        p_reason: `خصم تعويض خصم العميل لإلغاء وعدم اكتمال طلب ${order.id}`
       });
     }
     sendPushNotificationToPhone(order.assigned_courier_phone, {
       title: `تم إلغاء الطلب ${order.id} ❌`,
-      body: 'قام العميل بإلغاء الطلب وتم رد العمولة لمحفظتك فوراً ولا يهمك يا بطل 🛵💪'
+      body: 'قام العميل بإلغاء الطلب وتم رد العمولة لمحفظتك وتسوية تعويض الخصم فوراً ولا يهمك يا بطل 🛵💪'
+    });
+  }
+
+  const totalDisc = roundMoney(order.discount_applied || 0);
+  if (custPhone && (totalDisc > 0 || meta.promoCode)) {
+    sendPushNotificationToPhone(custPhone, {
+      title: `خصمك لسه معاك يا باشا! 🎁✅`,
+      body: `لأن الطلب (${order.id}) مكتملش، رجّعنالك خصمك (${totalDisc} ج) لمحفظتك/كودك تاني وجاهز معاك لأي مشوار جاي 😎🛵`
     });
   }
 
@@ -2841,7 +2906,14 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
 
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, message: 'تم الإلغاء ورصيدك وكودك محفوظين يا نجم ✅', state });
+  res.json({
+    success: true,
+    restoredPromoCode: meta.promoCode || null,
+    message: (totalDisc > 0 || meta.promoCode)
+      ? `لغينا الطلب يا باشا، وخصمك (${totalDisc} ج) لسه معاك ورجع لمحفظتك/كودك تاني لأن الطلب مكتملش 🎁✅`
+      : 'خلاص لغينا طلبك يا باشا ✅',
+    state
+  });
 });
 
 // [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل التقييم
@@ -3602,6 +3674,13 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
         fee_refunded: true,
         admin_resolution_note: reason || 'تم إلغاء الطلب بواسطة الإدارة'
       }).eq('id', orderId);
+
+      if (custPhone && (refundWalletAmt > 0 || meta.promoCode)) {
+        sendPushNotificationToPhone(custPhone, {
+          title: `خصمك لسه معاك يا باشا! 🎁✅`,
+          body: `بسبب إلغاء الطلب (${order.id}) وعدم اكتماله، رجّعنالك خصمك (${roundMoney(order.discount_applied)} ج) لمحفظتك/كودك تاني تقدر تستخدمه في أي وقت 😎🛵`
+        });
+      }
     } else if (action === 'resolve_complete') {
       const wasAlreadyCompletedBeforeDispute = (order.status === 'مكتمل' || order.status === 'قيد مراجعة الاعتراض');
       await supabase.from('orders').update({
