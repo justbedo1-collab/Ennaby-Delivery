@@ -2969,7 +2969,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       splash.style.opacity = '0';
       setTimeout(() => splash.remove(), 400); // إزالة العنصر بعد انتهاء تأثير الاختفاء
     }
-  }, 2000); // الشاشة ستستمر لأقل من ثانية ثم تختفي
+  }, 3000); // الشاشة ستستمر لأقل من ثانية ثم تختفي
 
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
       if (STATE.isAppInstalled) reportActualAppInstallOnce();
