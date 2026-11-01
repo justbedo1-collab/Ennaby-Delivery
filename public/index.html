@@ -246,7 +246,23 @@
     <h2 style="color: var(--primary); margin-top: 14px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
     <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
   </div>
+  <!-- شاشة التحميل الموحدة لجميع الهواتف والأجهزة (تظهر من بداية الفتح حتى اكتمال التحميل) -->
+  <div id="ios-splash-screen" style="position: fixed; inset: 0; background: #FAF7F4; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease;">
+    <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 195px; height: 195px; object-fit: contain;">
+    <h2 style="color: var(--primary); margin-top: 14px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
+    <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
+  </div>
 
+  <!-- 🟢 أضف الكود هنا مباشرة تحت شاشة التحميل -->
+  <script>
+    // التحقق الفوري: إذا تم فتح التطبيق مسبقاً في هذه الجلسة، قم بإزالة شاشة التحميل فوراً لمنع ظهورها أثناء التحديثات
+    try {
+      if (sessionStorage.getItem('ENNABY_SPLASH_SHOWN_V1') === '1') {
+        var existingSplash = document.getElementById('ios-splash-screen');
+        if (existingSplash) existingSplash.remove();
+      }
+    } catch (e) {}
+  </script>
 
   <main class="device-container" id="deviceContainer">
     <div class="phone-mockup" id="phoneMockup">
@@ -3000,7 +3016,10 @@ function hideUnifiedSplashScreen() {
       if (!splash) return;
       splash.style.pointerEvents = 'none';
       splash.style.opacity = '0';
-      setTimeout(() => splash.remove(), 300);
+      setTimeout(() => {
+        splash.remove();
+        try { sessionStorage.setItem('ENNABY_SPLASH_SHOWN_V1', '1'); } catch (e) {}
+      }, 300);
     }
 
     async function initApp() {
