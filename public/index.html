@@ -209,19 +209,19 @@
 </head>
 <body>
 
-  <!-- شاشة تحميل مخصصة لتغطي الشاشة البيضاء (خاصة في آبل) -->
-<div id="ios-splash-screen" style="position: fixed; inset: 0; background: var(--bg-canvas); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
-<img src="/icon-512.png" alt="العنابي" style="width: 300px; height: 300px; object-fit: contain; animation: pulse 1.2s infinite;">
-<h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
-<span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الدنيا...</span>
-<style>
-  @keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    50% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(0.95); opacity: 0.8; }
-  }
-</style>
-</div>
+  <!-- شاشة تحميل مخصصة متجاوبة لتغطي الشاشة البيضاء (خاصة في آبل) -->
+  <div id="ios-splash-screen" style="position: fixed; inset: 0; background: var(--bg-canvas); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.35s ease;">
+    <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 240px; max-width: 65vw; height: auto; max-height: 240px; object-fit: contain; animation: pulse 1.2s infinite;">
+    <h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
+    <span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الدنيا...</span>
+    <style>
+      @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.85; }
+        50% { transform: scale(1.03); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.85; }
+      }
+    </style>
+  </div>
 
 
   <main class="device-container" id="deviceContainer">
@@ -838,20 +838,26 @@
           <!-- شاشة تسجيل كابتن جديد -->
           <div id="courierSubView-register" style="display:none;">
             <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
                 <h2 class="card-title" style="margin-bottom:0;" id="regFormHeadingTitle"><i class="fa-solid fa-user-plus"></i> انضم لرجالة العنابي 🛵💨</h2>
-                <button onclick="switchCourierSubView('login')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right"></i> أنا مسجل قبل كدا</button>
+                <button type="button" onclick="switchCourierSubView('login')" style="background:var(--accent); color:var(--primary); border:1.5px solid rgba(123, 63, 82, 0.22); border-radius:50px; padding:6px 13px; font-size:11.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(123, 63, 82, 0.08); transition:all 0.2s ease;">
+                  <i class="fa-solid fa-arrow-right"></i> <span>أنا مسجل قبل كدا</span>
+                </button>
               </div>
               <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">املى بياناتك وصور ورقك والبطاقة بوضوح عشان الإدارة تعتمد حسابك وتنزل الشارع فوراً يا وحش.</p>
-              <!-- إشعار ديناميكي بالمبلغ الترحيبي للكباتن الجدد -->
+              <!-- إشعار الهدية الترحيبية للكباتن الجدد -->
               <div id="regWelcomeBonusBanner" style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:12px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; font-weight:800; color:#1B5E20; line-height:1.6;">
-                🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong id="regWelcomeBonusAmountSpan">7</strong> جنيه هدية ترحيبية في محفظتك فوراً! 🛵💸
+                🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك عمولة اول مشوار في محفظتك فوراً مجاناً! 🛵💸
               </div>
               
               <div class="input-group"><label class="input-label">اسمك ثلاثي زي ما مكتوب في البطاقة *</label><input type="text" id="regFullName" class="input-field" placeholder="اكتب اسمك الثلاثي كامل يا بطل"></div>
               <div class="input-group"><label class="input-label">رقم موبايلك الشخصي اللي شغال *</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regPhone" class="input-field" placeholder="01xxxxxxxxx" maxlength="15"></div>
               <div class="input-group"><label class="input-label">الرقم القومي (الـ 14 رقم) *</label><input type="text" inputmode="numeric" id="regNationalId" class="input-field" maxlength="14" placeholder="اكتب الـ 14 رقم بتوع البطاقة كاملين"></div>
-              <div class="input-group" id="regReferralGroupBox"><label class="input-label" id="regReferralLabelText" style="color:var(--success); font-weight:800;">اكتب رقم موبايل صاحبك اللي قالك علينا (اختياري) 🎁</label><input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15"><small id="regReferralSubHint" style="font-size:10px; color:var(--text-muted);">لو مفيش حد سيبها فاضية عادي (بس مينفعش تكتب رقمك الشخصي 😉)</small></div>
+              <div class="input-group" id="regReferralGroupBox" style="background:linear-gradient(135deg, #F6FBF7, #FFFDF9); border:1.5px dashed #81C784; border-radius:14px; padding:12px; margin-bottom:14px;">
+                <label class="input-label" id="regReferralLabelText" style="color:#1B5E20; font-weight:800; font-size:11.5px; line-height:1.5; margin-bottom:4px; display:block;">اكتب رقم موبايل صاحبك اللي قالك علينا (اختياري) 🎁</label>
+                <input type="tel" inputmode="numeric" autocomplete="tel" id="regReferredByPhone" class="input-field" placeholder="لو مفيش حد متكتبش حاجة هنا" maxlength="15" style="background:#FFFFFF; border-color:#C8E6C9;">
+                <small id="regReferralSubHint" style="font-size:10.5px; color:#5D4037; font-weight:700; margin-top:4px; display:block;">💡 لو مفيش حد سيبها فاضية عادي (بس مينفعش تكتب رقمك الشخصي 😉)</small>
+              </div>
               
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                 <div class="input-group"><label class="input-label" for="regPassword">اعمل باسورد لحسابك *</label><div style="position:relative;"><input type="password" id="regPassword" class="input-field" placeholder="اكتب باسورد تحفظه"><button type="button" onclick="togglePasswordVisibility('regPassword', 'toggleRegPassIcon')" style="position:absolute; left:10px; top:11px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-eye" id="toggleRegPassIcon"></i></button></div></div>
@@ -2829,7 +2835,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const activeBadge = document.getElementById('courNavActiveBadge'); if (activeBadge) { activeBadge.innerText = activeMine.length; activeBadge.style.display = activeMine.length > 0 ? 'flex' : 'none'; }
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:24px 16px; color:var(--text-muted);" class="card">لسه مفيش مشاوير في سجلك يا بطل.. اقبل أول أوردر من الرادار وطير بيه! 🛵💨</div>`; return; }
       
-      container.innerHTML = myOrders.map(o => {
+      // عرض آخر 10 طلبات فقط لتخفيف التحميل داخل الصفحة
+      const recentCourierOrders = myOrders.slice(0, 10);
+      container.innerHTML = recentCourierOrders.map(o => {
         const isFetch = o.tripType === 'fetch'; 
         const isActive = ACTIVE_COURIER_STATUSES.includes(o.status); 
         const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'; 
@@ -2853,7 +2861,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && !String(o.status || '').includes('ملغي')).length;
       if (badgeEl) { badgeEl.innerText = activeCount; badgeEl.style.display = activeCount > 0 ? 'flex' : 'none'; }
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
-      container.innerHTML = myOrders.map(o => {
+      // عرض آخر 10 طلبات فقط لتخفيف التحميل داخل الصفحة
+      const recentCustomerOrders = myOrders.slice(0, 10);
+      container.innerHTML = recentCustomerOrders.map(o => {
         const canCancel = o.status === 'في انتظار كابتن' || o.status === 'تم قبول الطلب';
         const isDelivered = o.status === 'مكتمل';
         const canRate = isDelivered && o.rating === null;
@@ -2962,14 +2972,15 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     }
 
     async function initApp() {
-      // إخفاء شاشة التحميل المخصصة بعد اكتمال فتح التطبيق
-  setTimeout(() => {
-    const splash = document.getElementById('ios-splash-screen');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(() => splash.remove(), 400); // إزالة العنصر بعد انتهاء تأثير الاختفاء
-    }
-  }, 3000); // الشاشة ستستمر لأقل من ثانية ثم تختفي
+      // إخفاء شاشة التحميل المخصصة بسلاسة وسرعة دون حجب اللمس
+      setTimeout(() => {
+        const splash = document.getElementById('ios-splash-screen');
+        if (splash) {
+          splash.style.pointerEvents = 'none';
+          splash.style.opacity = '0';
+          setTimeout(() => splash.remove(), 350);
+        }
+      }, 1000);
 
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
       if (STATE.isAppInstalled) reportActualAppInstallOnce();
