@@ -1135,7 +1135,7 @@
       if(s==='في انتظار كابتن')return'badge-pending'; if(s==='تم قبول الطلب')return'badge-accepted';
       if(s==='الكابتن وصل للاستلام'||s==='استلم الطرد وفي السكة')return'badge-delivering';
       if(s==='الكابتن وصل للتسليم')return'badge-awaiting'; if(s==='قيد مراجعة الاعتراض')return'badge-disputed';
-      if(s==='مكتمل' || s==='معتمد')return'badge-completed'; return String(s||'').includes('ملغي') || s==='مرفوض' || s==='موقوف' ?'badge-rejected':'badge-pending';
+      if(s==='مكتمل' || s==='معتمد' || s==='تمت التسوية الإدارية')return'badge-completed'; return String(s||'').includes('ملغي') || s==='مرفوض' || s==='موقوف' ?'badge-rejected':'badge-pending';
     }
 
     function getActiveAdmin() {

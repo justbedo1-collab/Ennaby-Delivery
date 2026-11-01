@@ -1894,7 +1894,7 @@ app.post('/api/auth/customer/login', async (req, res) => {
     const rateLimit = await checkRateLimit(phone);
     if (rateLimit.locked) return res.status(403).json({ success: false, message: rateLimit.message });
 
-    let { data: user } = await supabase.from('customers').select('*').ilike('phone', `%${phone}%`).maybeSingle();
+    let { data: user } = await supabase.from('customers').select('*').eq('phone', phone).maybeSingle();
 
     if (!user) {
       const hashedPin = await bcrypt.hash(cleanPin, 10);
