@@ -1299,7 +1299,7 @@ async function buildClientState(req, forceRefresh = false) {
       } else if (isAssignedCap || isWaitingRadar) {
         if (!seenIds.has(o.id)) {
           seenIds.add(o.id);
-          const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || String(o.status || '').includes('ملغي');
+          const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي');
           const hidePhonesForCap = isWaitingRadar || isFinished;
           filteredOrders.push(hidePhonesForCap ? {
             ...o,
@@ -3524,7 +3524,7 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
     const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).maybeSingle();
     if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
 
-    const isAlreadyCancelled = String(order.status || '').includes('ملغي');
+    const isAlreadyCancelled = String(order.status || '').includes('ملغي') || order.status === 'تمت التسوية الإدارية';
     if ((action === 'cancel' || action === 'resolve_cancel' || action === 'radar') && isAlreadyCancelled) {
       return res.status(400).json({ success: false, message: 'الطلب ملغي بالفعل مسبقاً ⚠️' });
     }

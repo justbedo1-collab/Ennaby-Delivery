@@ -240,26 +240,17 @@
 </head>
 <body>
 
-  <!-- شاشة التحميل الموحدة لجميع الهواتف والأجهزة (تظهر من بداية الفتح حتى اكتمال التحميل) -->
+  <!-- شاشة التحميل الموحدة لجميع الهواتف والأجهزة (نسخة واحدة فقط تظهر عند بداية الفتح) -->
   <div id="ios-splash-screen" style="position: fixed; inset: 0; background: #FAF7F4; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease;">
     <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 195px; height: 195px; object-fit: contain;">
     <h2 style="color: var(--primary); margin-top: 14px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
     <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
   </div>
-  <!-- شاشة التحميل الموحدة لجميع الهواتف والأجهزة (تظهر من بداية الفتح حتى اكتمال التحميل) -->
-  <div id="ios-splash-screen" style="position: fixed; inset: 0; background: #FAF7F4; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease;">
-    <img src="/icon-512.png" onerror="this.onerror=null; this.src='/icon-192.png';" alt="الرجل العنابي" style="width: 195px; height: 195px; object-fit: contain;">
-    <h2 style="color: var(--primary); margin-top: 14px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
-    <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
-  </div>
-
-  <!-- 🟢 أضف الكود هنا مباشرة تحت شاشة التحميل -->
   <script>
-    // التحقق الفوري: إذا تم فتح التطبيق مسبقاً في هذه الجلسة، قم بإزالة شاشة التحميل فوراً لمنع ظهورها أثناء التحديثات
+    // إذا تم عرض شاشة التحميل مسبقاً في هذه الجلسة، يتم إزالتها فوراً لمنع تكرارها
     try {
       if (sessionStorage.getItem('ENNABY_SPLASH_SHOWN_V1') === '1') {
-        var existingSplash = document.getElementById('ios-splash-screen');
-        if (existingSplash) existingSplash.remove();
+        document.querySelectorAll('#ios-splash-screen').forEach(function (el) { el.remove(); });
       }
     } catch (e) {}
   </script>
@@ -1481,7 +1472,7 @@
         case 'الكابتن وصل للاستلام': case 'استلم الطرد وفي السكة': return 'badge-delivering';
         case 'الكابتن وصل للتسليم': return 'badge-awaiting';
         case 'قيد مراجعة الاعتراض': return 'badge-disputed';
-        case 'مكتمل': return 'badge-completed';
+        case 'مكتمل': case 'تمت التسوية الإدارية': return 'badge-completed';
         default: return String(status || '').includes('ملغي') ? 'badge-rejected' : 'badge-pending';
       }
     }
@@ -2819,7 +2810,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           }
         }
         const badgeEl = document.getElementById('courierStatusBadgeDisplay'); if (badgeEl) { badgeEl.innerText = courier.status === 'معتمد' ? 'معتمد ✅' : courier.status; badgeEl.className = `badge ${courier.status === 'معتمد' ? 'badge-verified' : (courier.status === 'موقوف' ? 'badge-rejected' : 'badge-review')}`; }
-        const mineCompleted = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'));
+        const mineCompleted = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية'));
         const mineCancelled = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone && String(o.status || '').includes('ملغي'));
         const currentNet = roundMoney(mineCompleted.reduce((sum, o) => sum + (Number(o.courierNet) || 0), 0));
         const lifetimeCompTotal = (Number(courier.lifetimeCompleted) || 0) + mineCompleted.length; const lifetimeCancTotal = (Number(courier.lifetimeCancelled) || 0) + mineCancelled.length; const lifetimeNetTotal = roundMoney((Number(courier.lifetimeNetEarnings) || 0) + currentNet);
@@ -2880,7 +2871,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       container.innerHTML = recentCourierOrders.map(o => {
         const isFetch = o.tripType === 'fetch'; 
         const isActive = ACTIVE_COURIER_STATUSES.includes(o.status); 
-        const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض'; 
+        const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية'; 
         const isCancelled = String(o.status || '').includes('ملغي'); 
         const hidePhones = isDelivered || isCancelled; 
         const sender = escapeHtml(o.senderPhone); 
@@ -2898,7 +2889,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function renderCustomerOrdersList() {
       const container = document.getElementById('customerOrdersList'); const badgeEl = document.getElementById('custNavBadge'); if (!container) return;
       const sPhone = STATE.customerProfile.savedPhone; const myOrders = sPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === sPhone) : [];
-      const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && !String(o.status || '').includes('ملغي')).length;
+      const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && o.status !== 'تمت التسوية الإدارية' && !String(o.status || '').includes('ملغي')).length;
       if (badgeEl) { badgeEl.innerText = activeCount; badgeEl.style.display = activeCount > 0 ? 'flex' : 'none'; }
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
       // عرض آخر 10 طلبات فقط لتخفيف التحميل داخل الصفحة
@@ -2914,6 +2905,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو 🛵';
         else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يا نجم العالم وطاير بيه في السكة 🚀';
         else if (o.status === 'الكابتن وصل للتسليم') statusTextForCustomer = 'الكابتن وصل بالمصلحة تحت العنوان وجاهز للتسليم 🔔';
+        else if (o.status === 'قيد مراجعة الاعتراض') statusTextForCustomer = 'شكوتك وصلت لغرفة العمليات وجاري مراجعتها وإنصافك فوراً 🛡️';
+        else if (o.status === 'تمت التسوية الإدارية') statusTextForCustomer = 'تمت مراجعة شكوتك وتسويتها إدارياً وحقك محفوظ يا باشا ⚖️✅';
         return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${o.discountApplied > 0 ? `<div style="color:var(--success); font-weight:700;">🎁 اتخصملك هدية: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>` : ''}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800;">رد وقرار الإدارة: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
       }).join('');
     }
@@ -2921,7 +2914,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function renderCourierFeed() {
       const container = document.getElementById('courierOrdersFeed'); const courier = getActiveCourier(); if (!courier || !container) return;
       const currentActiveOrder = getCourierActiveOrder(courier.phone); const waiting = STATE.orders.filter(o => o.status === 'في انتظار كابتن'); const canSeeRadar = courier.isAvailable || courier.status === 'قيد المراجعة' || courier.status === 'موقوف';
-      const visible = STATE.orders.filter(o => { if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || String(o.status || '').includes('ملغي')) return false; return (o.status === 'في انتظار كابتن' && canSeeRadar) || o.assignedCourierPhone === courier.phone; });
+      const visible = STATE.orders.filter(o => { if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي')) return false; return (o.status === 'في انتظار كابتن' && canSeeRadar) || o.assignedCourierPhone === courier.phone; });
       const availCount = canSeeRadar ? waiting.length : 0; const availBadge = document.getElementById('availableOrdersBadge'); if (availBadge) availBadge.innerText = `${availCount} متاح`;
       const navRadarBadge = document.getElementById('courNavRadarBadge'); if (navRadarBadge) { navRadarBadge.innerText = availCount; navRadarBadge.style.display = availCount > 0 ? 'flex' : 'none'; }
       if (visible.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">مفيش أوردرات على الرادار دلوقتي يا بطل.. خليك مستعد! 📡</div>`; return; }
@@ -3012,13 +3005,16 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     }
 
 function hideUnifiedSplashScreen() {
-      const splash = document.getElementById('ios-splash-screen');
-      if (!splash) return;
-      splash.style.pointerEvents = 'none';
-      splash.style.opacity = '0';
+      const splashes = document.querySelectorAll('#ios-splash-screen');
+      if (!splashes.length) return;
+      splashes.forEach(splash => {
+        splash.style.pointerEvents = 'none';
+        splash.style.opacity = '0';
+      });
       setTimeout(() => {
-        splash.remove();
+        splashes.forEach(splash => splash.remove());
         try { sessionStorage.setItem('ENNABY_SPLASH_SHOWN_V1', '1'); } catch (e) {}
+        if (customerInlineMap) customerInlineMap.invalidateSize();
       }, 300);
     }
 
