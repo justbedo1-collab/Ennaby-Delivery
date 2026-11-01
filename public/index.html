@@ -32,9 +32,6 @@
   <!-- أيقونة التطبيق التي ستظهر على شاشة آيفون الرئيسية -->
   <link rel="apple-touch-icon" href="/icon-192.png">
 
-  <!-- صورة شاشة التحميل (Splash Screen) لمنع ظهور الشاشة البيضاء -->
-  <link rel="apple-touch-startup-image" href="/icon-512.png">
-
   <!-- تسجيل المشغل الخلفي (Service Worker) -->
   <script>
     if ('serviceWorker' in navigator) {
@@ -215,8 +212,8 @@
   <!-- شاشة تحميل مخصصة لتغطي الشاشة البيضاء (خاصة في آبل) -->
 <div id="ios-splash-screen" style="position: fixed; inset: 0; background: var(--bg-canvas); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
 <img src="/icon-512.png" alt="العنابي" style="width: 180px; height: 180px; object-fit: contain; animation: pulse 1.2s infinite;">
-<h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">الرجل العنابي 🛵</h2>
-<span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الميدان...</span>
+<h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">جارى التحميل ... 🛵</h2>
+<span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الدنيا...</span>
 <style>
   @keyframes pulse {
     0% { transform: scale(0.95); opacity: 0.8; }
