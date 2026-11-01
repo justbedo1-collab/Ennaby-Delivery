@@ -214,7 +214,7 @@
 
   <!-- شاشة تحميل مخصصة لتغطي الشاشة البيضاء (خاصة في آبل) -->
 <div id="ios-splash-screen" style="position: fixed; inset: 0; background: var(--bg-canvas); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
-<img src="/icon-512.png" alt="العنابي" style="width: 110px; height: 110px; object-fit: contain; animation: pulse 1.2s infinite;">
+<img src="/icon-512.png" alt="العنابي" style="width: 512px; height: 512px; object-fit: contain; animation: pulse 1.2s infinite;">
 <h2 style="color: var(--primary); margin-top: 15px; font-weight: 900; font-size: 18px;">الرجل العنابي 🛵</h2>
 <span style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">ثواني وبنجهزلك الميدان...</span>
 <style>
@@ -2972,8 +2972,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       splash.style.opacity = '0';
       setTimeout(() => splash.remove(), 400); // إزالة العنصر بعد انتهاء تأثير الاختفاء
     }
-  }, 700); // الشاشة ستستمر لأقل من ثانية ثم تختفي
-  
+  }, 2000); // الشاشة ستستمر لأقل من ثانية ثم تختفي
+
       if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
       if (STATE.isAppInstalled) reportActualAppInstallOnce();
       setupDelegatedEvents(); populateAllZoneDropdowns();
