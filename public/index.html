@@ -611,20 +611,20 @@
             </div>
           </div>
           <div id="custTab-profile" class="sub-tab-section" style="display:none;">
-            <div class="card" style="text-align:center; padding:16px 14px;">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; text-align:right;">
-                <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-                  <div style="width:46px; height:46px; background:var(--accent); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; box-shadow:0 2px 6px rgba(123,63,82,0.1);">
+            <div class="card" style="padding:15px 14px;">
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; gap:12px; text-align:right; width:100%;">
+                  <div style="width:48px; height:48px; background:var(--accent); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; box-shadow:0 2px 8px rgba(123,63,82,0.12);">
                     <i class="fa-solid fa-crown"></i>
                   </div>
-                  <div style="min-width:0; flex:1;">
-                    <h3 style="font-size:14.5px; font-weight:900; line-height:1.35; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
-                    <p style="font-size:11.5px; color:var(--text-muted); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:5px; flex-wrap:wrap;" id="custDisplayPhone">لسه مربطتش رقم موبايلك • المنصورة</p>
+                  <div style="flex:1; min-width:0;">
+                    <h3 style="font-size:15.5px; font-weight:900; line-height:1.4; color:var(--primary); word-break:keep-all;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
+                    <p style="font-size:12px; color:var(--text-muted); font-weight:700; margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;" id="custDisplayPhone">لسه مربطتش رقم موبايلك • المنصورة</p>
                   </div>
                 </div>
-                <button type="button" id="toggleCustSyncFormBtn" onclick="toggleCustomerSyncFormBox()" style="display:none; align-items:center; justify-content:center; gap:6px; background:#FAF4F6; color:var(--primary); border:1.5px solid rgba(123, 63, 82, 0.22); border-radius:50px; padding:7px 13px; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap; flex-shrink:0; box-shadow:0 2px 6px rgba(123, 63, 82, 0.08); transition:all 0.2s ease;">
+                <button type="button" id="toggleCustSyncFormBtn" onclick="toggleCustomerSyncFormBox()" style="display:none; width:100%; align-items:center; justify-content:center; gap:6px; background:#FAF4F6; color:var(--primary); border:1.5px solid rgba(123, 63, 82, 0.2); border-radius:11px; padding:7px 14px; font-size:11.5px; font-weight:800; cursor:pointer; transition:all 0.2s ease;">
                   <i class="fa-solid fa-rotate" style="font-size:11px;"></i>
-                  <span>تبديل الحساب</span>
+                  <span>تبديل الحساب أو فتح رقم تاني</span>
                 </button>
               </div>
 
@@ -920,7 +920,21 @@
                 </div>
               </div>
 
-              <!-- 3. كارت مستوى الكابتن الحالي والتفاصيل الكاملة للتارجت -->
+              <!-- 3. كارت كشف حساب المحفظة أسفل كارت المحفظة مباشرة -->
+              <div class="card" style="padding: 13px;">
+                <div onclick="const box=document.getElementById('courierWalletTransactionsList'); const ic=document.getElementById('courWalletLogArrow'); if(box){ const isHidden=box.style.display==='none'; box.style.display=isHidden?'flex':'none'; if(ic) ic.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
+                  <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="background:var(--accent); color:var(--primary); padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800;">عرض الكشف (آخر 10)</span>
+                    <i id="courWalletLogArrow" class="fa-solid fa-chevron-down" style="font-size:12px; color:var(--primary); transition:transform 0.2s ease;"></i>
+                  </div>
+                </div>
+                <div id="courierWalletTransactionsList" class="wallet-log-scroll-box" style="display:none; margin-top:10px;">
+                  <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
+                </div>
+              </div>
+
+              <!-- 4. كارت مستوى الكابتن الحالي والتفاصيل الكاملة للتارجت -->
               <div class="card" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F4FAFF); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#01579B; margin:0;"><i class="fa-solid fa-medal"></i> مستواك الحالي في العنابي</h3>
@@ -937,20 +951,6 @@
                 <button type="button" class="btn-secondary" style="width:100%; padding:8px; font-size:11.5px; background:#E1F5FE; color:#01579B;" onclick="openCaptainTiersModal()">
                   <i class="fa-solid fa-circle-info"></i> اعرف شروط المستويات وخصم العمولة 🥉🥈💎
                 </button>
-              </div>
-
-              <!-- 4. كارت كشف حساب المحفظة القابل للفتح والطي بالضغط مثل حساب العميل -->
-              <div class="card" style="padding: 13px;">
-                <div onclick="const box=document.getElementById('courierWalletTransactionsList'); const ic=document.getElementById('courWalletLogArrow'); if(box){ const isHidden=box.style.display==='none'; box.style.display=isHidden?'flex':'none'; if(ic) ic.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
-                  <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
-                  <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="background:var(--accent); color:var(--primary); padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800;">عرض الكشف (آخر 10)</span>
-                    <i id="courWalletLogArrow" class="fa-solid fa-chevron-down" style="font-size:12px; color:var(--primary); transition:transform 0.2s ease;"></i>
-                  </div>
-                </div>
-                <div id="courierWalletTransactionsList" class="wallet-log-scroll-box" style="display:none; margin-top:10px;">
-                  <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
-                </div>
               </div>
 
               <!-- 5. برنامج دعوة صحابك الكباتن -->
