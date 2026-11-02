@@ -692,21 +692,21 @@
                 <div class="switch-wrapper" style="padding:0 0 8px 0; background:transparent; border-bottom:1px dashed #C8E6C9; margin-bottom:10px;">
                   <div>
                     <strong style="font-size:12.5px; color:var(--primary); display:block;">🎁 المبلغ الترحيبي للكباتن الجدد</strong>
-                    <small style="font-size:10.5px; color:var(--text-muted);">يُصرف تلقائياً فور اعتماد الإدارة للكابتن لأول مرة</small>
+                    <small style="font-size:10.5px; color:var(--text-muted);">يُصرف تلقائياً في محفظة الكابتن فور اعتماد الإدارة لحسابه لأول مرة</small>
                   </div>
                   <label class="switch">
                     <input type="checkbox" id="adminWelcomeBonusSwitch" checked onchange="adminSaveIncentivesSettings('welcome')">
                     <span class="slider"></span>
                   </label>
                 </div>
-                <label class="input-label" style="margin-bottom:4px; display:block;">قيمة الهدية الترحيبية (بالجنيه):</label>
+                <label class="input-label" for="adminWelcomeBonusAmountInput" style="margin-bottom:4px; display:block; color:#1B5E20; font-weight:800;">💵 قيمة الهدية الترحيبية للكابتن الجديد (بالجنيه):</label>
                 <div class="inline-action-row">
-                  <input type="number" id="adminWelcomeBonusAmountInput" class="input-field" placeholder="7" min="0" oninput="updateIncentivesLivePreview()">
+                  <input type="number" id="adminWelcomeBonusAmountInput" class="input-field" placeholder="7" min="0" oninput="markAdminIncentivesDirty(); updateIncentivesLivePreview()">
                   <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('welcome')">
                     <i class="fa-solid fa-check"></i> حفظ المبلغ
                   </button>
                 </div>
-                <div id="adminWelcomePreviewNotice" style="margin-top:8px; background:#E8F5E9; border:1px dashed #2E7D32; padding:8px 10px; border-radius:10px; font-size:11px; color:#1B5E20; font-weight:700; line-height:1.5;"></div>
+                <div id="adminWelcomePreviewNotice" style="margin-top:8px; background:#E8F5E9; border:1px dashed #2E7D32; padding:8px 10px; border-radius:10px; font-size:11px; color:#1B5E20; font-weight:700; line-height:1.55;"></div>
               </div>
 
               <!-- 2. التحكم في برنامج دعوة الأصدقاء (الإحالات + عدد المشاوير المطلوبة ديناميكياً) -->
@@ -714,7 +714,7 @@
                 <div class="switch-wrapper" style="padding:0 0 8px 0; background:transparent; border-bottom:1px dashed #C8E6C9; margin-bottom:10px;">
                   <div>
                     <strong style="font-size:12.5px; color:#1B5E20; display:block;">🤝 برنامج دعوة الأصدقاء (الإحالات)</strong>
-                    <small style="font-size:10.5px; color:var(--text-muted);">تحكم في قيمة المكافأة وعدد المشاوير المطلوبة من الكابتن الجديد</small>
+                    <small style="font-size:10.5px; color:var(--text-muted);">يتغير عدد المشاوير وقيمة المكافأة أوتوماتيكياً في إشعارات الكابتن فور الحفظ</small>
                   </div>
                   <label class="switch">
                     <input type="checkbox" id="adminReferralRewardSwitch" checked onchange="adminSaveIncentivesSettings('referral')">
@@ -723,34 +723,107 @@
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
                   <div>
-                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">قيمة الهدية (بالجنيه) 💸:</label>
-                    <input type="number" id="adminReferralRewardAmountInput" class="input-field" placeholder="50" min="0" oninput="updateIncentivesLivePreview()">
+                    <label class="input-label" for="adminReferralRewardAmountInput" style="font-size:11px; font-weight:800; color:#1B5E20; margin-bottom:4px; display:block;">قيمة الهدية (بالجنيه) 💸:</label>
+                    <input type="number" id="adminReferralRewardAmountInput" class="input-field" placeholder="50" min="0" oninput="markAdminIncentivesDirty(); updateIncentivesLivePreview()">
                   </div>
                   <div>
-                    <label class="input-label" style="font-size:10.5px; margin-bottom:3px; display:block;">عدد المشاوير المطلوبة 🛵:</label>
-                    <input type="number" id="adminReferralRequiredOrdersInput" class="input-field" placeholder="2" min="1" oninput="updateIncentivesLivePreview()">
+                    <label class="input-label" for="adminReferralRequiredOrdersInput" style="font-size:11px; font-weight:800; color:#1B5E20; margin-bottom:4px; display:block;">عدد المشاوير المطلوبة 🛵:</label>
+                    <input type="number" id="adminReferralRequiredOrdersInput" class="input-field" placeholder="2" min="1" oninput="markAdminIncentivesDirty(); updateIncentivesLivePreview()">
                   </div>
                 </div>
                 <button type="button" class="btn-main" style="background:var(--success); padding:10px; font-size:12px;" onclick="adminSaveIncentivesSettings('referral')">
-                  <i class="fa-solid fa-check"></i> حفظ المكافأة وعدد المشاوير
+                  <i class="fa-solid fa-check"></i> حفظ المكافأة وعدد المشاوير وتحديث إشعار الكابتن
                 </button>
-                <div id="adminReferralPreviewNotice" style="margin-top:8px; background:#FFFDE7; border:1px dashed #FBC02D; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; font-weight:700; line-height:1.5;"></div>
+                <div id="adminReferralPreviewNotice" style="margin-top:8px; background:#FFFDE7; border:1px dashed #FBC02D; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; font-weight:700; line-height:1.6;"></div>
               </div>
             </div>
 
-            <div class="card" id="admCard-loyaltyPoints" style="border: 2px dashed var(--primary);">
-              <h2 class="card-title">🍇 عنابي بوينتس والمكافآت</h2>
-              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:10px;">
-                <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">👑 مكافآت العملاء:</strong>
-                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCustPointsPerOrderInput" class="input-field" placeholder="النقاط للمشوار"><button class="btn-main" onclick="adminSaveLoyaltyField('customerPointsPerOrder', 'adminCustPointsPerOrderInput')">حفظ</button></div>
-                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCustPointsTargetInput" class="input-field" placeholder="الحد المطلوب للمكافأة"><button class="btn-main" onclick="adminSaveLoyaltyField('customerRewardThreshold', 'adminCustPointsTargetInput')">حفظ</button></div>
-                <div class="inline-action-row"><input type="number" id="adminCustRewardAmountInput" class="input-field" placeholder="قيمة المكافأة النقدية"><button class="btn-main" onclick="adminSaveLoyaltyField('customerRewardCash', 'adminCustRewardAmountInput')">حفظ</button></div>
+            <!-- كارت نظام عنابي بوينتس والمكافآت مع شرح تفصيلي واضح لكل خانة ومعاينة حية للمعادلة -->
+            <div class="card" id="admCard-loyaltyPoints" style="border: 2px dashed var(--primary); background: #FFFDFD;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h2 class="card-title" style="margin:0;">🍇 عنابي بوينتس والمكافآت (نظام الولاء)</h2>
+                <span class="badge badge-completed">صرف أوتوماتيكي ⚡</span>
               </div>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.55;">
+                نظام مكافآت ذكي يمنح العميل والكابتن نقاطاً تلقائية مع كل مشوار مكتمل، وبمجرد وصول الرصيد للحد المطلوب (التارجت) يحولها النظام تلقائياً إلى رصيد كاش في المحفظة!
+              </p>
+
+              <!-- أ) قسم مكافآت العملاء -->
+              <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0; margin-bottom:12px;">
+                <strong style="font-size:13px; color:var(--primary); display:flex; align-items:center; gap:6px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed #E2D5DA;">
+                  <i class="fa-solid fa-crown"></i> أولاً: إعدادات نقاط ومكافآت العملاء 👑
+                </strong>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCustPointsPerOrderInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    1️⃣ نقاط المشوار الواحد (كم نقطة يكسبها العميل بعد كل طلب مكتمل؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCustPointsPerOrderInput" class="input-field" placeholder="مثال: 5" min="1" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('customerPointsPerOrder', 'adminCustPointsPerOrderInput')">حفظ النقاط</button>
+                  </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCustPointsTargetInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    2️⃣ تارجت النقاط للصرف (كم نقطة يجب أن يجمعها العميل ليفوز بالمكافأة؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCustPointsTargetInput" class="input-field" placeholder="مثال: 100" min="5" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('customerRewardThreshold', 'adminCustPointsTargetInput')">حفظ التارجت</button>
+                  </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCustRewardAmountInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    3️⃣ قيمة المكافأة النقدية بالجنيه (كم جنيهاً ينزل في محفظة العميل عند تحقيق التارجت؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCustRewardAmountInput" class="input-field" placeholder="مثال: 10" min="1" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('customerRewardCash', 'adminCustRewardAmountInput')">حفظ المكافأة</button>
+                  </div>
+                </div>
+
+                <div id="adminCustLoyaltyLivePreview" style="background:#FFF9C4; border:1px dashed #FBC02D; border-radius:10px; padding:8px 10px; font-size:11px; color:#5D4037; font-weight:800; line-height:1.55;"></div>
+              </div>
+
+              <!-- ب) قسم مكافآت الكباتن -->
               <div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0;">
-                <strong style="font-size:12.5px; color:var(--primary); display:block; margin-bottom:8px;">🛵 مكافآت الكباتن:</strong>
-                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCourPointsPerOrderInput" class="input-field" placeholder="النقاط للمشوار"><button class="btn-main" onclick="adminSaveLoyaltyField('courierPointsPerOrder', 'adminCourPointsPerOrderInput')">حفظ</button></div>
-                <div class="inline-action-row" style="margin-bottom:6px;"><input type="number" id="adminCourPointsTargetInput" class="input-field" placeholder="الحد المطلوب للمكافأة"><button class="btn-main" onclick="adminSaveLoyaltyField('courierRewardThreshold', 'adminCourPointsTargetInput')">حفظ</button></div>
-                <div class="inline-action-row"><input type="number" id="adminCourRewardAmountInput" class="input-field" placeholder="قيمة المكافأة النقدية"><button class="btn-main" onclick="adminSaveLoyaltyField('courierRewardCash', 'adminCourRewardAmountInput')">حفظ</button></div>
+                <strong style="font-size:13px; color:#01579B; display:flex; align-items:center; gap:6px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed #B3E5FC;">
+                  <i class="fa-solid fa-motorcycle"></i> ثانياً: إعدادات نقاط ومكافآت الكباتن 🛵
+                </strong>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCourPointsPerOrderInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    1️⃣ نقاط المشوار الواحد (كم نقطة يكسبها الكابتن بعد كل أوردر يسلمه؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCourPointsPerOrderInput" class="input-field" placeholder="مثال: 5" min="1" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('courierPointsPerOrder', 'adminCourPointsPerOrderInput')">حفظ النقاط</button>
+                  </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCourPointsTargetInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    2️⃣ تارجت النقاط للصرف (كم نقطة يجب أن يجمعها الكابتن ليفوز بالمكافأة؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCourPointsTargetInput" class="input-field" placeholder="مثال: 100" min="5" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('courierRewardThreshold', 'adminCourPointsTargetInput')">حفظ التارجت</button>
+                  </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" for="adminCourRewardAmountInput" style="color:var(--text-main); font-weight:800; font-size:11.5px;">
+                    3️⃣ قيمة المكافأة النقدية بالجنيه (كم جنيهاً ينزل في محفظة الكابتن عند تحقيق التارجت؟):
+                  </label>
+                  <div class="inline-action-row">
+                    <input type="number" id="adminCourRewardAmountInput" class="input-field" placeholder="مثال: 10" min="1" oninput="markAdminIncentivesDirty(); updateLoyaltyLivePreview()">
+                    <button type="button" class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveLoyaltyField('courierRewardCash', 'adminCourRewardAmountInput')">حفظ المكافأة</button>
+                  </div>
+                </div>
+
+                <div id="adminCourLoyaltyLivePreview" style="background:#E1F5FE; border:1px dashed #0288D1; border-radius:10px; padding:8px 10px; font-size:11px; color:#01579B; font-weight:800; line-height:1.55;"></div>
               </div>
             </div>
 
@@ -2245,12 +2318,18 @@
       });
     }
 
+    let adminIncentivesDirtyUntil = 0;
+    function markAdminIncentivesDirty() {
+      adminIncentivesDirtyUntil = Date.now() + 15000;
+    }
+
     function updateIncentivesLivePreview() {
       const wActive = Boolean(document.getElementById('adminWelcomeBonusSwitch')?.checked);
       const wAmt = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
       const rActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
       const rAmt = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
-      const rReqTrips = Math.max(1, Number(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2));
+      const rawTripsVal = normalizeDigits(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2).trim();
+      const rReqTrips = Math.max(1, parseInt(rawTripsVal, 10) || 2);
       const tripsTextAr = formatArabicTripsCount(rReqTrips);
 
       const wPreview = document.getElementById('adminWelcomePreviewNotice');
@@ -2259,7 +2338,7 @@
           wPreview.style.background = '#E8F5E9';
           wPreview.style.color = '#1B5E20';
           wPreview.style.borderColor = '#2E7D32';
-          wPreview.innerText = `📢 معاينة الإشعار للكابتن الجديد: «🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك عمولة اول مشوار في محفظتك فوراً مجاناً! 🛵💸»`;
+          wPreview.innerHTML = `📢 <strong>معاينة الإشعار للكابتن الجديد:</strong><br>«🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong>${wAmt} جنيه</strong> هدية ترحيبية في محفظتك فوراً مجاناً! 🛵💸»`;
         } else {
           wPreview.style.background = '#FFEBEE';
           wPreview.style.color = '#B71C1C';
@@ -2274,7 +2353,7 @@
           rPreview.style.background = '#FFFDE7';
           rPreview.style.color = '#5D4037';
           rPreview.style.borderColor = '#FBC02D';
-          rPreview.innerText = `📢 معاينة الإشعار في حساب الكابتن: «ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل ${tripsTextAr} هيجيلك ${rAmt} جنيه هدية في محفظتك 😎🛵»`;
+          rPreview.innerHTML = `📢 <strong>معاينة الإشعار في حساب الكابتن والرادار:</strong><br>«ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل <strong>${tripsTextAr}</strong> هيجيلك <strong>${rAmt} جنيه هدية</strong> في محفظتك 😎🛵»`;
         } else {
           rPreview.style.background = '#FFEBEE';
           rPreview.style.color = '#B71C1C';
@@ -2284,14 +2363,38 @@
       }
     }
 
+    function updateLoyaltyLivePreview() {
+      const cPts = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminCustPointsPerOrderInput')?.value || 5), 10) || 5);
+      const cTarget = Math.max(5, parseInt(normalizeDigits(document.getElementById('adminCustPointsTargetInput')?.value || 100), 10) || 100);
+      const cCash = Math.max(1, roundMoney(document.getElementById('adminCustRewardAmountInput')?.value || 10));
+      const cOrdersNeeded = Math.max(1, Math.ceil(cTarget / cPts));
+
+      const custBox = document.getElementById('adminCustLoyaltyLivePreview');
+      if (custBox) {
+        custBox.innerHTML = `📢 <strong>معاينة القاعدة للعميل:</strong> كل مشوار مكتمل يمنح العميل <strong>(${cPts} نقط)</strong> ⬅️ وعند تجميع <strong>(${cTarget} نقطة)</strong> — أي بعد إتمام <strong>${cOrdersNeeded} مشوار</strong> — ينزل في محفظته <strong>(${cCash} جنيه كاش فوري)</strong> تلقائياً! 🤩🎁`;
+      }
+
+      const kPts = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminCourPointsPerOrderInput')?.value || 5), 10) || 5);
+      const kTarget = Math.max(5, parseInt(normalizeDigits(document.getElementById('adminCourPointsTargetInput')?.value || 100), 10) || 100);
+      const kCash = Math.max(1, roundMoney(document.getElementById('adminCourRewardAmountInput')?.value || 10));
+      const kOrdersNeeded = Math.max(1, Math.ceil(kTarget / kPts));
+
+      const courBox = document.getElementById('adminCourLoyaltyLivePreview');
+      if (courBox) {
+        courBox.innerHTML = `📢 <strong>معاينة القاعدة للكابتن:</strong> كل أوردر يسلمه الكابتن يمنحه <strong>(${kPts} نقط)</strong> ⬅️ وعند تجميع <strong>(${kTarget} نقطة)</strong> — أي بعد توصيل <strong>${kOrdersNeeded} أوردر</strong> — ينزل في محفظته <strong>(${kCash} جنيه كاش فوري)</strong> تلقائياً! 🛵💸`;
+      }
+    }
+
     function adminSaveIncentivesSettings(type) {
       withActionLock(async () => {
         const welcomeBonusActive = Boolean(document.getElementById('adminWelcomeBonusSwitch')?.checked);
         const welcomeBonusAmount = Math.max(0, roundMoney(document.getElementById('adminWelcomeBonusAmountInput')?.value ?? 7));
         const referralRewardActive = Boolean(document.getElementById('adminReferralRewardSwitch')?.checked);
         const referralRewardAmount = Math.max(0, roundMoney(document.getElementById('adminReferralRewardAmountInput')?.value ?? 50));
-        const referralRequiredOrders = Math.max(1, Number(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2));
+        const rawReqTrips = normalizeDigits(document.getElementById('adminReferralRequiredOrdersInput')?.value ?? 2).trim();
+        const referralRequiredOrders = Math.max(1, parseInt(rawReqTrips, 10) || 2);
 
+        adminIncentivesDirtyUntil = 0;
         updateIncentivesLivePreview();
 
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
@@ -2304,9 +2407,9 @@
 
         if (ok && data && data.success) {
           if (type === 'welcome') {
-            showToast(welcomeBonusActive ? `تم اعتماد الهدية الترحيبية (${welcomeBonusAmount} ج) بنجاح 🎁✅` : 'تم إيقاف الهدية الترحيبية للكباتن الجدد ⛔', 'ok');
+            showToast(welcomeBonusActive ? `تم اعتماد الهدية الترحيبية (${welcomeBonusAmount} ج) وتحديث إشعار الكابتن 🎁✅` : 'تم إيقاف الهدية الترحيبية للكباتن الجدد ⛔', 'ok');
           } else {
-            showToast(referralRewardActive ? `تم اعتماد مكافأة الدعوة (${referralRewardAmount} ج بعد ${formatArabicTripsCount(referralRequiredOrders)}) 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
+            showToast(referralRewardActive ? `تم اعتماد مكافأة الدعوة (${referralRewardAmount} ج بعد ${formatArabicTripsCount(referralRequiredOrders)}) وتحديث إشعار الكابتن فوراً 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
           }
         } else {
           showToast('تعذر حفظ إعدادات الحوافز ⚠️', 'warn');
@@ -2316,9 +2419,17 @@
 
     function adminSaveLoyaltyField(key, id) {
       withActionLock(async () => {
-        const v = Number(document.getElementById(id)?.value); if(v<1)return;
-        const {ok, data}=await apiRequest('/api/admin/settings','POST',{loyaltyField:{key,value:v}});
-        if(ok&&data.success)showToast('تم حفظ النظام ✅','ok'); else showToast('تعذر ⚠️','warn');
+        const rawVal = normalizeDigits(document.getElementById(id)?.value || '').trim();
+        const v = Number(rawVal);
+        if (!Number.isFinite(v) || v < 1) {
+          showToast('برجاء إدخال رقم صحيح أكبر من الصفر ⚠️', 'warn');
+          return;
+        }
+        adminIncentivesDirtyUntil = 0;
+        updateLoyaltyLivePreview();
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', { loyaltyField: { key, value: v } });
+        if (ok && data.success) showToast('تم حفظ وتحديث قاعدة عنابي بوينتس بنجاح 🍇✅', 'ok');
+        else showToast('تعذر الحفظ ⚠️', 'warn');
       });
     }
 
@@ -2594,7 +2705,8 @@
         adminSupportWhatsappInput:s.supportWhatsapp||'201507800875',
         adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30
       };
-      Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id) document.getElementById(id).value=m[id]; });
+      const isDirtyNow = Date.now() < adminIncentivesDirtyUntil;
+      Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id&&!isDirtyNow) document.getElementById(id).value=m[id]; });
 
       const bTargetSel = document.getElementById('adminBroadcastTargetSelect');
       if (bTargetSel && document.activeElement !== bTargetSel) {
@@ -2647,6 +2759,7 @@
       if (capPushSw) { capPushSw.checked = capPushOn; capPushSw.disabled = !masterPushOn; }
 
       updateIncentivesLivePreview();
+      updateLoyaltyLivePreview();
       updateAdminTiersLiveNote();
     }
 

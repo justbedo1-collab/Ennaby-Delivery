@@ -613,17 +613,18 @@
           <div id="custTab-profile" class="sub-tab-section" style="display:none;">
             <div class="card" style="text-align:center; padding:16px 14px;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; text-align:right;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <div style="width:48px; height:48px; background:var(--accent); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                  <div style="width:46px; height:46px; background:var(--accent); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; box-shadow:0 2px 6px rgba(123,63,82,0.1);">
                     <i class="fa-solid fa-crown"></i>
                   </div>
-                  <div>
-                    <h3 style="font-size:15px; font-weight:900; line-height:1.3;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
-                    <p style="font-size:11.5px; color:var(--text-muted); font-weight:700;" id="custDisplayPhone">لسه مربطتش رقم موبايلك • المنصورة</p>
+                  <div style="min-width:0; flex:1;">
+                    <h3 style="font-size:14.5px; font-weight:900; line-height:1.35; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="custDisplayTitle">باشا مصر اللي منورنا 👑</h3>
+                    <p style="font-size:11.5px; color:var(--text-muted); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:5px; flex-wrap:wrap;" id="custDisplayPhone">لسه مربطتش رقم موبايلك • المنصورة</p>
                   </div>
                 </div>
-                <button type="button" id="toggleCustSyncFormBtn" onclick="toggleCustomerSyncFormBox()" style="display:none; background:var(--accent); color:var(--primary); border:none; border-radius:50px; padding:6px 11px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">
-                  <i class="fa-solid fa-rotate"></i> تبديل الحساب
+                <button type="button" id="toggleCustSyncFormBtn" onclick="toggleCustomerSyncFormBox()" style="display:none; align-items:center; justify-content:center; gap:6px; background:#FAF4F6; color:var(--primary); border:1.5px solid rgba(123, 63, 82, 0.22); border-radius:50px; padding:7px 13px; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap; flex-shrink:0; box-shadow:0 2px 6px rgba(123, 63, 82, 0.08); transition:all 0.2s ease;">
+                  <i class="fa-solid fa-rotate" style="font-size:11px;"></i>
+                  <span>تبديل الحساب</span>
                 </button>
               </div>
 
@@ -869,10 +870,17 @@
               </div>
             </div>
             <div id="courTab-profile" class="sub-tab-section" style="display:none;">
-              <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white; padding:16px;">
+              <!-- 1. أول قسم: بياناتك المسجلة معانا -->
+              <div class="card" style="padding:14px 16px; border-right:4px solid var(--primary);">
+                <h3 class="card-title" style="font-size:13.5px; margin-bottom:10px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة معانا</h3>
+                <div id="courierProfileDetailsBox" style="font-size:12px; line-height:1.8; color:var(--text-main);"></div>
+              </div>
+
+              <!-- 2. كارت المحفظة المدمج مع عدادات الكابتن التراكمية بلمسة جمالية -->
+              <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white; padding:16px; box-shadow:0 8px 22px rgba(123, 63, 82, 0.22);">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                   <div>
-                    <span style="font-size:11.5px; opacity:0.85; display:block;">رصيد المحفظة المتاح</span>
+                    <span style="font-size:11.5px; opacity:0.85; display:block;">رصيد المحفظة المتاح للشغل</span>
                     <div style="font-size:27px; font-weight:900; margin:2px 0 6px; line-height:1.15;" id="courierWalletBalanceDisplay">0.00 <span style="font-size:13.5px; font-weight:600;">جنيه</span></div>
                   </div>
                   <button type="button" class="btn-secondary" style="font-size:11.5px; font-weight:800; padding:8px 13px; border-radius:10px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.28); color:#fff; white-space:nowrap; flex-shrink:0;" onclick="openTopupModal()">
@@ -882,13 +890,37 @@
                 <div style="background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.18); border-radius:9px; padding:6px 10px; font-size:11.5px; font-weight:800; display:inline-flex; align-items:center; gap:6px; width:fit-content; max-width:100%;" id="courierCommissionNoticeText">
                   المستوى: كابتن برونزي 🥉 • عمولة المشوار: 7 ج
                 </div>
-                <!-- عناصر مخفية للحفاظ على توافق الكود البرمجي دون ازدحام البطاقة -->
+
+                <!-- عداداتك من يوم ما بدأت معانا مدمجة داخل كارت المحفظة -->
+                <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.16);">
+                  <div style="font-size:11.5px; font-weight:800; opacity:0.92; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-chart-line" style="color:#FFE082;"></i>
+                    <span>عداداتك من يوم ما بدأت معانا 🚀</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;">
+                    <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); padding:9px 6px; border-radius:12px; backdrop-filter:blur(4px);">
+                      <span style="font-size:10px; font-weight:800; color:#C8E6C9; display:block;">مكتملة ✅</span>
+                      <strong style="font-size:16.5px; font-weight:900; color:#FFFFFF; display:block; margin-top:3px;" id="courierLifetimeCompletedCount">0</strong>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); padding:9px 6px; border-radius:12px; backdrop-filter:blur(4px);">
+                      <span style="font-size:10px; font-weight:800; color:#FFCDD2; display:block;">ملغية ❌</span>
+                      <strong style="font-size:16.5px; font-weight:900; color:#FFFFFF; display:block; margin-top:3px;" id="courierLifetimeCancelledCount">0</strong>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); padding:9px 6px; border-radius:12px; backdrop-filter:blur(4px);">
+                      <span style="font-size:10px; font-weight:800; color:#FFE082; display:block;">صافي أرباحي 💸</span>
+                      <strong style="font-size:15px; font-weight:900; color:#FFE082; display:block; margin-top:3px;" id="courierLifetimeNetEarnings">0 ج</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- عناصر مخفية للحفاظ على التوافق البرمجي الكامل -->
                 <div style="display:none;">
                   <strong id="courierCompletedCount">0 أوردرات</strong>
                   <strong id="courierTodayEarnings">0 جنيه</strong>
                 </div>
               </div>
-              <!-- كارت مستوى الكابتن الحالي + شريط التقدم المرئي المباشر وشروط الترقية الأوتوماتيكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
+
+              <!-- 3. كارت مستوى الكابتن الحالي والتفاصيل الكاملة للتارجت -->
               <div class="card" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F4FAFF); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#01579B; margin:0;"><i class="fa-solid fa-medal"></i> مستواك الحالي في العنابي</h3>
@@ -906,15 +938,22 @@
                   <i class="fa-solid fa-circle-info"></i> اعرف شروط المستويات وخصم العمولة 🥉🥈💎
                 </button>
               </div>
-              <!-- عدادات التراكمية، الإحالات، النقاط، التفاصيل -->
-              <div class="card" style="padding:14px;">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> عداداتك من يوم ما بدأت معانا 🚀</h3>
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;">
-                  <div style="background:#E8F5E9; padding:10px 6px; border-radius:12px; border:1px solid #C8E6C9;"><span style="font-size:10px; font-weight:800; color:#1B5E20; display:block;">مكتملة</span><strong style="font-size:17px; font-weight:900; color:var(--success); display:block; margin-top:4px;" id="courierLifetimeCompletedCount">0</strong></div>
-                  <div style="background:#FFEBEE; padding:10px 6px; border-radius:12px; border:1px solid #FFCDD2;"><span style="font-size:10px; font-weight:800; color:#B71C1C; display:block;">ملغية</span><strong style="font-size:17px; font-weight:900; color:var(--danger); display:block; margin-top:4px;" id="courierLifetimeCancelledCount">0</strong></div>
-                  <div style="background:#FAF7F4; padding:10px 6px; border-radius:12px; border:1px solid #E9DCE0;"><span style="font-size:10px; font-weight:800; color:var(--primary); display:block;">أرباحي</span><strong style="font-size:15px; font-weight:900; color:var(--primary); display:block; margin-top:4px;" id="courierLifetimeNetEarnings">0 ج</strong></div>
+
+              <!-- 4. كارت كشف حساب المحفظة القابل للفتح والطي بالضغط مثل حساب العميل -->
+              <div class="card" style="padding: 13px;">
+                <div onclick="const box=document.getElementById('courierWalletTransactionsList'); const ic=document.getElementById('courWalletLogArrow'); if(box){ const isHidden=box.style.display==='none'; box.style.display=isHidden?'flex':'none'; if(ic) ic.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
+                  <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="background:var(--accent); color:var(--primary); padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800;">عرض الكشف (آخر 10)</span>
+                    <i id="courWalletLogArrow" class="fa-solid fa-chevron-down" style="font-size:12px; color:var(--primary); transition:transform 0.2s ease;"></i>
+                  </div>
+                </div>
+                <div id="courierWalletTransactionsList" class="wallet-log-scroll-box" style="display:none; margin-top:10px;">
+                  <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
                 </div>
               </div>
+
+              <!-- 5. برنامج دعوة صحابك الكباتن -->
               <div class="card" id="courierReferralProgramCard" style="border: 2px solid #25D366; background: linear-gradient(135deg, #F1F8E9, #FFFDE7); padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <h3 style="font-size:14px; font-weight:900; color:#1B5E20; margin:0;"><i class="fa-solid fa-user-group"></i> برنامج دعوة صحابك الكباتن 🎁💸</h3>
@@ -929,6 +968,8 @@
                   <button type="button" class="btn-secondary" style="padding:6px 12px; font-size:11px; background:#E8F5E9; color:var(--success);" onclick="copyCourierReferralPhone()"><i class="fa-solid fa-copy"></i> انسخ الرقم</button>
                 </div>
               </div>
+
+              <!-- 6. عنابي بوينتس للكباتن -->
               <div class="card" style="border: 2px dashed var(--primary); background: #FFFDFD; padding: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                   <h3 style="font-size:14px; font-weight:900; color:var(--primary); margin:0;">🛵 عنابي بوينتس للكباتن</h3>
@@ -939,19 +980,7 @@
                   كل أوردر بتكمله بتاخد عليه <strong id="courRulePointsPerOrder">5 نقط</strong> عنابي 🛵، أول ما تجمع <strong id="courRulePointsTarget">100 نقطة</strong> بينزلك <strong id="courRuleRewardCash">10 جنيه كاش فوري</strong> في محفظتك هدية! 💸
                 </div>
               </div>
-              <div class="card">
-                <h3 class="card-title" style="font-size:13px; margin-bottom:8px;"><i class="fa-solid fa-id-card"></i> بياناتك المسجلة معانا</h3>
-                <div id="courierProfileDetailsBox" style="font-size:12px; line-height:1.8; color:var(--text-main);"></div>
-              </div>
-              <div class="card" style="padding: 14px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                  <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
-                  <span style="background:var(--accent); color:var(--primary); padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:800;">آخر 10 حركات</span>
-                </div>
-                <div id="courierWalletTransactionsList" class="wallet-log-scroll-box">
-                  <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
-                </div>
-              </div>
+
               <div style="text-align:center; margin-top:2px; padding-bottom:4px;">
                 <button type="button" onclick="openCaptainLegalTermsModal()" style="background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:800; cursor:pointer; text-decoration:underline;">
                   🛡️ الشروط القانونية وسياسة الخصوصية للكباتن
@@ -969,9 +998,9 @@
                 </button>
               </div>
               <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;" id="regFormSubNote">املى بياناتك وصور ورقك والبطاقة بوضوح عشان الإدارة تعتمد حسابك وتنزل الشارع فوراً يا وحش.</p>
-              <!-- إشعار الهدية الترحيبية للكباتن الجدد -->
+              <!-- إشعار الهدية الترحيبية الديناميكي للكباتن الجدد -->
               <div id="regWelcomeBonusBanner" style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:12px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; font-weight:800; color:#1B5E20; line-height:1.6;">
-                🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك عمولة اول مشوار في محفظتك فوراً مجاناً! 🛵💸
+                🎁 سجل بياناتك دلوقتي وأول ما الإدارة تعتمد حسابك هينزلك <strong id="regWelcomeBonusAmountSpan">7</strong> جنيه هدية ترحيبية في محفظتك فوراً مجاناً! 🛵💸
               </div>
               
               <div class="input-group"><label class="input-label">اسمك ثلاثي زي ما مكتوب في البطاقة *</label><input type="text" id="regFullName" class="input-field" placeholder="اكتب اسمك الثلاثي كامل يا بطل"></div>
@@ -2263,6 +2292,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           if (ok && data && data.success) {
             STATE.customerProfile.savedPhone = typedPhone;
             STATE.authenticatedCustomerPhone = typedPhone;
+            forceShowCustSyncForm = false;
             saveSession();
             syncActiveCustomerProfile(typedPhone);
             const senderInp = document.getElementById('orderSenderPhone'); if (senderInp) senderInp.value = typedPhone;
@@ -2370,6 +2400,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (el) el.style.display = (t === validTab) ? 'flex' : 'none';
         if (navEl) navEl.classList.toggle('active', t === validTab);
       });
+      // إخفاء شريط التقدم العلوي في تبويب «حسابي» اكتفاءً بكارت التقدم التفصيلي داخله، مع إبقائه في الرئيسية وطلباتي والدعم
+      const headerTierWrap = document.getElementById('courierHeaderTierProgressWrap');
+      if (headerTierWrap) {
+        headerTierWrap.style.display = (validTab === 'profile') ? 'none' : 'block';
+      }
       const screen = document.getElementById('phoneScreen'); if (screen) screen.scrollTop = 0;
     }
 
@@ -2467,11 +2502,15 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
       const regRefBox = document.getElementById('regReferralGroupBox');
       const regRefLabel = document.getElementById('regReferralLabelText');
+      const regRefSubHint = document.getElementById('regReferralSubHint');
       if (regRefBox) {
         if (referralActive && referralAmt > 0) {
           regRefBox.style.display = 'flex';
           if (regRefLabel) {
-            regRefLabel.innerText = `اكتب رقم موبايل صاحبك اللي قالك علينا عشان يكسب ${referralAmt} ج هدية أول ما تكمل ${tripsTextAr} (اختياري) 🎁`;
+            regRefLabel.innerText = `اكتب رقم موبايل صاحبك اللي قالك علينا عشان يكسب ${referralAmt} جنيه هدية أول ما تكمل ${tripsTextAr} (اختياري) 🎁`;
+          }
+          if (regRefSubHint) {
+            regRefSubHint.innerText = `💡 إنت كمان أول ما حسابك يتفعل، ابعت رقمك لأصحابك الكباتن الجدد وأول ما الواحد فيهم يكمل ${tripsTextAr} هينزلك ${referralAmt} جنيه هدية في محفظتك! 😎🛵`;
           }
         } else {
           regRefBox.style.display = 'none';
@@ -3129,17 +3168,46 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال أوردرات البشوات 📡' : 'انت دلوقتى فى استراحة افتح رادار الطلبات فى اى وقت عشان تبدأ شغل 🚀'; }
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
+          const liveWelcomeAmt = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
+          const liveRefActive = s.referralRewardActive !== false;
+          const liveRefAmt = Math.max(0, roundMoney(s.referralRewardAmount ?? 50));
+          const liveRefTrips = Math.max(1, Number(s.referralRequiredOrders ?? 2));
+          const liveTripsTextAr = formatArabicTripsCount(liveRefTrips);
+
           const rawNotices = Array.isArray(courier.adminNotices) ? courier.adminNotices : [];
           const notices = rawNotices.filter(n => {
             const isWelcomeNotice = n && (String(n.id || '').startsWith('welcome-') || String(n.text || '').includes('هدية تسجيل'));
-            if (isWelcomeNotice && (courier.status !== 'معتمد' || s.welcomeBonusActive === false)) {
+            if (isWelcomeNotice && (courier.status !== 'معتمد' || s.welcomeBonusActive === false || liveWelcomeAmt <= 0)) {
               return false;
             }
             return true;
           });
-          const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined) ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 إنت شغال على عمولة خاصة "${effectiveFee} جنيه" دلوقتي — السبب: ${escapeHtml(courier.customFeeReason || 'تقدير خاص من الإدارة')} 🛵</div>` : '';
-          const dynamicNoticesHtml = notices.slice(0, 5).map(n => { const bg = n.type === 'deduct' ? '#FFEBEE' : (n.type === 'reward' ? '#E8F5E9' : '#FFFDE7'); const brd = n.type === 'deduct' ? '#EF5350' : (n.type === 'reward' ? '#2E7D32' : '#FBC02D'); return `<div style="background:${bg}; border:1.5px solid ${brd}; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800; display:flex; justify-content:space-between; align-items:center; gap:8px;"><span>${escapeHtml(n.text)}</span><button type="button" onclick="dismissCourierNotice('${escapeHtml(n.id)}')" style="border:none; background:none; font-size:14px; cursor:pointer; color:#555;">✕</button></div>`; }).join('');
-          const combinedHtml = customFeeBanner + dynamicNoticesHtml; noticesBox.innerHTML = combinedHtml; noticesBox.style.display = combinedHtml ? 'flex' : 'none';
+
+          const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined)
+            ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 إنت شغال على عمولة خاصة "${effectiveFee} جنيه" دلوقتي — السبب: ${escapeHtml(courier.customFeeReason || 'تقدير خاص من الإدارة')} 🛵</div>`
+            : '';
+
+          // شريط إشعار دعوة الأصدقاء الديناميكي للكابتن (يتغير أوتوماتيكياً فور تعديل عدد المشاوير أو المبلغ من الإدارة)
+          const liveReferralBanner = (liveRefActive && liveRefAmt > 0 && courier.status === 'معتمد')
+            ? `<div onclick="switchCourierTab('profile')" style="background:linear-gradient(135deg, #FFFDE7, #F1F8E9); border:1.5px dashed #2E7D32; color:#1B5E20; padding:9px 12px; border-radius:12px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <span>🎁 ابعت رقمك لصاحبك اللي هيسجل جديد وأول ما يكمل <strong>${escapeHtml(liveTripsTextAr)}</strong> هيجيلك <strong>${liveRefAmt} جنيه هدية</strong> في محفظتك 😎🛵</span>
+                <i class="fa-solid fa-chevron-left" style="font-size:11px; color:#2E7D32; flex-shrink:0;"></i>
+              </div>`
+            : '';
+
+          const dynamicNoticesHtml = notices.slice(0, 5).map(n => {
+            const bg = n.type === 'deduct' ? '#FFEBEE' : (n.type === 'reward' ? '#E8F5E9' : '#FFFDE7');
+            const brd = n.type === 'deduct' ? '#EF5350' : (n.type === 'reward' ? '#2E7D32' : '#FBC02D');
+            let displayNoticeText = String(n.text || '');
+            if (String(n.id || '').startsWith('welcome-')) {
+              displayNoticeText = `🎁 مبروك يا بطل! نزل في محفظتك ${liveWelcomeAmt} جنيه هدية تسجيل ترحيبية عشان تبدأ مشاويرك بقوة مع الرجل العنابي 🛵💪`;
+            }
+            return `<div style="background:${bg}; border:1.5px solid ${brd}; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800; display:flex; justify-content:space-between; align-items:center; gap:8px;"><span>${escapeHtml(displayNoticeText)}</span><button type="button" onclick="dismissCourierNotice('${escapeHtml(n.id)}')" style="border:none; background:none; font-size:14px; cursor:pointer; color:#555;">✕</button></div>`;
+          }).join('');
+
+          const combinedHtml = customFeeBanner + liveReferralBanner + dynamicNoticesHtml;
+          noticesBox.innerHTML = combinedHtml;
+          noticesBox.style.display = combinedHtml ? 'flex' : 'none';
         }
         const rPerOrd = document.getElementById('courRulePointsPerOrder'); const rTarget = document.getElementById('courRulePointsTarget'); const rCash = document.getElementById('courRuleRewardCash');
         if (rPerOrd) rPerOrd.innerText = `${courPtsPerOrder} نقط`; if (rTarget) rTarget.innerText = `${courThreshold} نقطة`; if (rCash) rCash.innerText = `${courRewardCash} جنيه كاش فوري`;
@@ -3182,9 +3250,31 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (refBadgeEl) refBadgeEl.innerText = `${courier.referralsCount || 0} أصدقاء`;
         const quickWal = document.getElementById('courierQuickWalletDisplay'); const quickEarn = document.getElementById('courierQuickEarningsDisplay');
         if (quickWal) quickWal.innerText = `${roundMoney(courier.walletBalance).toFixed(2)} ج`; if (quickEarn) quickEarn.innerText = `${lifetimeNetTotal} جنيه`;
+        const headerTierWrap = document.getElementById('courierHeaderTierProgressWrap');
+        if (headerTierWrap) {
+          headerTierWrap.style.display = (STATE.currentCourTab === 'profile') ? 'none' : 'block';
+        }
         const profDetails = document.getElementById('courierProfileDetailsBox');
         if (profDetails) {
-          profDetails.innerHTML = `<div>👤 الاسم: <strong>${escapeHtml(courier.fullName)}</strong> <span class="badge ${tierCls}" style="margin-right:4px;">${escapeHtml(tierBadgeTxt)}</span></div><div>📱 رقم الموبايل: <strong>${escapeHtml(courier.phone)}</strong></div><div>📍 منطقة الشغل: <strong>${escapeHtml(courier.primaryZone)}</strong></div><div>🛵 المركبة: <strong>${escapeHtml(courier.vehicleType)}</strong> (${escapeHtml(courier.plateNumber || 'معفي')})</div>`;
+          profDetails.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:8px 10px; grid-column: span 2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span>👤 الاسم: <strong style="color:var(--primary);">${escapeHtml(courier.fullName)}</strong></span>
+                <span class="badge ${tierCls}">${escapeHtml(tierBadgeTxt)}</span>
+              </div>
+              <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:8px 10px;">
+                <span style="font-size:10.5px; color:var(--text-muted); display:block;">📱 رقم الموبايل</span>
+                <strong dir="ltr" style="font-size:12.5px; color:var(--text-main);">${escapeHtml(courier.phone)}</strong>
+              </div>
+              <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:8px 10px;">
+                <span style="font-size:10.5px; color:var(--text-muted); display:block;">📍 منطقة الشغل</span>
+                <strong style="font-size:12.5px; color:var(--text-main);">${escapeHtml(courier.primaryZone)}</strong>
+              </div>
+              <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:8px 10px; grid-column: span 2;">
+                <span style="font-size:10.5px; color:var(--text-muted);">🛵 المركبة المسجلة: </span>
+                <strong style="font-size:12.5px; color:var(--primary);">${escapeHtml(courier.vehicleType)} (${escapeHtml(courier.plateNumber || 'معفي')})</strong>
+              </div>
+            </div>`;
         }
         const transList = document.getElementById('courierWalletTransactionsList');
         if (transList) {
@@ -3259,9 +3349,15 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     let forceShowCustSyncForm = false;
     function toggleCustomerSyncFormBox() {
       const box = document.getElementById('custAccountSyncFormBox');
+      const btn = document.getElementById('toggleCustSyncFormBtn');
       if (!box) return;
       forceShowCustSyncForm = box.style.display === 'none';
       box.style.display = forceShowCustSyncForm ? 'block' : 'none';
+      if (btn) {
+        btn.innerHTML = forceShowCustSyncForm
+          ? '<i class="fa-solid fa-xmark" style="font-size:11px;"></i><span>إخفاء</span>'
+          : '<i class="fa-solid fa-rotate" style="font-size:11px;"></i><span>تبديل الحساب</span>';
+      }
     }
 
     function buildOrderVisualStepperHtml(status) {
@@ -3417,9 +3513,21 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const myOrders = prof.savedPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === prof.savedPhone) : [];
       const s = STATE.settings || {}; const custPtsPerOrder = Math.max(1, Number(s.customerPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const custThreshold = Math.max(5, Number(s.customerRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const custRewardCash = Math.max(1, roundMoney(s.customerRewardCash ?? DEFAULT_REWARD_CASH));
       const titleEl = document.getElementById('custDisplayTitle'); const phoneEl = document.getElementById('custDisplayPhone'); const balEl = document.getElementById('custWalletBalanceDisplay'); const ptsEl = document.getElementById('custPointsDisplay'); const progEl = document.getElementById('custPointsProgress'); const cntEl = document.getElementById('custTotalOrdersCount');
-      if (titleEl) titleEl.innerText = prof.title; if (phoneEl) phoneEl.innerText = `${prof.savedPhone || 'لسه مربطتش رقم موبايلك يا باشا'} • المنصورة`;
+      if (titleEl) titleEl.innerText = prof.title;
+      if (phoneEl) {
+        phoneEl.innerHTML = prof.savedPhone
+          ? `<span dir="ltr" style="font-weight:800; color:var(--primary);">${escapeHtml(prof.savedPhone)}</span> <span style="opacity:0.5;">•</span> <span>المنصورة</span>`
+          : `<span>لسه مربطتش رقم موبايلك يا باشا • المنصورة</span>`;
+      }
       const syncBox = document.getElementById('custAccountSyncFormBox'); const toggleSyncBtn = document.getElementById('toggleCustSyncFormBtn');
-      if (syncBox && toggleSyncBtn) { const hasSaved = Boolean(prof.savedPhone); toggleSyncBtn.style.display = hasSaved ? 'inline-flex' : 'none'; syncBox.style.display = (!hasSaved || forceShowCustSyncForm) ? 'block' : 'none'; }
+      if (syncBox && toggleSyncBtn) {
+        const hasSaved = Boolean(prof.savedPhone);
+        toggleSyncBtn.style.display = hasSaved ? 'inline-flex' : 'none';
+        syncBox.style.display = (!hasSaved || forceShowCustSyncForm) ? 'block' : 'none';
+        toggleSyncBtn.innerHTML = (hasSaved && forceShowCustSyncForm)
+          ? '<i class="fa-solid fa-xmark" style="font-size:11px;"></i><span>إخفاء</span>'
+          : '<i class="fa-solid fa-rotate" style="font-size:11px;"></i><span>تبديل الحساب</span>';
+      }
       const profPhoneInp = document.getElementById('custProfilePhoneSyncInput'); if (profPhoneInp && document.activeElement !== profPhoneInp && prof.savedPhone) { profPhoneInp.value = prof.savedPhone; }
       if (balEl) balEl.innerHTML = `${roundMoney(prof.walletBalance).toFixed(2)} <span>جنيه</span>`; if (ptsEl) ptsEl.innerText = `${prof.points || 0} نقطة`;
       const progPct = Math.min(100, Math.round(((prof.points || 0) / custThreshold) * 100)); if (progEl) progEl.style.width = `${progPct}%`; if (cntEl) cntEl.innerText = `${myOrders.length} مشوار`;

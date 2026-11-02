@@ -1027,21 +1027,21 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const storedIncentives = (rawPricingObj.__incentives && typeof rawPricingObj.__incentives === 'object') ? rawPricingObj.__incentives : {};
   delete rawPricingObj.__incentives;
 
-  const welcomeBonusActive = sRow.welcome_bonus_active !== undefined
-    ? Boolean(sRow.welcome_bonus_active)
-    : (storedIncentives.welcomeBonusActive !== undefined ? Boolean(storedIncentives.welcomeBonusActive) : true);
+  const welcomeBonusActive = storedIncentives.welcomeBonusActive !== undefined
+    ? Boolean(storedIncentives.welcomeBonusActive)
+    : (sRow.welcome_bonus_active !== undefined ? Boolean(sRow.welcome_bonus_active) : true);
 
-  const welcomeBonusAmount = sRow.welcome_bonus_amount !== undefined && sRow.welcome_bonus_amount !== null
-    ? Math.max(0, roundMoney(sRow.welcome_bonus_amount))
-    : (storedIncentives.welcomeBonusAmount !== undefined ? Math.max(0, roundMoney(storedIncentives.welcomeBonusAmount)) : 7);
+  const welcomeBonusAmount = storedIncentives.welcomeBonusAmount !== undefined && storedIncentives.welcomeBonusAmount !== null
+    ? Math.max(0, roundMoney(storedIncentives.welcomeBonusAmount))
+    : (sRow.welcome_bonus_amount !== undefined && sRow.welcome_bonus_amount !== null ? Math.max(0, roundMoney(sRow.welcome_bonus_amount)) : 7);
 
-  const referralRewardActive = sRow.referral_reward_active !== undefined
-    ? Boolean(sRow.referral_reward_active)
-    : (storedIncentives.referralRewardActive !== undefined ? Boolean(storedIncentives.referralRewardActive) : true);
+  const referralRewardActive = storedIncentives.referralRewardActive !== undefined
+    ? Boolean(storedIncentives.referralRewardActive)
+    : (sRow.referral_reward_active !== undefined ? Boolean(sRow.referral_reward_active) : true);
 
-  const referralRewardAmount = sRow.referral_reward_amount !== undefined && sRow.referral_reward_amount !== null
-    ? Math.max(0, roundMoney(sRow.referral_reward_amount))
-    : (storedIncentives.referralRewardAmount !== undefined ? Math.max(0, roundMoney(storedIncentives.referralRewardAmount)) : 50);
+  const referralRewardAmount = storedIncentives.referralRewardAmount !== undefined && storedIncentives.referralRewardAmount !== null
+    ? Math.max(0, roundMoney(storedIncentives.referralRewardAmount))
+    : (sRow.referral_reward_amount !== undefined && sRow.referral_reward_amount !== null ? Math.max(0, roundMoney(sRow.referral_reward_amount)) : 50);
 
   const referralRequiredOrders = Math.max(1, Number(storedIncentives.referralRequiredOrders ?? 2));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
