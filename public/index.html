@@ -253,6 +253,10 @@
     .courier-party-contact-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 11px; padding: 8px 10px; margin-top: 6px; display: flex; flex-direction: column; gap: 7px; }
     .active-mission-card { border: 2px solid var(--primary) !important; background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%) !important; box-shadow: 0 8px 22px rgba(123, 63, 82, 0.14) !important; position: relative; overflow: hidden; }
     .active-mission-ribbon { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-size: 11px; font-weight: 900; padding: 5px 12px; margin: -18px -18px 10px -18px; display: flex; align-items: center; justify-content: space-between; }
+    /* تمييز بصري تفاعلي لبطاقات اختيار الدافع (الراسل / المستلم) */
+    label:has(input[name="payer"]) { border: 1.5px solid #E8DFE3; transition: all 0.2s ease; }
+    label:has(input[name="payer"]:checked) { background: #FDF4F6 !important; border-color: var(--primary) !important; color: var(--primary); box-shadow: 0 2px 8px rgba(123, 63, 82, 0.12); }
+    input[name="payer"] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; }
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
@@ -1109,7 +1113,7 @@
     </div>
   </div>
   <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">فيه مشكلة في الأوردر؟ بلّغنا فوراً ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكيلنا إيه اللي حصل بالتفصيل يا باشا..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">ابعت الشكوى للإدارة</button><button class="btn-secondary" onclick="closeDisputeModal()">خلاص رجعت في كلامي</button></div></div></div>
-  <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">قيّم الكابتن الشقيان يا باشا 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:24px; color:#FFB300; margin-bottom:12px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><button class="btn-main" onclick="submitOrderRating()">اعتمد التقييم الحلو ده ⭐</button></div></div>
+  <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">قيّم الكابتن الشقيان يا باشا 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:26px; color:#FFB300; margin-bottom:10px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><div id="ratingStarFeedbackText" style="font-size:12px; font-weight:800; color:var(--primary); background:#FAF4F6; border:1px dashed rgba(123,63,82,0.25); border-radius:10px; padding:6px 10px; margin-bottom:12px;">⭐⭐⭐⭐⭐ — طيار عنابي أصلي وأجدع كابتن! 😍🔥</div><button class="btn-main" onclick="submitOrderRating()">اعتمد التقييم الحلو ده ⭐</button></div></div>
   
   <div class="custom-modal" id="captainSuccessModal">
     <div class="modal-content-card" style="text-align:center; padding:24px 16px;">
@@ -1650,7 +1654,26 @@
     function withActionLock(fn) {
       if (actionLock) return;
       actionLock = true;
-      Promise.resolve(fn()).finally(() => { setTimeout(() => { actionLock = false; }, 260); });
+      const btn = (
+        lastInteractedElement &&
+        lastInteractedElement.tagName === 'BUTTON' &&
+        !lastInteractedElement.classList.contains('nav-item') &&
+        !lastInteractedElement.classList.contains('role-btn') &&
+        !lastInteractedElement.classList.contains('inline-map-mode-btn')
+      ) ? lastInteractedElement : null;
+      const origHtml = btn ? btn.innerHTML : '';
+      const origDisabled = btn ? btn.disabled : false;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ثواني...`;
+      }
+      Promise.resolve(fn()).finally(() => {
+        if (btn && document.body.contains(btn)) {
+          btn.innerHTML = origHtml;
+          btn.disabled = origDisabled;
+        }
+        setTimeout(() => { actionLock = false; }, 260);
+      });
     }
 
     function getStatusBadgeClass(status) {
@@ -2061,21 +2084,21 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (promoInp) promoInp.value = cleanCode;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(cleanCode).then(() => {
-          showToast(`تم نسخ كود الخصم (${cleanCode}) بنجاح! تقدر تشغّله في طلبك دلوقتي 🎟️📋`, 'ok');
-        }).catch(() => {
-          showToast(`تم تجهيز كود الخصم (${cleanCode}) في خانة البروموكود! 🎟️✅`, 'ok');
-        });
+        navigator.clipboard.writeText(cleanCode).catch(() => {});
+      }
+
+      const validPromos = getCustomerAvailablePromoCodes();
+      const matched = validPromos.find(p => String(p.code || '').toUpperCase() === cleanCode);
+      if (matched) {
+        persistSavedPromoCode(matched);
+        switchCustTab('home');
+        setTimeout(() => {
+          document.getElementById('priceBanner')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 140);
+        showToast(`مبروك يا باشا! شغّلنالك كود (${cleanCode}) واتخصم ${roundMoney(matched.discountAmount)} ج من أجرة مشوارك تلقائياً 🎁🎉`, 'ok');
       } else {
-        try {
-          const tempTa = document.createElement('textarea');
-          tempTa.value = cleanCode;
-          document.body.appendChild(tempTa);
-          tempTa.select();
-          document.execCommand('copy');
-          document.body.removeChild(tempTa);
-        } catch (e) {}
-        showToast(`تم نسخ كود الخصم (${cleanCode}) بنجاح! 🎟️📋`, 'ok');
+        switchCustTab('home');
+        showToast(`جهزنالك كود الخصم (${cleanCode}) في خانة البروموكود! 🎟️✅`, 'ok');
       }
     }
 
@@ -2717,6 +2740,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const typedPromo = (document.getElementById('orderPromoCodeInput')?.value || '').trim().toUpperCase();
         const activePromoCode = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : (typedPromo || null);
         if (!pAddr || !dAddr) { showToast('اكتب عنوان الاستلام والتسليم بالتفصيل يا باشا أو حددهم ع الخريطة 📍⚠️', 'warn'); return; }
+        if (isFetch && !notes) {
+          showToast('اكتب الحاجة اللي الكابتن هيشتريها وتقريباً في حدود كام جنيه عشان يعمل حسابه يا باشا 🛍️💵', 'warn');
+          document.getElementById('customerOrderNotes')?.focus();
+          return;
+        }
         if (!isValidEgyptianPhone(clientPhoneTyped)) { showToast('اكتب رقم موبايلك صح يا باشا (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn'); return; }
         if (!isValidEgyptianPhone(otherPhoneTyped)) { showToast('اكتب رقم الموبايل التاني صح يا باشا (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn'); return; }
         const hasTrustedSession = isCustomerSessionActiveForPhone(clientPhoneTyped);
@@ -3106,9 +3134,47 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
     function courierReleaseOrder(orderId) { openCustomActionModal({ title: 'الاعتذار عن المشوار ورجوعه للرادار 🔄', message: `اكتب سبب اعتذارك عن الأوردر (${orderId}) عشان نرجّعه للرادار ونردلك العمولة في محفظتك فوراً:`, needInput: true, inputPlaceholder: 'مثلاً: الموتوسيكل عطل فجأة أو حصل ظرف طارئ...', confirmText: 'تأكيد الاعتذار عن المشوار', isDanger: true, onConfirm: (reason) => { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/release`, 'POST', { reason }); if (ok && data.success) { showToast(data.message || 'خلاص رجّعنا الأوردر للرادار وردينا العمولة لمحفظتك 🔄', 'ok'); } else { showToast((data && data.message) || 'معرفناش نرجّع الأوردر دلوقتي ⚠️', 'warn'); } }); } }); }
     function courierAdvanceOrderStatus(orderId, nextStatus) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/advance`, 'POST', { nextStatus }); if (ok && data.success) { showToast(data.message || `تمام يا بطل! حدّثنا حالة المشوار: ${nextStatus} 🛵✅`, 'ok'); } else { showToast((data && data.message) || 'معرفناش نحدّث حالة الأوردر دلوقتي ⚠️', 'warn'); } }); }
-    function courierCompleteDeliveryInstantly(orderId) { withActionLock(async () => { const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {}); if (ok && data.success) { showToast(data.message || 'تسلم إيدك يا بطل! الأوردر اتسلم على خير 🛵💨', 'ok'); } else { showToast((data && data.message) || 'معرفناش نقفل الأوردر دلوقتي ⚠️', 'warn'); } }); }
+    function courierCompleteDeliveryInstantly(orderId) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      const cashNote = ord ? `وقبضت (${ord.fare} جنيه كاش) من (${ord.payer || 'العميل'})` : 'وقبضت حساب التوصيل';
+      openCustomActionModal({
+        title: 'تأكيد تسليم الأوردر بنجاح ✅🛵',
+        message: `متأكد يا بطل إنك سلمت الطلب (${orderId}) بالسلامة ${cashNote}؟`,
+        confirmText: 'أيوة، سلمت وقبضت التمام ✅',
+        onConfirm: () => {
+          withActionLock(async () => {
+            const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/complete`, 'POST', {});
+            if (ok && data.success) {
+              showToast(data.message || 'تسلم إيدك يا بطل! الأوردر اتسلم على خير 🛵💨', 'ok');
+            } else {
+              showToast((data && data.message) || 'معرفناش نقفل الأوردر دلوقتي ⚠️', 'warn');
+            }
+          });
+        }
+      });
+    }
     function openRatingModal(orderId) { const order = STATE.orders.find(o => o.id === orderId); if (!order || order.rating !== null) { showToast('إنت قيّمت المشوار ده قبل كدا يا باشا ومينفعش يتعدل تاني ⭐', 'warn'); return; } const hid = document.getElementById('ratingOrderIdHidden'); if (hid) hid.value = orderId; setRatingStars(5); document.getElementById('ratingModal')?.classList.add('show'); }
-    function setRatingStars(cnt) { currentSelectedStars = cnt; const container = document.getElementById('starRatingContainer'); if (!container) return; const stars = container.children; for (let i = 0; i < 5; i++) { if (stars[i]) stars[i].className = i < cnt ? 'fa-solid fa-star' : 'fa-regular fa-star'; } }
+    function setRatingStars(cnt) {
+      currentSelectedStars = cnt;
+      const container = document.getElementById('starRatingContainer');
+      if (container) {
+        const stars = container.children;
+        for (let i = 0; i < 5; i++) {
+          if (stars[i]) stars[i].className = i < cnt ? 'fa-solid fa-star' : 'fa-regular fa-star';
+        }
+      }
+      const feedbackEl = document.getElementById('ratingStarFeedbackText');
+      if (feedbackEl) {
+        const labels = {
+          5: '⭐⭐⭐⭐⭐ — طيار عنابي أصلي وأجدع كابتن! 😍🔥',
+          4: '⭐⭐⭐⭐ — كابتن محترم ومشوار تمام 👍🛵',
+          3: '⭐⭐⭐ — المشوار عدا على خير 🙂',
+          2: '⭐⭐ — كان فيه شوية ملاحظات ع المشوار 😕',
+          1: '⭐ — التجربة مكنتش أحسن حاجة 😞'
+        };
+        feedbackEl.innerText = labels[cnt] || labels[5];
+      }
+    }
     function submitOrderRating() { withActionLock(async () => { const orderId = document.getElementById('ratingOrderIdHidden')?.value; if (!orderId) return; const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/rate`, 'POST', { rating: currentSelectedStars, clientPhone: STATE.customerProfile.savedPhone || '' }); document.getElementById('ratingModal')?.classList.remove('show'); if (ok && data.success) { showToast('تسلم إيدك يا باشا على التقييم الحلو ده! 🛵⭐', 'ok'); } else { showToast((data && data.message) || 'معرفناش نحفظ التقييم دلوقتي ⚠️', 'warn'); } }); }
     function customerOpenDispute(orderId) { const hid = document.getElementById('disputeOrderIdHidden'); const inp = document.getElementById('disputeReasonInput'); if (hid) hid.value = orderId; if (inp) inp.value = ''; document.getElementById('disputeModal')?.classList.add('show'); }
     function closeDisputeModal() { document.getElementById('disputeModal')?.classList.remove('show'); }

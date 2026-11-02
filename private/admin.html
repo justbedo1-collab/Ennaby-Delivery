@@ -1205,8 +1205,27 @@
     }
 
     function withActionLock(fn) {
-      if(actionLock) return; actionLock = true;
-      Promise.resolve(fn()).finally(() => { setTimeout(()=>actionLock=false, 260); });
+      if (actionLock) return;
+      actionLock = true;
+      const btn = (
+        lastInteractedElement &&
+        lastInteractedElement.tagName === 'BUTTON' &&
+        !lastInteractedElement.classList.contains('nav-item') &&
+        !lastInteractedElement.classList.contains('role-btn')
+      ) ? lastInteractedElement : null;
+      const origHtml = btn ? btn.innerHTML : '';
+      const origDisabled = btn ? btn.disabled : false;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التنفيذ...`;
+      }
+      Promise.resolve(fn()).finally(() => {
+        if (btn && document.body.contains(btn)) {
+          btn.innerHTML = origHtml;
+          btn.disabled = origDisabled;
+        }
+        setTimeout(() => { actionLock = false; }, 260);
+      });
     }
 
     function showToast(msg, type='auto') {
@@ -1724,6 +1743,24 @@
       toggleEl('admCard-packageWeights', hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm));
       toggleEl('admCard-zonesManage', hasAdminPerm('managePricing', adm));
       toggleEl('admCard-pricingManage', hasAdminPerm('managePricing', adm));
+
+      // إظهار تبويبات شريط التنقل السفلي المتاحة لصلاحيات المسؤول فقط وتوجيهه تلقائياً لأول تبويب متاح
+      const tabAccess = {
+        home: isMaster || hasAdminPerm('viewDashboard', adm) || hasAdminPerm('viewAnalytics', adm) || hasAdminPerm('manageSettings', adm) || hasAdminPerm('receiveAdminPush', adm),
+        captains: isMaster || hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm) || hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageCommissions', adm),
+        finance: isMaster || hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageCommissions', adm) || hasAdminPerm('manageSettings', adm),
+        operations: isMaster || hasAdminPerm('viewOrders', adm) || hasAdminPerm('manageOrders', adm) || hasAdminPerm('managePricing', adm) || hasAdminPerm('manageSettings', adm)
+      };
+
+      Object.keys(tabAccess).forEach(tKey => {
+        const navBtn = document.getElementById(`navAdm-${tKey}`);
+        if (navBtn) navBtn.style.display = tabAccess[tKey] ? 'flex' : 'none';
+      });
+
+      if (!tabAccess[STATE.currentAdminTab]) {
+        const firstAllowed = Object.keys(tabAccess).find(tKey => tabAccess[tKey]) || 'home';
+        switchAdminTab(firstAllowed);
+      }
     }
 
     function renderAdminScreen() {
