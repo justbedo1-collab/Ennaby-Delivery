@@ -3165,7 +3165,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (tierProgBox) tierProgBox.innerHTML = detailedStatusHtml;
         const availSw = document.getElementById('courierAvailabilitySwitch'); const statusTxt = document.getElementById('courierStatusText');
         if (availSw) { availSw.checked = courier.status === 'قيد المراجعة' ? false : Boolean(courier.isAvailable); }
-        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال أوردرات البشوات 📡' : 'انت دلوقتى فى استراحة افتح رادار الطلبات فى اى وقت عشان تبدأ شغل 🚀'; }
+        if (statusTxt) { if (courier.status === 'قيد المراجعة') statusTxt.innerText = 'حسابك لسه بيتراجع يا نجم الطيارين 😎 (تقدر تتفرج ع الرادار بس)'; else if (courier.status === 'موقوف') statusTxt.innerText = `حسابك موقوف مؤقتاً: ${courier.suspendReason || 'يا ريت تكلم الإدارة'}`; else statusTxt.innerText = courier.isAvailable ? 'إنت جاهز وفاتح الرادار دلوقتي لاستقبال الطلبات 📡' : 'انت دلوقتى فى استراحة افتح رادار الطلبات فى اى وقت عشان تبدأ شغل 🚀'; }
         const noticesBox = document.getElementById('courierAdminNoticesBox');
         if (noticesBox) {
           const liveWelcomeAmt = Math.max(0, roundMoney(s.welcomeBonusAmount ?? 7));
