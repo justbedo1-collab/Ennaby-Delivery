@@ -212,7 +212,27 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; right: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(-22px); }
-    .price-preview-banner { background: linear-gradient(135deg, var(--accent), #f3eaed); border: 1.5px dashed var(--primary); border-radius: 14px; padding: 12px 14px; margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+    /* تصميم مضغوط واحترافي لشريط كود الخصم وكارت أجرة التوصيل (Mobile-First) */
+    .promo-compact-card { display: none; background: #FAF7FC; border: 1px solid #E1BEE7; border-radius: 12px; padding: 9px 11px; margin-bottom: 10px; }
+    .promo-compact-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
+    .promo-compact-title { font-size: 11.5px; font-weight: 800; color: #6A1B9A; display: inline-flex; align-items: center; gap: 5px; margin: 0; }
+    .promo-compact-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+    .promo-compact-input { flex: 1; min-width: 0; height: 38px !important; padding: 0 11px !important; font-size: 12px !important; font-weight: 800 !important; background: #FFFFFF !important; border: 1px solid #D1C4E9 !important; border-radius: 9px !important; text-transform: uppercase; color: var(--text-main); }
+    .promo-compact-input::placeholder { font-size: 11px; font-weight: 600; color: #9E9498; }
+    .promo-compact-input:focus { border-color: #6A1B9A !important; box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.1); }
+    .promo-compact-btn { width: auto !important; height: 38px; padding: 0 12px !important; font-size: 11.5px !important; font-weight: 800 !important; border-radius: 9px !important; background: #6A1B9A !important; color: #FFFFFF !important; border: none; white-space: nowrap !important; flex-shrink: 0; display: inline-flex !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; box-shadow: 0 2px 6px rgba(106, 27, 154, 0.18) !important; }
+    .promo-compact-hint { font-size: 9.5px; color: #7B5299; font-weight: 700; margin-top: 5px; display: block; line-height: 1.35; }
+    .price-preview-banner { background: #FFFFFF; border: 1px solid #E8DCE0; border-right: 4px solid var(--primary); border-radius: 14px; padding: 11px 13px; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 10px rgba(123, 63, 82, 0.05); }
+    .fare-card-title { font-size: 11.5px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 5px; line-height: 1.2; }
+    .fare-card-title i { color: var(--primary); font-size: 12px; }
+    .fare-price-main-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-top: 1px; }
+    .fare-price-current { font-size: 23px; font-weight: 900; color: var(--primary); line-height: 1.1; letter-spacing: -0.3px; }
+    .fare-price-currency { font-size: 13px; font-weight: 800; color: var(--primary); margin-right: 2px; }
+    .fare-price-old-pill { display: none; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--text-muted); background: #F6F0F2; padding: 2px 8px; border-radius: 6px; line-height: 1.3; }
+    .fare-price-old-pill del { color: #8C7A80; font-weight: 800; text-decoration: line-through; }
+    .fare-captain-pill { background: #FAF4F6; border: 1px solid #EFE3E7; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; line-height: 1.4; }
+    .fare-discount-strip { display: none; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #C8E6C9; color: #1B5E20; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; line-height: 1.4; }
+    .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: var(--text-muted); line-height: 1.45; padding-top: 6px; border-top: 1px solid #F2EAEB; margin-top: 1px; }
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
@@ -471,45 +491,56 @@
                   </label>
                 </div>
               </div>
-              <!-- قسم كوبونات وأكواد الخصم للعميل (مع إمكانية الاحتفاظ بالكود لفترة السماح) -->
-              <div class="input-group" style="background:#FCF8FF; border:1.5px dashed #8E24AA; border-radius:14px; padding:12px; margin-bottom:6px;">
-                <label class="input-label" for="orderPromoCodeInput" style="color:#6A1B9A; font-weight:800; font-size:12px;">
-                  <i class="fa-solid fa-ticket"></i> معاك كود خصم عنابي يا باشا؟ 🎟️😍
-                </label>
-                <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
-                  <input type="text" id="orderPromoCodeInput" class="input-field" placeholder="اكتب الكود هنا (مثلاً: ENNABY15)" style="background:#fff; text-transform:uppercase; font-weight:800;">
-                  <button type="button" class="btn-main" style="background:#6A1B9A; padding:10px; font-size:12px;" onclick="applyCustomerPromoCode()">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> شغّل الكود 🎁
+              <!-- قسم كود الخصم المدمج (يظهر تلقائياً فقط عند توفر كود سارٍ أو مخصص للعميل) -->
+              <div class="promo-compact-card" id="customerPromoCodeSection">
+                <div class="promo-compact-header">
+                  <label class="promo-compact-title" for="orderPromoCodeInput">
+                    <i class="fa-solid fa-ticket"></i> معاك كود خصم عنابي يا باشا؟ 🎟️
+                  </label>
+                  <span id="promoAvailableCountHint" style="font-size:10px; font-weight:800; color:#6A1B9A; background:#F3E5F5; padding:1px 7px; border-radius:20px;">متاح ليك 🎁</span>
+                </div>
+                <div class="promo-compact-row">
+                  <input type="text" id="orderPromoCodeInput" class="input-field promo-compact-input" placeholder="اكتب الكود هنا (مثلاً: ENNABY15)">
+                  <button type="button" class="btn-main promo-compact-btn" onclick="applyCustomerPromoCode()">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="font-size:11px;"></i>
+                    <span>شغّل الكود 🎁</span>
                   </button>
                 </div>
-                <div id="savedPromoCodeActiveBox" style="display:none; margin-top:6px; background:#F3E5F5; border:1px solid #CE93D8; border-radius:10px; padding:7px 10px; font-size:11px; color:#4A148C; font-weight:800; justify-content:space-between; align-items:center;">
-                  <span id="savedPromoCodeActiveText"></span>
-                  <button type="button" onclick="removeSavedPromoCode()" style="background:none; border:none; color:var(--danger); font-weight:900; cursor:pointer;">إلغاء الكود ✕</button>
+                <div id="savedPromoCodeActiveBox" style="display:none; margin-top:6px; background:#F3E5F5; border:1px solid #CE93D8; border-radius:8px; padding:5px 9px; font-size:10.5px; color:#4A148C; font-weight:800; justify-content:space-between; align-items:center; gap:6px;">
+                  <span id="savedPromoCodeActiveText" style="line-height:1.35;"></span>
+                  <button type="button" onclick="removeSavedPromoCode()" style="background:none; border:none; color:var(--danger); font-weight:900; font-size:10.5px; cursor:pointer; white-space:nowrap; flex-shrink:0;">إلغاء ✕</button>
                 </div>
-                <small style="font-size:10px; color:#6A1B9A; font-weight:700; margin-top:2px;">
+                <small class="promo-compact-hint">
                   💡 الكود بيفضل متشال معاك في تليفونك لحد ما تستخدمه أو وقته يخلص!
                 </small>
               </div>
-              <div class="price-preview-banner" id="priceBanner" style="padding:14px; gap:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+
+              <!-- كارت أجرة التوصيل الاحترافي المضغوط -->
+              <div class="price-preview-banner" id="priceBanner">
+                <div class="fare-card-title">
+                  <i class="fa-solid fa-coins"></i>
+                  <span>أجرة التوصيل</span>
+                </div>
+
+                <div class="fare-price-main-row">
                   <div>
-                    <span style="font-size:11.5px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:2px;">أجرة التوصيل الصافية:</span>
-                    <div style="display:flex; align-items:baseline; gap:6px;">
-                      <div style="font-size:24px; font-weight:900; color:var(--primary); line-height:1.1;">
-                        <span id="estimatedPrice">--</span> <span id="priceCurrency" style="font-size:14px;">جنيه</span>
-                      </div>
-                      <span id="originalPriceStrike" style="display:none; font-size:12px; font-weight:800; color:var(--text-muted); text-decoration:line-through;"></span>
-                    </div>
+                    <span class="fare-price-current" id="estimatedPrice">--</span>
+                    <span class="fare-price-currency" id="priceCurrency">جنيه</span>
                   </div>
-                  <div style="text-align:left; background:rgba(255,255,255,0.85); border:1px solid rgba(123,63,82,0.18); padding:6px 10px; border-radius:10px;">
-                    <span id="routeDescription" style="font-size:11.5px; font-weight:900; color:var(--primary); display:block; white-space:nowrap;">اختار المسار</span>
-                    <small style="color:var(--text-muted); font-size:10px; font-weight:700; display:block; white-space:nowrap;">الكابتن هيكوش عليهم حلال عليه 😂💲</small>
-                  </div>
+                  <span class="fare-price-old-pill" id="originalPriceStrike"></span>
                 </div>
-                <div id="customerDiscountBannerNotice" style="display:none; background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:7px 10px; border-radius:9px; font-size:11.5px; font-weight:800; line-height:1.5; text-align:right;">
-                  🎁 مبروك! هيتخصم رصيد هدية من محفظتك فوراً
+
+                <div class="fare-captain-pill">
+                  <i class="fa-solid fa-motorcycle" style="color:var(--primary); font-size:12px;"></i>
+                  <span>الكابتن هيكوش عليهم حلال عليه 😂💵</span>
                 </div>
-                <div id="priceHumorMessage" style="font-size:11px; font-weight:700; color:#5F2E3E; background:rgba(255,255,255,0.75); padding:7px 10px; border-radius:9px; line-height:1.5;">
+                <span id="routeDescription" style="display:none;"></span>
+
+                <div class="fare-discount-strip" id="customerDiscountBannerNotice">
+                  🎁 وفّر رصيد فوري من محفظتك على المشوار ده!
+                </div>
+
+                <div class="fare-footnote-text" id="priceHumorMessage">
                   صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وده هيبلغك بيه الكابتن العنابي لو فيه زيادة 🛵
                 </div>
               </div>
@@ -1550,8 +1581,17 @@
 
     function getActiveCustomerPhoneForPricing() { const inputEl = document.getElementById('orderSenderPhone'); const typed = inputEl ? normalizePhone(inputEl.value) : ''; if (isValidEgyptianPhone(typed)) return typed; return STATE.customerProfile.savedPhone || ''; }
 
+    let lastSyncedPromoPhone = '';
     function handleCustomerPhoneInput() {
       updateCustomerPinFieldVisibility();
+      const typedPh = getActiveCustomerPhoneForPricing();
+      if (isValidEgyptianPhone(typedPh) && typedPh !== lastSyncedPromoPhone) {
+        lastSyncedPromoPhone = typedPh;
+        if (!STATE.customerProfile.savedPhone) {
+          STATE.customerProfile.savedPhone = typedPh;
+        }
+        syncFromCloudServer(true);
+      }
       validateSavedPromoCodeLocally();
       calculateDeliveryPrice();
     }
@@ -1926,18 +1966,14 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
     }
 
-    function renderCustomerProfilePromoCodes() {
-      const listEl = document.getElementById('custActivePromoCodesList');
-      const badgeEl = document.getElementById('custActivePromosCountBadge');
-      if (!listEl) return;
-
+    function getCustomerAvailablePromoCodes() {
       const now = Date.now();
-      const activePhone = normalizePhone(STATE.customerProfile?.savedPhone || STATE.authenticatedCustomerPhone || getActiveCustomerPhoneForPricing());
+      const activePhone = normalizePhone(getActiveCustomerPhoneForPricing() || STATE.customerProfile?.savedPhone || STATE.authenticatedCustomerPhone || '');
       const rawPromos = Array.isArray(STATE.settings?.availablePromoCodes)
         ? STATE.settings.availablePromoCodes
         : (Array.isArray(STATE.settings?.promoCodes) ? STATE.settings.promoCodes : []);
 
-      const validPromos = rawPromos.filter(p => {
+      return rawPromos.filter(p => {
         if (!p || p.active === false) return false;
         if (p.expiresAt && now >= Number(p.expiresAt)) return false;
         const isTargetAll = !p.targetPhone || p.targetPhone === 'all';
@@ -1946,10 +1982,44 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const remUses = p.remainingUses !== undefined ? Number(p.remainingUses) : Math.max(1, Number(p.maxUses) || 1);
         return remUses > 0;
       });
+    }
+
+    function updatePromoSectionVisibility() {
+      const promoSec = document.getElementById('customerPromoCodeSection');
+      const countHint = document.getElementById('promoAvailableCountHint');
+      const inp = document.getElementById('orderPromoCodeInput');
+      if (!promoSec) return;
+
+      const validPromos = getCustomerAvailablePromoCodes();
+      const now = Date.now();
+      const hasValidSaved = Boolean(
+        savedPromoCodeObj &&
+        savedPromoCodeObj.code &&
+        (!savedPromoCodeObj.expiresAt || now < Number(savedPromoCodeObj.expiresAt)) &&
+        (savedPromoCodeObj.remainingUses === undefined || Number(savedPromoCodeObj.remainingUses) > 0)
+      );
+
+      if (validPromos.length > 0 || hasValidSaved) {
+        promoSec.style.display = 'block';
+        if (countHint) {
+          countHint.innerText = validPromos.length > 0 ? `${validPromos.length} متاح 🎁` : 'كود مفعّل ✅';
+        }
+      } else {
+        promoSec.style.display = 'none';
+        if (inp && document.activeElement !== inp) inp.value = '';
+      }
+    }
+
+    function renderCustomerProfilePromoCodes() {
+      const listEl = document.getElementById('custActivePromoCodesList');
+      const badgeEl = document.getElementById('custActivePromosCountBadge');
+      const validPromos = getCustomerAvailablePromoCodes();
+      updatePromoSectionVisibility();
 
       if (badgeEl) {
         badgeEl.innerText = `${validPromos.length} متاح`;
       }
+      if (!listEl) return;
 
       if (validPromos.length === 0) {
         listEl.innerHTML = `<div style="color:#6A1B9A; opacity:0.8; font-size:11.5px; text-align:center; padding:6px; font-weight:700;">
@@ -1992,10 +2062,12 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function startPromoCountdownTicker() {
       if (promoCountdownIntervalId) clearInterval(promoCountdownIntervalId);
       promoCountdownIntervalId = setInterval(() => {
-        const nodes = document.querySelectorAll('.js-promo-countdown');
-        if (!nodes.length) return;
         let anyExpiredNow = false;
         const now = Date.now();
+        if (savedPromoCodeObj && savedPromoCodeObj.expiresAt && now >= Number(savedPromoCodeObj.expiresAt)) {
+          anyExpiredNow = true;
+        }
+        const nodes = document.querySelectorAll('.js-promo-countdown');
         nodes.forEach(el => {
           const exp = Number(el.getAttribute('data-expires') || 0);
           if (exp > 0 && now >= exp) {
@@ -2045,6 +2117,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const box = document.getElementById('savedPromoCodeActiveBox');
       const txt = document.getElementById('savedPromoCodeActiveText');
       const inp = document.getElementById('orderPromoCodeInput');
+      updatePromoSectionVisibility();
       if (!box || !txt) return;
       if (savedPromoCodeObj && savedPromoCodeObj.code) {
         const remHours = savedPromoCodeObj.expiresAt
@@ -2052,9 +2125,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           : 24;
         const maxUses = Math.max(1, Number(savedPromoCodeObj.maxUses) || 1);
         const remUses = savedPromoCodeObj.remainingUses !== undefined ? Number(savedPromoCodeObj.remainingUses) : maxUses;
-        const usesNote = maxUses > 1 ? ` • متبقي ${remUses} من ${maxUses} مرات` : '';
+        const usesNote = maxUses > 1 ? ` • متبقي ${remUses} من ${maxUses}` : '';
         box.style.display = 'flex';
-        txt.innerText = `🎟️ كود شغال ومتشال معاك (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (شغال لـ ${remHours} س${usesNote})`;
+        txt.innerText = `🎟️ كود مفعّل (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (متاح لـ ${remHours} س${usesNote})`;
         if (inp && document.activeElement !== inp) inp.value = savedPromoCodeObj.code;
       } else {
         box.style.display = 'none';
@@ -2382,7 +2455,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const discountNotice = document.getElementById('customerDiscountBannerNotice'); const submitBtn = document.getElementById('submitOrderBtn'); const routeDescEl = document.getElementById('routeDescription');
       if (!pZoneEl || !dZoneEl || !priceSpan || !submitBtn) return null;
       const pZone = pZoneEl.value || STATE.zones[0] || 'المنصورة'; const dZone = dZoneEl.value || STATE.zones[0] || 'المنصورة'; const routeKey = `${pZone}|${dZone}`;
-      if (routeDescEl) routeDescEl.innerText = `📍 من ${pZone} ⬅️ ${dZone}`;
+      if (routeDescEl) routeDescEl.innerText = `${pZone} - ${dZone}`;
       if (STATE.pricing[routeKey] !== undefined) {
         const baseFare = Math.max(0, roundMoney(STATE.pricing[routeKey]));
         const s = STATE.settings || {};
@@ -2407,24 +2480,25 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         priceSpan.innerText = finalFare;
         if (strikeSpan) {
           if (totalDiscount > 0) {
-            strikeSpan.style.display = 'inline';
-            strikeSpan.innerText = `بدل ${fare} ج`;
+            strikeSpan.style.display = 'inline-flex';
+            strikeSpan.innerHTML = `بدلًا من <del>${fare} ج</del>`;
           } else {
             strikeSpan.style.display = 'none';
+            strikeSpan.innerHTML = '';
           }
         }
         if (discountNotice) {
           if (totalDiscount > 0) {
-            discountNotice.style.display = 'block';
+            discountNotice.style.display = 'flex';
             if (walletDiscount > 0 && promoDiscount > 0) {
-              discountNotice.innerText = `🎁 اتخصملك ${totalDiscount} جنيه فوري (${walletDiscount} ج من محفظتك + ${promoDiscount} ج بكود ${savedPromoCodeObj.code})!`;
+              discountNotice.innerText = `وفّر ${totalDiscount} جنيه فوري (${walletDiscount} ج محفظتك + ${promoDiscount} ج كود ${savedPromoCodeObj.code}) على المشوار ده! 🎁`;
             } else if (walletDiscount > 0) {
-              discountNotice.innerText = `🎁 اتخصملك ${walletDiscount} جنيه فوري من رصيد محفظتك على المشوار ده!`;
+              discountNotice.innerText = `وفّر ${walletDiscount} جنيه فوري من رصيد محفظتك على المشوار ده! 🎁`;
             } else {
-              discountNotice.innerText = `🎟️ اتخصملك ${promoDiscount} جنيه فوري بكود الخصم (${savedPromoCodeObj.code})!`;
+              discountNotice.innerText = `وفّر ${promoDiscount} جنيه فوري بكود الخصم (${savedPromoCodeObj.code}) على المشوار ده! 🎁`;
             }
           } else if (s.surgeActive && Number(s.surgePercent) > 0) {
-            discountNotice.style.display = 'block';
+            discountNotice.style.display = 'flex';
             discountNotice.innerText = `⚡ شامل زيادة وقت الذروة المؤقتة (+${s.surgePercent}%)`;
           } else {
             discountNotice.style.display = 'none';
@@ -2433,7 +2507,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         submitBtn.disabled = false; return { originalFare: fare, finalFare, discount: totalDiscount };
       }
       priceSpan.innerText = 'مش متحدد';
-      if (strikeSpan) strikeSpan.style.display = 'none';
+      if (strikeSpan) { strikeSpan.style.display = 'none'; strikeSpan.innerHTML = ''; }
       if (discountNotice) discountNotice.style.display = 'none';
       submitBtn.disabled = true; return null;
     }
