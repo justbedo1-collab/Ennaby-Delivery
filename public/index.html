@@ -691,7 +691,7 @@
 
             <!-- سجل الهدايا والتعويضات القابل للطي والفتح عند الحاجة -->
             <div class="card" style="padding: 13px;">
-              <div onclick="const box=document.getElementById('custWalletTransactionsList'); const ic=document.getElementById('custWalletLogArrow'); if(box){ const isHidden=box.style.display==='none'; box.style.display=isHidden?'flex':'none'; if(ic) ic.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
+              <div onclick="{ const cBox=document.getElementById('custWalletTransactionsList'); const cIc=document.getElementById('custWalletLogArrow'); if(cBox){ const isHidden=cBox.style.display==='none'; cBox.style.display=isHidden?'flex':'none'; if(cIc) cIc.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; } }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
                 <h3 class="card-title" style="font-size:13px; margin:0;"><i class="fa-solid fa-gift"></i> سجل الهدايا والتعويضات</h3>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <span style="background:var(--accent); color:var(--primary); padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800;">عرض السجل</span>
@@ -922,7 +922,7 @@
 
               <!-- 3. كارت كشف حساب المحفظة أسفل كارت المحفظة مباشرة -->
               <div class="card" style="padding: 13px;">
-                <div onclick="const box=document.getElementById('courierWalletTransactionsList'); const ic=document.getElementById('courWalletLogArrow'); if(box){ const isHidden=box.style.display==='none'; box.style.display=isHidden?'flex':'none'; if(ic) ic.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
+                <div onclick="{ const kBox=document.getElementById('courierWalletTransactionsList'); const kIc=document.getElementById('courWalletLogArrow'); if(kBox){ const isHidden=kBox.style.display==='none'; kBox.style.display=isHidden?'flex':'none'; if(kIc) kIc.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)'; } }" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
                   <h3 class="card-title" style="font-size:13.5px; margin:0;"><i class="fa-solid fa-receipt"></i> كشف حساب المحفظة</h3>
                   <div style="display:flex; align-items:center; gap:6px;">
                     <span style="background:var(--accent); color:var(--primary); padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800;">عرض الكشف (آخر 10)</span>
