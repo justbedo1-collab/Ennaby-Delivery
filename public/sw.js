@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ennaby-cache-v44';
+const CACHE_NAME = 'ennaby-cache-v45';
 const urlsToCache = [
   '/',
   '/index.html',
