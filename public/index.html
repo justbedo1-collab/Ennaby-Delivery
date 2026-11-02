@@ -222,17 +222,17 @@
     .promo-compact-input:focus { border-color: #6A1B9A !important; box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.1); }
     .promo-compact-btn { width: auto !important; height: 38px; padding: 0 12px !important; font-size: 11.5px !important; font-weight: 800 !important; border-radius: 9px !important; background: #6A1B9A !important; color: #FFFFFF !important; border: none; white-space: nowrap !important; flex-shrink: 0; display: inline-flex !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; box-shadow: 0 2px 6px rgba(106, 27, 154, 0.18) !important; }
     .promo-compact-hint { font-size: 9.5px; color: #7B5299; font-weight: 700; margin-top: 5px; display: block; line-height: 1.35; }
-    .price-preview-banner { background: #FFFFFF; border: 1px solid #E8DCE0; border-right: 4px solid var(--primary); border-radius: 14px; padding: 11px 13px; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 7px; box-shadow: 0 2px 10px rgba(123, 63, 82, 0.05); }
+    .price-preview-banner { background: #FFFFFF; border: 1px solid #E8DCE0; border-right: 4px solid var(--primary); border-radius: 14px; padding: 11px 12px; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 7px; box-shadow: 0 2px 10px rgba(123, 63, 82, 0.05); }
     .fare-card-title { font-size: 11.5px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 5px; line-height: 1.2; }
     .fare-card-title i { color: var(--primary); font-size: 12px; }
-    .fare-price-main-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 1px; }
-    .fare-price-current { font-size: 23px; font-weight: 900; color: var(--primary); line-height: 1.1; letter-spacing: -0.3px; }
-    .fare-price-currency { font-size: 13px; font-weight: 800; color: var(--primary); margin-right: 2px; }
-    .fare-price-old-pill { display: none; align-items: center; gap: 3px; font-size: 11px; font-weight: 800; color: var(--danger); background: #FFEBEE; border: 1px solid #FFCDD2; padding: 2px 8px; border-radius: 6px; line-height: 1.35; white-space: nowrap; }
+    .fare-price-main-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 5px; margin-top: 1px; width: 100%; overflow: hidden; }
+    .fare-price-current { font-size: 21px; font-weight: 900; color: var(--primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap; }
+    .fare-price-currency { font-size: 12px; font-weight: 800; color: var(--primary); margin-right: 1px; white-space: nowrap; }
+    .fare-price-old-pill { display: none; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--danger); background: #FFEBEE; border: 1px solid #FFCDD2; padding: 2px 6px; border-radius: 6px; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
     .fare-price-old-pill del { color: var(--danger); font-weight: 900; text-decoration: line-through; }
-    .fare-discount-strip { display: none; align-items: center; gap: 4px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--success); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; line-height: 1.35; white-space: nowrap; }
+    .fare-discount-strip { display: none; align-items: center; gap: 3px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--success); padding: 2px 6px; border-radius: 6px; font-size: 10.5px; font-weight: 800; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
     .fare-captain-pill { background: #FAF4F6; border: 1px solid #EFE3E7; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; line-height: 1.4; }
-    .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: #5F2E3E; background: #FCF8FA; border: 1px dashed rgba(123, 63, 82, 0.24); border-right: 3px solid var(--primary-light); border-radius: 9px; padding: 6px 10px; line-height: 1.5; margin-top: 1px; }
+    .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: #78350F; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FDE68A; border-right: 3.5px solid #F59E0B; border-radius: 9px; padding: 6px 10px; line-height: 1.5; margin-top: 1px; }
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
