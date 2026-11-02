@@ -104,6 +104,17 @@
     .trend-pill-up { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; }
     .trend-pill-down { background: #FFEBEE; color: #D32F2F; border: 1px solid #FFCDD2; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; }
     .trend-pill-neutral { background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
+    /* تنسيقات كروت الطلبات المطورة وأزرار التواصل السريع في غرفة العمليات */
+    .adm-order-card { background: #FAF7F4; padding: 12px; border-radius: 14px; border: 1.5px solid #E9DCE0; font-size: 11.5px; line-height: 1.65; transition: all 0.2s ease; }
+    .adm-order-card.adm-ord-disputed { background: #FFF8FA; border-color: #F48FB1; border-right: 4.5px solid #C2185B; }
+    .adm-order-card.adm-ord-waiting { background: #FFFDF7; border-color: #FFE082; border-right: 4.5px solid #ED6C02; }
+    .adm-order-card.adm-ord-active { background: #F8FDFF; border-color: #B3E5FC; border-right: 4.5px solid #0288D1; }
+    .adm-route-box { background: #FFFFFF; border: 1px solid #EFE6E9; border-radius: 10px; padding: 7px 10px; margin: 6px 0; font-size: 11px; }
+    .adm-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0; }
+    .adm-contact-card { background: #FFFFFF; border: 1px solid #E8DFE3; border-radius: 10px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+    .adm-mini-actions { display: flex; gap: 4px; align-items: center; }
+    .adm-btn-call { flex: 1; background: var(--primary); color: #fff !important; text-decoration: none; padding: 4px 6px; border-radius: 7px; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+    .adm-btn-wa { flex: 1; background: #25D366; color: #fff !important; text-decoration: none; padding: 4px 6px; border-radius: 7px; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -173,6 +184,7 @@
               <div class="card kpi-card" style="border-right:4px solid var(--primary);">
                 <span class="kpi-label">أجور التوصيل الإجمالية</span>
                 <div class="kpi-value" id="adminStatTotalFares">0 ج</div>
+                <div class="kpi-sub" id="adminStatTotalFaresTodaySub" style="color:var(--primary);">📅 اليوم: 0 ج</div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid var(--success);">
                 <span class="kpi-label">إيراد عمولات المنصة</span>
@@ -182,7 +194,7 @@
               <div class="card kpi-card" style="border-right:4px solid #607D8B;">
                 <span class="kpi-label">الكباتن المسجلين 🛵</span>
                 <div class="kpi-value" style="color:#607D8B;" id="adminStatTotalCaptainsCount">0 كابتن</div>
-                <div class="kpi-sub" id="adminStatCaptainsSub"></div>
+                <div class="kpi-sub" id="adminStatCaptainsSub" style="color:#607D8B;"></div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid #0288D1;">
                 <span class="kpi-label">إجمالي محافظ الكباتن 💰</span>
@@ -203,14 +215,17 @@
               <div class="card kpi-card" style="border-right:4px solid #7B1FA2;">
                 <span class="kpi-label">عدد الطلبات الجارية الآن 🚀</span>
                 <div class="kpi-value" style="color:#7B1FA2;" id="adminStatActiveOrdersCount">0</div>
+                <div class="kpi-sub" id="adminStatWaitingRadarSub" style="color:#B26A00;">⏳ ع الرادار: 0</div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid #2E7D32;">
                 <span class="kpi-label">الطلبات المؤكدة ✅</span>
                 <div class="kpi-value" style="color:#2E7D32;" id="adminStatOrdersCompletedCount">0</div>
+                <div class="kpi-sub" id="adminStatCompletedTodaySub" style="color:#2E7D32;">📅 اليوم: 0 طلب</div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid var(--danger);">
                 <span class="kpi-label">الطلبات الملغية ❌</span>
                 <div class="kpi-value" style="color:var(--danger);" id="adminStatOrdersCancelledCount">0</div>
+                <div class="kpi-sub" id="adminStatCancelledTodaySub" style="color:var(--danger);">📅 اليوم: 0 طلب</div>
               </div>
               <div class="card kpi-card" style="border-right:4px solid #00ACC1; grid-column: span 2;">
                 <span class="kpi-label">عدد تحميلات وتثبيت التطبيق 📲</span>
@@ -517,6 +532,9 @@
 
               <div class="card" id="admCard-captainDirectory" style="border: 2px solid var(--primary);">
                 <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن المعتمدين 🛵</h2>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <input type="text" id="adminCaptainDirectorySearchInput" class="input-field" placeholder="🔍 ابحث باسم الكابتن أو رقم هاتفه..." oninput="filterAdminCaptainDirectoryDropdown()">
+                </div>
                 <div class="input-group">
                   <select class="select-field" id="adminCaptainDirectorySelect" onchange="renderAdminSelectedCaptainCard()"></select>
                 </div>
@@ -747,12 +765,26 @@
             <div class="card" id="admCard-ordersManage">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                 <h2 class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> إدارة الطلبات والاعتراضات</h2>
-                <select id="adminOrdersTimeFilter" class="select-field" style="width:auto; padding:6px 10px; font-size:11.5px;" onchange="renderAdminDashboardData()">
-                  <option value="week">آخر 7 أيام 📅</option>
-                  <option value="today">اليوم ☀️</option>
-                  <option value="3days">آخر 3 أيام 🕒</option>
-                  <option value="all">كل الطلبات 📂</option>
+                <span class="badge badge-accepted" id="adminOrdersFilteredCountBadge">0 طلب</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:8px; margin-bottom:8px;">
+                <select id="adminOrdersTimeFilter" class="select-field" style="padding:8px 10px; font-size:11.5px;" onchange="renderAdminDashboardData()">
+                  <option value="week">📅 آخر 7 أيام</option>
+                  <option value="today">☀️ اليوم فقط</option>
+                  <option value="3days">🕒 آخر 3 أيام</option>
+                  <option value="all">📂 كل الأوقات</option>
                 </select>
+                <select id="adminOrdersStatusFilter" class="select-field" style="padding:8px 10px; font-size:11.5px;" onchange="renderAdminDashboardData()">
+                  <option value="all">📋 كل الحالات</option>
+                  <option value="waiting">⏳ في انتظار كابتن (ع الرادار)</option>
+                  <option value="active">🚀 جارية الآن مع كابتن</option>
+                  <option value="disputed">⚠️ قيد مراجعة الاعتراض</option>
+                  <option value="completed">✅ مكتملة / تمت التسوية</option>
+                  <option value="cancelled">❌ طلبات ملغية</option>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:10px;">
+                <input type="text" id="adminOrdersSearchInput" class="input-field" placeholder="🔍 ابحث برقم الطلب (#ORD)، هاتف العميل، اسم/هاتف الكابتن، أو العنوان..." oninput="renderAdminDashboardData()">
               </div>
               <div id="adminOrdersFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
             </div>
@@ -2495,7 +2527,32 @@
     }
 
     function adminResolveDispute(id, res) {
-      withActionLock(async () => { const {ok, data}=await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`,'POST',{action:res==='complete'?'resolve_complete':'resolve_cancel'}); if(ok&&data.success)showToast('تم الفصل ✅','ok'); });
+      const isComplete = res === 'complete';
+      const defaultNote = isComplete
+        ? 'تمت المراجعة واعتماد اكتمال الطلب بواسطة الإدارة ✅'
+        : 'شكوتك تمت مراجعتها من قبل الإدارة وجاري التحقيق مع الطرف الآخر وسيتم تعويضك بالشكل المناسب ⚖️';
+
+      openCustomActionModal({
+        title: isComplete ? `اعتماد اكتمال الطلب (${id}) ✅` : `تسوية إدارية لشكوى الطلب (${id}) ⚖️`,
+        message: isComplete
+          ? 'يمكنك تعديل أو تأكيد رسالة القرار التي ستظهر للعميل:'
+          : 'سيتم تحويل حالة الطلب إلى «تمت التسوية الإدارية» مع احتفاظ المنصة بعمولتها. اكتب رسالة القرار للعميل:',
+        needInput: true,
+        inputPlaceholder: 'اكتب قرار وملاحظة الإدارة للعميل...',
+        defaultValue: defaultNote,
+        confirmText: isComplete ? 'اعتماد الاكتمال ✅' : 'اعتماد التسوية ⚖️',
+        isDanger: !isComplete,
+        onConfirm: async (reasonText) => {
+          withActionLock(async () => {
+            const { ok, data } = await apiRequest(`/api/admin/orders/${encodeURIComponent(id)}/manage`, 'POST', {
+              action: isComplete ? 'resolve_complete' : 'resolve_cancel',
+              reason: reasonText
+            });
+            if (ok && data.success) showToast('تم الفصل في الشكوى وإشعار العميل بنجاح ⚖️✅', 'ok');
+            else showToast((data && data.message) || 'تعذر تنفيذ القرار ⚠️', 'warn');
+          });
+        }
+      });
     }
 
     function adminReassignOrCancelOrder(id, act) {
@@ -2593,8 +2650,14 @@
       updateAdminTiersLiveNote();
     }
 
+    function toAdminWhatsAppNum(rawPhone) {
+      const clean = normalizePhone(rawPhone);
+      if (!clean) return '';
+      return clean.startsWith('0') ? '2' + clean : clean;
+    }
+
     function renderAdminDropdown() {
-      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - [${escapeHtml(c.tierBadgeText || c.status)}]</option>`).join('');
+      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [الرصيد: ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText || c.status)}]</option>`).join('');
       ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
       if(document.activeElement !== document.getElementById('adminResetPassCaptainSelect')) filterResetPassCaptainDropdown();
       renderAdminCustomFeeCaptainSummary();
@@ -2616,10 +2679,29 @@
       document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="handleRoutePriceInput(this)" style="width:85px; padding:6px; font-weight:700;"></td></tr>`).join('');
     }
 
+    function filterAdminCaptainDirectoryDropdown() {
+      const s = document.getElementById('adminCaptainDirectorySelect');
+      if (!s) return;
+      const q = normalizeDigits(document.getElementById('adminCaptainDirectorySearchInput')?.value || '').trim().toLowerCase();
+      const filtered = q
+        ? STATE.captains.filter(c => (c.phone && c.phone.toLowerCase().includes(q)) || (c.fullName && c.fullName.toLowerCase().includes(q)))
+        : STATE.captains;
+      const prevVal = s.value;
+      s.innerHTML = filtered.length === 0
+        ? `<option value="">-- لا يوجد كابتن مطابق للبحث --</option>`
+        : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}]</option>`).join('');
+      if (prevVal && filtered.some(c => c.phone === prevVal)) {
+        s.value = prevVal;
+      } else if (filtered.length > 0) {
+        s.value = filtered[0].phone;
+      }
+      renderAdminSelectedCaptainCard();
+    }
+
     function renderAdminCaptainDirectoryDropdown() {
-      const s = document.getElementById('adminCaptainDirectorySelect'); if(!s||document.activeElement===s) { renderAdminSelectedCaptainCard(); return; }
-      const p = s.value; s.innerHTML=`<option value="">-- اختر --</option>`+STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) - ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}</option>`).join('');
-      if(p)s.value=p; else if(STATE.captains.length)s.value=STATE.captains[0].phone; renderAdminSelectedCaptainCard();
+      const s = document.getElementById('adminCaptainDirectorySelect');
+      if (!s || document.activeElement === s) { renderAdminSelectedCaptainCard(); return; }
+      filterAdminCaptainDirectoryDropdown();
     }
 
     function renderAdminCustomerDirectory() {
@@ -2674,6 +2756,7 @@
       const targetOrd = Math.max(1, Number(STATE.settings.tierWeeklyOrdersTarget ?? 25));
       const winDays = Math.max(1, Number(c.tierDaysWindow || STATE.settings.tierDaysWindow || 7));
       const progPct = Math.min(100, Math.round(((c.weeklyCompletedOrders || 0) / targetOrd) * 100));
+      const capWa = toAdminWhatsAppNum(c.phone);
 
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
@@ -2683,8 +2766,12 @@
             <span class="badge ${getStatusBadgeClass(c.status)}">${escapeHtml(c.status)}</span>
           </div>
         </div>
+        <div class="adm-mini-actions" style="margin-top:8px;">
+          <a href="tel:${escapeHtml(c.phone)}" class="adm-btn-call" style="padding:6px 10px; font-size:11px;"><i class="fa-solid fa-phone"></i> اتصال بالكابتن</a>
+          <a href="https://wa.me/${capWa}" target="_blank" class="adm-btn-wa" style="padding:6px 10px; font-size:11px;"><i class="fa-brands fa-whatsapp"></i> مراسلة واتساب</a>
+        </div>
         <div style="font-size:11px; margin:8px 0; line-height:1.7;">
-          رقم قومي: ${escapeHtml(c.nationalId)} | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong><br>
+          رقم قومي: ${escapeHtml(c.nationalId || 'محجوب')} | منطقة: <strong>${escapeHtml(c.primaryZone || 'المنصورة')}</strong> | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong><br>
           📊 مشاوير آخر ${winDays} أيام: <strong>${c.weeklyCompletedOrders || 0} من ${targetOrd} طلب (${progPct}%)</strong> | أيام التميز: <strong>${c.consecutiveQualifiedDays || 0} يوم</strong> | العمولة الحالية: <strong style="color:var(--success);">${c.effectiveFee ?? 7} ج</strong>
           ${c.gracefulDemotion ? `<div style="color:#E65100; font-weight:800; margin-top:4px; background:#FFF3E0; padding:4px 8px; border-radius:6px;">🛡️ هبوط تدريجي آمن: الكابتن في فترة الأمان بالبلاتيني 🥈 (كان ماسياً 💎)</div>` : ''}
           ${c.suspendReason ? `<div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; padding:4px 8px; border-radius:6px;">⚠️ سبب الرفض/الإيقاف: ${escapeHtml(c.suspendReason)}</div>` : ''}
@@ -2711,18 +2798,44 @@
     }
 
     function renderAdminDashboardData() {
-      const comp=STATE.orders.filter(o=>o.status==='مكتمل'); const canc=STATE.orders.filter(o=>String(o.status||'').includes('ملغي'));
-      const disputed=STATE.orders.filter(o=>o.status==='قيد مراجعة الاعتراض');
-      const activeOrders=STATE.orders.filter(o=>ACTIVE_COURIER_STATUSES.includes(o.status));
-      const availCaps=STATE.captains.filter(c=>c.status==='معتمد'&&c.isAvailable);
-      const custPhonesSet=new Set(Object.keys(STATE.customers||{}).filter(isValidEgyptianPhone));
-      STATE.orders.forEach(o=>{const cp=resolveOrderClientPhone(o); if(isValidEgyptianPhone(cp))custPhonesSet.add(cp);});
+      const todayKey = getCairoDateKeyClient(Date.now());
+      const comp = STATE.orders.filter(o => o.status === 'مكتمل' || o.status === 'تمت التسوية الإدارية');
+      const canc = STATE.orders.filter(o => String(o.status || '').includes('ملغي'));
+      const disputed = STATE.orders.filter(o => o.status === 'قيد مراجعة الاعتراض');
+      const waitingRadarOrders = STATE.orders.filter(o => o.status === 'في انتظار كابتن');
+      const activeOrders = STATE.orders.filter(o => ACTIVE_COURIER_STATUSES.includes(o.status));
+      const availCaps = STATE.captains.filter(c => c.status === 'معتمد' && c.isAvailable);
+      const custPhonesSet = new Set(Object.keys(STATE.customers || {}).filter(isValidEgyptianPhone));
+      STATE.orders.forEach(o => { const cp = resolveOrderClientPhone(o); if (isValidEgyptianPhone(cp)) custPhonesSet.add(cp); });
+
+      // إحصائيات اليوم بتوقيت القاهرة
+      const todayComp = comp.filter(o => getCairoDateKeyClient(o.createdAt) === todayKey);
+      const todayCanc = canc.filter(o => getCairoDateKeyClient(o.createdAt) === todayKey);
+      const todayFaresSum = roundMoney(todayComp.reduce((s, o) => s + (Number(o.originalFare || o.fare) || 0), 0));
+      const todayCommSum = roundMoney(STATE.orders.filter(o => o.feeDeducted && !o.feeRefunded && getCairoDateKeyClient(o.createdAt) === todayKey).reduce((s, o) => s + (Number(o.platformFee) || 0), 0));
 
       document.getElementById('adminStatTotalFares').innerText = `${roundMoney(comp.reduce((s,o)=>s+(Number(o.originalFare||o.fare)||0),0))} ج`;
       document.getElementById('adminStatCommissionTotal').innerText = `${roundMoney(STATE.orders.filter(o=>o.feeDeducted&&!o.feeRefunded).reduce((s,o)=>s+(Number(o.platformFee)||0),0))} ج`;
       document.getElementById('adminStatTotalCaptainsWallet').innerText = `${roundMoney(STATE.captains.reduce((s,c)=>s+(Number(c.walletBalance)||0),0))} ج`;
-      document.getElementById('adminStatOrdersCompletedCount').innerText = comp.length; document.getElementById('adminStatOrdersCancelledCount').innerText = canc.length;
+      document.getElementById('adminStatOrdersCompletedCount').innerText = comp.length;
+      document.getElementById('adminStatOrdersCancelledCount').innerText = canc.length;
       document.getElementById('adminStatTotalCaptainsCount').innerText = `${STATE.captains.length} كابتن`;
+
+      if (document.getElementById('adminStatTotalFaresTodaySub')) document.getElementById('adminStatTotalFaresTodaySub').innerText = `📅 اليوم: ${todayFaresSum} ج`;
+      if (document.getElementById('adminStatCurrentFeeNote')) {
+        const s = STATE.settings || {};
+        const effFee = Number(s.effectivePlatformFee ?? s.platformFee ?? 7);
+        document.getElementById('adminStatCurrentFeeNote').innerText = `📅 اليوم: ${todayCommSum} ج • العمولة: ${effFee} ج`;
+      }
+      if (document.getElementById('adminStatCaptainsSub')) {
+        const approvedCnt = STATE.captains.filter(c => c.status === 'معتمد').length;
+        const pendCnt = STATE.captains.filter(c => c.status === 'قيد المراجعة').length;
+        document.getElementById('adminStatCaptainsSub').innerText = `معتمد: ${approvedCnt} | مراجعة: ${pendCnt}`;
+      }
+      if (document.getElementById('adminStatWaitingRadarSub')) document.getElementById('adminStatWaitingRadarSub').innerText = `⏳ ينتظر ع الرادار: ${waitingRadarOrders.length}`;
+      if (document.getElementById('adminStatCompletedTodaySub')) document.getElementById('adminStatCompletedTodaySub').innerText = `📅 اليوم: ${todayComp.length} طلب`;
+      if (document.getElementById('adminStatCancelledTodaySub')) document.getElementById('adminStatCancelledTodaySub').innerText = `📅 اليوم: ${todayCanc.length} طلب`;
+
       if(document.getElementById('adminStatAvailableCaptainsCount')) document.getElementById('adminStatAvailableCaptainsCount').innerText = `${availCaps.length} كابتن`;
       if(document.getElementById('adminStatOnlineCustomersCount')) document.getElementById('adminStatOnlineCustomersCount').innerText = `${STATE.onlineCustomersCount || 0} عميل`;
       if(document.getElementById('adminStatTotalCustomersCount')) document.getElementById('adminStatTotalCustomersCount').innerText = `${custPhonesSet.size} عميل`;
@@ -2739,36 +2852,123 @@
       const dispBadge = document.getElementById('admNavDisputesBadge');
       if(dispBadge) { dispBadge.innerText = disputed.length; dispBadge.style.display = disputed.length ? 'flex' : 'none'; }
 
-      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>`<div style="background:#FAF7F4; padding:10px; border-radius:10px; border:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
-          <span class="badge badge-pending">${escapeHtml(c.vehicleType)}</span>
-        </div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">الرقم القومي: ${escapeHtml(c.nationalId)} | المنطقة: ${escapeHtml(c.primaryZone)}</div>
-        ${buildCaptainDocsHtml(c)}
-        <div style="display:flex; gap:6px; margin-top:6px;">
-          <button type="button" class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد ✅</button>
-          <button type="button" class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض ❌</button>
-        </div>
-      </div>`).join('');
+      document.getElementById('adminCaptainReviewFeed').innerHTML = pend.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:8px;">لا توجد طلبات كباتن جديدة للمراجعة.</div>' : pend.map(c=>{
+        const cWa = toAdminWhatsAppNum(c.phone);
+        return `<div style="background:#FAF7F4; padding:10px; border-radius:10px; border:1px solid #eee;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
+            <span class="badge badge-pending">${escapeHtml(c.vehicleType)}</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">الرقم القومي: ${escapeHtml(c.nationalId)} | المنطقة: ${escapeHtml(c.primaryZone)} | اللوحة: ${escapeHtml(c.plateNumber || 'معفي')}</div>
+          <div class="adm-mini-actions" style="margin-top:6px;">
+            <a href="tel:${escapeHtml(c.phone)}" class="adm-btn-call"><i class="fa-solid fa-phone"></i> اتصال</a>
+            <a href="https://wa.me/${cWa}" target="_blank" class="adm-btn-wa"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+          </div>
+          ${buildCaptainDocsHtml(c)}
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button type="button" class="btn-success" style="flex:1;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد وتفعيل ✅</button>
+            <button type="button" class="btn-danger" style="flex:1;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض المستندات ❌</button>
+          </div>
+        </div>`;
+      }).join('');
 
       const canManageOrd = hasAdminPerm('manageOrders');
-      const tf = document.getElementById('adminOrdersTimeFilter')?.value||'week'; const n=Date.now();
-      const fo = STATE.orders.filter(o=>{ const a=n-(Number(o.createdAt)||n); if(tf==='today')return a<=86400000; if(tf==='3days')return a<=3*86400000; if(tf==='week')return a<=7*86400000; return true; });
-      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مسجلة في هذه الفترة.</div>' : fo.map(o=>{
+      const tf = document.getElementById('adminOrdersTimeFilter')?.value || 'week';
+      const sf = document.getElementById('adminOrdersStatusFilter')?.value || 'all';
+      const sq = normalizeDigits(document.getElementById('adminOrdersSearchInput')?.value || '').trim().toLowerCase();
+      const n = Date.now();
+
+      // خريطة أسماء الكباتن للعرض والبحث السريع
+      const capNameMap = {};
+      STATE.captains.forEach(c => { capNameMap[normalizePhone(c.phone)] = c.fullName || ''; });
+
+      const fo = STATE.orders.filter(o => {
+        const a = n - (Number(o.createdAt) || n);
+        if (tf === 'today' && a > 86400000) return false;
+        if (tf === '3days' && a > 3 * 86400000) return false;
+        if (tf === 'week' && a > 7 * 86400000) return false;
+
+        if (sf === 'waiting' && o.status !== 'في انتظار كابتن') return false;
+        if (sf === 'active' && !ACTIVE_COURIER_STATUSES.includes(o.status)) return false;
+        if (sf === 'disputed' && o.status !== 'قيد مراجعة الاعتراض') return false;
+        if (sf === 'completed' && o.status !== 'مكتمل' && o.status !== 'تمت التسوية الإدارية') return false;
+        if (sf === 'cancelled' && !String(o.status || '').includes('ملغي')) return false;
+
+        if (sq) {
+          const cPh = resolveOrderClientPhone(o);
+          const capPh = normalizePhone(o.assignedCourierPhone || '');
+          const capName = (o.assignedCourierName || capNameMap[capPh] || '').toLowerCase();
+          const haystack = `${o.id || ''} ${cPh} ${capPh} ${capName} ${o.pickupZone || ''} ${o.pickupAddress || ''} ${o.dropoffZone || ''} ${o.dropoffAddress || ''} ${o.customerNotes || ''}`.toLowerCase();
+          if (!haystack.includes(sq)) return false;
+        }
+        return true;
+      });
+
+      const countBadge = document.getElementById('adminOrdersFilteredCountBadge');
+      if (countBadge) countBadge.innerText = `${fo.length} طلب`;
+
+      document.getElementById('adminOrdersFeed').innerHTML = fo.length === 0 ? '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مطابقة للفلتر أو البحث الحالي.</div>' : fo.map(o => {
         const hasGps = (Number.isFinite(o.pickupLat) && Number.isFinite(o.pickupLng)) || (Number.isFinite(o.dropoffLat) && Number.isFinite(o.dropoffLng));
-        return `<div style="background:#FAF7F4; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:8px; font-size:11.5px;">
-          <strong>${escapeHtml(o.id)}</strong> <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
-          ${o.promoCode ? `<span class="badge badge-delivering" style="margin-right:4px;">🎟️ ${escapeHtml(o.promoCode)} (-${o.promoDiscount}ج)</span>` : ''}
-          ${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-right:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}
-          <br>المسار: ${escapeHtml(o.pickupZone)} ↔ ${escapeHtml(o.dropoffZone)} | العميل: ${escapeHtml(resolveOrderClientPhone(o))}<br>
-          الكابتن: ${escapeHtml(o.assignedCourierPhone||'لا يوجد')} | كاش: ${o.fare}ج | عمولة: ${o.platformFee}ج
-          ${o.disputeReason?`<div style="color:var(--danger); font-weight:700; margin-top:4px;">⚠️ اعتراض العميل: ${escapeHtml(o.disputeReason)}</div>`:''}
-          ${o.adminResolutionNote?`<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:4px 8px; border-radius:6px; font-weight:700; margin-top:4px;">📝 ملاحظة/سبب: ${escapeHtml(o.adminResolutionNote)}</div>`:''}
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-            ${hasGps ? `<button type="button" class="btn-secondary" style="padding:5px 10px; font-size:11px; background:#E1F5FE; color:#0277BD;" onclick="openAdminOrderMapModal('${escapeHtml(o.id)}')"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
-            ${canManageOrd && ACTIVE_COURIER_STATUSES.includes(o.status)?`<button class="btn-secondary" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">رادار 🔄</button> <button class="btn-danger" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء ❌</button>`:''}
-            ${canManageOrd && o.status==='قيد مراجعة الاعتراض'?`<button class="btn-success" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button class="btn-danger" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">إلغاء الطلب إدارياً ❌</button>`:''}
+        const clientPh = resolveOrderClientPhone(o);
+        const clientWa = toAdminWhatsAppNum(clientPh);
+        const capPh = normalizePhone(o.assignedCourierPhone || '');
+        const capName = o.assignedCourierName || capNameMap[capPh] || '';
+        const capWa = toAdminWhatsAppNum(capPh);
+        const isFetch = o.tripType === 'fetch';
+        const isWaiting = o.status === 'في انتظار كابتن';
+        const isActive = ACTIVE_COURIER_STATUSES.includes(o.status);
+        const isDisputed = o.status === 'قيد مراجعة الاعتراض';
+        const cardExtraCls = isDisputed ? 'adm-ord-disputed' : (isWaiting ? 'adm-ord-waiting' : (isActive ? 'adm-ord-active' : ''));
+        const timeStr = o.createdAt ? new Date(o.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+        return `<div class="adm-order-card ${cardExtraCls}">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:4px;">
+            <div>
+              <strong style="font-size:13px; color:var(--primary);">${escapeHtml(o.id)}</strong>
+              <span class="badge" style="background:#EFE6E9; color:var(--primary); margin-right:3px;">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
+              ${o.promoCode ? `<span class="badge badge-delivering" style="margin-right:3px;">🎟️ ${escapeHtml(o.promoCode)} (-${o.promoDiscount}ج)</span>` : ''}
+              ${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-right:3px;">⚡ +${o.surgePercent}%</span>` : ''}
+            </div>
+            <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
+          </div>
+          <div style="font-size:10px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">🕒 التوقيت: ${escapeHtml(timeStr)} | الدفع: <strong>${escapeHtml(o.payer || 'الراسل')}</strong></div>
+
+          <div class="adm-route-box">
+            <div>📦 <strong>من (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
+            <div style="margin-top:2px;">🏁 <strong>إلى (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
+            ${o.customerNotes ? `<div style="margin-top:4px; padding-top:4px; border-top:1px dashed #E8DFE3; color:#5D4037;">📝 <strong>ملاحظة/مشتريات:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #E9DCE0; border-radius:8px; padding:5px 9px; margin:5px 0; font-size:11px;">
+            <span>💵 الكاش: <strong style="color:var(--primary);">${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--success);">(خصم -${o.discountApplied}ج)</small>` : ''}</span>
+            <span>🎯 العمولة: <strong style="color:var(--success);">${o.platformFee} ج</strong> | الصافي: <strong>${o.courierNet} ج</strong></span>
+          </div>
+
+          <div class="adm-contact-row">
+            <div class="adm-contact-card">
+              <span style="font-size:10px; font-weight:800; color:var(--text-muted);">👑 العميل: <strong style="color:var(--text-main);" dir="ltr">${escapeHtml(clientPh || '--')}</strong></span>
+              ${clientPh ? `<div class="adm-mini-actions">
+                <a href="tel:${escapeHtml(clientPh)}" class="adm-btn-call"><i class="fa-solid fa-phone"></i> اتصال</a>
+                <a href="https://wa.me/${clientWa}" target="_blank" class="adm-btn-wa"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+              </div>` : ''}
+            </div>
+            <div class="adm-contact-card">
+              <span style="font-size:10px; font-weight:800; color:var(--text-muted);">🛵 الكابتن: <strong style="color:var(--primary);">${escapeHtml(capName || (capPh ? capPh : 'لم يُعيّن'))}</strong></span>
+              ${capPh ? `<div class="adm-mini-actions">
+                <a href="tel:${escapeHtml(capPh)}" class="adm-btn-call" style="background:#0277BD;"><i class="fa-solid fa-phone"></i> ${escapeHtml(capPh.slice(-4))}</a>
+                <a href="https://wa.me/${capWa}" target="_blank" class="adm-btn-wa"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+              </div>` : `<span style="font-size:10px; color:#B26A00; font-weight:800;">⏳ بانتظار القبول ع الرادار</span>`}
+            </div>
+          </div>
+
+          ${o.disputeReason ? `<div style="color:var(--danger); background:#FFEBEE; border:1px solid #FFCDD2; padding:5px 8px; border-radius:8px; font-weight:800; margin-top:4px;">⚠️ شكوى العميل: ${escapeHtml(o.disputeReason)}</div>` : ''}
+          ${o.adminResolutionNote ? `<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:5px 8px; border-radius:8px; font-weight:700; margin-top:4px;">📝 ملاحظة/قرار: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}
+
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#0277BD;" onclick="openAdminOrderMapModal('${escapeHtml(o.id)}')"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
+            ${canManageOrd && isActive ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px;" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">إعادة للرادار 🔄</button>` : ''}
+            ${canManageOrd && (isWaiting || isActive) ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','cancel')">إلغاء إداري ❌</button>` : ''}
+            ${canManageOrd && isDisputed ? `<button type="button" class="btn-success" style="flex:1; padding:7px 10px; font-size:11px;" onclick="adminResolveDispute('${escapeHtml(o.id)}','complete')">اعتماد مكتمل ✅</button> <button type="button" class="btn-danger" style="flex:1; padding:7px 10px; font-size:11px;" onclick="adminResolveDispute('${escapeHtml(o.id)}','cancel')">تسوية إدارية للشكوى ⚖️</button>` : ''}
           </div>
         </div>`;
       }).join('');

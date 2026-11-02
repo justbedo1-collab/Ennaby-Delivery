@@ -1332,26 +1332,56 @@ async function buildClientState(req, forceRefresh = false) {
     filteredCustomers = { [authenticatedCustomerPhone]: raw.customers[authenticatedCustomerPhone] };
   }
 
+  // خريطة سريعة لبيانات الكباتن لإرفاق اسم ومركبة ومستوى الكابتن مع الطلب بأمان
+  const captainInfoByPhone = new Map();
+  allMappedCaptains.forEach(c => {
+    captainInfoByPhone.set(normalizePhoneServer(c.phone), {
+      fullName: c.fullName || 'كابتن العنابي',
+      vehicleType: c.vehicleType || 'موتوسيكل',
+      plateNumber: c.plateNumber || '',
+      tier: c.tier || 'bronze',
+      tierBadgeText: c.tierBadgeText || 'كابتن برونزي 🥉'
+    });
+  });
+
+  const enrichOrderWithCaptainMeta = (ord) => {
+    const capPh = normalizePhoneServer(ord.assignedCourierPhone);
+    const meta = capPh ? captainInfoByPhone.get(capPh) : null;
+    return {
+      ...ord,
+      assignedCourierName: meta ? meta.fullName : '',
+      assignedCourierVehicle: meta ? meta.vehicleType : '',
+      assignedCourierPlate: meta ? meta.plateNumber : '',
+      assignedCourierTier: meta ? meta.tier : 'bronze',
+      assignedCourierTierBadge: meta ? meta.tierBadgeText : ''
+    };
+  };
+
   let filteredOrders = [];
   if (isAuthenticatedAdmin) {
-    filteredOrders = canAdmViewOrders ? raw.orders : [];
+    filteredOrders = canAdmViewOrders ? raw.orders.map(enrichOrderWithCaptainMeta) : [];
   } else {
     const seenIds = new Set();
-    raw.orders.forEach(o => {
+    raw.orders.forEach(rawOrd => {
+      const o = enrichOrderWithCaptainMeta(rawOrd);
       const ownerPh = normalizePhoneServer(o.clientPhone || o.customerPhone);
       const isCustOwner = Boolean(authenticatedCustomerPhone && ownerPh === authenticatedCustomerPhone);
       const isAssignedCap = Boolean(authenticatedCaptainPhone && normalizePhoneServer(o.assignedCourierPhone) === authenticatedCaptainPhone);
       const isWaitingRadar = Boolean(authenticatedCaptainPhone && o.status === 'في انتظار كابتن');
+      const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي');
 
       if (isCustOwner) {
         if (!seenIds.has(o.id)) {
           seenIds.add(o.id);
-          filteredOrders.push(o);
+          // إخفاء رقم هاتف الكابتن عن العميل فور انتهاء المشوار أو إلغائه (مع إبقاء الاسم والمستوى)
+          filteredOrders.push((isFinished && !isAssignedCap) ? {
+            ...o,
+            assignedCourierPhone: ''
+          } : o);
         }
       } else if (isAssignedCap || isWaitingRadar) {
         if (!seenIds.has(o.id)) {
           seenIds.add(o.id);
-          const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي');
           const hidePhonesForCap = isWaitingRadar || isFinished;
           filteredOrders.push(hidePhonesForCap ? {
             ...o,
@@ -3631,14 +3661,21 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
         admin_resolution_note: reason ? `إعادة للرادار: ${reason}` : null
       }).eq('id', orderId);
     } else if (action === 'resolve_cancel' || (action === 'cancel' && order.status === 'قيد مراجعة الاعتراض')) {
-      // إلغاء إداري بعد شكوى العميل (الكابتن بالفعل سلّم المشوار وقبض الحساب من العميل، فلا تُرد عمولة المنصة للكابتن أبداً، ويمكن للإدارة تعويض العميل يدوياً من قسم المحافظ)
+      const resolutionMsg = reason || 'شكوتك تمت مراجعتها من قبل الإدارة وجاري التحقيق مع الطرف الآخر "سيتم تعويضك بالشكل المناسب"';
       await supabase.from('orders').update({
         status: 'تمت التسوية الإدارية',
         fee_refunded: false,
-        admin_resolution_note: reason || ' شكوتك تمت مراجعتها من قبل الادارة وجارى التحقيق مع الطرف الآخر "سيتم تعوضيك بالشكل المناسب" '
+        admin_resolution_note: resolutionMsg
       }).eq('id', orderId);
+
+      if (custPhone) {
+        sendPushNotificationToPhone(custPhone, {
+          title: `تمت مراجعة شكوتك لطلب (${order.id}) ⚖️✅`,
+          body: resolutionMsg
+        });
+      }
     } else if (action === 'cancel') {
-      // إلغاء إداري لطلب جارٍ قبل التسليم
+      // إلغاء إداري لطلب جارٍ أو منتظر على الرادار قبل التسليم
       const refundWalletAmt = meta.walletDiscount > 0
         ? meta.walletDiscount
         : Math.max(0, roundMoney((order.discount_applied || 0) - (meta.promoDiscount || 0)));
@@ -3683,12 +3720,19 @@ app.post('/api/admin/orders/:id/manage', authenticateAdmin, async (req, res) => 
       }
     } else if (action === 'resolve_complete') {
       const wasAlreadyCompletedBeforeDispute = (order.status === 'مكتمل' || order.status === 'قيد مراجعة الاعتراض');
+      const resolutionMsg = reason || 'تمت المراجعة واعتماد اكتمال الطلب بواسطة الإدارة ✅';
       await supabase.from('orders').update({
         status: 'مكتمل',
-        admin_resolution_note: 'تمت المراجعة واعتماد اكتمال الطلب بواسطة الإدارة ✅'
+        admin_resolution_note: resolutionMsg
       }).eq('id', orderId);
       if (!wasAlreadyCompletedBeforeDispute) {
         await recordAnalyticsMetricEvent('completedOrders', 1);
+      }
+      if (custPhone) {
+        sendPushNotificationToPhone(custPhone, {
+          title: `قرار الإدارة بخصوص طلبك (${order.id}) ✅`,
+          body: resolutionMsg
+        });
       }
     }
 

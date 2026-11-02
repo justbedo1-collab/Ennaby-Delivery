@@ -243,6 +243,16 @@
     .fare-discount-strip { display: none; align-items: center; gap: 3px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--success); padding: 2px 6px; border-radius: 6px; font-size: 10.5px; font-weight: 800; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
     .fare-captain-pill { background: #FAF4F6; border: 1px solid #EFE3E7; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; line-height: 1.4; }
     .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: #78350F; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FDE68A; border-right: 3.5px solid #F59E0B; border-radius: 9px; padding: 6px 10px; line-height: 1.5; margin-top: 1px; }
+    /* تنسيقات كارت الكابتن للعميل وأزرار الاتصال والواتساب والمشوار النشط للكابتن */
+    .saved-address-bar { display: none; align-items: center; justify-content: space-between; gap: 8px; background: #FFF8F9; border: 1px solid #E5D4DA; border-radius: 11px; padding: 7px 11px; margin-bottom: 10px; font-size: 11px; font-weight: 800; color: var(--primary); }
+    .saved-address-apply-btn { background: var(--primary); color: #fff; border: none; border-radius: 50px; padding: 4px 11px; font-size: 10.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(123, 63, 82, 0.2); }
+    .order-captain-card { background: linear-gradient(135deg, #FAF7F4, #F5ECEF); border: 1.5px solid #E2D2D8; border-right: 4px solid var(--primary); border-radius: 12px; padding: 10px 12px; margin: 8px 0; display: flex; flex-direction: column; gap: 8px; }
+    .contact-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; width: 100%; }
+    .btn-call-pill { background: var(--primary); color: #fff !important; text-decoration: none; border-radius: 9px; padding: 7px 10px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(123, 63, 82, 0.2); }
+    .btn-wa-pill { background: #25D366; color: #fff !important; text-decoration: none; border-radius: 9px; padding: 7px 10px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(37, 211, 102, 0.22); }
+    .courier-party-contact-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 11px; padding: 8px 10px; margin-top: 6px; display: flex; flex-direction: column; gap: 7px; }
+    .active-mission-card { border: 2px solid var(--primary) !important; background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%) !important; box-shadow: 0 8px 22px rgba(123, 63, 82, 0.14) !important; position: relative; overflow: hidden; }
+    .active-mission-ribbon { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-size: 11px; font-weight: 900; padding: 5px 12px; margin: -18px -18px 10px -18px; display: flex; align-items: center; justify-content: space-between; }
     .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal.show { display: flex; }
     .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
@@ -376,6 +386,14 @@
                   💡 لو معرفتش تحدد مكانك ع الخريطة ولا يهمك يا باشا، اكتب العنوان بإيدك بالتفصيل تحت! ✍️
                 </div>
               </div>
+              <!-- شريط الملء السريع لآخر عنوان استخدمه العميل (يظهر تلقائياً للعميل المتكرر) -->
+              <div class="saved-address-bar" id="savedCustomerAddressBar">
+                <span id="savedCustomerAddressText" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📍 آخر عنوان ليك محفوظ</span>
+                <button type="button" class="saved-address-apply-btn" onclick="applySavedCustomerAddress()">
+                  <i class="fa-solid fa-bolt"></i> استخدم عنواني ⚡
+                </button>
+              </div>
+
               <!-- الكارت الأول: بيانات المرسل ومكان الاستلام (تصميم رأسي عصري وموحد) -->
               <div class="route-party-card route-party-pickup" id="pickupPartyCard">
                 <div class="route-party-header">
@@ -461,8 +479,8 @@
                 </div>
               </div>
 
-              <div class="input-group">
-                <label class="input-label" for="customerOrderNotes">لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
+              <div class="input-group" id="customerOrderNotesGroupWrap">
+                <label class="input-label" id="customerOrderNotesLabel" for="customerOrderNotes" style="font-weight:800; color:var(--primary);">📝 لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇</label>
                 <textarea id="customerOrderNotes" class="textarea-field" rows="2" placeholder="اكتب هنا أي تفاصيل (مثلاً: رن جرس الدور التالت، معيش فكة، الطرد فيه إزاز)..."></textarea>
               </div>
               <!-- حقل رمز الـ PIN السري (يُطلب في أول طلب فقط ويختفي تلقائياً طالما جلسة العميل نشطة، والتحكم في الحساب من تبويب حسابي) -->
@@ -845,21 +863,29 @@
                     <p style="margin: 3px 0 0;">التزم بقواعد المرور، والبس وسائل الأمان، وخلي بالك من نفسك ومن الناس. إحنا عايزينك توصل الطلب بالسلامة وترجع تنوّر علينا، مش نعملك بوست: «كان معانا كابتن زي الفل»! 😂❤️</p>
                   </div>
                 </div>
+                <button type="button" class="btn-secondary" style="width:100%; margin-top:12px; font-size:12px;" onclick="openCaptainLegalTermsModal()">
+                  <i class="fa-solid fa-scale-balanced"></i> الشروط القانونية وسياسة الخصوصية للكباتن
+                </button>
               </div>
             </div>
             <div id="courTab-profile" class="sub-tab-section" style="display:none;">
-              <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div class="card" style="background: linear-gradient(135deg, #7B3F52, #562737); color:white; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                   <div>
-                    <span style="font-size:12px; opacity:0.85;">رصيد المحفظة الجاهز للشغل</span>
-                    <div style="font-size:28px; font-weight:900; margin:2px 0 4px;" id="courierWalletBalanceDisplay">0.00 <span style="font-size:14px; font-weight:600;">جنيه</span></div>
-                    <div style="font-size:10.5px; opacity:0.95; font-weight:700; line-height:1.5;" id="courierCommissionNoticeText">عمولة المنصة بتتخصم أول ما تقبل الطلب، وبترجع لمحفظتك أوتوماتيك لو العميل لغى المشوار</div>
+                    <span style="font-size:11.5px; opacity:0.85; display:block;">رصيد المحفظة المتاح</span>
+                    <div style="font-size:27px; font-weight:900; margin:2px 0 6px; line-height:1.15;" id="courierWalletBalanceDisplay">0.00 <span style="font-size:13.5px; font-weight:600;">جنيه</span></div>
                   </div>
-                  <button class="btn-secondary" style="font-size:11px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.2); color:#fff;" onclick="openTopupModal()"><i class="fa-solid fa-plus-circle"></i> اشحن المحفظة</button>
+                  <button type="button" class="btn-secondary" style="font-size:11.5px; font-weight:800; padding:8px 13px; border-radius:10px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.28); color:#fff; white-space:nowrap; flex-shrink:0;" onclick="openTopupModal()">
+                    <i class="fa-solid fa-plus-circle"></i> اشحن الرصيد
+                  </button>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.15);">
-                  <div><span style="font-size:11px; opacity:0.8;">مشاوير خلصتها:</span> <strong style="font-size:14px; display:block;" id="courierCompletedCount">0 أوردرات</strong></div>
-                  <div><span style="font-size:11px; opacity:0.8;">صافي أرباحك:</span> <strong style="font-size:14px; display:block;" id="courierTodayEarnings">0 جنيه</strong></div>
+                <div style="background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.18); border-radius:9px; padding:6px 10px; font-size:11.5px; font-weight:800; display:inline-flex; align-items:center; gap:6px; width:fit-content; max-width:100%;" id="courierCommissionNoticeText">
+                  المستوى: كابتن برونزي 🥉 • عمولة المشوار: 7 ج
+                </div>
+                <!-- عناصر مخفية للحفاظ على توافق الكود البرمجي دون ازدحام البطاقة -->
+                <div style="display:none;">
+                  <strong id="courierCompletedCount">0 أوردرات</strong>
+                  <strong id="courierTodayEarnings">0 جنيه</strong>
                 </div>
               </div>
               <!-- كارت مستوى الكابتن الحالي + شريط التقدم المرئي المباشر وشروط الترقية الأوتوماتيكية (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) -->
@@ -925,6 +951,11 @@
                 <div id="courierWalletTransactionsList" class="wallet-log-scroll-box">
                   <div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات في المحفظة لحد دلوقتي يا بطل.</div>
                 </div>
+              </div>
+              <div style="text-align:center; margin-top:2px; padding-bottom:4px;">
+                <button type="button" onclick="openCaptainLegalTermsModal()" style="background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:800; cursor:pointer; text-decoration:underline;">
+                  🛡️ الشروط القانونية وسياسة الخصوصية للكباتن
+                </button>
               </div>
             </div>
           </div>
@@ -1116,6 +1147,39 @@
         </div>
       </div>
       <button type="button" class="btn-main" style="margin-top:12px;" onclick="closeLegalTermsModal()">قرأت الشروط وموافق يا باشا ✅</button>
+    </div>
+  </div>
+
+  <!-- نافذة الشروط القانونية وسياسة الخصوصية الخاصة بالكابتن -->
+  <div class="custom-modal" id="captainLegalTermsModal" style="z-index: 1985;" onclick="if(event.target === this) closeCaptainLegalTermsModal()">
+    <div class="modal-content-card" style="max-width:430px; padding:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px dashed #E9DCE0; padding-bottom:8px;">
+        <h3 style="font-size:14.5px; font-weight:900; color:var(--primary); margin:0;"><i class="fa-solid fa-scale-balanced"></i> الشروط القانونية وسياسة الخصوصية للكباتن</h3>
+        <button type="button" onclick="closeCaptainLegalTermsModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11.5px; line-height:1.75; color:var(--text-main); display:flex; flex-direction:column; gap:10px; max-height:68vh; overflow-y:auto; padding-left:4px;">
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">1️⃣ طبيعة العلاقة التعاقدية (كابتن مستقل):</strong>
+          يعمل الكابتن كشريك توصيل حر ومستقل عبر منصة «الرجل العنابي» لتوصيل الطلبات والمشاوير المشروعة داخل المنصورة والدقهلية، ويلتزم بالقوانين المرورية ومعايير السلامة وحسن التعامل مع العملاء.
+        </div>
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">2️⃣ نظام المحفظة والعمولات والاعتذارات:</strong>
+          • تُخصم عمولة المنصة المقررة حسب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) تلقائياً عند قبول الطلب.<br>
+          • في حال إلغاء العميل للطلب قبل الاستلام أو اعتذار الكابتن لسبب مشروع قبل استلام الطرد، تُرد العمولة تلقائياً لمحفظة الكابتن.<br>
+          • في حال وجود خصم أو كوبون للعميل، تعوّض المنصة الكابتن بقيمة الخصم في محفظته فور قبول الطلب، ويُسترد التعويض تلقائياً إذا أُلغي الطلب ولم يكتمل.
+        </div>
+        <div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:10px;">
+          <strong style="color:var(--primary); display:block; margin-bottom:3px;">3️⃣ الأمانة المهنية والمشتريات النقدية:</strong>
+          • يلتزم الكابتن بالمحافظة على الطرد وتسليمه بحالته دون فتحه أو العبث به، ويُحظر نقل أي مواد مخالفة للقانون.<br>
+          • يُحظر مطالبة العميل بإلغاء الطلب خارج المنصة أو تحصيل مبالغ تزيد عن الأجرة المحددة وفاتورة المشتريات الفعلية.
+        </div>
+        <div style="background:#E8F5E9; border:1px solid #A5D6A7; border-radius:10px; padding:10px; color:#1B5E20;">
+          <strong style="display:block; margin-bottom:3px;">4️⃣ سرية وأمان مستندات الكابتن (قانون 151 لسنة 2020):</strong>
+          • تُحفظ صور البطاقة الشخصية وبيانات المركبة في خزنة سحابية مشفرة لغرض التحقق الإداري من الهوية فقط، ولا تتم مشاركتها مع أي جهة خارجية.<br>
+          • تُخفى أرقام هواتف العملاء والمستلمين تلقائياً فور إتمام التسليم حفاظاً على الخصوصية المشتركة.
+        </div>
+      </div>
+      <button type="button" class="btn-main" style="margin-top:12px;" onclick="closeCaptainLegalTermsModal()">قرأت الشروط وموافق يا بطل 💪✅</button>
     </div>
   </div>
   <script>
@@ -2419,6 +2483,62 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       renderSavedPromoUI();
     }
 
+    const LAST_CUST_ADDR_KEY = 'ENNABY_LAST_CUST_ADDR_V1';
+
+    function toEgyptWhatsAppNumber(rawPhone) {
+      const clean = normalizePhone(rawPhone);
+      if (!clean) return '';
+      return clean.startsWith('0') ? '2' + clean : clean;
+    }
+
+    function saveCustomerLastUsedAddress(zone, address) {
+      const cleanAddr = String(address || '').trim();
+      if (!cleanAddr || cleanAddr.includes('ثواني بنلقط')) return;
+      try {
+        localStorage.setItem(LAST_CUST_ADDR_KEY, JSON.stringify({
+          zone: zone || 'المنصورة',
+          address: cleanAddr
+        }));
+      } catch (e) {}
+      renderSavedCustomerAddressBar();
+    }
+
+    function renderSavedCustomerAddressBar() {
+      const bar = document.getElementById('savedCustomerAddressBar');
+      const txt = document.getElementById('savedCustomerAddressText');
+      if (!bar || !txt) return;
+      try {
+        const raw = localStorage.getItem(LAST_CUST_ADDR_KEY);
+        if (!raw) { bar.style.display = 'none'; return; }
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.address) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        txt.innerText = `📍 عنوانك المحفوظ: ${parsed.zone} - ${parsed.address}`;
+      } catch (e) {
+        bar.style.display = 'none';
+      }
+    }
+
+    function applySavedCustomerAddress() {
+      try {
+        const raw = localStorage.getItem(LAST_CUST_ADDR_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.address) return;
+        const isFetch = STATE.currentTripType === 'fetch';
+        const zoneSel = document.getElementById(isFetch ? 'dropoffZone' : 'pickupZone');
+        const addrInp = document.getElementById(isFetch ? 'dropoffAddress' : 'pickupAddress');
+        if (zoneSel && STATE.zones.includes(parsed.zone)) {
+          zoneSel.value = parsed.zone;
+        }
+        if (addrInp) {
+          addrInp.value = parsed.address;
+        }
+        calculateDeliveryPrice();
+        showToast('تم ملء عنوانك المحفوظ في ثانية يا باشا! ⚡📍', 'ok');
+      } catch (e) {}
+    }
+
     function selectTripType(type) {
       const normalizedType = (type === 'fetch') ? 'fetch' : 'send'; STATE.currentTripType = normalizedType; saveSession();
       const btnSend = document.getElementById('tripTypeBtn-send'); const btnFetch = document.getElementById('tripTypeBtn-fetch'); const notice = document.getElementById('fetchNoticeAlert');
@@ -2429,6 +2549,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const pickupSlot = document.getElementById('pickupPhoneSlot'); const dropoffSlot = document.getElementById('dropoffPhoneSlot');
       const clientPhoneWrap = document.getElementById('clientOwnPhoneWrap'); const otherPhoneWrap = document.getElementById('otherPartyPhoneWrap');
       const pickupBadge = document.getElementById('pickupPartyBadgeTitle'); const dropoffBadge = document.getElementById('dropoffPartyBadgeTitle');
+      const notesLabel = document.getElementById('customerOrderNotesLabel'); const notesInput = document.getElementById('customerOrderNotes');
 
       if (normalizedType === 'fetch') {
         if (btnSend) btnSend.className = 'btn-secondary'; if (btnFetch) btnFetch.className = 'btn-main'; if (notice) notice.style.display = 'block';
@@ -2442,6 +2563,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم المحل أو الشخص اللي هنشتري/نستلم منه 🏪'; recipientPhoneLabel.style.color = 'var(--primary)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
+        if (notesLabel) { notesLabel.innerText = '🛍️ اكتب الحاجة اللي الكابتن هيشتريها وتقريباً في حدود كام جنيه؟ 👇'; notesLabel.style.color = '#E65100'; }
+        if (notesInput) { notesInput.placeholder = 'اكتب هنا المشتريات وتمنها التقريبي عشان الكابتن يعمل حسابه في الكاش (مثلاً: أوردر من مطعم كذا بحوالي 150 ج)...'; }
         setInlineMapTargetMode('dropoff');
       } else {
         if (btnSend) btnSend.className = 'btn-main'; if (btnFetch) btnFetch.className = 'btn-secondary'; if (notice) notice.style.display = 'none';
@@ -2455,8 +2578,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم تليفون المستلم 📱'; recipientPhoneLabel.style.color = 'var(--success)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'الراسل'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'الراسل (أنا) 📦';
         if (payerOption2Radio) { payerOption2Radio.value = 'المستلم'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المستلم لما الكابتن يوصله 🎯';
+        if (notesLabel) { notesLabel.innerText = '📝 لو فيه أي ملحوظة إضافية عاوز تعرفها للكابتن اكتبها هنا 👇'; notesLabel.style.color = 'var(--primary)'; }
+        if (notesInput) { notesInput.placeholder = 'اكتب هنا أي تفاصيل (مثلاً: رن جرس الدور التالت، معيش فكة، الطرد فيه إزاز)...'; }
         setInlineMapTargetMode('pickup');
       }
+      renderSavedCustomerAddressBar();
       setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 100);
     }
 
@@ -2587,6 +2713,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           if (ok && data.success) {
             STATE.customerProfile.savedPhone = clientPhoneTyped;
             STATE.authenticatedCustomerPhone = clientPhoneTyped;
+            saveCustomerLastUsedAddress(isFetch ? dZone : pZone, isFetch ? dAddr : pAddr);
             saveSession();
             updateCustomerPinFieldVisibility();
             subscribeUserToPush(clientPhoneTyped);
@@ -2790,6 +2917,14 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
     function closeLegalTermsModal() {
       document.getElementById('legalTermsModal')?.classList.remove('show');
+    }
+
+    function openCaptainLegalTermsModal() {
+      document.getElementById('captainLegalTermsModal')?.classList.add('show');
+    }
+
+    function closeCaptainLegalTermsModal() {
+      document.getElementById('captainLegalTermsModal')?.classList.remove('show');
     }
 
     function handleFileUpload(event, type) {
@@ -3011,13 +3146,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const commNoticeEl = document.getElementById('courierCommissionNoticeText');
         if (commNoticeEl) {
           if (effectiveFee === 0) {
-            commNoticeEl.innerText = `🎉 عرض خاص من العنابي (${tierBadgeTxt}): عمولتك دلوقتي 0 ج (إعفاء كامل ع المشاوير!)`;
+            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: 0 ج (إعفاء 🎉)`;
           } else if (courier.customFee !== null && courier.customFee !== undefined) {
-            commNoticeEl.innerText = `🎯 عمولتك الخاصة دلوقتي (${effectiveFee} ج${s.surgeActive ? ' شاملة الذروة ⚡' : ''}) بتتخصم أول ما تقبل الطلب وبترجعلك أوتوماتيك لو العميل لغى`;
-          } else if (Number(courier.tierDiscount) > 0) {
-            commNoticeEl.innerText = `✨ مستواك (${tierBadgeTxt}): عمولتك المخفضة دلوقتي ${effectiveFee} ج بس (بخصم ${courier.tierDiscount} ج عن العمولة الأساسية${s.surgeActive ? ' + ذروة ⚡' : ''}) وبترجعلك لو العميل لغى`;
+            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولتك الخاصة: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
           } else {
-            commNoticeEl.innerText = `مستواك (${tierBadgeTxt}): عمولتك دلوقتي ${effectiveFee} ج${s.surgeActive ? ' (شاملة نسبة الذروة ⚡)' : ''} بتتخصم أول ما تقبل الطلب وبترجعلك أوتوماتيك لو العميل لغى`;
+            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
           }
         }
         const badgeEl = document.getElementById('courierStatusBadgeDisplay'); if (badgeEl) { badgeEl.innerText = courier.status === 'معتمد' ? 'معتمد ✅' : courier.status; badgeEl.className = `badge ${courier.status === 'معتمد' ? 'badge-verified' : (courier.status === 'موقوف' ? 'badge-rejected' : 'badge-review')}`; }
@@ -3071,13 +3204,41 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       updateBottomNavVisibility();
     }
 
+    function buildCourierContactButtonsHtml(order) {
+      const isFetch = order.tripType === 'fetch';
+      const sender = escapeHtml(order.senderPhone);
+      const recipient = escapeHtml(order.recipientPhone);
+      const senderWa = toEgyptWhatsAppNumber(order.senderPhone);
+      const recipientWa = toEgyptWhatsAppNumber(order.recipientPhone);
+      const waText = encodeURIComponent(`السلام عليكم يا باشا، معاك كابتن الرجل العنابي بخصوص الطلب (${order.id}) 🛵`);
+
+      const p1Label = isFetch ? '🏪 المكان / المحل (الاستلام):' : '📦 الراسل (مكان الاستلام):';
+      const p2Label = isFetch ? '🏠 العميل (المستلم بالباب):' : '🎯 المستلم (مكان التسليم):';
+
+      return `<div class="courier-party-contact-box">
+        <div>
+          <span style="font-size:11px; font-weight:800; color:var(--primary); display:block; margin-bottom:4px;">${p1Label} <strong dir="ltr">${sender}</strong></span>
+          <div class="contact-actions-row">
+            <a href="tel:${sender}" class="btn-call-pill"><i class="fa-solid fa-phone"></i> اتصال</a>
+            <a href="https://wa.me/${senderWa}?text=${waText}" target="_blank" class="btn-wa-pill"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+          </div>
+        </div>
+        <div style="border-top:1px dashed #E2D5DA; padding-top:6px;">
+          <span style="font-size:11px; font-weight:800; color:var(--success); display:block; margin-bottom:4px;">${p2Label} <strong dir="ltr">${recipient}</strong></span>
+          <div class="contact-actions-row">
+            <a href="tel:${recipient}" class="btn-call-pill" style="background:var(--success);"><i class="fa-solid fa-phone"></i> اتصال</a>
+            <a href="https://wa.me/${recipientWa}?text=${waText}" target="_blank" class="btn-wa-pill"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+          </div>
+        </div>
+      </div>`;
+    }
+
     function renderCourierHistoryOrders(courier) {
       const container = document.getElementById('courierHistoryOrdersList'); if (!container || !courier) return;
       const myOrders = STATE.orders.filter(o => o.assignedCourierPhone === courier.phone); const activeMine = myOrders.filter(o => ACTIVE_COURIER_STATUSES.includes(o.status));
       const activeBadge = document.getElementById('courNavActiveBadge'); if (activeBadge) { activeBadge.innerText = activeMine.length; activeBadge.style.display = activeMine.length > 0 ? 'flex' : 'none'; }
       if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:24px 16px; color:var(--text-muted);" class="card">لسه مفيش مشاوير في سجلك يا بطل.. اقبل أول أوردر من الرادار وطير بيه! 🛵💨</div>`; return; }
       
-      // عرض آخر 10 طلبات فقط لتخفيف التحميل داخل الصفحة
       const recentCourierOrders = myOrders.slice(0, 10);
       container.innerHTML = recentCourierOrders.map(o => {
         const isFetch = o.tripType === 'fetch'; 
@@ -3085,15 +3246,13 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const isDelivered = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية'; 
         const isCancelled = String(o.status || '').includes('ملغي'); 
         const hidePhones = isDelivered || isCancelled; 
-        const sender = escapeHtml(o.senderPhone); 
-        const recipient = escapeHtml(o.recipientPhone);
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         
         let privacyMsg = '';
         if (isDelivered) privacyMsg = '🔒 خفينا أرقام العميل والمستلم أوتوماتيك طالما الأوردر اتسلم بالسلامة.';
         else if (isCancelled) privacyMsg = '🔒 خفينا الأرقام أوتوماتيك للحفاظ على الخصوصية لأن الأوردر اتلغى.';
 
-        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>هتقبض كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!hidePhones ? `<div style="font-weight:700; margin-top:4px;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${privacyMsg}</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل ليك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !hidePhones ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> روح للرادار عشان تحدّث حالة المشوار 🛵</button>` : ''}</div>`;
+        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>هتقبض كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!hidePhones ? buildCourierContactButtonsHtml(o) : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${privacyMsg}</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل ليك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !hidePhones ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> روح للرادار عشان تحدّث حالة المشوار 🛵</button>` : ''}</div>`;
       }).join('');
     }
 
@@ -3126,6 +3285,49 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           <span class="order-step-label">${st.label}</span>
         </div>`;
       }).join('')}</div>`;
+    }
+
+    function buildCustomerAssignedCaptainCardHtml(o) {
+      const isOrderActive = ACTIVE_COURIER_STATUSES.includes(o.status);
+      const isFinished = o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية';
+      if (!o.assignedCourierName && !o.assignedCourierPhone) return '';
+
+      const capName = escapeHtml(o.assignedCourierName || 'كابتن العنابي');
+      const capTierBadge = escapeHtml(o.assignedCourierTierBadge || 'كابتن برونزي 🥉');
+      const capTierCls = getCaptainTierBadgeClass(o.assignedCourierTier);
+      const capVeh = escapeHtml(o.assignedCourierVehicle || 'موتوسيكل');
+      const capPlate = (o.assignedCourierPlate && o.assignedCourierPlate !== 'بدون لوحة' && o.assignedCourierPlate !== 'دراجة معفية')
+        ? ` • نمرة: ${escapeHtml(o.assignedCourierPlate)}`
+        : '';
+
+      if (isOrderActive && o.assignedCourierPhone) {
+        const capPhone = escapeHtml(o.assignedCourierPhone);
+        const capWa = toEgyptWhatsAppNumber(o.assignedCourierPhone);
+        const waMsg = encodeURIComponent(`أهلاً يا كابتن ${o.assignedCourierName || ''}، أنا العميل صاحب الطلب (${o.id}) 🛵`);
+        return `<div class="order-captain-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-size:12.5px; font-weight:900; color:var(--primary);">
+              <i class="fa-solid fa-user-astronaut"></i> الكابتن: ${capName}
+            </div>
+            <span class="badge ${capTierCls}" style="font-size:10px;">${capTierBadge}</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:700;">
+            🛵 المركبة: <strong>${capVeh}${capPlate}</strong>
+          </div>
+          <div class="contact-actions-row">
+            <a href="tel:${capPhone}" class="btn-call-pill"><i class="fa-solid fa-phone"></i> كلم الكابتن</a>
+            <a href="https://wa.me/${capWa}?text=${waMsg}" target="_blank" class="btn-wa-pill"><i class="fa-brands fa-whatsapp"></i> واتساب الكابتن</a>
+          </div>
+        </div>`;
+      }
+
+      if (isFinished && o.assignedCourierName) {
+        return `<div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11.5px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <span>🛵 <strong>وصّلهولك الكابتن:</strong> ${capName}</span>
+          <span class="badge ${capTierCls}" style="font-size:10px;">${capTierBadge}</span>
+        </div>`;
+      }
+      return '';
     }
 
     function renderCustomerOrdersList() {
@@ -3164,21 +3366,32 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
         const noteTitleLabel = isCaptainApology ? 'سبب اعتذار الكابتن السابق' : 'رد وقرار الإدارة';
         const stepperHtml = buildOrderVisualStepperHtml(o.status);
+        const captainCardHtml = buildCustomerAssignedCaptainCardHtml(o);
+        const notesLabelInCard = o.tripType === 'fetch' ? '🛍️ المشتريات والميزانية' : '📝 ملحوظتك';
 
-        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div>${stepperHtml}<div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:4px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>ملحوظتك:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${discountLineHtml}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800; margin-top:3px;">${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
+        return `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><strong>${escapeHtml(o.id)}</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div>${stepperHtml}<div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${captainCardHtml}${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:5px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>${notesLabelInCard}:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${discountLineHtml}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800; margin-top:3px;">${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
       }).join('');
     }
 
     function renderCourierFeed() {
       const container = document.getElementById('courierOrdersFeed'); const courier = getActiveCourier(); if (!courier || !container) return;
       const currentActiveOrder = getCourierActiveOrder(courier.phone); const waiting = STATE.orders.filter(o => o.status === 'في انتظار كابتن'); const canSeeRadar = courier.isAvailable || courier.status === 'قيد المراجعة' || courier.status === 'موقوف';
-      const visible = STATE.orders.filter(o => { if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي')) return false; return (o.status === 'في انتظار كابتن' && canSeeRadar) || o.assignedCourierPhone === courier.phone; });
+      const rawVisible = STATE.orders.filter(o => { if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي')) return false; return (o.status === 'في انتظار كابتن' && canSeeRadar) || o.assignedCourierPhone === courier.phone; });
+
+      // تثبيت مشوار الكابتن النشط في قمة الرادار دائماً قبل باقي الطلبات المنتظرة
+      const visible = [...rawVisible].sort((a, b) => {
+        const aMine = a.assignedCourierPhone === courier.phone ? 1 : 0;
+        const bMine = b.assignedCourierPhone === courier.phone ? 1 : 0;
+        if (aMine !== bMine) return bMine - aMine;
+        return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+      });
+
       const availCount = canSeeRadar ? waiting.length : 0; const availBadge = document.getElementById('availableOrdersBadge'); if (availBadge) availBadge.innerText = `${availCount} متاح`;
       const navRadarBadge = document.getElementById('courNavRadarBadge'); if (navRadarBadge) { navRadarBadge.innerText = availCount; navRadarBadge.style.display = availCount > 0 ? 'flex' : 'none'; }
       if (visible.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">مفيش أوردرات على الرادار دلوقتي يا بطل.. خليك مستعد! 📡</div>`; return; }
       const effectiveFee = getEffectiveCaptainFee(courier);
       container.innerHTML = visible.map(o => {
-        const isMine = o.assignedCourierPhone === courier.phone; const isWaiting = o.status === 'في انتظار كابتن'; const sender = escapeHtml(o.senderPhone); const recipient = escapeHtml(o.recipientPhone); const isFetch = o.tripType === 'fetch'; const displayFee = isWaiting ? effectiveFee : o.platformFee; const displayNet = isWaiting ? Math.max(0, roundMoney(o.originalFare - effectiveFee)) : o.courierNet;
+        const isMine = o.assignedCourierPhone === courier.phone; const isWaiting = o.status === 'في انتظار كابتن'; const isFetch = o.tripType === 'fetch'; const displayFee = isWaiting ? effectiveFee : o.platformFee; const displayNet = isWaiting ? Math.max(0, roundMoney(o.originalFare - effectiveFee)) : o.courierNet;
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
         let discountNoteHtml = '';
         if (o.discountApplied > 0) {
@@ -3189,7 +3402,13 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (courier.status === 'قيد المراجعة') { acceptBtnText = 'حسابك لسه بيتراجع (تفرج بس دلوقتي) ⏳'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
         else if (courier.status !== 'معتمد') { acceptBtnText = 'حسابك موقوف مؤقتاً (تفرج بس) ⛔'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
         else if (currentActiveOrder) { acceptBtnText = 'معاك مشوار شغال يا بطل خلّصه الأول 🛵'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        return `<div class="card" style="border:1.5px solid ${isMine ? 'var(--primary)' : 'rgba(123,63,82,0.15)'};"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><div>${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FFE082; padding:6px 8px; border-radius:8px; margin:4px 0; color:#5D4037;"><strong>📝 ملحوظة من الباشا:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | هتقبض كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? `<div style="margin-top:4px; font-weight:700;">${isFetch ? `المكان/المحل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | العميل (المستلم): <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>` : `الراسل: <a href="tel:${sender}" dir="ltr" style="color:var(--primary);">${sender}</a> | المستلم: <a href="tel:${recipient}" dir="ltr" style="color:var(--primary);">${recipient}</a>`}</div>` : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان العميل والاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار عن المشوار ورجوعه للرادار (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يا نجم العالم 🌟📦</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار وإلغاء استلام الطلب (غير مطابق للمواصفات / مشكلة)</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
+
+        const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة من الباشا:';
+        const activeRibbonHtml = isMine
+          ? `<div class="active-mission-ribbon"><span>🔥 مشوارك الشغال دلوقتي</span><span>حدّث خط السير خطوة بخطوة 👇</span></div>`
+          : '';
+
+        return `<div class="card ${isMine ? 'active-mission-card' : ''}" style="border:1.5px solid ${isMine ? 'var(--primary)' : 'rgba(123,63,82,0.15)'};">${activeRibbonHtml}<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><div>${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1.5px solid #FBC02D; padding:7px 9px; border-radius:9px; margin:5px 0; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | هتقبض كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? buildCourierContactButtonsHtml(o) : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان العميل والاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار عن المشوار ورجوعه للرادار (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يا نجم العالم 🌟📦</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار وإلغاء استلام الطلب (غير مطابق للمواصفات / مشكلة)</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
       }).join('');
     }
 
