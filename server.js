@@ -540,7 +540,7 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
   const windowMs = tierDaysWindow * 24 * 60 * 60 * 1000;
 
   const capCompletedOrders = (mappedOrders || []).filter(
-    o => o.assignedCourierPhone === captainRow.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض')
+    o => o.assignedCourierPhone === captainRow.phone && (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية')
   );
 
   const totalWindowsToCheck = Math.max(diamondWeeksTarget + 2, 8);

@@ -1686,13 +1686,16 @@
       ) ? lastInteractedElement : null;
       const origHtml = btn ? btn.innerHTML : '';
       const origDisabled = btn ? btn.disabled : false;
+      const loadingHtml = `<i class="fa-solid fa-spinner fa-spin"></i> ثواني...`;
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ثواني...`;
+        btn.innerHTML = loadingHtml;
       }
       Promise.resolve(fn()).finally(() => {
         if (btn && document.body.contains(btn)) {
-          btn.innerHTML = origHtml;
+          if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
+            btn.innerHTML = origHtml;
+          }
           btn.disabled = origDisabled;
         }
         setTimeout(() => { actionLock = false; }, 260);
