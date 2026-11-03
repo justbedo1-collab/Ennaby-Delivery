@@ -1044,6 +1044,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     : (sRow.referral_reward_amount !== undefined && sRow.referral_reward_amount !== null ? Math.max(0, roundMoney(sRow.referral_reward_amount)) : 50);
 
   const referralRequiredOrders = Math.max(1, Number(storedIncentives.referralRequiredOrders ?? 2));
+  const maxConcurrentOrdersPerCaptain = Math.max(1, Number(storedIncentives.maxConcurrentOrdersPerCaptain ?? 3));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
 
   const tierWeeklyOrdersTarget = Math.max(1, Number(storedIncentives.tierWeeklyOrdersTarget ?? 25));
@@ -1097,6 +1098,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     referralRewardActive,
     referralRewardAmount,
     referralRequiredOrders,
+    maxConcurrentOrdersPerCaptain,
     tierWeeklyOrdersTarget,
     tierDaysWindow,
     tierConsecutiveDaysForDiamond,
@@ -1185,6 +1187,7 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
     referralRewardActive: prevSettings.referralRewardActive !== false,
     referralRewardAmount: roundMoney(prevSettings.referralRewardAmount ?? 50),
     referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
+    maxConcurrentOrdersPerCaptain: Math.max(1, Number(prevSettings.maxConcurrentOrdersPerCaptain ?? 3)),
     broadcastTarget: prevSettings.broadcastTarget || 'all',
     tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
     tierDaysWindow: Math.max(1, Number(prevSettings.tierDaysWindow ?? 7)),
@@ -1344,16 +1347,29 @@ async function buildClientState(req, forceRefresh = false) {
     });
   });
 
+  // حساب عدد الأوردرات النشطة حالياً مع كل كابتن لإظهار تنويه المشوار المدمج للعميل والإدارة بأمان
+  const captainActiveOrderCounts = new Map();
+  raw.orders.forEach(o => {
+    if (o && o.assignedCourierPhone && ACTIVE_COURIER_ORDER_STATUSES.includes(o.status)) {
+      const cPh = normalizePhoneServer(o.assignedCourierPhone);
+      if (cPh) captainActiveOrderCounts.set(cPh, (captainActiveOrderCounts.get(cPh) || 0) + 1);
+    }
+  });
+
   const enrichOrderWithCaptainMeta = (ord) => {
     const capPh = normalizePhoneServer(ord.assignedCourierPhone);
     const meta = capPh ? captainInfoByPhone.get(capPh) : null;
+    const isOrdActive = ACTIVE_COURIER_ORDER_STATUSES.includes(ord.status);
+    const activeCount = (isOrdActive && capPh) ? (captainActiveOrderCounts.get(capPh) || 1) : 0;
     return {
       ...ord,
       assignedCourierName: meta ? meta.fullName : '',
       assignedCourierVehicle: meta ? meta.vehicleType : '',
       assignedCourierPlate: meta ? meta.plateNumber : '',
       assignedCourierTier: meta ? meta.tier : 'bronze',
-      assignedCourierTierBadge: meta ? meta.tierBadgeText : ''
+      assignedCourierTierBadge: meta ? meta.tierBadgeText : '',
+      assignedCourierActiveCount: activeCount,
+      isCourierStacked: Boolean(isOrdActive && activeCount > 1)
     };
   };
 
@@ -2482,16 +2498,23 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
       return res.status(403).json({ success: false, message: 'حسابك غير مصرح له بقبول الطلبات حالياً ⛔' });
     }
 
+    const rawState = await fetchRawDatabaseState(false);
+    const maxConcurrent = Math.max(1, Number(rawState.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+
     const { data: activeOrders } = await supabase.from('orders')
       .select('id')
       .eq('assigned_courier_phone', freshCap.phone)
       .in('status', ACTIVE_COURIER_ORDER_STATUSES);
 
-    if (activeOrders && activeOrders.length > 0) {
-      return res.status(400).json({ success: false, message: 'معاك مشوار جاري بالفعل يا بطل، خلصه الأول 🛵⚠️' });
+    const currentActiveCount = Array.isArray(activeOrders) ? activeOrders.length : 0;
+    if (currentActiveCount >= maxConcurrent) {
+      return res.status(400).json({
+        success: false,
+        message: `معاك ${currentActiveCount} مشاوير شغالة دلوقتي يا بطل (الحد الأقصى ${maxConcurrent}).. سلّم واحد منهم الأول وربنا يوسع رزقك 🛵⚠️`
+      });
     }
 
-    const rawState = await fetchRawDatabaseState(false);
+    const isStackedOrder = currentActiveCount >= 1;
     const tierData = computeCaptainTierAndFee(freshCap, rawState.orders, rawState.settings);
     const fee = tierData.effectiveFee;
 
@@ -2547,21 +2570,28 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     invalidateStateCache();
     sendPushNotificationToPhone(targetOrder.customer_phone || targetOrder.client_phone, {
       title: 'تم قبول طلبك يا باشا! 🛵✅',
-      body: `الكابتن ${freshCap.full_name} (${tierData.tierBadgeText}) لقط الأوردر (${req.params.id}) وطاير عليك فوراً! 🚀`
+      body: isStackedOrder
+        ? `الكابتن ${freshCap.full_name} (${tierData.tierBadgeText}) لقط طلبك (${req.params.id}) معاه في السكة وجايلك في الطريق! 🚀`
+        : `الكابتن ${freshCap.full_name} (${tierData.tierBadgeText}) لقط الأوردر (${req.params.id}) وطاير عليك فوراً! 🚀`
     });
 
     notifyAdminsPush('captain', {
-      title: `✅ قبول طلب (${req.params.id})`,
-      body: `الكابتن ${freshCap.full_name} (${freshCap.phone}) قبل الطلب من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone} (العمولة: ${fee} ج)`
+      title: isStackedOrder ? `➕ قبول طلب إضافي في السكة (${req.params.id})` : `✅ قبول طلب (${req.params.id})`,
+      body: `الكابتن ${freshCap.full_name} (${freshCap.phone}) قبل الطلب من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone} (معه الآن ${currentActiveCount + 1} مشاوير نشطة • العمولة: ${fee} ج)`
     });
 
     const state = await buildClientState(req, true);
-    res.json({ success: true, message: 'تم قبول الطلب.. توكل على الله 🛵', state });
+    res.json({
+      success: true,
+      message: isStackedOrder
+        ? `عاش يا وحش! ضميت الأوردر معاك في السكة (معاك دلوقتي ${currentActiveCount + 1} مشاوير شغالة) 🛵🔥`
+        : 'تم قبول الطلب.. توكل على الله 🛵',
+      state
+    });
   } finally {
     promoRedeemLocks.delete(acceptLockKey);
   }
 });
-
 // [FIX-05 & NEW-LOGIC-01] فرض التسلسل الصارم لحالات خط سير الطلب والتأكد من أنه نشط وغير ملغي
 app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   const { nextStatus } = req.body || {};
@@ -3071,9 +3101,10 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
       body.broadcastTarget !== undefined ||
       body.supportWhatsapp !== undefined ||
       body.waitingTimeoutMinutes !== undefined ||
+      body.maxConcurrentOrdersPerCaptain !== undefined ||
       body.maintenanceMode !== undefined ||
       body.allowCaptainRegistration !== undefined) &&
-    !requireAdminPerm(req, res, ['manageSettings'])
+    !requireAdminPerm(req, res, ['manageSettings', 'manageOrders'])
   ) {
     return;
   }
@@ -3122,6 +3153,7 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (body.referralRewardActive !== undefined) partialIncentives.referralRewardActive = Boolean(body.referralRewardActive);
   if (body.referralRewardAmount !== undefined) partialIncentives.referralRewardAmount = Math.max(0, roundMoney(body.referralRewardAmount));
   if (body.referralRequiredOrders !== undefined) partialIncentives.referralRequiredOrders = Math.max(1, Number(body.referralRequiredOrders));
+  if (body.maxConcurrentOrdersPerCaptain !== undefined) partialIncentives.maxConcurrentOrdersPerCaptain = Math.max(1, Number(body.maxConcurrentOrdersPerCaptain));
   if (body.broadcastTarget !== undefined) partialIncentives.broadcastTarget = String(body.broadcastTarget).trim();
 
   if (body.adminPushMasterEnabled !== undefined) partialIncentives.adminPushMasterEnabled = Boolean(body.adminPushMasterEnabled);
@@ -3179,7 +3211,9 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   const updatedIncentives = await saveIncentivesToDatabase(rawState, partialIncentives, updates, customBasePricing);
 
   let auditDetails = 'تعديل في إعدادات التشغيل أو التسعير';
-  if (body.surgeAction === 'start') {
+  if (body.maxConcurrentOrdersPerCaptain !== undefined) {
+    auditDetails = `تحديد أقصى عدد مشاوير يأخذها الكابتن في سكته معاً بـ (${updatedIncentives.maxConcurrentOrdersPerCaptain} مشاوير)`;
+  } else if (body.surgeAction === 'start') {
     auditDetails = `تفعيل وقت الذروة (+${partialIncentives.surgePercent}%) لمدة ${partialIncentives.surgeDurationMinutes} دقيقة`;
   } else if (body.surgeAction === 'stop') {
     auditDetails = 'إيقاف وقت الذروة والعودة للتسعير الطبيعي';

@@ -313,6 +313,13 @@
                   <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveWaitingTimeout()"><i class="fa-solid fa-clock"></i> حفظ</button>
                 </div>
               </div>
+              <div class="input-group" style="margin-top:8px;">
+                <label class="input-label">أقصى عدد أوردرات يأخذها الكابتن في سكته معاً 🛵➕:</label>
+                <div class="inline-action-row">
+                  <input type="number" id="adminMaxConcurrentOrdersInput" class="input-field" placeholder="3" min="1" max="10">
+                  <button class="btn-main" style="padding:10px; font-size:12px;" onclick="adminSaveMaxConcurrentOrders()"><i class="fa-solid fa-layer-group"></i> حفظ العدد</button>
+                </div>
+              </div>
               <div class="switch-wrapper" style="margin-top:10px; border:1px solid #E9DCE0;">
                 <div><strong style="font-size:12.5px; display:block; color:var(--danger);">وضع الصيانة الطارئة 🛠️</strong></div>
                 <label class="switch"><input type="checkbox" id="adminMaintenanceSwitch" onchange="adminToggleFeatureFlags()"><span class="slider"></span></label>
@@ -2495,6 +2502,15 @@
       });
     }
 
+    function adminSaveMaxConcurrentOrders() {
+      withActionLock(async () => {
+        const v = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminMaxConcurrentOrdersInput')?.value || 3), 10) || 3);
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', { maxConcurrentOrdersPerCaptain: v });
+        if (ok && data.success) showToast(`تم تحديد الحد الأقصى بـ (${v} مشاوير في السكة معاً) للكابتن 🛵✅`, 'ok');
+        else showToast('تعذر الحفظ ⚠️', 'warn');
+      });
+    }
+
     function adminToggleFeatureFlags() {
       withActionLock(async () => {
         const m = document.getElementById('adminMaintenanceSwitch')?.checked; const r = document.getElementById('adminAllowCaptainRegSwitch')?.checked;
@@ -2740,7 +2756,8 @@
         adminSurgeDurationInput:s.surgeDurationMinutes||30,
         adminBroadcastInput:s.broadcastMessage||'',
         adminSupportWhatsappInput:s.supportWhatsapp||'201507800875',
-        adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30
+        adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30,
+        adminMaxConcurrentOrdersInput:s.maxConcurrentOrdersPerCaptain||3
       };
       const isDirtyNow = Date.now() < adminIncentivesDirtyUntil;
       Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id&&!isDirtyNow) document.getElementById(id).value=m[id]; });
@@ -3078,6 +3095,7 @@
               <span class="badge" style="background:#EFE6E9; color:var(--primary); margin-right:3px;">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
               ${o.promoCode ? `<span class="badge badge-delivering" style="margin-right:3px;">🎟️ ${escapeHtml(o.promoCode)} (-${o.promoDiscount}ج)</span>` : ''}
               ${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-right:3px;">⚡ +${o.surgePercent}%</span>` : ''}
+              ${(o.isCourierStacked || Number(o.assignedCourierActiveCount) > 1) ? `<span class="badge badge-accepted" style="margin-right:3px;">🛵 معه ${o.assignedCourierActiveCount} مشاوير في السكة</span>` : ''}
             </div>
             <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
           </div>
