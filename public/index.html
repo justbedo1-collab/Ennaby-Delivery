@@ -280,6 +280,24 @@
     #custProfilePinSyncInput::placeholder {
       letter-spacing: normal !important;
     }
+
+    /* تنسيقات النافذة المنبثقة الفورية لأوردرات الرادار (10 ثوانٍ) */
+    .radar-popup-card { max-width: 395px; padding: 0; overflow: hidden; border: 2px solid var(--primary); animation: radarPopIn 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+    @keyframes radarPopIn { from { opacity: 0; transform: scale(0.9) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .radar-popup-header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 14px 16px 12px; text-align: center; position: relative; }
+    .radar-popup-header.stacked-mode { background: linear-gradient(135deg, #1B5E20, #2E7D32); }
+    .radar-countdown-track { width: 100%; height: 7px; background: #E9DCE0; overflow: hidden; position: relative; }
+    .radar-countdown-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #2E7D32, #66BB6A); transition: width 0.1s linear, background 0.3s ease; }
+    .radar-countdown-fill.urgent { background: linear-gradient(90deg, #D32F2F, #FF5252); }
+    .radar-popup-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; }
+    .radar-popup-route-box { background: #FAF7F4; border: 1.5px solid #E9DCE0; border-radius: 13px; padding: 10px 12px; font-size: 12px; line-height: 1.7; display: flex; flex-direction: column; gap: 6px; }
+    .radar-popup-finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center; }
+    .radar-popup-fin-item { background: #FAF4F6; border: 1px solid #E8DCE0; border-radius: 11px; padding: 8px 6px; }
+    .radar-popup-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; margin-top: 4px; }
+    .btn-popup-accept { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; border-radius: 13px; padding: 13px 14px; font-size: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 5px 15px rgba(46, 125, 50, 0.32); transition: transform 0.15s ease; }
+    .btn-popup-accept:active { transform: scale(0.97); }
+    .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 13px; padding: 13px 14px; font-size: 13.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.28); transition: transform 0.15s ease; }
+    .btn-popup-reject:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -1115,6 +1133,40 @@
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
   <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> يلا نحول ع الدعم ونشحن 💬</button></div></div>
+  <!-- نافذة الرادار المنبثقة الفورية للأوردرات الجديدة (تظهر لمدة 10 ثوانٍ بدون أرقام هواتف) -->
+  <div class="custom-modal" id="courierNewOrderPopupModal" style="z-index: 2100;">
+    <div class="modal-content-card radar-popup-card">
+      <div class="radar-popup-header" id="courierPopupHeaderBox">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span class="badge" id="courierPopupCapacityBadge" style="background:rgba(255,255,255,0.2); color:#fff; font-size:10.5px;">📡 رادار العنابي الفوري</span>
+          <span class="badge" id="courierPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 10 ثوانٍ</span>
+        </div>
+        <h3 id="courierPopupMainTitle" style="font-size:16.5px; font-weight:900; line-height:1.4; margin:0;">
+          🔔 طلب جديد لسه نازل ع الرادار!
+        </h3>
+      </div>
+      <div class="radar-countdown-track">
+        <div class="radar-countdown-fill" id="courierPopupCountdownBar"></div>
+      </div>
+      <div class="radar-popup-body">
+        <div id="courierPopupContentDetails"></div>
+        <div style="background:#FAF7F4; border:1px dashed #D1B8C0; border-radius:9px; padding:6px 10px; font-size:10.5px; font-weight:800; color:var(--text-muted); text-align:center;">
+          🔒 أرقام تليفونات العميل والمستلم هتظهرلك فوراً أول ما تقبل الطلب
+        </div>
+        <div class="radar-popup-actions">
+          <button type="button" class="btn-popup-accept" id="courierPopupAcceptBtn" onclick="acceptOrderFromCourierPopup()">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="courierPopupAcceptBtnText">قبول الطلب ✅</span>
+          </button>
+          <button type="button" class="btn-popup-reject" onclick="rejectOrderFromCourierPopup()">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span>رفض ✕</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- نافذة تنبيه عدم كفاية رصيد محفظة الكابتن لقبول الطلب -->
   <div class="custom-modal" id="insufficientWalletModal" style="z-index: 1960;" onclick="if(event.target === this) closeInsufficientWalletModal()">
     <div class="modal-content-card" style="text-align:center; padding:24px 18px; max-width:360px;">
@@ -1626,14 +1678,6 @@
       validateSavedPromoCodeLocally();
       updateCustomerPinFieldVisibility();
       if (oldOrders.length > 0) {
-        const newlyCreatedOrder = STATE.orders.find(o => !oldOrderMap[o.id] && o.status === 'في انتظار كابتن');
-        if (newlyCreatedOrder) {
-          const activeCourier = getActiveCourier();
-          if (STATE.currentRole === 'courier' && activeCourier && activeCourier.isAvailable && activeCourier.status === 'معتمد') {
-            triggerDeviceAlert('courier_new_order');
-            showToast(`🔔 أوردر جديد لسه نازل ع الرادار (${newlyCreatedOrder.id}) من ${newlyCreatedOrder.pickupZone} لـ ${newlyCreatedOrder.dropoffZone}.. الحق اقبله! 🛵💨`, 'ok');
-          }
-        }
         const savedCustPhone = STATE.customerProfile ? STATE.customerProfile.savedPhone : '';
         STATE.orders.forEach(o => {
           const prevStatus = oldOrderMap[o.id];
@@ -1647,6 +1691,9 @@
         });
       }
       saveSession(); populateAllZoneDropdowns(); renderAllData(); calculateDeliveryPrice();
+      if (typeof evaluateCourierNewOrderPopup === 'function') {
+        evaluateCourierNewOrderPopup(oldOrderMap);
+      }
     }
 
     async function syncFromCloudServer(silent = true) {
@@ -2423,7 +2470,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       document.getElementById('courierView')?.classList.toggle('active-view', validRole === 'courier');
       renderAllData(); updateBottomNavVisibility();
       if (validRole === 'customer') {
+        if (typeof closeCourierNewOrderPopup === 'function') closeCourierNewOrderPopup(false);
         setTimeout(() => { if (customerInlineMap) customerInlineMap.invalidateSize(); }, 120);
+      } else if (validRole === 'courier') {
+        if (typeof evaluateCourierNewOrderPopup === 'function') evaluateCourierNewOrderPopup({});
       }
     }
 
@@ -3233,6 +3283,312 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           footerEl.style.display = 'none';
         }
       }, 120);
+    }
+
+    // ==================== محرك النافذة المنبثقة الفورية لأوردرات الرادار (10 ثوانٍ) ====================
+    const COURIER_POPUP_DURATION_MS = 10000;
+    const courierSeenPopupOrderIds = new Set();
+    let courierPopupOrderQueue = [];
+    let currentPopupOrderId = null;
+    let courierPopupIntervalId = null;
+    let courierPopupEndTime = 0;
+    let courierPopupInitialSeedDone = false;
+
+    function calcGpsDistanceKm(lat1, lng1, lat2, lng2) {
+      if (!isValidGpsCoord(lat1, lng1) || !isValidGpsCoord(lat2, lng2)) return null;
+      const toRad = d => (Number(d) * Math.PI) / 180;
+      const R = 6371;
+      const dLat = toRad(Number(lat2) - Number(lat1));
+      const dLng = toRad(Number(lng2) - Number(lng1));
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function checkOrderProximityToCourier(order, courier, myActiveOrders) {
+      if (!order || !courier) return { isNear: true, reasonText: '' };
+      if (!Array.isArray(myActiveOrders) || myActiveOrders.length === 0) {
+        const inPrimary = order.pickupZone === courier.primaryZone || order.dropoffZone === courier.primaryZone;
+        return {
+          isNear: true,
+          isRouteMatch: inPrimary,
+          reasonText: inPrimary ? `📍 في منطقتك الأساسية (${courier.primaryZone})` : `📍 المسار: ${order.pickupZone} ⬅️ ${order.dropoffZone}`
+        };
+      }
+
+      const activeZones = new Set();
+      myActiveOrders.forEach(act => {
+        if (act.pickupZone) activeZones.add(act.pickupZone);
+        if (act.dropoffZone) activeZones.add(act.dropoffZone);
+      });
+
+      const zoneMatched = activeZones.has(order.pickupZone) || activeZones.has(order.dropoffZone);
+      let gpsMatched = false;
+      for (const act of myActiveOrders) {
+        const d1 = calcGpsDistanceKm(act.pickupLat, act.pickupLng, order.pickupLat, order.pickupLng);
+        const d2 = calcGpsDistanceKm(act.dropoffLat, act.dropoffLng, order.pickupLat, order.pickupLng);
+        const d3 = calcGpsDistanceKm(act.dropoffLat, act.dropoffLng, order.dropoffLat, order.dropoffLng);
+        if ((d1 !== null && d1 <= 4.5) || (d2 !== null && d2 <= 4.5) || (d3 !== null && d3 <= 4.5)) {
+          gpsMatched = true;
+          break;
+        }
+      }
+
+      const isRouteMatch = Boolean(zoneMatched || gpsMatched);
+      return {
+        isNear: true,
+        isRouteMatch,
+        reasonText: isRouteMatch
+          ? `🎯 قريب منك وعلى نفس خط سيرك (${order.pickupZone} ⬅️ ${order.dropoffZone})`
+          : `🛣️ مسار الطلب: من (${order.pickupZone}) إلى (${order.dropoffZone})`
+      };
+    }
+
+    function closeCourierNewOrderPopup(markDismissed = true) {
+      if (courierPopupIntervalId) {
+        clearInterval(courierPopupIntervalId);
+        courierPopupIntervalId = null;
+      }
+      if (markDismissed && currentPopupOrderId) {
+        courierSeenPopupOrderIds.add(currentPopupOrderId);
+      }
+      currentPopupOrderId = null;
+      const modal = document.getElementById('courierNewOrderPopupModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function openCourierNewOrderPopup(order) {
+      const courier = getActiveCourier();
+      if (!courier || courier.status !== 'معتمد' || !courier.isAvailable || STATE.currentRole !== 'courier') return;
+      if (STATE.settings && STATE.settings.maintenanceMode) return;
+
+      const myActiveOrders = getCourierActiveOrders(courier.phone);
+      const myActiveCount = myActiveOrders.length;
+      const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+
+      // إذا وصل الكابتن للحد الأقصى المسموح به من لوحة الأدمن، لا تظهر له النافذة المنبثقة
+      if (myActiveCount >= maxConcurrent) {
+        closeCourierNewOrderPopup(false);
+        return;
+      }
+
+      currentPopupOrderId = order.id;
+      courierSeenPopupOrderIds.add(order.id);
+
+      const isStackedMode = myActiveCount > 0;
+      const headerBox = document.getElementById('courierPopupHeaderBox');
+      const capBadge = document.getElementById('courierPopupCapacityBadge');
+      const timerBadge = document.getElementById('courierPopupTimerBadge');
+      const mainTitle = document.getElementById('courierPopupMainTitle');
+      const barFill = document.getElementById('courierPopupCountdownBar');
+      const detailsBox = document.getElementById('courierPopupContentDetails');
+      const acceptBtnTxt = document.getElementById('courierPopupAcceptBtnText');
+      const modal = document.getElementById('courierNewOrderPopupModal');
+      if (!modal || !detailsBox) return;
+
+      if (headerBox) headerBox.classList.toggle('stacked-mode', isStackedMode);
+      if (capBadge) {
+        capBadge.innerText = isStackedMode
+          ? `🔥 معاك ${myActiveCount} شغال • متاح لحد ${maxConcurrent} مشاوير`
+          : `📡 متاح ليك حتى ${maxConcurrent} مشاوير في السكة`;
+      }
+      if (mainTitle) {
+        mainTitle.innerText = isStackedMode
+          ? 'طلب جديد لو فى طريقك اقبله ✌️'
+          : '🔔 طلب جديد لسه نازل ع الرادار!';
+      }
+      if (acceptBtnTxt) {
+        acceptBtnTxt.innerText = isStackedMode ? 'اقبله في سكتك ✌️✅' : 'قبول الطلب ✅';
+      }
+
+      const isFetch = order.tripType === 'fetch';
+      const effectiveFee = getEffectiveCaptainFee(courier);
+      const displayNet = Math.max(0, roundMoney(Number(order.originalFare || order.fare) - effectiveFee));
+      const proxInfo = checkOrderProximityToCourier(order, courier, myActiveOrders);
+      const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة من الباشا:';
+
+      const discountNoteHtml = order.discountApplied > 0
+        ? `<div class="yellow-discount-note" style="margin:2px 0 0;">🟡 العميل معاه خصم (${order.discountApplied} ج) هتاخد منه (${order.fare} ج) والباقي هينزل في محفظتك أول ما تقبل 😎💲</div>`
+        : '';
+
+      const routeMatchBannerHtml = proxInfo.reasonText
+        ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FFF8E1'}; border:1px solid ${proxInfo.isRouteMatch ? '#A5D6A7' : '#FFE082'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : '#5D4037'}; border-radius:9px; padding:5px 10px; font-size:11px; font-weight:800; text-align:center;">
+            ${escapeHtml(proxInfo.reasonText)}
+          </div>`
+        : '';
+
+      detailsBox.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <strong style="font-size:14px; color:var(--primary);">${escapeHtml(order.id)}</strong>
+          <div style="display:flex; gap:4px; align-items:center;">
+            ${order.surgePercent > 0 ? `<span class="badge badge-pending">⚡ ذروة +${order.surgePercent}%</span>` : ''}
+            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
+          </div>
+        </div>
+        ${routeMatchBannerHtml}
+        <div class="radar-popup-route-box">
+          <div>📦 <strong style="color:var(--primary);">الاستلام (${escapeHtml(order.pickupZone)}):</strong> ${escapeHtml(order.pickupAddress)}</div>
+          <div style="border-top:1px dashed #E2D5DA; padding-top:5px;">🏁 <strong style="color:var(--success);">التسليم (${escapeHtml(order.dropoffZone)}):</strong> ${escapeHtml(order.dropoffAddress)}</div>
+          <div style="border-top:1px dashed #E2D5DA; padding-top:5px; font-size:11px; color:var(--text-muted);">⚖️ <strong>الحجم/الوزن:</strong> ${escapeHtml(order.packageType)} | <strong>الدفع:</strong> ${escapeHtml(order.payer)}</div>
+          ${order.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:8px; padding:6px 8px; color:#5D4037; font-weight:700; font-size:11.5px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(order.customerNotes)}</div>` : ''}
+        </div>
+        <div class="radar-popup-finance-grid">
+          <div class="radar-popup-fin-item">
+            <span style="font-size:10.5px; color:var(--text-muted); font-weight:800; display:block;">💵 هتقبض كاش</span>
+            <strong style="font-size:16px; font-weight:900; color:var(--primary);">${order.fare} ج</strong>
+          </div>
+          <div class="radar-popup-fin-item" style="background:#E8F5E9; border-color:#C8E6C9;">
+            <span style="font-size:10.5px; color:#1B5E20; font-weight:800; display:block;">🤑 صافي ربحك (عمولة ${effectiveFee}ج)</span>
+            <strong style="font-size:16px; font-weight:900; color:var(--success);">${displayNet} ج</strong>
+          </div>
+        </div>
+        ${discountNoteHtml}
+      `;
+
+      if (barFill) {
+        barFill.style.width = '100%';
+        barFill.classList.remove('urgent');
+      }
+      if (timerBadge) timerBadge.innerText = '⏳ 10 ثوانٍ';
+
+      modal.classList.add('show');
+      triggerDeviceAlert('courier_new_order');
+
+      if (courierPopupIntervalId) clearInterval(courierPopupIntervalId);
+      courierPopupEndTime = Date.now() + COURIER_POPUP_DURATION_MS;
+
+      courierPopupIntervalId = setInterval(() => {
+        const now = Date.now();
+        const remMs = courierPopupEndTime - now;
+
+        // فحص لحظي: هل ما زال الطلب متاحاً ولم يلتقطه كابتن آخر؟ وهل الكابتن لم يتجاوز الحد الأقصى؟
+        const liveOrd = STATE.orders.find(x => x.id === currentPopupOrderId);
+        const liveCourier = getActiveCourier();
+        const liveActiveCnt = liveCourier ? getCourierActiveOrders(liveCourier.phone).length : 0;
+        const liveMax = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+
+        if (!liveOrd || liveOrd.status !== 'في انتظار كابتن') {
+          closeCourierNewOrderPopup(true);
+          showToast('🏃‍♂️ كابتن تاني سبقك ولقط الأوردر ده.. خليك مستعد للي جاي!', 'warn');
+          processNextCourierPopupInQueue();
+          return;
+        }
+
+        if (liveActiveCnt >= liveMax) {
+          closeCourierNewOrderPopup(false);
+          return;
+        }
+
+        if (remMs <= 0) {
+          closeCourierNewOrderPopup(true);
+          processNextCourierPopupInQueue();
+          return;
+        }
+
+        const pct = Math.max(0, Math.min(100, (remMs / COURIER_POPUP_DURATION_MS) * 100));
+        const remSec = Math.max(1, Math.ceil(remMs / 1000));
+        if (barFill) {
+          barFill.style.width = `${pct}%`;
+          barFill.classList.toggle('urgent', remSec <= 3);
+        }
+        if (timerBadge) {
+          timerBadge.innerText = `⏳ ${remSec} ${remSec <= 2 ? 'ثانية' : 'ثوانٍ'}`;
+        }
+      }, 100);
+    }
+
+    function processNextCourierPopupInQueue() {
+      if (currentPopupOrderId) return;
+      const courier = getActiveCourier();
+      if (!courier || courier.status !== 'معتمد' || !courier.isAvailable || STATE.currentRole !== 'courier') return;
+      const myActiveOrders = getCourierActiveOrders(courier.phone);
+      const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+      if (myActiveOrders.length >= maxConcurrent) return;
+
+      while (courierPopupOrderQueue.length > 0) {
+        const nextId = courierPopupOrderQueue.shift();
+        if (courierSeenPopupOrderIds.has(nextId)) continue;
+        const ord = STATE.orders.find(o => o && o.id === nextId && o.status === 'في انتظار كابتن');
+        if (ord) {
+          setTimeout(() => openCourierNewOrderPopup(ord), 220);
+          return;
+        }
+      }
+    }
+
+    function evaluateCourierNewOrderPopup(oldOrderMap = {}) {
+      const waitingOrders = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن');
+
+      // عند أول تحميل للتطبيق، نستثني الطلبات القديمة التي مر عليها أكثر من 30 ثانية حتى لا تزعج الكابتن عند تحديث الصفحة
+      if (!courierPopupInitialSeedDone) {
+        courierPopupInitialSeedDone = true;
+        const now = Date.now();
+        waitingOrders.forEach(o => {
+          if (now - (Number(o.createdAt) || 0) > 30000) {
+            courierSeenPopupOrderIds.add(o.id);
+          }
+        });
+      }
+
+      const courier = getActiveCourier();
+      if (!courier || courier.status !== 'معتمد' || !courier.isAvailable || STATE.currentRole !== 'courier') return;
+      if (STATE.settings && STATE.settings.maintenanceMode) return;
+
+      const myActiveOrders = getCourierActiveOrders(courier.phone);
+      const myActiveCount = myActiveOrders.length;
+      const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+
+      // إذا وصل الكابتن للحد الأقصى للمشاوير المحددة من الأدمن، لا نفتح النافذة (ولا نضع علامة seen حتى تفتح له لو رفع الأدمن العدد)
+      if (myActiveCount >= maxConcurrent) {
+        if (currentPopupOrderId) closeCourierNewOrderPopup(false);
+        return;
+      }
+
+      // ترتيب الطلبات المنتظرة بحيث تكون الأولوية للطلبات الواقعة على خط سير الكابتن ثم الأحدث
+      const candidates = waitingOrders.filter(o => !courierSeenPopupOrderIds.has(o.id));
+      if (candidates.length === 0) return;
+
+      candidates.sort((a, b) => {
+        const aProx = checkOrderProximityToCourier(a, courier, myActiveOrders).isRouteMatch ? 1 : 0;
+        const bProx = checkOrderProximityToCourier(b, courier, myActiveOrders).isRouteMatch ? 1 : 0;
+        if (aProx !== bProx) return bProx - aProx;
+        return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+      });
+
+      candidates.forEach(c => {
+        if (!courierPopupOrderQueue.includes(c.id) && c.id !== currentPopupOrderId) {
+          courierPopupOrderQueue.push(c.id);
+        }
+      });
+
+      if (!currentPopupOrderId) {
+        processNextCourierPopupInQueue();
+      }
+    }
+
+    function acceptOrderFromCourierPopup() {
+      const targetOrderId = currentPopupOrderId;
+      if (!targetOrderId) return;
+      closeCourierNewOrderPopup(true);
+
+      const courier = getActiveCourier();
+      if (!courier || courier.status !== 'معتمد') return;
+
+      const reqFee = getEffectiveCaptainFee(courier);
+      if (roundMoney(courier.walletBalance || 0) < reqFee) {
+        openInsufficientWalletModal();
+        return;
+      }
+
+      executeCourierAcceptOrderRequest(targetOrderId);
+    }
+
+    function rejectOrderFromCourierPopup() {
+      if (!currentPopupOrderId) return;
+      closeCourierNewOrderPopup(true);
+      showToast('تم تخطي الإشعار.. الطلب لسه موجود في قائمة الرادار لو حبيت ترجعله 📡', 'ok');
+      processNextCourierPopupInQueue();
     }
 
     function executeCourierAcceptOrderRequest(orderId) {
