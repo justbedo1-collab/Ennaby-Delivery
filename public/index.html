@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
   <!-- مكتبة الخرائط المجانية Leaflet + محرك Supabase Realtime -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -205,10 +206,12 @@
     .upload-preview-container { position: relative; width: 100%; height: 100px; border-radius: 10px; overflow: hidden; display: none; }
     .upload-preview-container img { width: 100%; height: 100%; object-fit: cover; }
     .remove-upload-btn { position: absolute; top: 5px; left: 5px; background: rgba(211, 47, 47, 0.85); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03); z-index: 60; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 6px; position: relative; flex: 1; }
-    .nav-item i { font-size: 16px; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 100vw; height: calc(65px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); z-index: 90; -webkit-transform: translateZ(0); transform: translateZ(0); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 800; background: none; border: none; cursor: pointer; padding: 6px 4px; position: relative; flex: 1; line-height: 1.2; }
+    .nav-item i { font-size: 18px; line-height: 1; display: inline-block; min-height: 18px; }
     .nav-item.active { color: var(--primary); }
+    /* ضمان عدم تأثر صور مربعات خريطة Leaflet بقواعد الـ CSS في متصفح آيفون (iOS WebKit) */
+    .leaflet-container img.leaflet-tile { max-width: none !important; max-height: none !important; width: 256px !important; height: 256px !important; visibility: visible !important; opacity: 1 !important; }
     .nav-badge-count { position: absolute; top: 2px; right: calc(50% - 18px); background: var(--primary); color: white; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 50px; display: flex; align-items: center; justify-content: center; }
     .toast-box { position: absolute; top: 52px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px) scale(0.96); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.18s ease; pointer-events: none; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.12); }
     .toast-box.toast-warning { background: #3B2326; border-color: #FF8A80; }
@@ -1844,17 +1847,45 @@ function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArr
       const box = document.getElementById('customerInlineLeafletMap');
       if (!box || !window.L) return;
       if (!customerInlineMap) {
-        customerInlineMap = L.map('customerInlineLeafletMap').setView([31.0409, 31.3785], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        customerInlineMap = L.map('customerInlineLeafletMap', {
+          preferCanvas: true,
+          tap: false
+        }).setView([31.0409, 31.3785], 13);
+
+        const primaryTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
           attribution: '© OpenStreetMap'
         }).addTo(customerInlineMap);
+
+        // خادم خرائط احتياطي تلقائي في حال حجب الشبكة لخادم OpenStreetMap على بعض خطوط الهواتف
+        let tileErrorCount = 0;
+        primaryTiles.on('tileerror', function() {
+          tileErrorCount++;
+          if (tileErrorCount === 4 && customerInlineMap) {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+              maxZoom: 19,
+              attribution: '© OpenStreetMap'
+            }).addTo(customerInlineMap);
+          }
+        });
+
         customerInlineMap.on('click', function(ev) {
           applyInlineMapCoordinate(inlineMapActiveTarget, ev.latlng.lat, ev.latlng.lng, true);
         });
+
+        // مراقب أبعاد ذكي لهواتف آيفون (iOS Safari) يعيد ضبط الخريطة تلقائياً فور ظهورها على الشاشة
+        if (typeof ResizeObserver !== 'undefined') {
+          const ro = new ResizeObserver(() => {
+            if (customerInlineMap) customerInlineMap.invalidateSize();
+          });
+          ro.observe(box);
+        }
       }
-      setTimeout(() => {
-        if (customerInlineMap) customerInlineMap.invalidateSize();
-      }, 150);
+      [150, 500, 1200].forEach(delay => {
+        setTimeout(() => {
+          if (customerInlineMap) customerInlineMap.invalidateSize();
+        }, delay);
+      });
     }
 
     function handleInlineMapRightBtnClick() {
