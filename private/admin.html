@@ -468,8 +468,11 @@
                   <button type="button" class="btn-main" id="saveSubAdminBtn" onclick="adminSaveSubAdminAccount()"><i class="fa-solid fa-shield-halved"></i> حفظ واعتماد المسؤول ✅</button>
                 </div>
 
-                <div style="margin-bottom:12px;">
-                  <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;">المسؤولين المسجلين:</strong>
+                <div style="margin-bottom:12px; background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #E9DCE0;">
+                  <label class="input-label" for="adminRegisteredAdminsSelect" style="font-size:12px; color:var(--primary); font-weight:800; display:block; margin-bottom:6px;">
+                    <i class="fa-solid fa-users-gear"></i> اختر المدير / المسؤول لعرض بياناته أو التعديل عليه:
+                  </label>
+                  <select class="select-field" id="adminRegisteredAdminsSelect" onchange="renderAdminSelectedAccountCard()" style="background:#fff; margin-bottom:10px;"></select>
                   <div id="adminAccountsListFeed" style="display:flex; flex-direction:column; gap:8px;"></div>
                 </div>
                 <div style="border-top:1px solid #E9DCE0; padding-top:10px;">
@@ -551,6 +554,9 @@
 
               <div class="card" id="admCard-manualTopup" style="border: 1.5px solid var(--primary);">
                 <h2 class="card-title"><i class="fa-solid fa-hand-holding-dollar"></i> شحن محفظة كابتن</h2>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <input type="tel" id="adminManualTopupSearchInput" class="input-field" placeholder="🔍 ابحث برقم هاتف الكابتن أو اسمه..." oninput="filterManualTopupCaptainDropdown()">
+                </div>
                 <select class="select-field" id="adminManualTopupCaptainSelect" style="margin-bottom:8px;"></select>
                 <div class="inline-action-row">
                   <input type="number" id="adminManualTopupAmount" class="input-field" placeholder="المبلغ (ج)">
@@ -560,6 +566,9 @@
 
               <div class="card" id="admCard-manualDeduct" style="border: 1.5px solid var(--danger);">
                 <h2 class="card-title" style="color:var(--danger);"><i class="fa-solid fa-circle-minus"></i> خصم من محفظة كابتن ⚠️</h2>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <input type="tel" id="adminManualDeductSearchInput" class="input-field" placeholder="🔍 ابحث برقم هاتف الكابتن أو اسمه..." oninput="filterManualDeductCaptainDropdown()">
+                </div>
                 <select class="select-field" id="adminManualDeductCaptainSelect" style="margin-bottom:8px;"></select>
                 <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
                   <input type="number" id="adminManualDeductAmount" class="input-field" placeholder="المبلغ">
@@ -2265,25 +2274,75 @@
       }});
     }
 
+    function renderAdminSelectedAccountCard() {
+      const sel = document.getElementById('adminRegisteredAdminsSelect');
+      const feed = document.getElementById('adminAccountsListFeed');
+      if (!feed) return;
+      const selectedUser = sel ? sel.value : '';
+      if (!selectedUser) {
+        feed.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:11.5px; padding:8px; background:#fff; border-radius:10px; border:1px dashed #E2D5DA;">اختر اسم المدير من القائمة المنسدلة أعلاه لعرض بياناته وصلاحياته والتعديل عليه 👆</div>`;
+        return;
+      }
+      const a = (STATE.adminAccounts || []).find(x => x.username === selectedUser);
+      if (!a) {
+        feed.innerHTML = '';
+        return;
+      }
+      const isM = Boolean(a.isMaster);
+      const isA = a.status !== 'معطل';
+      const prms = isM
+        ? ['كل الصلاحيات 👑']
+        : ADMIN_PERM_KEYS.filter(k => a.permissions && a.permissions[k]).map(k => ADMIN_PERM_LABELS[k]);
+
+      feed.innerHTML = `<div style="background:#FFFFFF; border:1.5px solid ${isM ? '#302A2D' : 'var(--primary)'}; border-radius:12px; padding:12px; font-size:11.5px; box-shadow:var(--shadow-sm);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <strong style="font-size:13px; color:var(--primary);">${escapeHtml(a.name)} <small style="color:var(--text-muted);">(@${escapeHtml(a.username)})</small></strong>
+          <span class="badge ${isM ? 'badge-master' : (isA ? 'badge-completed' : 'badge-rejected')}">${isM ? 'أدمن رئيسي 👑' : (isA ? 'نشط ✅' : 'معطل ⛔')}</span>
+        </div>
+        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:5px;">
+          ${prms.length
+            ? prms.map(p => `<span style="background:#FAF7F4; border:1px solid #E2D5DA; padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:700;">${escapeHtml(p)}</span>`).join('')
+            : '<span style="color:var(--danger); font-weight:800;">لا توجد صلاحيات مفعلة</span>'}
+        </div>
+        ${!isM ? `<div style="margin-top:10px; border-top:1px dashed #E2D5DA; padding-top:10px; display:flex; gap:8px;">
+          <button type="button" class="btn-secondary" style="flex:1;" onclick="adminEditSubAdmin('${escapeHtml(a.username)}')"><i class="fa-solid fa-user-pen"></i> تعديل الصلاحيات والبيانات</button>
+          <button type="button" class="${isA ? 'btn-danger' : 'btn-success'}" style="flex:1;" onclick="adminToggleSubAdminStatus('${escapeHtml(a.username)}')">${isA ? 'تعطيل الحساب ⛔' : 'تنشيط الحساب ✅'}</button>
+        </div>` : ''}
+      </div>`;
+    }
+
     function renderAdminAccountsSection() {
-      const act = getActiveAdmin(); if(!act)return;
-      const m = STATE.adminAccounts.find(a=>a.isMaster) || act;
-      if(m){
+      const act = getActiveAdmin(); if (!act) return;
+      const m = STATE.adminAccounts.find(a => a.isMaster) || act;
+      if (m) {
         const nameInp = document.getElementById('masterAdminNameInput');
         const userInp = document.getElementById('masterAdminUserInput');
-        if(nameInp && document.activeElement !== nameInp) nameInp.value = m.name || '';
-        if(userInp && document.activeElement !== userInp) userInp.value = m.username || '';
+        if (nameInp && document.activeElement !== nameInp) nameInp.value = m.name || '';
+        if (userInp && document.activeElement !== userInp) userInp.value = m.username || '';
       }
-      document.getElementById('adminAccountsListFeed').innerHTML = STATE.adminAccounts.map(a=>{
-        const isM=Boolean(a.isMaster), isA=a.status!=='معطل', prms=isM?['كل الصلاحيات 👑']:ADMIN_PERM_KEYS.filter(k=>a.permissions&&a.permissions[k]).map(k=>ADMIN_PERM_LABELS[k]);
-        return `<div style="background:#FAF7F4; border:1px solid ${isM?'#302A2D':'#E9DCE0'}; border-radius:12px; padding:10px; margin-bottom:8px; font-size:11.5px;">
-          <div style="display:flex; justify-content:space-between;"><strong>${escapeHtml(a.name)} <small>(@${escapeHtml(a.username)})</small></strong> <span class="badge ${isM?'badge-master':isA?'badge-completed':'badge-rejected'}">${isM?'أدمن رئيسي':isA?'نشط':'معطل'}</span></div>
-          <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">${prms.length?prms.map(p=>`<span style="background:#fff; border:1px solid #ddd; padding:2px 8px; border-radius:20px; font-size:10px;">${escapeHtml(p)}</span>`).join(''):'<span style="color:red">لا صلاحيات</span>'}</div>
-          ${!isM?`<div style="margin-top:8px; border-top:1px dashed #ddd; padding-top:8px; display:flex; gap:6px;"><button class="btn-secondary" onclick="adminEditSubAdmin('${escapeHtml(a.username)}')">تعديل</button><button class="${isA?'btn-danger':'btn-success'}" onclick="adminToggleSubAdminStatus('${escapeHtml(a.username)}')">${isA?'تعطيل ⛔':'تنشيط ✅'}</button></div>`:''}
-        </div>`;
-      }).join('');
-      const logs = Array.isArray(STATE.auditLogs)?STATE.auditLogs:[];
-      document.getElementById('adminAuditLogList').innerHTML = logs.length?logs.slice(0,30).map(l=>`<div style="background:#FAF7F4; border:1px solid #eee; padding:6px 8px; border-radius:8px; margin-bottom:6px;"><strong>${escapeHtml(l.actionType)} — ${escapeHtml(l.target)}</strong> <span style="font-size:10px; float:left;">${escapeHtml(l.time)}</span><div style="color:#444;">${escapeHtml(l.details)}</div><div style="font-size:10px; color:#0277BD;">بواسطة: ${escapeHtml(l.actor)}</div></div>`).join(''):'<div style="text-align:center; color:#888;">لا سجلات.</div>';
+
+      const sel = document.getElementById('adminRegisteredAdminsSelect');
+      const accounts = Array.isArray(STATE.adminAccounts) ? STATE.adminAccounts : [];
+      if (sel && document.activeElement !== sel) {
+        const prevVal = sel.value;
+        sel.innerHTML = `<option value="">-- اختر المدير من القائمة (${accounts.length}) --</option>` + accounts.map(a => {
+          const roleTag = a.isMaster ? 'أدمن رئيسي 👑' : (a.status !== 'معطل' ? 'نشط ✅' : 'معطل ⛔');
+          return `<option value="${escapeHtml(a.username)}">${escapeHtml(a.name)} (@${escapeHtml(a.username)}) — [${roleTag}]</option>`;
+        }).join('');
+
+        if (prevVal && accounts.some(a => a.username === prevVal)) {
+          sel.value = prevVal;
+        } else {
+          const firstSub = accounts.find(a => !a.isMaster) || accounts[0];
+          if (firstSub) sel.value = firstSub.username;
+        }
+      }
+      renderAdminSelectedAccountCard();
+
+      const logs = Array.isArray(STATE.auditLogs) ? STATE.auditLogs : [];
+      document.getElementById('adminAuditLogList').innerHTML = logs.length
+        ? logs.slice(0, 30).map(l => `<div style="background:#FAF7F4; border:1px solid #eee; padding:6px 8px; border-radius:8px; margin-bottom:6px;"><strong>${escapeHtml(l.actionType)} — ${escapeHtml(l.target)}</strong> <span style="font-size:10px; float:left;">${escapeHtml(l.time)}</span><div style="color:#444;">${escapeHtml(l.details)}</div><div style="font-size:10px; color:#0277BD;">بواسطة: ${escapeHtml(l.actor)}</div></div>`).join('')
+        : '<div style="text-align:center; color:#888;">لا سجلات.</div>';
     }
 
     function adminExecuteManualTopup() {
@@ -2827,11 +2886,46 @@
       return clean.startsWith('0') ? '2' + clean : clean;
     }
 
+    function filterCaptainSelectWithSearch(searchInputId, selectId, afterChangeFn = null) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const rawQuery = normalizeDigits(document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
+      const prevVal = sel.value;
+      const filtered = rawQuery
+        ? STATE.captains.filter(c => (c.phone && c.phone.toLowerCase().includes(rawQuery)) || (c.fullName && c.fullName.toLowerCase().includes(rawQuery)))
+        : STATE.captains;
+
+      sel.innerHTML = filtered.length === 0
+        ? `<option value="">-- لا يوجد كابتن مطابق لهذا البحث --</option>`
+        : filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [الرصيد: ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText || c.status)}]</option>`).join('');
+
+      if (prevVal && filtered.some(c => c.phone === prevVal)) {
+        sel.value = prevVal;
+      } else if (filtered.length > 0) {
+        sel.value = filtered[0].phone;
+      }
+      if (typeof afterChangeFn === 'function') afterChangeFn();
+    }
+
+    function filterManualTopupCaptainDropdown() {
+      filterCaptainSelectWithSearch('adminManualTopupSearchInput', 'adminManualTopupCaptainSelect');
+    }
+
+    function filterManualDeductCaptainDropdown() {
+      filterCaptainSelectWithSearch('adminManualDeductSearchInput', 'adminManualDeductCaptainSelect');
+    }
+
+    function handleAdminCustomFeeSearch() {
+      filterCaptainSelectWithSearch('adminCustomFeePhoneSearch', 'adminCustomFeeCaptainSelect', renderAdminCustomFeeCaptainSummary);
+    }
+
     function renderAdminDropdown() {
-      const o = STATE.captains.map(c=>`<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [الرصيد: ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText || c.status)}]</option>`).join('');
-      ['adminManualTopupCaptainSelect','adminManualDeductCaptainSelect','adminCustomFeeCaptainSelect'].forEach(id=>{ const s=document.getElementById(id); if(s&&document.activeElement!==s){const p=s.value; s.innerHTML=o; if(p)s.value=p; } });
-      if(document.activeElement !== document.getElementById('adminResetPassCaptainSelect')) filterResetPassCaptainDropdown();
-      renderAdminCustomFeeCaptainSummary();
+      if (document.activeElement !== document.getElementById('adminManualTopupCaptainSelect')) filterManualTopupCaptainDropdown();
+      if (document.activeElement !== document.getElementById('adminManualDeductCaptainSelect')) filterManualDeductCaptainDropdown();
+      if (document.activeElement !== document.getElementById('adminCustomFeeCaptainSelect')) {
+        filterCaptainSelectWithSearch('adminCustomFeePhoneSearch', 'adminCustomFeeCaptainSelect', renderAdminCustomFeeCaptainSummary);
+      }
+      if (document.activeElement !== document.getElementById('adminResetPassCaptainSelect')) filterResetPassCaptainDropdown();
     }
 
     function renderAdminZonesTable() {
