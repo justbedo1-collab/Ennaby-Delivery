@@ -42,7 +42,8 @@ function createIpRateLimiter(maxRequests, windowMs, errorMessage) {
   return (req, res, next) => {
     try {
       const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'anon').split(',')[0].trim();
-      const key = `${req.path}:${ip}`;
+      const routeScope = `${req.baseUrl || ''}${req.path || ''}` || req.originalUrl || '/';
+      const key = `${routeScope}:${ip}`;
       const now = Date.now();
       const record = apiRateLimitBuckets.get(key);
 
@@ -247,7 +248,12 @@ function getOnlineCustomersCount() {
 }
 
 function roundMoney(val) {
-  const num = Number(val);
+  if (val === null || val === undefined || val === '') return 0;
+  const cleanStr = String(val)
+    .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+    .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776))
+    .trim();
+  const num = Number(cleanStr);
   if (!Number.isFinite(num)) return 0;
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
@@ -465,9 +471,22 @@ async function recordAnalyticsMetricEvent(metricType, incrementBy = 1, extraPart
   }
 }
 
-// دوال ترميز وفك ترميز إحداثيات الخريطة والكوبون داخل ملاحظات الطلب بأمان تام وبدون تعارض مع الأقواس
+// دوال ترميز وفك ترميز إحداثيات الخريطة والكوبون وعروض التفاوض داخل ملاحظات الطلب بأمان تام
+function stripMetaAndBrokenBrackets(text) {
+  let s = String(text || '');
+  const metaIdx = s.indexOf('[META:{');
+  if (metaIdx !== -1) {
+    s = s.slice(0, metaIdx);
+  }
+  return s
+    .replace(/\s*\[META:\{[\s\S]*\}\]/g, '')
+    .replace(/(?:\s*[\]}]){2,}\s*$/g, '')
+    .replace(/^[\]}\s]+$/g, '')
+    .trim();
+}
+
 function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
-  const cleanNotes = String(rawNotes || '').replace(/\s*\[META:\{[\s\S]*?\}\]/g, '').trim();
+  const cleanNotes = stripMetaAndBrokenBrackets(rawNotes);
   const payload = {};
   if (Number.isFinite(Number(meta.pickupLat)) && Number.isFinite(Number(meta.pickupLng))) {
     payload.plat = Number(Number(meta.pickupLat).toFixed(6));
@@ -481,6 +500,14 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
   if (meta.promoDiscount > 0) payload.cd = roundMoney(meta.promoDiscount);
   if (meta.walletDiscount > 0) payload.wd = roundMoney(meta.walletDiscount);
   if (meta.surgePercent > 0) payload.sp = Number(meta.surgePercent);
+  if (meta.routeDefaultFare > 0) payload.rf = roundMoney(meta.routeDefaultFare);
+  if (meta.customerProposedFare > 0) payload.cf = roundMoney(meta.customerProposedFare);
+  if (meta.purchaseBudget) payload.bg = String(meta.purchaseBudget).trim();
+  if (Number.isFinite(Number(meta.arrivedAt)) && Number(meta.arrivedAt) > 0) payload.at = Number(meta.arrivedAt);
+  if (Number.isFinite(Number(meta.lastBuzzAt)) && Number(meta.lastBuzzAt) > 0) payload.bz = Number(meta.lastBuzzAt);
+  if (Array.isArray(meta.captainOffers) && meta.captainOffers.length > 0) {
+    payload.of = meta.captainOffers.slice(0, 15);
+  }
 
   if (Object.keys(payload).length === 0) return cleanNotes;
   return `${cleanNotes} [META:${JSON.stringify(payload)}]`.trim();
@@ -488,12 +515,24 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
 
 function decodeOrderMetaFromNotes(storedNotes) {
   const raw = String(storedNotes || '');
-  const match = raw.match(/\[META:(\{[\s\S]*?\})\]/);
   let meta = {};
-  if (match && match[1]) {
-    try { meta = JSON.parse(match[1]); } catch (e) {}
+  const metaStartIdx = raw.lastIndexOf('[META:{');
+  if (metaStartIdx !== -1) {
+    const metaSub = raw.slice(metaStartIdx);
+    const closeIdx = metaSub.lastIndexOf('}]');
+    if (closeIdx !== -1) {
+      const jsonCandidate = metaSub.slice(6, closeIdx + 1);
+      try {
+        meta = JSON.parse(jsonCandidate);
+      } catch (e) {
+        const greedyMatch = metaSub.match(/\[META:(\{[\s\S]*\})\]/);
+        if (greedyMatch && greedyMatch[1]) {
+          try { meta = JSON.parse(greedyMatch[1]); } catch (err) {}
+        }
+      }
+    }
   }
-  const cleanNotes = raw.replace(/\s*\[META:\{[\s\S]*?\}\]/g, '').trim();
+  const cleanNotes = stripMetaAndBrokenBrackets(raw);
   const pLat = meta.plat !== undefined ? Number(meta.plat) : (Array.isArray(meta.p) ? Number(meta.p[0]) : null);
   const pLng = meta.plng !== undefined ? Number(meta.plng) : (Array.isArray(meta.p) ? Number(meta.p[1]) : null);
   const dLat = meta.dlat !== undefined ? Number(meta.dlat) : (Array.isArray(meta.d) ? Number(meta.d[0]) : null);
@@ -507,7 +546,13 @@ function decodeOrderMetaFromNotes(storedNotes) {
     promoCode: meta.c || null,
     promoDiscount: roundMoney(meta.cd || 0),
     walletDiscount: roundMoney(meta.wd || 0),
-    surgePercent: Number(meta.sp || 0)
+    surgePercent: Number(meta.sp || 0),
+    routeDefaultFare: meta.rf !== undefined ? roundMoney(meta.rf) : null,
+    customerProposedFare: meta.cf !== undefined ? roundMoney(meta.cf) : null,
+    purchaseBudget: meta.bg || null,
+    arrivedAt: meta.at ? Number(meta.at) : null,
+    lastBuzzAt: meta.bz ? Number(meta.bz) : null,
+    captainOffers: Array.isArray(meta.of) ? meta.of : []
   };
 }
 
@@ -525,9 +570,10 @@ function getActiveSurgeInfo(settings) {
   };
 }
 
-// حساب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) مع مبدأ الهبوط التدريجي الآمن (Graceful Demotion)
-function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
+// حساب مستوى الكابتن (برونزي 🥉 / بلاتيني 🥈 / ماسي 💎) والعمولة (نسبة مئوية % أو مبلغ ثابت ج) مع الهبوط التدريجي الآمن
+function computeCaptainTierAndFee(captainRow, mappedOrders, settings, orderFare = null) {
   const s = settings || {};
+  const commissionMode = s.commissionMode === 'percentage' ? 'percentage' : 'fixed';
   const weeklyTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
   const tierDaysWindow = Math.max(1, Number(s.tierDaysWindow ?? 7));
   const tierConsecutiveDaysForDiamond = Math.max(
@@ -535,8 +581,13 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     Number(s.tierConsecutiveDaysForDiamond ?? (Number(s.tierWeeksForDiamond ?? 4) * tierDaysWindow))
   );
   const diamondWeeksTarget = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
+
   const platDiscount = Math.max(0, roundMoney(s.tierPlatinumDiscount ?? 1));
   const diaDiscount = Math.max(0, roundMoney(s.tierDiamondDiscount ?? 2));
+
+  const bronzePercent = Math.max(0, roundMoney(s.platformFeePercent ?? 13));
+  const platPercent = Math.max(0, roundMoney(s.tierPlatinumPercent ?? 12.5));
+  const diaPercent = Math.max(0, roundMoney(s.tierDiamondPercent ?? 12));
 
   const now = Date.now();
   const windowMs = tierDaysWindow * 24 * 60 * 60 * 1000;
@@ -592,9 +643,36 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
   const finalTier = ['bronze', 'platinum', 'diamond'].includes(manualTier) ? manualTier : autoTier;
 
   const tierMetaMap = {
-    bronze: { key: 'bronze', name: 'كابتن برونزي', emoji: '🥉', badgeText: 'كابتن برونزي 🥉', discount: 0, color: '#CD7F32' },
-    platinum: { key: 'platinum', name: 'كابتن بلاتيني', emoji: '🥈', badgeText: 'كابتن بلاتيني 🥈', discount: platDiscount, color: '#37474F' },
-    diamond: { key: 'diamond', name: 'كابتن ماسي', emoji: '💎', badgeText: 'كابتن ماسي 💎', discount: diaDiscount, color: '#0288D1' }
+    bronze: {
+      key: 'bronze',
+      name: 'كابتن برونزي',
+      emoji: '🥉',
+      badgeText: 'كابتن برونزي 🥉',
+      discount: 0,
+      percentRate: bronzePercent,
+      percentDiscount: 0,
+      color: '#CD7F32'
+    },
+    platinum: {
+      key: 'platinum',
+      name: 'كابتن بلاتيني',
+      emoji: '🥈',
+      badgeText: 'كابتن بلاتيني 🥈',
+      discount: platDiscount,
+      percentRate: platPercent,
+      percentDiscount: Math.max(0, roundMoney(bronzePercent - platPercent)),
+      color: '#37474F'
+    },
+    diamond: {
+      key: 'diamond',
+      name: 'كابتن ماسي',
+      emoji: '💎',
+      badgeText: 'كابتن ماسي 💎',
+      discount: diaDiscount,
+      percentRate: diaPercent,
+      percentDiscount: Math.max(0, roundMoney(bronzePercent - diaPercent)),
+      color: '#0288D1'
+    }
   };
 
   const tierInfo = tierMetaMap[finalTier] || tierMetaMap.bronze;
@@ -605,12 +683,32 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
     : basePlatformFee;
 
-  let effectiveFee = Math.max(0, roundMoney(surgedPlatformFee - tierInfo.discount));
-  if (captainRow.custom_fee !== null && captainRow.custom_fee !== undefined) {
+  const hasCustomFee = captainRow.custom_fee !== null && captainRow.custom_fee !== undefined;
+  let effectiveFeePercent = tierInfo.percentRate;
+  if (hasCustomFee && commissionMode === 'percentage') {
+    effectiveFeePercent = Math.max(0, roundMoney(captainRow.custom_fee));
+  }
+
+  let fixedEffectiveFee = Math.max(0, roundMoney(surgedPlatformFee - tierInfo.discount));
+  if (hasCustomFee && commissionMode === 'fixed') {
     const baseCustom = roundMoney(captainRow.custom_fee);
-    effectiveFee = surgeInfo.isActive
+    fixedEffectiveFee = surgeInfo.isActive
       ? roundMoney(baseCustom * (1 + surgeInfo.surgePercent / 100))
       : baseCustom;
+  }
+
+  const refFare = (orderFare !== null && orderFare !== undefined && Number.isFinite(Number(orderFare)))
+    ? Math.max(0, roundMoney(orderFare))
+    : null;
+
+  let effectiveFee = fixedEffectiveFee;
+  if (commissionMode === 'percentage') {
+    if (refFare !== null) {
+      effectiveFee = Math.max(0, roundMoney((refFare * effectiveFeePercent) / 100));
+    } else {
+      // قيمة مرجعية على متوسط مشوار 40 ج عند عدم تمرير طلب محدد
+      effectiveFee = Math.max(0, roundMoney((40 * effectiveFeePercent) / 100));
+    }
   }
 
   const tierProgressPct = Math.min(100, Math.round((currentWeekOrders / weeklyTarget) * 100));
@@ -625,6 +723,10 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     tierEmoji: tierInfo.emoji,
     tierBadgeText: tierInfo.badgeText,
     tierDiscount: tierInfo.discount,
+    tierPercentRate: tierInfo.percentRate,
+    tierPercentDiscount: tierInfo.percentDiscount,
+    commissionMode,
+    effectiveFeePercent,
     tierColor: tierInfo.color,
     weeklyCompletedOrders: currentWeekOrders,
     consecutiveQualifiedWeeks,
@@ -635,6 +737,7 @@ function computeCaptainTierAndFee(captainRow, mappedOrders, settings) {
     diamondWeeksTarget,
     tierProgressPct,
     effectiveFee,
+    fixedEffectiveFee,
     surgedPlatformFee
   };
 }
@@ -837,6 +940,10 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     tierEmoji: tierInfoSafeEmoji(tierData),
     tierBadgeText: tierData.tierBadgeText,
     tierDiscount: tierData.tierDiscount,
+    tierPercentRate: tierData.tierPercentRate,
+    tierPercentDiscount: tierData.tierPercentDiscount,
+    commissionMode: tierData.commissionMode,
+    effectiveFeePercent: tierData.effectiveFeePercent,
     tierColor: tierData.tierColor,
     weeklyCompletedOrders: tierData.weeklyCompletedOrders,
     consecutiveQualifiedWeeks: tierData.consecutiveQualifiedWeeks,
@@ -844,7 +951,8 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     tierDaysWindow: tierData.tierDaysWindow,
     tierConsecutiveDaysForDiamond: tierData.tierConsecutiveDaysForDiamond,
     tierProgressPct: tierData.tierProgressPct,
-    effectiveFee: tierData.effectiveFee
+    effectiveFee: tierData.effectiveFee,
+    fixedEffectiveFee: tierData.fixedEffectiveFee
   };
 }
 
@@ -855,6 +963,7 @@ function tierInfoSafeEmoji(tierData) {
 function mapOrderRow(o) {
   const createdMs = o.created_at ? new Date(o.created_at).getTime() : Date.now();
   const parsedMeta = decodeOrderMetaFromNotes(o.customer_notes || '');
+  const origFare = roundMoney(o.original_fare ?? o.fare ?? 0);
   return {
     id: o.id,
     customerPhone: o.customer_phone || o.client_phone || '',
@@ -873,11 +982,17 @@ function mapOrderRow(o) {
     promoDiscount: parsedMeta.promoDiscount,
     walletDiscount: parsedMeta.walletDiscount || roundMoney(o.discount_applied ?? 0),
     surgePercent: parsedMeta.surgePercent,
+    routeDefaultFare: parsedMeta.routeDefaultFare || origFare,
+    customerProposedFare: parsedMeta.customerProposedFare || null,
+    purchaseBudget: parsedMeta.purchaseBudget || null,
+    arrivedAt: parsedMeta.arrivedAt || null,
+    lastBuzzAt: parsedMeta.lastBuzzAt || null,
+    captainOffers: Array.isArray(parsedMeta.captainOffers) ? parsedMeta.captainOffers : [],
     packageType: o.package_type || DEFAULT_PACKAGE_TYPES[0],
     payer: o.payer || 'الراسل',
     senderPhone: o.sender_phone || '',
     recipientPhone: o.recipient_phone || '',
-    originalFare: roundMoney(o.original_fare ?? o.fare ?? 0),
+    originalFare: origFare,
     discountApplied: roundMoney(o.discount_applied ?? 0),
     fare: roundMoney(o.fare ?? 0),
     platformFee: roundMoney(o.platform_fee ?? 7),
@@ -892,7 +1007,6 @@ function mapOrderRow(o) {
     createdAt: createdMs
   };
 }
-
 // استرجاع استخدام واحد من الكوبون عند إلغاء الطلب
 async function releasePromoCodeUsageForCancelledOrder(promoCode, customerPhone) {
   const cleanCode = String(promoCode || '').trim().toUpperCase();
@@ -1049,6 +1163,11 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const maxConcurrentOrdersPerCaptain = Math.max(1, Number(storedIncentives.maxConcurrentOrdersPerCaptain ?? 3));
   const broadcastTarget = sRow.broadcast_target || storedIncentives.broadcastTarget || 'all';
 
+  const commissionMode = storedIncentives.commissionMode === 'percentage' ? 'percentage' : 'fixed';
+  const platformFeePercent = Math.max(0, roundMoney(storedIncentives.platformFeePercent ?? 13));
+  const tierPlatinumPercent = Math.max(0, roundMoney(storedIncentives.tierPlatinumPercent ?? 12.5));
+  const tierDiamondPercent = Math.max(0, roundMoney(storedIncentives.tierDiamondPercent ?? 12));
+
   const tierWeeklyOrdersTarget = Math.max(1, Number(storedIncentives.tierWeeklyOrdersTarget ?? 25));
   const tierDaysWindow = Math.max(1, Number(storedIncentives.tierDaysWindow ?? 7));
   const tierConsecutiveDaysForDiamond = Math.max(
@@ -1065,6 +1184,10 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const surgePercent = Math.max(0, Number(storedIncentives.surgePercent ?? 0));
   const surgeEndTime = Math.max(0, Number(storedIncentives.surgeEndTime ?? 0));
   const surgeDurationMinutes = Math.max(1, Number(storedIncentives.surgeDurationMinutes ?? 30));
+  const autoSurgeEnabled = Boolean(storedIncentives.autoSurgeEnabled);
+  const pendingTopupRequests = Array.isArray(storedIncentives.pendingTopupRequests)
+    ? storedIncentives.pendingTopupRequests.slice(0, 50)
+    : [];
 
   const promoCodes = Array.isArray(storedIncentives.promoCodes)
     ? storedIncentives.promoCodes.map(normalizePromoCodeObject).filter(Boolean)
@@ -1089,6 +1212,10 @@ async function fetchRawDatabaseState(forceRefresh = false) {
 
   const settings = {
     platformFee: roundMoney(sRow.platform_fee ?? 7),
+    commissionMode,
+    platformFeePercent,
+    tierPlatinumPercent,
+    tierDiamondPercent,
     customerPointsPerOrder: Number(sRow.customer_points_per_order ?? 5),
     customerRewardThreshold: Number(sRow.customer_reward_threshold ?? 100),
     customerRewardCash: roundMoney(sRow.customer_reward_cash ?? 10),
@@ -1111,6 +1238,8 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     surgePercent,
     surgeEndTime,
     surgeDurationMinutes,
+    autoSurgeEnabled,
+    pendingTopupRequests,
     promoCodes,
     adminPushMasterEnabled,
     adminPushCustomersEnabled,
@@ -1184,6 +1313,10 @@ async function fetchRawDatabaseState(forceRefresh = false) {
 async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraSettingsColumns = {}, customBasePricing = null) {
   const prevSettings = rawState.settings || {};
   const mergedIncentives = {
+    commissionMode: prevSettings.commissionMode === 'percentage' ? 'percentage' : 'fixed',
+    platformFeePercent: Math.max(0, roundMoney(prevSettings.platformFeePercent ?? 13)),
+    tierPlatinumPercent: Math.max(0, roundMoney(prevSettings.tierPlatinumPercent ?? 12.5)),
+    tierDiamondPercent: Math.max(0, roundMoney(prevSettings.tierDiamondPercent ?? 12)),
     welcomeBonusActive: prevSettings.welcomeBonusActive !== false,
     welcomeBonusAmount: roundMoney(prevSettings.welcomeBonusAmount ?? 7),
     referralRewardActive: prevSettings.referralRewardActive !== false,
@@ -1201,6 +1334,8 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
     surgePercent: Math.max(0, Number(prevSettings.surgePercent ?? 0)),
     surgeEndTime: Math.max(0, Number(prevSettings.surgeEndTime ?? 0)),
     surgeDurationMinutes: Math.max(1, Number(prevSettings.surgeDurationMinutes ?? 30)),
+    autoSurgeEnabled: Boolean(prevSettings.autoSurgeEnabled),
+    pendingTopupRequests: Array.isArray(prevSettings.pendingTopupRequests) ? prevSettings.pendingTopupRequests.slice(0, 50) : [],
     promoCodes: Array.isArray(prevSettings.promoCodes) ? prevSettings.promoCodes : [],
     adminPushMasterEnabled: prevSettings.adminPushMasterEnabled !== false,
     adminPushCustomersEnabled: prevSettings.adminPushCustomersEnabled !== false,
@@ -1262,8 +1397,13 @@ async function buildClientState(req, forceRefresh = false) {
 
   if (!isAuthenticatedAdmin) {
     delete clientSettings.analyticsHistory;
+    if (authenticatedCaptainPhone && Array.isArray(clientSettings.pendingTopupRequests)) {
+      clientSettings.myPendingTopupRequests = clientSettings.pendingTopupRequests.filter(
+        r => r && normalizePhoneServer(r.phone) === authenticatedCaptainPhone
+      );
+    }
+    delete clientSettings.pendingTopupRequests;
 
-    // استخراج رقم العميل من كوكي الجلسة أو معرف المزامنة لإرسال الأكواد العامة أو المخصصة له فقط
     const queryCustPhone = (req.query && String(req.query.clientId || '').startsWith('cust_'))
       ? normalizePhoneServer(String(req.query.clientId).slice(5))
       : '';
@@ -1337,7 +1477,6 @@ async function buildClientState(req, forceRefresh = false) {
     filteredCustomers = { [authenticatedCustomerPhone]: raw.customers[authenticatedCustomerPhone] };
   }
 
-  // خريطة سريعة لبيانات الكباتن لإرفاق اسم ومركبة ومستوى الكابتن مع الطلب بأمان
   const captainInfoByPhone = new Map();
   allMappedCaptains.forEach(c => {
     captainInfoByPhone.set(normalizePhoneServer(c.phone), {
@@ -1349,7 +1488,6 @@ async function buildClientState(req, forceRefresh = false) {
     });
   });
 
-  // حساب عدد الأوردرات النشطة حالياً مع كل كابتن لإظهار تنويه المشوار المدمج للعميل والإدارة بأمان
   const captainActiveOrderCounts = new Map();
   raw.orders.forEach(o => {
     if (o && o.assignedCourierPhone && ACTIVE_COURIER_ORDER_STATUSES.includes(o.status)) {
@@ -1363,8 +1501,21 @@ async function buildClientState(req, forceRefresh = false) {
     const meta = capPh ? captainInfoByPhone.get(capPh) : null;
     const isOrdActive = ACTIVE_COURIER_ORDER_STATUSES.includes(ord.status);
     const activeCount = (isOrdActive && capPh) ? (captainActiveOrderCounts.get(capPh) || 1) : 0;
+    const enrichedOffers = (Array.isArray(ord.captainOffers) ? ord.captainOffers : []).map(ofItem => {
+      const ofCapPh = normalizePhoneServer(ofItem.captainPhone);
+      const ofCapMeta = ofCapPh ? captainInfoByPhone.get(ofCapPh) : null;
+      return {
+        ...ofItem,
+        captainName: ofCapMeta ? ofCapMeta.fullName : (ofItem.captainName || 'كابتن العنابي'),
+        vehicleType: ofCapMeta ? ofCapMeta.vehicleType : (ofItem.vehicleType || 'موتوسيكل'),
+        tier: ofCapMeta ? ofCapMeta.tier : (ofItem.tier || 'bronze'),
+        tierBadgeText: ofCapMeta ? ofCapMeta.tierBadgeText : (ofItem.tierBadgeText || 'كابتن برونزي 🥉')
+      };
+    });
+
     return {
       ...ord,
+      captainOffers: enrichedOffers,
       assignedCourierName: meta ? meta.fullName : '',
       assignedCourierVehicle: meta ? meta.vehicleType : '',
       assignedCourierPlate: meta ? meta.plateNumber : '',
@@ -1391,7 +1542,6 @@ async function buildClientState(req, forceRefresh = false) {
       if (isCustOwner) {
         if (!seenIds.has(o.id)) {
           seenIds.add(o.id);
-          // إخفاء رقم هاتف الكابتن عن العميل فور انتهاء المشوار أو إلغائه (مع إبقاء الاسم والمستوى)
           filteredOrders.push((isFinished && !isAssignedCap) ? {
             ...o,
             assignedCourierPhone: ''
@@ -1401,13 +1551,20 @@ async function buildClientState(req, forceRefresh = false) {
         if (!seenIds.has(o.id)) {
           seenIds.add(o.id);
           const hidePhonesForCap = isWaitingRadar || isFinished;
+          const myOnlyOffers = authenticatedCaptainPhone
+            ? (o.captainOffers || []).filter(ofItem => normalizePhoneServer(ofItem.captainPhone) === authenticatedCaptainPhone)
+            : [];
           filteredOrders.push(hidePhonesForCap ? {
             ...o,
             customerPhone: '',
             clientPhone: '',
             senderPhone: '',
-            recipientPhone: ''
-          } : o);
+            recipientPhone: '',
+            captainOffers: myOnlyOffers
+          } : {
+            ...o,
+            captainOffers: myOnlyOffers
+          });
         }
       }
     });
@@ -1919,6 +2076,12 @@ app.post('/api/auth/admin/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'برجاء إدخال اسم المستخدم وكلمة المرور ⚠️' });
     }
 
+    const adminRateKey = `admin_login:${username.toLowerCase()}`;
+    const rateLimit = await checkRateLimit(adminRateKey);
+    if (rateLimit.locked) {
+      return res.status(403).json({ success: false, message: rateLimit.message });
+    }
+
     let { data: admin } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
 
     if (!admin) {
@@ -1947,10 +2110,12 @@ app.post('/api/auth/admin/login', async (req, res) => {
       }
       const valid = await bcrypt.compare(String(password), admin.password_hash || '');
       if (!valid) {
+        await recordFailedAttempt(adminRateKey, rateLimit.attemptData);
         return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة! ⚠️' });
       }
     }
 
+    await clearFailedAttempts(adminRateKey);
     const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('admin_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
     req.cookies = { ...req.cookies, admin_session: token };
@@ -2208,7 +2373,7 @@ app.post('/api/auth/admin/logout', (req, res) => {
 });
 
 // ==========================================
-// 8. مسارات إنشاء وإدارة الطلبات (العميل والكابتن)
+// 8. مسارات إنشاء وإدارة الطلبات والتفاوض المرن (العميل والكابتن)
 // ==========================================
 app.post('/api/orders', async (req, res) => {
   let activeLockKey = null;
@@ -2218,7 +2383,7 @@ app.post('/api/orders', async (req, res) => {
       clientPhone: rawClientPhone, pin, tripType, pickupZone, pickupAddress,
       dropoffZone, dropoffAddress, customerNotes, packageType,
       payer, senderPhone: rawSenderPhone, recipientPhone: rawRecipientPhone,
-      pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode
+      pickupLat, pickupLng, dropoffLat, dropoffLng, promoCode, proposedFare, purchaseBudget
     } = req.body || {};
 
     const clientPhone = normalizePhoneServer(rawClientPhone);
@@ -2306,14 +2471,38 @@ app.post('/api/orders', async (req, res) => {
     const baseRouteFare = roundMoney(rawState.pricing[routeKey]);
 
     const surgeInfo = getActiveSurgeInfo(rawState.settings);
-    const originalFare = surgeInfo.isActive
+    const routeDefaultFare = surgeInfo.isActive
       ? roundMoney(baseRouteFare * (1 + surgeInfo.surgePercent / 100))
       : baseRouteFare;
 
+    let originalFare = routeDefaultFare;
+    let customerProposedFare = null;
+    if (proposedFare !== undefined && proposedFare !== null && String(proposedFare).trim() !== '') {
+      const cleanProposed = roundMoney(proposedFare);
+      const minAllowedFare = Math.max(15, Math.floor(routeDefaultFare * 0.7));
+      if (!Number.isFinite(cleanProposed) || cleanProposed < minAllowedFare) {
+        return res.status(400).json({
+          success: false,
+          message: `السعر العادل لهذا المشوار لا يقل عن (${minAllowedFare} جنيه) يا باشا عشان الكابتن يقدر يوصلك 🛵⚠️`
+        });
+      }
+      if (cleanProposed > 2000) {
+        return res.status(400).json({ success: false, message: 'السعر المدخل كبير جداً، يرجى التأكد من الرقم ⚠️' });
+      }
+      originalFare = cleanProposed;
+      if (cleanProposed !== routeDefaultFare) {
+        customerProposedFare = cleanProposed;
+      }
+    }
+
+    const isPctMode = rawState.settings.commissionMode === 'percentage';
     const basePlatformFee = roundMoney(rawState.settings.platformFee ?? 7);
-    const platformFee = surgeInfo.isActive
-      ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
-      : basePlatformFee;
+    const basePctRate = Math.max(0, roundMoney(rawState.settings.platformFeePercent ?? 13));
+    const platformFee = isPctMode
+      ? Math.max(0, roundMoney((originalFare * basePctRate) / 100))
+      : (surgeInfo.isActive
+          ? roundMoney(basePlatformFee * (1 + surgeInfo.surgePercent / 100))
+          : basePlatformFee);
 
     const availableWallet = Math.max(0, roundMoney(cust.wallet_balance || 0));
     const walletDiscount = availableWallet > 0 ? roundMoney(Math.min(availableWallet, originalFare)) : 0;
@@ -2336,7 +2525,6 @@ app.post('/api/orders', async (req, res) => {
         : [];
       const promoIdx = promoList.findIndex(p => p && p.code === cleanPromo && p.active !== false);
 
-      // [FIX-07] إرجاع رسالة خطأ صريحة عند إرسال كود خصم غير صحيح بدلاً من تجاهله بصمت
       if (promoIdx === -1) {
         promoRedeemLocks.delete(activeLockKey);
         activeLockKey = null;
@@ -2404,7 +2592,11 @@ app.post('/api/orders', async (req, res) => {
       promoCode: appliedPromoCode,
       promoDiscount,
       walletDiscount,
-      surgePercent: surgeInfo.surgePercent
+      surgePercent: surgeInfo.surgePercent,
+      routeDefaultFare,
+      customerProposedFare,
+      purchaseBudget: tripType === 'fetch' && purchaseBudget ? String(purchaseBudget).trim() : null,
+      captainOffers: []
     });
 
     const { error: ordErr } = await supabase.from('orders').insert([{
@@ -2458,15 +2650,36 @@ app.post('/api/orders', async (req, res) => {
       activeLockKey = null;
     }
 
+    // الذروة التلقائية الذكية (Auto-Surge): إذا كانت مفعلة وتجاوزت الطلبات المنتظرة 3 طلبات مع قلة الكباتن المتاحين
+    try {
+      if (rawState.settings.autoSurgeEnabled && !surgeInfo.isActive) {
+        const waitingCnt = (rawState.orders || []).filter(o => o.status === 'في انتظار كابتن').length + 1;
+        const availCapCnt = (rawState.rawCaptains || []).filter(c => c.status === 'معتمد' && c.is_available).length;
+        if (waitingCnt >= 3 && availCapCnt <= Math.floor(waitingCnt / 2)) {
+          const autoPct = 15;
+          const autoMins = 20;
+          await saveIncentivesToDatabase(rawState, {
+            surgePercent: autoPct,
+            surgeDurationMinutes: autoMins,
+            surgeEndTime: Date.now() + autoMins * 60000
+          });
+          notifyAdminsPush('platform', {
+            title: '⚡ تفعيل الذروة التلقائية الذكية (Auto-Surge)',
+            body: `بسبب وجود (${waitingCnt} طلبات منتظرة) مقابل (${availCapCnt} كابتن متاح)، تم تفعيل ذروة تلقائية (+${autoPct}%) لمدة ${autoMins} دقيقة.`
+          });
+        }
+      }
+    } catch (e) {}
+
     invalidateStateCache();
     broadcastPushToAvailableCaptains({
       title: 'أوردر جديد على الرادار يانجم! 📡🛵',
-      body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج.. الحق اقبله قبل ما يطير! 🚀`
+      body: `طلب (${orderId}) من ${pickupZone} إلى ${dropoffZone} - الأجرة: ${originalFare} ج.. الحق اقبله أو قدم عرضك! 🚀`
     });
 
     notifyAdminsPush('customer', {
       title: `🚀 طلب جديد على الرادار (${orderId})`,
-      body: `العميل (${clientPhone}) طلب (${tripType === 'fetch' ? 'هاتلي' : 'طرد'}) من ${pickupZone} (${pickupAddress}) إلى ${dropoffZone} (${dropoffAddress}) — الكاش: ${finalFare} ج`
+      body: `العميل (${clientPhone}) طلب (${tripType === 'fetch' ? 'هاتلي' : 'طرد'}) من ${pickupZone} (${pickupAddress}) إلى ${dropoffZone} (${dropoffAddress}) — الأجرة: ${originalFare} ج (الكاش: ${finalFare} ج)`
     });
 
     const state = await buildClientState(req, true);
@@ -2483,6 +2696,412 @@ app.post('/api/orders', async (req, res) => {
   } finally {
     if (activeLockKey) promoRedeemLocks.delete(activeLockKey);
     if (clientOrderLockKey) promoRedeemLocks.delete(clientOrderLockKey);
+  }
+});
+
+// مسار تقديم الكابتن لعرض سعر جديد / طلب زيادة حساب التوصيل قبل القبول
+app.post('/api/orders/:id/offer', authenticateCaptain, async (req, res) => {
+  const cap = req.user;
+  const offerLockKey = `cap_offer_lock:${cap.phone}:${req.params.id}`;
+  if (promoRedeemLocks.has(offerLockKey)) {
+    return res.status(429).json({ success: false, message: 'جاري إرسال عرضك للعميل حالياً، انتظر لحظة ⏳' });
+  }
+  promoRedeemLocks.add(offerLockKey);
+
+  try {
+    const { data: freshCap } = await supabase.from('captains').select('*').eq('phone', cap.phone).maybeSingle();
+    if (!freshCap || !freshCap.is_available || freshCap.status !== 'معتمد') {
+      return res.status(403).json({ success: false, message: 'حسابك غير مصرح له بتقديم عروض حالياً ⛔' });
+    }
+
+    const rawState = await fetchRawDatabaseState(false);
+    const maxConcurrent = Math.max(1, Number(rawState.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+
+    const { data: activeOrders } = await supabase.from('orders')
+      .select('id')
+      .eq('assigned_courier_phone', freshCap.phone)
+      .in('status', ACTIVE_COURIER_ORDER_STATUSES);
+
+    const currentActiveCount = Array.isArray(activeOrders) ? activeOrders.length : 0;
+    if (currentActiveCount >= maxConcurrent) {
+      return res.status(400).json({
+        success: false,
+        message: `معاك ${currentActiveCount} مشاوير شغالة دلوقتي يا بطل (الحد الأقصى ${maxConcurrent}).. سلّم واحد منهم الأول 🛵⚠️`
+      });
+    }
+
+    const { data: targetOrder } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
+    if (!targetOrder || targetOrder.status !== 'في انتظار كابتن') {
+      return res.status(400).json({ success: false, message: 'عفواً.. الأوردر مبقاش متاح ع الرادار دلوقتي 🏃‍♂️' });
+    }
+
+    const actionType = String(req.body?.action || 'propose').trim();
+    const meta = decodeOrderMetaFromNotes(targetOrder.customer_notes || '');
+    const offersList = Array.isArray(meta.captainOffers) ? [...meta.captainOffers] : [];
+    const existingOfferIdx = offersList.findIndex(x => normalizePhoneServer(x.captainPhone) === freshCap.phone);
+
+    if (actionType === 'reject_counter') {
+      if (existingOfferIdx !== -1) {
+        offersList[existingOfferIdx] = {
+          ...offersList[existingOfferIdx],
+          status: 'rejected_by_captain',
+          updatedAt: Date.now()
+        };
+        const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, { ...meta, captainOffers: offersList });
+        await supabase.from('orders').update({ customer_notes: updatedNotes }).eq('id', targetOrder.id);
+        const custPhone = targetOrder.customer_phone || targetOrder.client_phone;
+        if (custPhone) {
+          sendPushNotificationToPhone(custPhone, {
+            title: `تحديث بخصوص عرض الطلب (${targetOrder.id}) 💬`,
+            body: `اعتذر الكابتن ${freshCap.full_name} عن السعر المقترح، تقدر تقبل عرضه أو تعدل السعر لباقي الكباتن ع الرادار 🛵`
+          });
+        }
+      }
+      invalidateStateCache();
+      const state = await buildClientState(req, true);
+      return res.json({ success: true, message: 'تم رفض السعر المقترح من العميل، وتقدر تبعت عرض جديد لو حبيت 🛵', state });
+    }
+
+    const offeredFare = roundMoney(req.body?.offeredFare);
+    const currentOrderFare = roundMoney(targetOrder.original_fare || targetOrder.fare || 0);
+    const minOffer = Math.max(15, Math.floor((meta.routeDefaultFare || currentOrderFare) * 0.7));
+
+    if (!Number.isFinite(offeredFare) || offeredFare < minOffer || offeredFare > 2000) {
+      return res.status(400).json({ success: false, message: `برجاء كتابة سعر منطقي للمشوار (لا يقل عن ${minOffer} ج) 💵⚠️` });
+    }
+
+    const tierData = computeCaptainTierAndFee(freshCap, rawState.orders, rawState.settings, offeredFare);
+    const feeAtOfferedFare = tierData.effectiveFee;
+
+    if (roundMoney(freshCap.wallet_balance || 0) < feeAtOfferedFare) {
+      return res.status(400).json({
+        success: false,
+        message: `رصيد محفظتك (${roundMoney(freshCap.wallet_balance)} ج) أقل من عمولة هذا العرض (${feeAtOfferedFare} ج). اشحن محفظتك أولاً 💸⚠️`
+      });
+    }
+
+    const newOfferObj = {
+      captainPhone: freshCap.phone,
+      captainName: freshCap.full_name || 'كابتن العنابي',
+      vehicleType: freshCap.vehicle_type || 'موتوسيكل',
+      tier: tierData.tier,
+      tierBadgeText: tierData.tierBadgeText,
+      offeredFare,
+      platformFee: feeAtOfferedFare,
+      captainNet: Math.max(0, roundMoney(offeredFare - feeAtOfferedFare)),
+      status: 'pending',
+      customerCounterFare: null,
+      at: Date.now()
+    };
+
+    if (existingOfferIdx !== -1) {
+      offersList[existingOfferIdx] = newOfferObj;
+    } else {
+      offersList.unshift(newOfferObj);
+    }
+
+    const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, { ...meta, captainOffers: offersList });
+    const { error: updErr } = await supabase.from('orders')
+      .update({ customer_notes: updatedNotes })
+      .eq('id', targetOrder.id)
+      .eq('status', 'في انتظار كابتن');
+
+    if (updErr) {
+      return res.status(400).json({ success: false, message: 'تعذر إرسال العرض حالياً، حاول مرة أخرى ⚠️' });
+    }
+
+    const custPhone = targetOrder.customer_phone || targetOrder.client_phone;
+    if (custPhone) {
+      const discountApplied = roundMoney(targetOrder.discount_applied || 0);
+      const cashForCustomer = Math.max(0, roundMoney(offeredFare - discountApplied));
+      const cashNote = discountApplied > 0 ? ` (هتدفع كاش ${cashForCustomer} ج بعد خصمك)` : '';
+      sendPushNotificationToPhone(custPhone, {
+        title: `عرض سعر جديد لطلبك (${targetOrder.id}) 🛵💵`,
+        body: `الكابتن ${freshCap.full_name} (${tierData.tierBadgeText}) بيعرض توصيل مشوارك بـ ${offeredFare} ج${cashNote}.. افتح التطبيق للموافقة أو التفاوض 🤝`
+      });
+    }
+
+    notifyAdminsPush('captain', {
+      title: `💵 عرض سعر من كابتن لطلب (${targetOrder.id})`,
+      body: `اقترح الكابتن ${freshCap.full_name} (${freshCap.phone}) سعر ${offeredFare} ج بدلاً من ${currentOrderFare} ج`
+    });
+
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    res.json({
+      success: true,
+      message: `وصل عرضك (${offeredFare} ج) للعميل بنجاح! أول ما يوافق هيتسندلك الطلب فوراً 🛵💵`,
+      state
+    });
+  } finally {
+    promoRedeemLocks.delete(offerLockKey);
+  }
+});
+
+// مسار استجابة العميل لعروض الكباتن (قبول العرض / رفض العرض / اقتراح سعر عادل أو تعديل السعر)
+app.post('/api/orders/:id/negotiate', async (req, res) => {
+  const orderId = req.params.id;
+  const negLockKey = `cust_negotiate_lock:${orderId}`;
+  if (promoRedeemLocks.has(negLockKey)) {
+    return res.status(429).json({ success: false, message: 'جاري تنفيذ طلبك حالياً يا باشا، انتظر لحظة ⏳' });
+  }
+  promoRedeemLocks.add(negLockKey);
+
+  try {
+    const { data: targetOrder } = await supabase.from('orders').select('*').eq('id', orderId).maybeSingle();
+    if (!targetOrder || targetOrder.status !== 'في انتظار كابتن') {
+      return res.status(400).json({ success: false, message: 'الطلب لم يعد في قائمة الانتظار (ربما تم قبوله بالفعل) 🛵⚠️' });
+    }
+
+    if (!verifyCustomerOrderOwnership(req, targetOrder)) {
+      return res.status(403).json({ success: false, message: 'غير مصرح لك بتعديل هذا الطلب 🔒⚠️' });
+    }
+
+    const { action, captainPhone: rawCapPhone, newFare: rawNewFare } = req.body || {};
+    const targetCapPhone = normalizePhoneServer(rawCapPhone);
+    const rawState = await fetchRawDatabaseState(true);
+    const meta = decodeOrderMetaFromNotes(targetOrder.customer_notes || '');
+    const offersList = Array.isArray(meta.captainOffers) ? [...meta.captainOffers] : [];
+    const custPhone = targetOrder.customer_phone || targetOrder.client_phone;
+
+    // 1. قبول العميل لعرض الكابتن وإسناد المشوار له فوراً بالسعر المتفق عليه
+    if (action === 'accept_offer') {
+      const offerObj = offersList.find(x => normalizePhoneServer(x.captainPhone) === targetCapPhone);
+      if (!offerObj) {
+        return res.status(404).json({ success: false, message: 'عرض الكابتن غير موجود ⚠️' });
+      }
+
+      const { data: freshCap } = await supabase.from('captains').select('*').eq('phone', targetCapPhone).maybeSingle();
+      if (!freshCap || !freshCap.is_available || freshCap.status !== 'معتمد') {
+        return res.status(400).json({ success: false, message: 'عفواً، الكابتن مبقاش متاح دلوقتي.. تقدر تقبل عرض تاني أو تعدل السعر ع الرادار 🛵⚠️' });
+      }
+
+      const maxConcurrent = Math.max(1, Number(rawState.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+      const { data: activeOrders } = await supabase.from('orders')
+        .select('id')
+        .eq('assigned_courier_phone', freshCap.phone)
+        .in('status', ACTIVE_COURIER_ORDER_STATUSES);
+
+      const currentActiveCount = Array.isArray(activeOrders) ? activeOrders.length : 0;
+      if (currentActiveCount >= maxConcurrent) {
+        return res.status(400).json({ success: false, message: 'الكابتن انشغل بمشاوير تانية دلوقتي.. جرب كابتن تاني ع الرادار 🛵⚠️' });
+      }
+
+      const agreedOriginalFare = roundMoney(offerObj.offeredFare);
+      const tierData = computeCaptainTierAndFee(freshCap, rawState.orders, rawState.settings, agreedOriginalFare);
+      const fee = tierData.effectiveFee;
+
+      if (roundMoney(freshCap.wallet_balance || 0) < fee) {
+        return res.status(400).json({ success: false, message: 'رصيد محفظة الكابتن لم يعد كافياً لتغطية عمولة الطلب ⚠️' });
+      }
+
+      const oldWalletDisc = roundMoney(meta.walletDiscount !== undefined ? meta.walletDiscount : Math.max(0, roundMoney((targetOrder.discount_applied || 0) - (meta.promoDiscount || 0))));
+      const oldPromoDisc = roundMoney(meta.promoDiscount || 0);
+      const newWalletDisc = Math.min(oldWalletDisc, agreedOriginalFare);
+      const walletRefundDiff = Math.max(0, roundMoney(oldWalletDisc - newWalletDisc));
+      const remAfterWallet = Math.max(0, roundMoney(agreedOriginalFare - newWalletDisc));
+      const newPromoDisc = Math.min(oldPromoDisc, remAfterWallet);
+      const effDiscount = roundMoney(newWalletDisc + newPromoDisc);
+      const finalCashFare = Math.max(0, roundMoney(agreedOriginalFare - effDiscount));
+      const courierNet = Math.max(0, roundMoney(agreedOriginalFare - fee));
+
+      const updatedOffers = offersList.map(x =>
+        normalizePhoneServer(x.captainPhone) === targetCapPhone
+          ? { ...x, status: 'accepted', updatedAt: Date.now() }
+          : x
+      );
+      const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, {
+        ...meta,
+        walletDiscount: newWalletDisc,
+        promoDiscount: newPromoDisc,
+        captainOffers: updatedOffers
+      });
+
+      const { data: accepted, error: accErr } = await supabase.from('orders')
+        .update({
+          status: 'تم قبول الطلب',
+          assigned_courier_phone: freshCap.phone,
+          original_fare: agreedOriginalFare,
+          discount_applied: effDiscount,
+          fare: finalCashFare,
+          platform_fee: fee,
+          courier_net: courierNet,
+          fee_deducted: fee > 0,
+          fee_refunded: false,
+          customer_notes: updatedNotes,
+          admin_resolution_note: null
+        })
+        .eq('id', orderId)
+        .eq('status', 'في انتظار كابتن')
+        .select();
+
+      if (accErr || !accepted || !accepted.length) {
+        return res.status(400).json({ success: false, message: 'تعذر اعتماد العرض، ربما تم قبول الطلب بالفعل ⚠️' });
+      }
+
+      const feeLabel = tierData.commissionMode === 'percentage'
+        ? `${tierData.effectiveFeePercent}% (${fee} ج)`
+        : `${fee} ج`;
+
+      if (fee > 0) {
+        await supabase.rpc('adjust_captain_wallet_atomic', {
+          p_phone: freshCap.phone,
+          p_amount: -Math.abs(fee),
+          p_reason: `عمولة منصة (${tierData.tierBadgeText} - ${feeLabel}) لطلب ${orderId}`
+        });
+      }
+
+      if (effDiscount > 0) {
+        await supabase.rpc('adjust_captain_wallet_atomic', {
+          p_phone: freshCap.phone,
+          p_amount: effDiscount,
+          p_reason: `تعويض خصم/كوبون عميل لطلب ${orderId}`
+        });
+      }
+
+      if (walletRefundDiff > 0 && custPhone) {
+        await supabase.rpc('adjust_customer_wallet_atomic', {
+          p_phone: custPhone,
+          p_amount: walletRefundDiff,
+          p_reason: `رد فرق رصيد محفظة لتعديل سعر طلب ${orderId}`
+        });
+      }
+
+      sendPushNotificationToPhone(freshCap.phone, {
+        title: `العميل وافق على عرضك (${agreedOriginalFare} ج)! 🎉🛵`,
+        body: `تم إسناد الطلب (${orderId}) ليك بالسعر الجديد (${agreedOriginalFare} ج).. توكل على الله وانطلق للعميل فوراً! 🚀`
+      });
+
+      notifyAdminsPush('customer', {
+        title: `🤝 اعتماد عرض سعر للطلب (${orderId})`,
+        body: `وافق العميل (${custPhone}) على عرض الكابتن ${freshCap.full_name} بسعر ${agreedOriginalFare} ج (العمولة: ${fee} ج)`
+      });
+
+      invalidateStateCache();
+      const state = await buildClientState(req, true);
+      return res.json({
+        success: true,
+        message: `تم قبول عرض الكابتن ${freshCap.full_name} (${agreedOriginalFare} ج) وهو في طريقه ليك دلوقتي! 🛵✅`,
+        state
+      });
+    }
+
+    // 2. رفض العميل لعرض كابتن معين
+    if (action === 'reject_offer') {
+      const idx = offersList.findIndex(x => normalizePhoneServer(x.captainPhone) === targetCapPhone);
+      if (idx !== -1) {
+        offersList[idx] = { ...offersList[idx], status: 'rejected', updatedAt: Date.now() };
+        const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, { ...meta, captainOffers: offersList });
+        await supabase.from('orders').update({ customer_notes: updatedNotes }).eq('id', orderId);
+
+        sendPushNotificationToPhone(targetCapPhone, {
+          title: `تم رفض عرض السعر للطلب (${orderId}) 💬`,
+          body: `رفض العميل العرض المقترح.. تقدر تقبل الطلب بسعره الحالي أو تقترح سعر آخر أقرب للعميل 🛵`
+        });
+      }
+      invalidateStateCache();
+      const state = await buildClientState(req, true);
+      return res.json({ success: true, message: 'تم رفض العرض بنجاح وطلبك لسه متاح ع الرادار 📡', state });
+    }
+
+    // 3. اقتراح العميل لسعر عادل / عرض مقابل (سواء لكابتن محدد أو تحديث سعر الطلب العام ع الرادار)
+    if (action === 'counter_offer' || action === 'update_fare') {
+      const cleanNewFare = roundMoney(rawNewFare);
+      const baseRef = meta.routeDefaultFare || roundMoney(targetOrder.original_fare || targetOrder.fare || 35);
+      const minAllowedFare = Math.max(15, Math.floor(baseRef * 0.7));
+
+      if (!Number.isFinite(cleanNewFare) || cleanNewFare < minAllowedFare || cleanNewFare > 2000) {
+        return res.status(400).json({
+          success: false,
+          message: `برجاء إدخال سعر عادل لا يقل عن (${minAllowedFare} جنيه) لهذا المشوار يا باشا 💵⚠️`
+        });
+      }
+
+      const oldWalletDisc = roundMoney(meta.walletDiscount !== undefined ? meta.walletDiscount : Math.max(0, roundMoney((targetOrder.discount_applied || 0) - (meta.promoDiscount || 0))));
+      const oldPromoDisc = roundMoney(meta.promoDiscount || 0);
+      const newWalletDisc = Math.min(oldWalletDisc, cleanNewFare);
+      const walletRefundDiff = Math.max(0, roundMoney(oldWalletDisc - newWalletDisc));
+      const remAfterWallet = Math.max(0, roundMoney(cleanNewFare - newWalletDisc));
+      const newPromoDisc = Math.min(oldPromoDisc, remAfterWallet);
+      const effDiscount = roundMoney(newWalletDisc + newPromoDisc);
+      const newCashFare = Math.max(0, roundMoney(cleanNewFare - effDiscount));
+
+      const isPctMode = rawState.settings.commissionMode === 'percentage';
+      const basePctRate = Math.max(0, roundMoney(rawState.settings.platformFeePercent ?? 13));
+      const newPlatformFee = isPctMode
+        ? Math.max(0, roundMoney((cleanNewFare * basePctRate) / 100))
+        : roundMoney(targetOrder.platform_fee || rawState.settings.effectivePlatformFee || 7);
+      const newCourierNet = Math.max(0, roundMoney(cleanNewFare - newPlatformFee));
+
+      if (targetCapPhone) {
+        const idx = offersList.findIndex(x => normalizePhoneServer(x.captainPhone) === targetCapPhone);
+        if (idx !== -1) {
+          offersList[idx] = {
+            ...offersList[idx],
+            status: 'countered',
+            customerCounterFare: cleanNewFare,
+            updatedAt: Date.now()
+          };
+        }
+      }
+
+      const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, {
+        ...meta,
+        walletDiscount: newWalletDisc,
+        promoDiscount: newPromoDisc,
+        customerProposedFare: cleanNewFare,
+        captainOffers: offersList
+      });
+
+      const { data: updRows, error: updErr } = await supabase.from('orders')
+        .update({
+          original_fare: cleanNewFare,
+          discount_applied: effDiscount,
+          fare: newCashFare,
+          platform_fee: newPlatformFee,
+          courier_net: newCourierNet,
+          customer_notes: updatedNotes
+        })
+        .eq('id', orderId)
+        .eq('status', 'في انتظار كابتن')
+        .select();
+
+      if (updErr || !updRows || !updRows.length) {
+        return res.status(400).json({ success: false, message: 'تعذر تعديل السعر حالياً، ربما تم قبول الطلب بالفعل ⚠️' });
+      }
+
+      if (walletRefundDiff > 0 && custPhone) {
+        await supabase.rpc('adjust_customer_wallet_atomic', {
+          p_phone: custPhone,
+          p_amount: walletRefundDiff,
+          p_reason: `رد فرق رصيد محفظة لتعديل سعر طلب ${orderId}`
+        });
+      }
+
+      if (targetCapPhone) {
+        sendPushNotificationToPhone(targetCapPhone, {
+          title: `عرض مقابل من العميل للطلب (${orderId}) 🤝💵`,
+          body: `العميل عدّل السعر واقترح (${cleanNewFare} ج) للمشوار.. افتح الرادار واقبل الطلب فوراً قبل ما يطير! 🛵🚀`
+        });
+      } else {
+        broadcastPushToAvailableCaptains({
+          title: `تحديث سعر مشوار على الرادار (${orderId}) 💵🛵`,
+          body: `قام العميل بتعديل أجرة التوصيل إلى (${cleanNewFare} ج) من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone}.. الحق اقبله! 🚀`
+        });
+      }
+
+      invalidateStateCache();
+      const state = await buildClientState(req, true);
+      return res.json({
+        success: true,
+        message: `تم تحديث سعر المشوار إلى (${cleanNewFare} ج) وإبلاغ الكباتن فوراً 💵🚀`,
+        state
+      });
+    }
+
+    return res.status(400).json({ success: false, message: 'إجراء غير معروف ⚠️' });
+  } finally {
+    promoRedeemLocks.delete(negLockKey);
   }
 });
 
@@ -2516,8 +3135,14 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
       });
     }
 
+    const { data: targetOrder } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
+    if (!targetOrder || targetOrder.status !== 'في انتظار كابتن') {
+      return res.status(400).json({ success: false, message: 'عفواً.. الأوردر راح لكابتن تاني قبلك 🏃‍♂️' });
+    }
+
     const isStackedOrder = currentActiveCount >= 1;
-    const tierData = computeCaptainTierAndFee(freshCap, rawState.orders, rawState.settings);
+    const orderTotalFare = roundMoney(targetOrder.original_fare || targetOrder.fare || 0);
+    const tierData = computeCaptainTierAndFee(freshCap, rawState.orders, rawState.settings, orderTotalFare);
     const fee = tierData.effectiveFee;
 
     if (roundMoney(freshCap.wallet_balance || 0) < fee) {
@@ -2527,12 +3152,7 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
       });
     }
 
-    const { data: targetOrder } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
-    if (!targetOrder || targetOrder.status !== 'في انتظار كابتن') {
-      return res.status(400).json({ success: false, message: 'عفواً.. الأوردر راح لكابتن تاني قبلك 🏃‍♂️' });
-    }
-
-    const courierNet = Math.max(0, roundMoney(Number(targetOrder.original_fare || targetOrder.fare) - fee));
+    const courierNet = Math.max(0, roundMoney(orderTotalFare - fee));
 
     const { data: accepted, error } = await supabase.from('orders')
       .update({
@@ -2552,11 +3172,15 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
       return res.status(400).json({ success: false, message: 'عفواً.. الأوردر راح لكابتن تاني قبلك 🏃‍♂️' });
     }
 
+    const feeLabel = tierData.commissionMode === 'percentage'
+      ? `${tierData.effectiveFeePercent}% (${fee} ج)`
+      : `${fee} ج`;
+
     if (fee > 0) {
       await supabase.rpc('adjust_captain_wallet_atomic', {
         p_phone: freshCap.phone,
         p_amount: -Math.abs(fee),
-        p_reason: `عمولة منصة (${tierData.tierBadgeText}) لطلب ${req.params.id}`
+        p_reason: `عمولة منصة (${tierData.tierBadgeText} - ${feeLabel}) لطلب ${req.params.id}`
       });
     }
 
@@ -2579,7 +3203,7 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
 
     notifyAdminsPush('captain', {
       title: isStackedOrder ? `➕ قبول طلب إضافي في السكة (${req.params.id})` : `✅ قبول طلب (${req.params.id})`,
-      body: `الكابتن ${freshCap.full_name} (${freshCap.phone}) قبل الطلب من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone} (معه الآن ${currentActiveCount + 1} مشاوير نشطة • العمولة: ${fee} ج)`
+      body: `الكابتن ${freshCap.full_name} (${freshCap.phone}) قبل الطلب من ${targetOrder.pickup_zone} إلى ${targetOrder.dropoff_zone} (معه الآن ${currentActiveCount + 1} مشاوير نشطة • العمولة: ${feeLabel})`
     });
 
     const state = await buildClientState(req, true);
@@ -2594,7 +3218,8 @@ app.post('/api/orders/:id/accept', authenticateCaptain, async (req, res) => {
     promoRedeemLocks.delete(acceptLockKey);
   }
 });
-// [FIX-05 & NEW-LOGIC-01] فرض التسلسل الصارم لحالات خط سير الطلب والتأكد من أنه نشط وغير ملغي
+
+// [FIX-05 & NEW-LOGIC-01] فرض التسلسل الصارم لحالات خط سير الطلب وحساب وقت الانتظار الرسمي عند الوصول
 app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
   const { nextStatus } = req.body || {};
   const requiredPrevStatus = REQUIRED_PREV_STATUS_FOR_ADVANCE[nextStatus];
@@ -2602,21 +3227,39 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
     return res.status(400).json({ success: false, message: 'حالة التحديث غير صالحة ⚠️' });
   }
 
+  const { data: existingOrd } = await supabase.from('orders')
+    .select('*')
+    .eq('id', req.params.id)
+    .eq('assigned_courier_phone', req.user.phone)
+    .eq('status', requiredPrevStatus)
+    .maybeSingle();
+
+  if (!existingOrd) {
+    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة (يرجى الالتزام بتسلسل خط السير أو التأكد من أن الطلب نشط) ⚠️' });
+  }
+
+  const meta = decodeOrderMetaFromNotes(existingOrd.customer_notes || '');
+  const isArrivalStage = (nextStatus === 'الكابتن وصل للاستلام' || nextStatus === 'الكابتن وصل للتسليم');
+  const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, {
+    ...meta,
+    arrivedAt: isArrivalStage ? Date.now() : null
+  });
+
   const { data, error } = await supabase.from('orders')
-    .update({ status: nextStatus })
+    .update({ status: nextStatus, customer_notes: updatedNotes })
     .eq('id', req.params.id)
     .eq('assigned_courier_phone', req.user.phone)
     .eq('status', requiredPrevStatus)
     .select();
 
   if (error || !data || !data.length) {
-    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة (يرجى الالتزام بتسلسل خط السير أو التأكد من أن الطلب نشط) ⚠️' });
+    return res.status(400).json({ success: false, message: 'تعذر تحديث الحالة ⚠️' });
   }
 
   invalidateStateCache();
   const order = data[0];
   let funnyBody = nextStatus;
-  if (nextStatus === 'الكابتن وصل للاستلام') funnyBody = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو! 🛵📍';
+  if (nextStatus === 'الكابتن وصل للاستلام') funnyBody = 'الكابتن وصل مكان الاستلام وبدأ عداد الانتظار.. جهز المصلحة يا باشا! 🛵📍';
   else if (nextStatus === 'استلم الطرد وفي السكة') funnyBody = 'الكابتن استلم الأوردر يانجم العالم وطاير بيه في السكة ليك! 🚀💨';
   else if (nextStatus === 'الكابتن وصل للتسليم') funnyBody = 'الكابتن وصل بالسلامة تحت الباب وجاهز للتسليم.. افتح يا باشا! 🔔😎';
 
@@ -2632,6 +3275,94 @@ app.post('/api/orders/:id/advance', authenticateCaptain, async (req, res) => {
 
   const state = await buildClientState(req, true);
   res.json({ success: true, message: `تم التحديث: ${nextStatus} 🛵✅`, state });
+});
+
+// نبضة تنبيه فورية من الكابتن للعميل: «أنا وصلت تحت الباب 🔔»
+app.post('/api/orders/:id/buzz', authenticateCaptain, async (req, res) => {
+  try {
+    const { data: order } = await supabase.from('orders')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('assigned_courier_phone', req.user.phone)
+      .in('status', ACTIVE_COURIER_ORDER_STATUSES)
+      .maybeSingle();
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'الطلب غير نشط حالياً ⚠️' });
+    }
+
+    const meta = decodeOrderMetaFromNotes(order.customer_notes || '');
+    const nowTs = Date.now();
+    if (meta.lastBuzzAt && nowTs - Number(meta.lastBuzzAt) < 15000) {
+      return res.status(429).json({ success: false, message: 'تم إرسال تنبيه للعميل منذ ثوانٍ، انتظر قليلاً يا بطل 🔔⏳' });
+    }
+
+    const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, {
+      ...meta,
+      lastBuzzAt: nowTs
+    });
+
+    await supabase.from('orders').update({ customer_notes: updatedNotes }).eq('id', order.id);
+
+    const custPhone = order.customer_phone || order.client_phone;
+    if (custPhone) {
+      sendPushNotificationToPhone(custPhone, {
+        title: `🔔 الكابتن ${req.user.full_name} مستنيك تحت الباب! (${order.id})`,
+        body: `الكابتن وصل للعنوان وبيرن عليك الجرس من التطبيق.. افتح أو تواصل معاه فوراً يا باشا 🛵🏃‍♂️`
+      });
+    }
+
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    res.json({ success: true, message: 'بعتنا رنّة وتنبيه فوري للعميل إنك مستنيه تحت الباب! 🔔✅', state });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'تعذر إرسال التنبيه حالياً ⚠️' });
+  }
+});
+
+// تسجيل طلب شحن محفظة معلق ليظهر في طابور الإدارة بضغطة واحدة
+app.post('/api/captain/topup-request', authenticateCaptain, async (req, res) => {
+  try {
+    const amount = roundMoney(req.body?.amount || 100);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 10000) {
+      return res.status(400).json({ success: false, message: 'برجاء إدخال مبلغ شحن صحيح ⚠️' });
+    }
+
+    const rawState = await fetchRawDatabaseState(true);
+    const list = Array.isArray(rawState.settings.pendingTopupRequests)
+      ? [...rawState.settings.pendingTopupRequests]
+      : [];
+
+    const reqObj = {
+      id: 'topreq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      phone: req.user.phone,
+      fullName: req.user.full_name || 'كابتن العنابي',
+      amount,
+      createdAt: Date.now(),
+      time: formatCairoTime()
+    };
+
+    // إذا كان لنفس الكابتن طلب معلق سابق نحدثه بالمبلغ الجديد بدلاً من التكرار
+    const existingIdx = list.findIndex(r => r && normalizePhoneServer(r.phone) === normalizePhoneServer(req.user.phone));
+    if (existingIdx !== -1) {
+      list[existingIdx] = reqObj;
+    } else {
+      list.unshift(reqObj);
+    }
+
+    await saveIncentivesToDatabase(rawState, { pendingTopupRequests: list.slice(0, 50) });
+
+    notifyAdminsPush('captain', {
+      title: `⚡ طلب شحن محفظة جديد (${amount} ج)`,
+      body: `الكابتن ${req.user.full_name} (${req.user.phone}) طلب شحن محفظته بمبلغ ${amount} ج — يمكنك اعتماده بضغطة واحدة من غرفة العمليات!`
+    });
+
+    invalidateStateCache();
+    const state = await buildClientState(req, true);
+    res.json({ success: true, message: `تم تسجيل طلب شحن (${amount} ج) في غرفة العمليات وجاري تحويلك للواتساب 💬⚡`, state });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'تعذر تسجيل طلب الشحن ⚠️' });
+  }
 });
 
 // [FIX-05 & NEW-LOGIC-01] التأكد من وصول الكابتن لمرحلة «الكابتن وصل للتسليم» قبل إتمام الطلب
@@ -2700,9 +3431,14 @@ app.post('/api/orders/:id/complete', authenticateCaptain, async (req, res) => {
     const capNotices = Array.isArray(freshCap.admin_notices) ? freshCap.admin_notices : [];
 
     if (newTierData.tier !== oldTierData.tier && (newTierData.tier === 'platinum' || newTierData.tier === 'diamond')) {
+      const isPct = newTierData.commissionMode === 'percentage';
       const upgradeMsg = newTierData.tier === 'diamond'
-        ? `💎 وسّع للكابتن الماسي! مبروك يا بطل، حافظت على مستواك ووصلت لـ (${newTierData.tierBadgeText}) وعمولتك نزلت بخصم ${newTierData.tierDiscount} جنيه على كل أوردر! 🚀🔥`
-        : `🥈 عاش يا نجم الطيارين! كملت تارجت الـ ${newTierData.weeklyTarget} طلب في ${newTierData.tierDaysWindow} أيام واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة بـ ${newTierData.tierDiscount} جنيه! حافظ على مستواك عشان توصل للماسي 💎🛵`;
+        ? (isPct
+            ? `💎 وسّع للكابتن الماسي! مبروك يا بطل، حافظت على مستواك ووصلت لـ (${newTierData.tierBadgeText}) وعمولتك نزلت لنسبة ${newTierData.effectiveFeePercent}% بس من قيمة المشوار! 🚀🔥`
+            : `💎 وسّع للكابتن الماسي! مبروك يا بطل، حافظت على مستواك ووصلت لـ (${newTierData.tierBadgeText}) وعمولتك نزلت بخصم ${newTierData.tierDiscount} جنيه على كل أوردر! 🚀🔥`)
+        : (isPct
+            ? `🥈 عاش يا نجم الطيارين! كملت تارجت الـ ${newTierData.weeklyTarget} طلب في ${newTierData.tierDaysWindow} أيام واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة لنسبة ${newTierData.effectiveFeePercent}% بس! حافظ على مستواك عشان توصل للماسي 💎🛵`
+            : `🥈 عاش يا نجم الطيارين! كملت تارجت الـ ${newTierData.weeklyTarget} طلب في ${newTierData.tierDaysWindow} أيام واترقيت لـ (${newTierData.tierBadgeText}) وعمولتك بقت مخفضة بـ ${newTierData.tierDiscount} جنيه! حافظ على مستواك عشان توصل للماسي 💎🛵`);
 
       capNotices.unshift({
         id: 'tier-up-' + Date.now(),
@@ -3063,7 +3799,14 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     });
   }
 
-  if (body.platformFee !== undefined && !requireAdminPerm(req, res, ['manageCommissions'])) return;
+  if (
+    (body.platformFee !== undefined ||
+      body.commissionMode !== undefined ||
+      body.platformFeePercent !== undefined) &&
+    !requireAdminPerm(req, res, ['manageCommissions'])
+  ) {
+    return;
+  }
 
   if (
     body.tierManualOverride !== undefined &&
@@ -3078,7 +3821,9 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
       body.tierConsecutiveDaysForDiamond !== undefined ||
       body.tierWeeksForDiamond !== undefined ||
       body.tierPlatinumDiscount !== undefined ||
-      body.tierDiamondDiscount !== undefined) &&
+      body.tierDiamondDiscount !== undefined ||
+      body.tierPlatinumPercent !== undefined ||
+      body.tierDiamondPercent !== undefined) &&
     !requireAdminPerm(req, res, ['manageCaptains', 'manageCommissions'])
   ) {
     return;
@@ -3092,7 +3837,7 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   }
 
   if (
-    (Array.isArray(body.packageTypes) || body.surgeAction !== undefined) &&
+    (Array.isArray(body.packageTypes) || body.surgeAction !== undefined || body.autoSurgeEnabled !== undefined) &&
     !requireAdminPerm(req, res, ['managePricing', 'manageSettings'])
   ) {
     return;
@@ -3150,6 +3895,19 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   }
 
   const partialIncentives = {};
+  if (body.commissionMode !== undefined) {
+    partialIncentives.commissionMode = body.commissionMode === 'percentage' ? 'percentage' : 'fixed';
+  }
+  if (body.platformFeePercent !== undefined) {
+    partialIncentives.platformFeePercent = Math.max(0, roundMoney(body.platformFeePercent));
+  }
+  if (body.tierPlatinumPercent !== undefined) {
+    partialIncentives.tierPlatinumPercent = Math.max(0, roundMoney(body.tierPlatinumPercent));
+  }
+  if (body.tierDiamondPercent !== undefined) {
+    partialIncentives.tierDiamondPercent = Math.max(0, roundMoney(body.tierDiamondPercent));
+  }
+
   if (body.welcomeBonusActive !== undefined) partialIncentives.welcomeBonusActive = Boolean(body.welcomeBonusActive);
   if (body.welcomeBonusAmount !== undefined) partialIncentives.welcomeBonusAmount = Math.max(0, roundMoney(body.welcomeBonusAmount));
   if (body.referralRewardActive !== undefined) partialIncentives.referralRewardActive = Boolean(body.referralRewardActive);
@@ -3208,12 +3966,20 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   } else if (body.surgeAction === 'stop') {
     partialIncentives.surgeEndTime = 0;
   }
+  if (body.autoSurgeEnabled !== undefined) {
+    partialIncentives.autoSurgeEnabled = Boolean(body.autoSurgeEnabled);
+  }
 
   const customBasePricing = (body.pricing && typeof body.pricing === 'object') ? body.pricing : null;
   const updatedIncentives = await saveIncentivesToDatabase(rawState, partialIncentives, updates, customBasePricing);
 
   let auditDetails = 'تعديل في إعدادات التشغيل أو التسعير';
-  if (body.maxConcurrentOrdersPerCaptain !== undefined) {
+  if (body.commissionMode !== undefined || body.platformFeePercent !== undefined || body.platformFee !== undefined) {
+    const modeTitle = updatedIncentives.commissionMode === 'percentage'
+      ? `نظام النسبة المئوية (${updatedIncentives.platformFeePercent}% برونزي | ${updatedIncentives.tierPlatinumPercent}% بلاتيني | ${updatedIncentives.tierDiamondPercent}% ماسي)`
+      : `نظام المبلغ الثابت (${updates.platform_fee ?? prevSettings.platformFee ?? 7} ج)`;
+    auditDetails = `تحديث نظام عمولة المنصة إلى: ${modeTitle}`;
+  } else if (body.maxConcurrentOrdersPerCaptain !== undefined) {
     auditDetails = `تحديد أقصى عدد مشاوير يأخذها الكابتن في سكته معاً بـ (${updatedIncentives.maxConcurrentOrdersPerCaptain} مشاوير)`;
   } else if (body.surgeAction === 'start') {
     auditDetails = `تفعيل وقت الذروة (+${partialIncentives.surgePercent}%) لمدة ${partialIncentives.surgeDurationMinutes} دقيقة`;
@@ -3221,8 +3987,15 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     auditDetails = 'إيقاف وقت الذروة والعودة للتسعير الطبيعي';
   } else if (isChangingPushSwitches) {
     auditDetails = `تحديث مفاتيح إشعارات Push الأدمن (العام: ${updatedIncentives.adminPushMasterEnabled ? 'مفعل' : 'متوقف'} | العملاء: ${updatedIncentives.adminPushCustomersEnabled ? 'مفعل' : 'متوقف'} | الكباتن: ${updatedIncentives.adminPushCaptainsEnabled ? 'مفعل' : 'متوقف'})`;
-  } else if (body.tierWeeklyOrdersTarget !== undefined || body.tierPlatinumDiscount !== undefined || body.tierDaysWindow !== undefined) {
-    auditDetails = `تحديث مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب خلال ${updatedIncentives.tierDaysWindow} يوم - الماسي ${updatedIncentives.tierConsecutiveDaysForDiamond} يوم - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
+  } else if (
+    body.tierWeeklyOrdersTarget !== undefined ||
+    body.tierPlatinumDiscount !== undefined ||
+    body.tierPlatinumPercent !== undefined ||
+    body.tierDaysWindow !== undefined
+  ) {
+    auditDetails = updatedIncentives.commissionMode === 'percentage'
+      ? `تحديث مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب خلال ${updatedIncentives.tierDaysWindow} يوم — برونزي ${updatedIncentives.platformFeePercent}% | بلاتيني ${updatedIncentives.tierPlatinumPercent}% | ماسي ${updatedIncentives.tierDiamondPercent}%)`
+      : `تحديث مستويات الكباتن (${updatedIncentives.tierWeeklyOrdersTarget} طلب خلال ${updatedIncentives.tierDaysWindow} يوم - الماسي ${updatedIncentives.tierConsecutiveDaysForDiamond} يوم - خصم بلاتيني ${updatedIncentives.tierPlatinumDiscount}ج - ماسي ${updatedIncentives.tierDiamondDiscount}ج)`;
   } else if (body.broadcastMessage !== undefined || body.broadcastTarget !== undefined) {
     const targetNames = { all: 'الجميع', customers: 'العملاء فقط', captains: 'الكباتن فقط', admins: 'المسؤولين فقط', public: 'العملاء والكباتن' };
     const msgTxt = body.broadcastMessage !== undefined ? body.broadcastMessage : (prevSettings.broadcastMessage || '');
@@ -3372,6 +4145,14 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
     await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', phone);
   }
 
+  // إزالة أي طلب شحن معلق لنفس الكابتن تلقائياً بعد الشحن
+  const rawState = await fetchRawDatabaseState(true);
+  const pendList = Array.isArray(rawState.settings.pendingTopupRequests) ? rawState.settings.pendingTopupRequests : [];
+  const filteredPend = pendList.filter(r => r && normalizePhoneServer(r.phone) !== phone);
+  if (filteredPend.length !== pendList.length) {
+    await saveIncentivesToDatabase(rawState, { pendingTopupRequests: filteredPend });
+  }
+
   await logAdminAudit('شحن محفظة كابتن', phone, `شحن مبلغ ${amt} ج`, req.admin.name);
   sendPushNotificationToPhone(phone, {
     title: 'تم شحن محفظتك يانجم! 💰✅',
@@ -3386,6 +4167,97 @@ app.post('/api/admin/wallets/captain-topup', authenticateAdmin, async (req, res)
   invalidateStateCache();
   const state = await buildClientState(req, true);
   res.json({ success: true, state });
+});
+
+// اعتماد أو تجاهل طلب شحن معلق من طابور الشحن بضغطة واحدة
+app.post('/api/admin/wallets/topup-requests/:reqId/resolve', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageWallets'])) return;
+  const reqId = String(req.params.reqId || '').trim();
+  const action = String(req.body?.action || 'approve').trim();
+
+  const rawState = await fetchRawDatabaseState(true);
+  const pendList = Array.isArray(rawState.settings.pendingTopupRequests)
+    ? [...rawState.settings.pendingTopupRequests]
+    : [];
+  const targetIdx = pendList.findIndex(r => r && r.id === reqId);
+  if (targetIdx === -1) {
+    return res.status(404).json({ success: false, message: 'طلب الشحن غير موجود أو تم اعتماده مسبقاً ⚠️' });
+  }
+
+  const targetReq = pendList[targetIdx];
+  pendList.splice(targetIdx, 1);
+  await saveIncentivesToDatabase(rawState, { pendingTopupRequests: pendList });
+
+  const phone = normalizePhoneServer(targetReq.phone);
+  const amt = roundMoney(targetReq.amount);
+
+  if (action === 'approve' && phone && amt > 0) {
+    await supabase.rpc('adjust_captain_wallet_atomic', {
+      p_phone: phone,
+      p_amount: amt,
+      p_reason: 'شحن رصيد فوري من الإدارة ⚡'
+    });
+
+    const { data: cap } = await supabase.from('captains').select('full_name, admin_notices').eq('phone', phone).maybeSingle();
+    if (cap) {
+      const notices = Array.isArray(cap.admin_notices) ? cap.admin_notices : [];
+      notices.unshift({
+        id: 'topup-' + Date.now(),
+        text: `⚡ تم اعتماد طلبك وشحن محفظتك بمبلغ ${amt} جنيه فوراً.. ربنا يوسع رزقك يا بطل! 🛵💸`,
+        type: 'reward',
+        at: Date.now()
+      });
+      await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', phone);
+    }
+
+    await logAdminAudit('اعتماد شحن فوري', phone, `اعتماد طلب شحن مبلغ ${amt} ج بضغطة واحدة`, req.admin.name);
+    sendPushNotificationToPhone(phone, {
+      title: 'تم اعتماد شحن محفظتك فوراً! ⚡💰',
+      body: `نزل في محفظتك ${amt} جنيه من إدارة الرجل العنابي.. انطلق على الرادار يا وحش 🛵💪`
+    });
+  } else {
+    await logAdminAudit('تجاهل طلب شحن', phone, `رفض/تجاهل طلب شحن بقيمة ${amt} ج`, req.admin.name);
+  }
+
+  invalidateStateCache();
+  const state = await buildClientState(req, true);
+  res.json({
+    success: true,
+    message: action === 'approve' ? `تم شحن (${amt} ج) للكابتن ${targetReq.fullName} بنجاح ⚡✅` : 'تم إزالة طلب الشحن من الطابور 🗑️',
+    state
+  });
+});
+
+// إرسال تنبيه استعجال فوري للكابتن من رادار الإنذار المبكر (SLA Watchdog)
+app.post('/api/admin/orders/:id/remind-captain', authenticateAdmin, async (req, res) => {
+  if (!requireAdminPerm(req, res, ['manageOrders', 'viewOrders'])) return;
+  const { data: order } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
+  if (!order || !order.assigned_courier_phone) {
+    return res.status(404).json({ success: false, message: 'الطلب غير مسند لكابتن حالياً ⚠️' });
+  }
+
+  const capPhone = normalizePhoneServer(order.assigned_courier_phone);
+  const { data: cap } = await supabase.from('captains').select('full_name, admin_notices').eq('phone', capPhone).maybeSingle();
+  if (cap) {
+    const notices = Array.isArray(cap.admin_notices) ? cap.admin_notices : [];
+    notices.unshift({
+      id: 'sla-' + Date.now(),
+      text: `🚨 تنبيه من غرفة العمليات بخصوص الطلب (${order.id}): يرجى التحرك وتحديث حالة المشوار فوراً لعدم تأخير العميل! 🛵⚡`,
+      type: 'deduct',
+      at: Date.now()
+    });
+    await supabase.from('captains').update({ admin_notices: notices.slice(0, 10) }).eq('phone', capPhone);
+  }
+
+  sendPushNotificationToPhone(capPhone, {
+    title: `🚨 استعجال من غرفة العمليات (${order.id})!`,
+    body: `يا كابتن ${cap?.full_name || ''}، الطلب (${order.id}) متأخر في حالة (${order.status}).. حدّث خط السير أو تواصل مع العميل فوراً 🛵⚡`
+  });
+
+  await logAdminAudit('تنبيه تأخير كابتن', order.id, `إرسال تنبيه استعجال للكابتن ${capPhone}`, req.admin.name);
+  invalidateStateCache();
+  const state = await buildClientState(req, true);
+  res.json({ success: true, message: 'تم إرسال تنبيه استعجال فوري للكابتن 🔔✅', state });
 });
 
 app.post('/api/admin/wallets/captain-deduct', authenticateAdmin, async (req, res) => {
@@ -3475,23 +4347,26 @@ app.post('/api/admin/captains/custom-fee', authenticateAdmin, async (req, res) =
   if (!requireAdminPerm(req, res, ['manageCommissions'])) return;
   const { phone: rawPhone, customFee, reason, reset } = req.body || {};
   const phone = normalizePhoneServer(rawPhone);
+  const rawState = await fetchRawDatabaseState(false);
+  const unitLbl = rawState.settings?.commissionMode === 'percentage' ? '%' : ' ج';
+
   const updates = reset
     ? { custom_fee: null, custom_fee_reason: null }
     : { custom_fee: roundMoney(customFee), custom_fee_reason: reason || 'تخصيص من الإدارة' };
 
   await supabase.from('captains').update(updates).eq('phone', phone);
-  await logAdminAudit('عمولة خاصة', phone, reset ? 'إرجاع للعمولة العامة/المستويات' : `تحديد عمولة ${customFee} ج`, req.admin.name);
+  await logAdminAudit('عمولة خاصة', phone, reset ? 'إرجاع للعمولة العامة/المستويات' : `تحديد عمولة ${roundMoney(customFee)}${unitLbl}`, req.admin.name);
 
   if (!reset) {
     sendPushNotificationToPhone(phone, {
       title: 'تحديث عمولتك الخاصة 🎯🛵',
-      body: `الإدارة خصصت لك عمولة (${roundMoney(customFee)} ج) — السبب: ${reason || 'تقديراً لمجهودك يا بطل!'}`
+      body: `الإدارة خصصت لك عمولة (${roundMoney(customFee)}${unitLbl}) — السبب: ${reason || 'تقديراً لمجهودك يا بطل!'}`
     });
   }
 
   notifyAdminsPush('platform', {
     title: `🎯 تحديث عمولة كابتن (${phone})`,
-    body: `${reset ? 'إرجاع الكابتن للعمولة العامة/المستويات' : `تخصيص عمولة ${customFee} ج — ${reason || ''}`} (بواسطة: ${req.admin.name})`
+    body: `${reset ? 'إرجاع الكابتن للعمولة العامة/المستويات' : `تخصيص عمولة ${roundMoney(customFee)}${unitLbl} — ${reason || ''}`} (بواسطة: ${req.admin.name})`
   });
 
   invalidateStateCache();

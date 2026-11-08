@@ -181,6 +181,9 @@
 
           <!-- تبويب الإدارة 1: الرئيسية -->
           <div id="admTab-home" class="sub-tab-section">
+            <!-- رادار الإنذار المبكر للطلبات المتأخرة (SLA Watchdog) -->
+            <div id="adminSlaWatchdogBanner" style="display:none; background:linear-gradient(135deg, #FFEBEE, #FCE4EC); border:2px solid #D32F2F; border-radius:16px; padding:12px 14px; flex-direction:column; gap:8px; box-shadow:0 4px 14px rgba(211,47,47,0.15);"></div>
+
             <div class="admin-kpi-grid" id="admCard-kpiStats">
               <div class="card kpi-card" style="border-right:4px solid var(--primary);">
                 <span class="kpi-label">أجور التوصيل الإجمالية</span>
@@ -489,41 +492,68 @@
                 <div id="adminCaptainReviewFeed" style="display:flex; flex-direction:column; gap:10px;"></div>
               </div>
 
-              <!-- لوحة التحكم الديناميكية الكاملة في مستويات الكباتن (المشاوير + نافذة الأيام + الأيام المتتالية للماسي + خصم العمولة + الهبوط التدريجي) -->
+              <!-- لوحة التحكم الديناميكية الكاملة في مستويات الكباتن ونسب العمولة (النسبة المئوية % أو المبلغ الثابت ج) -->
               <div class="card" id="admCard-captainTiers" style="border: 2px solid #0288D1; background: linear-gradient(135deg, #FFFFFF, #F5FBFF);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <h2 class="card-title" style="margin:0; color:#01579B;"><i class="fa-solid fa-ranking-star"></i> مستويات الكباتن والترقية الأوتوماتيكية 💎</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                  <h2 class="card-title" style="margin:0; color:#01579B;"><i class="fa-solid fa-ranking-star"></i> مستويات الكباتن ونِسب العمولة 💎</h2>
+                  <span class="badge badge-accepted" id="adminTierModePillBadge">نسبة مئوية %</span>
                 </div>
                 <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
-                  تحكم ديناميكياً في شروط انتقال الكابتن من <strong>برونزي 🥉</strong> إلى <strong>بلاتيني 🥈</strong> ثم <strong>ماسي 💎</strong>، والنافذة الزمنية بالأيام، وقيمة خصم العمولة (مع نظام الهبوط التدريجي الآمن).
+                  تحكم في أي وقت في شروط انتقال الكابتن من <strong>برونزي 🥉</strong> إلى <strong>بلاتيني 🥈</strong> ثم <strong>ماسي 💎</strong>، وفي نسبة العمولة المئوية أو الخصم الثابت لكل مستوى (مع نظام الهبوط التدريجي الآمن).
                 </p>
+                <div class="input-group" style="margin-bottom:8px;">
+                  <label class="input-label" style="font-size:10.5px; color:#01579B; font-weight:800;">نظام حساب عمولة المنصة على الكباتن:</label>
+                  <select id="adminTierCommissionModeSelect" class="select-field" style="background:#fff; border-color:#81D4FA;" onchange="markAdminIncentivesDirty(); syncCommissionModeSelects(this.value);">
+                    <option value="percentage">📊 نسبة مئوية من قيمة المشوار (%) — (موصى به للتفاوض المرن)</option>
+                    <option value="fixed">💵 مبلغ ثابت بالجنيه لكل مشوار (ج)</option>
+                  </select>
+                </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
                   <div>
                     <label class="input-label" style="font-size:10.5px;">المشاوير المطلوبة للبلاتيني</label>
-                    <input type="number" id="adminTierWeeklyOrdersInput" class="input-field" placeholder="25" min="1" oninput="updateAdminTiersLiveNote()">
+                    <input type="number" id="adminTierWeeklyOrdersInput" class="input-field" placeholder="25" min="1" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
                   </div>
                   <div>
                     <label class="input-label" style="font-size:10.5px;">خلال نافذة زمنية (بالأيام) 📅:</label>
-                    <input type="number" id="adminTierDaysWindowInput" class="input-field" placeholder="7" min="1" oninput="updateAdminTiersLiveNote()">
+                    <input type="number" id="adminTierDaysWindowInput" class="input-field" placeholder="7" min="1" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
                   </div>
                 </div>
                 <div class="input-group" style="margin-bottom:8px;">
                   <label class="input-label" style="font-size:10.5px;">عدد الأيام المتتالية للوصول للمستوى الماسي 💎 (الافتراضي 28 يوماً):</label>
-                  <input type="number" id="adminTierConsecutiveDaysInput" class="input-field" placeholder="28" min="1" oninput="updateAdminTiersLiveNote()">
+                  <input type="number" id="adminTierConsecutiveDaysInput" class="input-field" placeholder="28" min="1" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+
+                <!-- حقول النسبة المئوية للمستويات الثلاثة (تظهر عند اختيار نظام النسبة المئوية %) -->
+                <div id="adminTierPercentFieldsGrid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:10px; background:#E1F5FE; padding:10px; border-radius:12px; border:1px solid #81D4FA;">
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#8D4E15; font-weight:800;">عمولة البرونزي (%) 🥉:</label>
+                    <input type="number" id="adminTierBronzePercentInput" class="input-field" placeholder="13" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncBronzePercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#263238; font-weight:800;">عمولة البلاتيني (%) 🥈:</label>
+                    <input type="number" id="adminTierPlatPercentInput" class="input-field" placeholder="12.5" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncPlatPercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#01579B; font-weight:800;">عمولة الماسي (%) 💎:</label>
+                    <input type="number" id="adminTierDiaPercentInput" class="input-field" placeholder="12" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncDiaPercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                </div>
+
+                <!-- حقول الخصم الثابت بالجنيه (تظهر عند اختيار نظام المبلغ الثابت ج) -->
+                <div id="adminTierFixedFieldsGrid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
                   <div>
                     <label class="input-label" style="font-size:10.5px;">خصم عمولة البلاتيني (ج) 🥈:</label>
-                    <input type="number" id="adminTierPlatDiscountInput" class="input-field" placeholder="1" min="0" step="0.5" oninput="updateAdminTiersLiveNote()">
+                    <input type="number" id="adminTierPlatDiscountInput" class="input-field" placeholder="1" min="0" step="0.5" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
                   </div>
                   <div>
                     <label class="input-label" style="font-size:10.5px;">خصم عمولة الماسي (ج) 💎:</label>
-                    <input type="number" id="adminTierDiaDiscountInput" class="input-field" placeholder="2" min="0" step="0.5" oninput="updateAdminTiersLiveNote()">
+                    <input type="number" id="adminTierDiaDiscountInput" class="input-field" placeholder="2" min="0" step="0.5" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
                   </div>
                 </div>
+
                 <div id="adminTiersLiveRuleNote" style="background:#E1F5FE; border:1px dashed #0288D1; border-radius:10px; padding:8px 10px; font-size:11px; color:#01579B; font-weight:700; margin-bottom:10px; line-height:1.6;"></div>
                 <button type="button" class="btn-main" style="background:#0288D1;" onclick="adminSaveCaptainTiersConfig()">
-                  <i class="fa-solid fa-floppy-disk"></i> حفظ واعتماد قواعد المستويات ✅
+                  <i class="fa-solid fa-floppy-disk"></i> حفظ واعتماد قواعد ونِسب المستويات ✅
                 </button>
               </div>
 
@@ -550,6 +580,16 @@
                   <select class="select-field" id="adminCaptainDirectorySelect" onchange="renderAdminSelectedCaptainCard()"></select>
                 </div>
                 <div id="adminSelectedCaptainCardContainer" style="margin-top:10px;"></div>
+              </div>
+
+              <!-- طابور طلبات شحن المحفظة المعلقة للاعتماد بضغطة واحدة -->
+              <div class="card" id="admCard-pendingTopups" style="border: 2px solid #2E7D32; background: #F1F8E9; display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <h2 class="card-title" style="margin:0; color:#1B5E20;"><i class="fa-solid fa-bolt"></i> طلبات شحن معلقة بضغطة واحدة ⚡</h2>
+                  <span class="badge badge-completed" id="adminPendingTopupsCountBadge">0 طلب</span>
+                </div>
+                <p style="font-size:11px; color:#33691E; margin-bottom:8px;">طلبات شحن أرسلها الكباتن من التطبيق؛ اعتمد الشحن بضغطة واحدة فور استلام التحويل:</p>
+                <div id="adminPendingTopupsList" style="display:flex; flex-direction:column; gap:8px;"></div>
               </div>
 
               <div class="card" id="admCard-manualTopup" style="border: 1.5px solid var(--primary);">
@@ -675,14 +715,48 @@
             </div>
 
             <div class="card" id="admCard-platformFee" style="border: 2px solid var(--primary);">
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> عمولة المنصة الأساسية ⚙️</h2>
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-sliders"></i> نظام عمولة المنصة ونِسب المستويات ⚙️</h2>
                 <span class="badge badge-completed" id="adminCurrentFeeBadge">--</span>
               </div>
-              <div class="inline-action-row">
-                <input type="number" id="adminPlatformFeeInput" class="input-field" placeholder="قيمة العمولة (ج)">
-                <button class="btn-main" style="padding:11px 12px; font-size:12.5px;" onclick="adminSavePlatformFee()">اعتماد</button>
+              <div class="input-group" style="margin-bottom:10px;">
+                <label class="input-label" for="adminCommissionModeSelect" style="color:var(--primary); font-weight:800;">اختر نظام حساب العمولة:</label>
+                <select id="adminCommissionModeSelect" class="select-field" onchange="markAdminIncentivesDirty(); syncCommissionModeSelects(this.value);">
+                  <option value="percentage">📊 نسبة مئوية من قيمة المشوار (%) — (يتغير تلقائياً مع سعر الطلب)</option>
+                  <option value="fixed">💵 مبلغ ثابت بالجنيه لكل مشوار (ج)</option>
+                </select>
               </div>
+
+              <!-- قسم النسبة المئوية للمستويات الثلاثة -->
+              <div id="adminFeePercentModeBox" style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:12px; padding:10px; margin-bottom:10px;">
+                <div style="font-size:11px; font-weight:800; color:var(--primary); margin-bottom:8px;">
+                  🎯 تحديد نِسب العمولة المئوية (%) لكل مستوى (تقدر تعدلها في أي وقت):
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#8D4E15; font-weight:800;">برونزي 🥉 (%):</label>
+                    <input type="number" id="adminPlatformFeePercentInput" class="input-field" placeholder="13" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncBronzePercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#263238; font-weight:800;">بلاتيني 🥈 (%):</label>
+                    <input type="number" id="adminPlatformPlatPercentInput" class="input-field" placeholder="12.5" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncPlatPercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                  <div>
+                    <label class="input-label" style="font-size:10px; color:#01579B; font-weight:800;">ماسي 💎 (%):</label>
+                    <input type="number" id="adminPlatformDiaPercentInput" class="input-field" placeholder="12" min="0" max="100" step="0.1" style="background:#fff;" oninput="markAdminIncentivesDirty(); syncDiaPercentInputs(this.value); updateAdminTiersLiveNote()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- قسم المبلغ الثابت بالجنيه -->
+              <div id="adminFeeFixedModeBox" style="margin-bottom:10px;">
+                <label class="input-label" for="adminPlatformFeeInput">قيمة العمولة الثابتة للمشوار (بالجنيه):</label>
+                <input type="number" id="adminPlatformFeeInput" class="input-field" placeholder="قيمة العمولة (ج)" step="0.5" oninput="markAdminIncentivesDirty(); updateAdminTiersLiveNote()">
+              </div>
+
+              <button type="button" class="btn-main" style="padding:11px 12px; font-size:12.5px;" onclick="adminSavePlatformFee()">
+                <i class="fa-solid fa-check"></i> اعتماد وحفظ نظام العمولة
+              </button>
             </div>
 
             <div class="card" id="admCard-customFee" style="border: 2px solid #0277BD;">
@@ -691,7 +765,7 @@
               <select class="select-field" id="adminCustomFeeCaptainSelect" onchange="renderAdminCustomFeeCaptainSummary()" style="margin-bottom:8px;"></select>
               <div id="adminCustomFeeCurrentSummary" style="background:#fff; border:1px solid #B3E5FC; border-radius:10px; padding:8px 10px; font-size:11px; margin-bottom:10px;"></div>
               <div style="display:grid; grid-template-columns: 1fr 2fr; gap:8px; margin-bottom:10px;">
-                <input type="number" id="adminCustomFeeAmountInput" class="input-field" placeholder="العمولة (ج)">
+                <input type="number" id="adminCustomFeeAmountInput" class="input-field" placeholder="العمولة" step="0.1">
                 <input type="text" id="adminCustomFeeReasonInput" class="input-field" placeholder="السبب">
               </div>
               <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
@@ -899,13 +973,20 @@
                   <input type="number" id="adminSurgeDurationInput" class="input-field" placeholder="30" value="30" min="1">
                 </div>
               </div>
-              <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px;">
+              <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px; margin-bottom:10px;">
                 <button type="button" class="btn-main" style="background:#E65100; padding:10px; font-size:12px;" onclick="adminTriggerSurgePricing('start')">
                   <i class="fa-solid fa-fire"></i> تفعيل الذروة الآن ⚡
                 </button>
                 <button type="button" class="btn-danger" style="padding:10px; font-size:12px;" onclick="adminTriggerSurgePricing('stop')">
                   <i class="fa-solid fa-stop"></i> إيقاف فوري ⏹️
                 </button>
+              </div>
+              <div class="switch-wrapper" style="border:1.5px dashed #FFB74D; background:#FFF8E1;">
+                <div>
+                  <strong style="font-size:12px; display:block; color:#E65100;">🤖 تفعيل الذروة التلقائية الذكية (Auto-Surge)</strong>
+                  <small style="font-size:10px; color:#5D4037;">يشغل ذروة (+15% لمدة 20 د) تلقائياً عند تراكم 3 طلبات منتظرة مع قلة الكباتن</small>
+                </div>
+                <label class="switch"><input type="checkbox" id="adminAutoSurgeSwitch" onchange="adminToggleAutoSurge()"><span class="slider"></span></label>
               </div>
             </div>
 
@@ -940,6 +1021,8 @@
                 <table><thead><tr><th>من</th><th>إلى</th><th>السعر (ج)</th></tr></thead><tbody id="adminPricingTableBody"></tbody></table>
               </div>
               <button class="btn-main" style="margin-top:10px;" onclick="saveCustomPrices()"><i class="fa-solid fa-floppy-disk"></i> حفظ واعتماد التسعيرة</button>
+              <!-- مؤشر الذكاء التسعيري للمسارات (Negotiation Insights) -->
+              <div id="adminPricingIntelligenceBox" style="margin-top:12px; padding-top:10px; border-top:1.5px dashed #E9DCE0;"></div>
             </div>
           </div>
         </section>
@@ -1818,34 +1901,104 @@
       renderAdminDashboardData();
       renderAdminProgressAnalytics();
     }
-    // ==================== مستويات الكباتن الديناميكية (شاملة الأيام والهبوط التدريجي الآمن) ====================
+    // ==================== مستويات الكباتن ونسب العمولة الديناميكية (النسبة المئوية % أو المبلغ الثابت ج) ====================
+    function syncCommissionModeSelects(modeVal) {
+      const cleanMode = modeVal === 'percentage' ? 'percentage' : 'fixed';
+      const sel1 = document.getElementById('adminCommissionModeSelect');
+      const sel2 = document.getElementById('adminTierCommissionModeSelect');
+      if (sel1 && sel1.value !== cleanMode) sel1.value = cleanMode;
+      if (sel2 && sel2.value !== cleanMode) sel2.value = cleanMode;
+
+      const isPct = cleanMode === 'percentage';
+      const pctBoxFin = document.getElementById('adminFeePercentModeBox');
+      const fixBoxFin = document.getElementById('adminFeeFixedModeBox');
+      const pctGridTier = document.getElementById('adminTierPercentFieldsGrid');
+      const fixGridTier = document.getElementById('adminTierFixedFieldsGrid');
+      const modePill = document.getElementById('adminTierModePillBadge');
+
+      if (pctBoxFin) pctBoxFin.style.display = isPct ? 'block' : 'none';
+      if (fixBoxFin) fixBoxFin.style.display = isPct ? 'none' : 'block';
+      if (pctGridTier) pctGridTier.style.display = isPct ? 'grid' : 'none';
+      if (fixGridTier) fixGridTier.style.display = isPct ? 'none' : 'grid';
+      if (modePill) {
+        modePill.className = isPct ? 'badge badge-accepted' : 'badge badge-pending';
+        modePill.innerText = isPct ? 'نظام النسبة المئوية % 📊' : 'نظام المبلغ الثابت (ج) 💵';
+      }
+      updateAdminTiersLiveNote();
+      renderAdminCustomFeeCaptainSummary();
+    }
+
+    function syncBronzePercentInputs(val) {
+      const i1 = document.getElementById('adminPlatformFeePercentInput');
+      const i2 = document.getElementById('adminTierBronzePercentInput');
+      if (i1 && document.activeElement !== i1) i1.value = val;
+      if (i2 && document.activeElement !== i2) i2.value = val;
+    }
+
+    function syncPlatPercentInputs(val) {
+      const i1 = document.getElementById('adminPlatformPlatPercentInput');
+      const i2 = document.getElementById('adminTierPlatPercentInput');
+      if (i1 && document.activeElement !== i1) i1.value = val;
+      if (i2 && document.activeElement !== i2) i2.value = val;
+    }
+
+    function syncDiaPercentInputs(val) {
+      const i1 = document.getElementById('adminPlatformDiaPercentInput');
+      const i2 = document.getElementById('adminTierDiaPercentInput');
+      if (i1 && document.activeElement !== i1) i1.value = val;
+      if (i2 && document.activeElement !== i2) i2.value = val;
+    }
+
     function updateAdminTiersLiveNote() {
+      const mode = (document.getElementById('adminTierCommissionModeSelect')?.value || STATE.settings.commissionMode || 'fixed') === 'percentage' ? 'percentage' : 'fixed';
       const wOrd = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
       const dWin = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
       const cDays = Math.max(dWin, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
       const pDisc = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
       const dDisc = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
-      const baseFee = roundMoney(STATE.settings.platformFee ?? 7);
+      const bPct = Math.max(0, roundMoney(document.getElementById('adminTierBronzePercentInput')?.value ?? STATE.settings.platformFeePercent ?? 13));
+      const pPct = Math.max(0, roundMoney(document.getElementById('adminTierPlatPercentInput')?.value ?? STATE.settings.tierPlatinumPercent ?? 12.5));
+      const dPct = Math.max(0, roundMoney(document.getElementById('adminTierDiaPercentInput')?.value ?? STATE.settings.tierDiamondPercent ?? 12));
+      const baseFee = roundMoney(document.getElementById('adminPlatformFeeInput')?.value ?? STATE.settings.platformFee ?? 7);
       const box = document.getElementById('adminTiersLiveRuleNote');
       if (!box) return;
-      box.innerHTML = `
-        🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب خلال ${dWin} يوم — العمولة الأساسية (${baseFee} ج).<br>
-        🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب خلال ${dWin} يوم — خصم <strong>${pDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - pDisc))} ج).<br>
-        💎 <strong>كابتن ماسي:</strong> الحفاظ على التارجت لمدة ${cDays} يوماً متتالية — خصم <strong>${dDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - dDisc))} ج).<br>
-        🛡️ <strong>الهبوط التدريجي الآمن:</strong> إذا أخفق الكابتن الماسي 💎 في تحقيق تارجت الأسبوع يهبط خطوة واحدة للبلاتيني 🥈 (وليس للبرونزي 🥉 مباشرة).
-      `;
+
+      if (mode === 'percentage') {
+        box.innerHTML = `
+          🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب خلال ${dWin} يوم — العمولة <strong>${bPct}%</strong> من قيمة المشوار (مثال لمشوار 40ج = ${roundMoney(40 * bPct / 100)} ج).<br>
+          🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب خلال ${dWin} يوم — العمولة تنخفض إلى <strong>${pPct}%</strong> (مثال لمشوار 40ج = ${roundMoney(40 * pPct / 100)} ج).<br>
+          💎 <strong>كابتن ماسي:</strong> الحفاظ على التارجت لمدة ${cDays} يوماً متتالية — العمولة تنخفض إلى <strong>${dPct}%</strong> (مثال لمشوار 40ج = ${roundMoney(40 * dPct / 100)} ج).<br>
+          🛡️ <strong>الهبوط التدريجي الآمن:</strong> إذا أخفق الكابتن الماسي 💎 في تحقيق تارجت الأسبوع يهبط خطوة واحدة للبلاتيني 🥈 (${pPct}%) وليس للبرونزي 🥉 مباشرة.
+        `;
+      } else {
+        box.innerHTML = `
+          🥉 <strong>كابتن برونزي:</strong> أقل من ${wOrd} طلب خلال ${dWin} يوم — العمولة الأساسية (<strong>${baseFee} ج</strong>).<br>
+          🥈 <strong>كابتن بلاتيني:</strong> ${wOrd} طلب خلال ${dWin} يوم — خصم <strong>${pDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - pDisc))} ج).<br>
+          💎 <strong>كابتن ماسي:</strong> الحفاظ على التارجت لمدة ${cDays} يوماً متتالية — خصم <strong>${dDisc} ج</strong> (يدفع ${Math.max(0, roundMoney(baseFee - dDisc))} ج).<br>
+          🛡️ <strong>الهبوط التدريجي الآمن:</strong> إذا أخفق الكابتن الماسي 💎 في تحقيق تارجت الأسبوع يهبط خطوة واحدة للبلاتيني 🥈 (وليس للبرونزي 🥉 مباشرة).
+        `;
+      }
     }
 
     function adminSaveCaptainTiersConfig() {
       withActionLock(async () => {
+        const commissionMode = document.getElementById('adminTierCommissionModeSelect')?.value === 'percentage' ? 'percentage' : 'fixed';
         const tierWeeklyOrdersTarget = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
         const tierDaysWindow = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
         const tierConsecutiveDaysForDiamond = Math.max(tierDaysWindow, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
         const tierWeeksForDiamond = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
         const tierPlatinumDiscount = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
         const tierDiamondDiscount = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
+        const platformFeePercent = Math.max(0, roundMoney(document.getElementById('adminTierBronzePercentInput')?.value ?? 13));
+        const tierPlatinumPercent = Math.max(0, roundMoney(document.getElementById('adminTierPlatPercentInput')?.value ?? 12.5));
+        const tierDiamondPercent = Math.max(0, roundMoney(document.getElementById('adminTierDiaPercentInput')?.value ?? 12));
 
+        adminIncentivesDirtyUntil = 0;
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          commissionMode,
+          platformFeePercent,
+          tierPlatinumPercent,
+          tierDiamondPercent,
           tierWeeklyOrdersTarget,
           tierDaysWindow,
           tierConsecutiveDaysForDiamond,
@@ -1854,7 +2007,12 @@
           tierDiamondDiscount
         });
         if (ok && data && data.success) {
-          showToast('تم حفظ واعتماد قواعد مستويات الكباتن والمدد الزمنية بنجاح 💎✅', 'ok');
+          showToast(
+            commissionMode === 'percentage'
+              ? `تم اعتماد نظام النسبة المئوية (${platformFeePercent}% / ${tierPlatinumPercent}% / ${tierDiamondPercent}%) وشروط المستويات بنجاح 💎✅`
+              : 'تم حفظ واعتماد قواعد مستويات الكباتن والمدد الزمنية بنجاح 💎✅',
+            'ok'
+          );
         } else {
           showToast('تعذر حفظ إعدادات المستويات ⚠️', 'warn');
         }
@@ -2017,7 +2175,7 @@
       }).join('');
     }
 
-    // ==================== تسعير وقت الذروة (Surge Pricing) ====================
+    // ==================== تسعير وقت الذروة والذروة التلقائية الذكية (Surge & Auto-Surge) ====================
     function adminTriggerSurgePricing(action) {
       withActionLock(async () => {
         const surgePercent = Math.max(1, Number(document.getElementById('adminSurgePercentInput')?.value || 20));
@@ -2039,6 +2197,175 @@
           showToast('تعذر تحديث وقت الذروة ⚠️', 'warn');
         }
       });
+    }
+
+    function adminToggleAutoSurge() {
+      withActionLock(async () => {
+        const enabled = Boolean(document.getElementById('adminAutoSurgeSwitch')?.checked);
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', { autoSurgeEnabled: enabled });
+        if (ok && data && data.success) {
+          showToast(enabled ? 'تم تفعيل الذروة التلقائية الذكية (Auto-Surge) بنجاح 🤖⚡' : 'تم إيقاف الذروة التلقائية الذكية ⏹️', 'ok');
+        }
+      });
+    }
+
+    // ==================== طابور اعتماد شحن المحفظة بضغطة واحدة ====================
+    function renderAdminPendingTopupsQueue() {
+      const card = document.getElementById('admCard-pendingTopups');
+      const badge = document.getElementById('adminPendingTopupsCountBadge');
+      const listEl = document.getElementById('adminPendingTopupsList');
+      if (!card || !listEl) return;
+
+      const canManageWallets = hasAdminPerm('manageWallets');
+      const reqs = Array.isArray(STATE.settings?.pendingTopupRequests) ? STATE.settings.pendingTopupRequests : [];
+
+      if (!canManageWallets || reqs.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+      if (badge) badge.innerText = `${reqs.length} طلب معلق`;
+
+      listEl.innerHTML = reqs.map(r => `
+        <div style="background:#FFFFFF; border:1.5px solid #A5D6A7; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <strong style="font-size:12.5px; color:#1B5E20;">🛵 ${escapeHtml(r.fullName)} (<span dir="ltr">${escapeHtml(r.phone)}</span>)</strong>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+              المبلغ المطلوب: <strong style="color:var(--primary); font-size:13px;">${roundMoney(r.amount)} ج</strong> • منذ: ${escapeHtml(r.time || '')}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-success" style="padding:7px 12px; font-size:11.5px; font-weight:900;" onclick="adminResolveTopupRequest('${escapeHtml(r.id)}', 'approve')">
+              <i class="fa-solid fa-check"></i> اشحن ${roundMoney(r.amount)} ج فوراً
+            </button>
+            <button type="button" class="btn-danger" style="padding:7px 10px; font-size:11px;" onclick="adminResolveTopupRequest('${escapeHtml(r.id)}', 'reject')">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function adminResolveTopupRequest(reqId, action) {
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/admin/wallets/topup-requests/${encodeURIComponent(reqId)}/resolve`, 'POST', { action });
+        if (ok && data && data.success) {
+          showToast(data.message || 'تم تنفيذ الإجراء بنجاح ✅', 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر تنفيذ الإجراء ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== رادار الإنذار المبكر للطلبات المتأخرة (SLA Watchdog) ====================
+    function renderAdminSlaWatchdog() {
+      const box = document.getElementById('adminSlaWatchdogBanner');
+      if (!box) return;
+      const now = Date.now();
+      const delayedWaiting = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن' && (now - (Number(o.createdAt) || now)) >= 5 * 60000);
+      const delayedActive = (STATE.orders || []).filter(o => o && ACTIVE_COURIER_STATUSES.includes(o.status) && (now - (Number(o.createdAt) || now)) >= 20 * 60000);
+
+      if (delayedWaiting.length === 0 && delayedActive.length === 0) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
+
+      box.style.display = 'flex';
+      let itemsHtml = '';
+
+      delayedWaiting.slice(0, 4).forEach(o => {
+        const mins = Math.floor((now - Number(o.createdAt)) / 60000);
+        itemsHtml += `
+          <div style="background:#FFFFFF; border:1px solid #FFCDD2; border-radius:10px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-size:11px;">
+            <div>
+              <strong style="color:var(--danger);">⏳ ${escapeHtml(o.id)} (ينتظر منذ ${mins} د):</strong>
+              <span>${escapeHtml(o.pickupZone)} ⬅️ ${escapeHtml(o.dropoffZone)} (${o.originalFare} ج)</span>
+            </div>
+            <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:10.5px;" onclick="switchAdminTab('operations')">متابعة الطلب 🔍</button>
+          </div>
+        `;
+      });
+
+      delayedActive.slice(0, 4).forEach(o => {
+        const mins = Math.floor((now - Number(o.createdAt)) / 60000);
+        itemsHtml += `
+          <div style="background:#FFFFFF; border:1px solid #FFCDD2; border-radius:10px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-size:11px;">
+            <div>
+              <strong style="color:#C2185B;">🛵 ${escapeHtml(o.id)} (مع الكابتن منذ ${mins} د - ${escapeHtml(o.status)}):</strong>
+              <span>كابتن: ${escapeHtml(o.assignedCourierName || o.assignedCourierPhone || '')}</span>
+            </div>
+            <div style="display:flex; gap:5px;">
+              <button type="button" class="btn-main" style="background:#E65100; padding:5px 9px; font-size:10.5px; width:auto;" onclick="adminRemindDelayedCaptain('${escapeHtml(o.id)}')">🔔 استعجال الكابتن</button>
+              <button type="button" class="btn-secondary" style="padding:5px 9px; font-size:10.5px;" onclick="adminReassignOrCancelOrder('${escapeHtml(o.id)}','radar')">إعادة للرادار 🔄</button>
+            </div>
+          </div>
+        `;
+      });
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:12.5px; color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> رادار الإنذار المبكر للطلبات المتأخرة (${delayedWaiting.length + delayedActive.length}) 🚨</strong>
+          <span class="badge badge-rejected">يتطلب متابعة</span>
+        </div>
+        ${itemsHtml}
+      `;
+    }
+
+    function adminRemindDelayedCaptain(orderId) {
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/admin/orders/${encodeURIComponent(orderId)}/remind-captain`, 'POST', {});
+        if (ok && data && data.success) {
+          showToast(data.message || 'تم إرسال تنبيه استعجال للكابتن 🔔✅', 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر إرسال التنبيه ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== مؤشر الذكاء التسعيري للمسارات (Negotiation Insights) ====================
+    function renderAdminPricingIntelligence() {
+      const box = document.getElementById('adminPricingIntelligenceBox');
+      if (!box) return;
+      const routeStats = {};
+      (STATE.orders || []).forEach(o => {
+        if (!o || !o.pickupZone || !o.dropoffZone) return;
+        const rKey = `${o.pickupZone}|${o.dropoffZone}`;
+        const baseP = roundMoney(STATE.pricing[rKey] || o.routeDefaultFare || o.originalFare || 40);
+        const actualP = roundMoney(o.originalFare || o.fare || baseP);
+        const hadNegotiation = (actualP !== baseP) || (Array.isArray(o.captainOffers) && o.captainOffers.length > 0);
+        if (!routeStats[rKey]) {
+          routeStats[rKey] = { from: o.pickupZone, to: o.dropoffZone, base: baseP, totalOrders: 0, negotiatedCount: 0, sumActual: 0 };
+        }
+        routeStats[rKey].totalOrders += 1;
+        routeStats[rKey].sumActual += actualP;
+        if (hadNegotiation) routeStats[rKey].negotiatedCount += 1;
+      });
+
+      const negotiatedRoutes = Object.values(routeStats)
+        .filter(r => r.negotiatedCount > 0)
+        .sort((a, b) => b.negotiatedCount - a.negotiatedCount)
+        .slice(0, 5);
+
+      if (negotiatedRoutes.length === 0) {
+        box.innerHTML = `<div style="font-size:11px; color:var(--text-muted); text-align:center;">📊 <strong>مؤشر الذكاء التسعيري:</strong> جميع الطلبات الحالية تسير وفق التسعيرة الأساسية دون طلبات زيادة.</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <strong style="font-size:12px; color:var(--primary); display:block; margin-bottom:6px;"><i class="fa-solid fa-chart-line"></i> مؤشر الذكاء التسعيري للمسارات (أعلى المسارات تفاوضاً) 📊:</strong>
+        <div style="display:flex; flex-direction:column; gap:5px;">
+          ${negotiatedRoutes.map(r => {
+            const avgAgreed = roundMoney(r.sumActual / r.totalOrders);
+            const diff = roundMoney(avgAgreed - r.base);
+            return `<div style="background:#FAF7F4; border:1px solid #E9DCE0; border-radius:8px; padding:6px 9px; font-size:11px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+              <span>🛣️ <strong>${escapeHtml(r.from)} ⬅️ ${escapeHtml(r.to)}</strong> (تفاوض في ${r.negotiatedCount} من ${r.totalOrders} طلب)</span>
+              <span>الأساسي: <strong>${r.base} ج</strong> | متوسط المتفق عليه: <strong style="color:${diff > 0 ? '#E65100' : 'var(--success)'};">${avgAgreed} ج</strong></span>
+            </div>`;
+          }).join('')}
+        </div>
+      `;
     }
 
     // ==================== عرض خريطة الطلب في الإدارة (Leaflet GPS) ====================
@@ -2387,25 +2714,56 @@
 
     function adminSavePlatformFee() {
       withActionLock(async () => {
-        const v = roundMoney(document.getElementById('adminPlatformFeeInput')?.value); if(v<0)return;
-        const {ok, data}=await apiRequest('/api/admin/settings','POST',{platformFee:v});
-        if(ok&&data.success)showToast('تم اعتماد العمولة ✅','ok'); else showToast('تعذر ⚠️','warn');
+        const commissionMode = document.getElementById('adminCommissionModeSelect')?.value === 'percentage' ? 'percentage' : 'fixed';
+        const platformFee = Math.max(0, roundMoney(document.getElementById('adminPlatformFeeInput')?.value ?? 7));
+        const platformFeePercent = Math.max(0, roundMoney(document.getElementById('adminPlatformFeePercentInput')?.value ?? 13));
+        const tierPlatinumPercent = Math.max(0, roundMoney(document.getElementById('adminPlatformPlatPercentInput')?.value ?? 12.5));
+        const tierDiamondPercent = Math.max(0, roundMoney(document.getElementById('adminPlatformDiaPercentInput')?.value ?? 12));
+
+        adminIncentivesDirtyUntil = 0;
+        const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
+          commissionMode,
+          platformFee,
+          platformFeePercent,
+          tierPlatinumPercent,
+          tierDiamondPercent
+        });
+        if (ok && data && data.success) {
+          showToast(
+            commissionMode === 'percentage'
+              ? `تم اعتماد نظام النسبة المئوية (${platformFeePercent}% برونزي | ${tierPlatinumPercent}% بلاتيني | ${tierDiamondPercent}% ماسي) ✅`
+              : `تم اعتماد العمولة الثابتة (${platformFee} ج) بنجاح ✅`,
+            'ok'
+          );
+        } else {
+          showToast('تعذر حفظ نظام العمولة ⚠️', 'warn');
+        }
       });
     }
 
-    function handleAdminCustomFeeSearch() {
-      const q = normalizePhone(document.getElementById('adminCustomFeePhoneSearch')?.value);
-      const m = STATE.captains.find(c=>c.phone.includes(q)); if(m){ document.getElementById('adminCustomFeeCaptainSelect').value=m.phone; renderAdminCustomFeeCaptainSummary(); }
-    }
-    
     function renderAdminCustomFeeCaptainSummary() {
-      const sel = document.getElementById('adminCustomFeeCaptainSelect'); const bx = document.getElementById('adminCustomFeeCurrentSummary'); if(!sel||!bx)return;
-      const cap = STATE.captains.find(c=>c.phone===sel.value); if(!cap){ bx.innerHTML='اختر كابتن'; return; }
-      const hc = cap.customFee!==null&&cap.customFee!==undefined;
+      const sel = document.getElementById('adminCustomFeeCaptainSelect');
+      const bx = document.getElementById('adminCustomFeeCurrentSummary');
+      const amtInp = document.getElementById('adminCustomFeeAmountInput');
+      if (!sel || !bx) return;
+      const isPct = (STATE.settings && STATE.settings.commissionMode === 'percentage');
+      if (amtInp) amtInp.placeholder = isPct ? 'النسبة الخاصة (%)' : 'العمولة (ج)';
+
+      const cap = STATE.captains.find(c => c.phone === sel.value);
+      if (!cap) { bx.innerHTML = 'اختر كابتن'; return; }
+      const hc = cap.customFee !== null && cap.customFee !== undefined;
+      const unitLbl = isPct ? '%' : 'ج';
+      const defaultRateVal = isPct ? (cap.effectiveFeePercent ?? STATE.settings.platformFeePercent ?? 13) : (cap.effectiveFee ?? 7);
+
       bx.innerHTML = hc
-        ? `عمولة فردية: <strong>${cap.customFee} ج</strong> (${escapeHtml(cap.customFeeReason)})`
-        : `يتبع نظام المستويات (${escapeHtml(cap.tierBadgeText || 'كابتن برونزي 🥉')} — العمولة الفعلية: <strong>${cap.effectiveFee ?? 7} ج</strong>)`;
-      if(!document.activeElement.classList.contains('input-field')){ document.getElementById('adminCustomFeeAmountInput').value=hc?cap.customFee:(cap.effectiveFee??7); document.getElementById('adminCustomFeeReasonInput').value=cap.customFeeReason||''; }
+        ? `عمولة فردية مخصصة: <strong>${cap.customFee}${unitLbl}</strong> (${escapeHtml(cap.customFeeReason)})`
+        : `يتبع نظام المستويات (${escapeHtml(cap.tierBadgeText || 'كابتن برونزي 🥉')} — العمولة الفعلية: <strong>${defaultRateVal}${unitLbl}</strong>)`;
+
+const reInp = document.getElementById('adminCustomFeeReasonInput');
+      if (document.activeElement !== amtInp && document.activeElement !== reInp) {
+        if (amtInp) amtInp.value = hc ? cap.customFee : defaultRateVal;
+        if (reInp) reInp.value = cap.customFeeReason || '';
+      }
     }
 
     function adminSaveCaptainCustomFee() {
@@ -2789,41 +3147,66 @@
       }});
     }
 
-    function renderAdminDynamicSettingsInputs() {
-      const s = STATE.settings||{}; const f = Number(s.platformFee ?? 7);
+function renderAdminDynamicSettingsInputs() {
+      const s = STATE.settings || {};
+      const f = Number(s.platformFee ?? 7);
       const effFee = Number(s.effectivePlatformFee ?? f);
-      document.getElementById('adminCurrentFeeBadge').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج` : `العمولة: ${f} ج`;
-      document.getElementById('adminStatCurrentFeeNote').innerText = s.surgeActive ? `العمولة بالذروة: ${effFee} ج ⚡` : `العمولة: ${f} ج`;
+      const isPctMode = s.commissionMode === 'percentage';
+      const bPct = Number(s.platformFeePercent ?? 13);
+      const pPct = Number(s.tierPlatinumPercent ?? 12.5);
+      const dPct = Number(s.tierDiamondPercent ?? 12);
+
+      const feeBadgeTxt = isPctMode
+        ? `نسبة: ${bPct}% / ${pPct}% / ${dPct}%`
+        : (s.surgeActive ? `العمولة بالذروة: ${effFee} ج` : `العمولة: ${f} ج`);
+
+      document.getElementById('adminCurrentFeeBadge').innerText = feeBadgeTxt;
+      document.getElementById('adminStatCurrentFeeNote').innerText = feeBadgeTxt;
+
       const daysWinVal = s.tierDaysWindow !== undefined ? s.tierDaysWindow : 7;
       const consDaysVal = s.tierConsecutiveDaysForDiamond !== undefined
         ? s.tierConsecutiveDaysForDiamond
         : ((s.tierWeeksForDiamond !== undefined ? s.tierWeeksForDiamond : 4) * daysWinVal);
 
-      const m={
-        adminPlatformFeeInput:f,
-        adminCustPointsPerOrderInput:s.customerPointsPerOrder||5,
-        adminCustPointsTargetInput:s.customerRewardThreshold||100,
-        adminCustRewardAmountInput:s.customerRewardCash||10,
-        adminCourPointsPerOrderInput:s.courierPointsPerOrder||5,
-        adminCourPointsTargetInput:s.courierRewardThreshold||100,
-        adminCourRewardAmountInput:s.courierRewardCash||10,
-        adminWelcomeBonusAmountInput:s.welcomeBonusAmount!==undefined?s.welcomeBonusAmount:7,
-        adminReferralRewardAmountInput:s.referralRewardAmount!==undefined?s.referralRewardAmount:50,
-        adminReferralRequiredOrdersInput:s.referralRequiredOrders!==undefined?s.referralRequiredOrders:2,
-        adminTierWeeklyOrdersInput:s.tierWeeklyOrdersTarget!==undefined?s.tierWeeklyOrdersTarget:25,
-        adminTierDaysWindowInput:daysWinVal,
-        adminTierConsecutiveDaysInput:consDaysVal,
-        adminTierPlatDiscountInput:s.tierPlatinumDiscount!==undefined?s.tierPlatinumDiscount:1,
-        adminTierDiaDiscountInput:s.tierDiamondDiscount!==undefined?s.tierDiamondDiscount:2,
-        adminSurgePercentInput:s.surgePercent||20,
-        adminSurgeDurationInput:s.surgeDurationMinutes||30,
-        adminBroadcastInput:s.broadcastMessage||'',
-        adminSupportWhatsappInput:s.supportWhatsapp||'201507800875',
-        adminWaitingTimeoutInput:s.waitingTimeoutMinutes||30,
-        adminMaxConcurrentOrdersInput:s.maxConcurrentOrdersPerCaptain||3
+      const m = {
+        adminPlatformFeeInput: f,
+        adminPlatformFeePercentInput: bPct,
+        adminPlatformPlatPercentInput: pPct,
+        adminPlatformDiaPercentInput: dPct,
+        adminTierBronzePercentInput: bPct,
+        adminTierPlatPercentInput: pPct,
+        adminTierDiaPercentInput: dPct,
+        adminCustPointsPerOrderInput: s.customerPointsPerOrder || 5,
+        adminCustPointsTargetInput: s.customerRewardThreshold || 100,
+        adminCustRewardAmountInput: s.customerRewardCash || 10,
+        adminCourPointsPerOrderInput: s.courierPointsPerOrder || 5,
+        adminCourPointsTargetInput: s.courierRewardThreshold || 100,
+        adminCourRewardAmountInput: s.courierRewardCash || 10,
+        adminWelcomeBonusAmountInput: s.welcomeBonusAmount !== undefined ? s.welcomeBonusAmount : 7,
+        adminReferralRewardAmountInput: s.referralRewardAmount !== undefined ? s.referralRewardAmount : 50,
+        adminReferralRequiredOrdersInput: s.referralRequiredOrders !== undefined ? s.referralRequiredOrders : 2,
+        adminTierWeeklyOrdersInput: s.tierWeeklyOrdersTarget !== undefined ? s.tierWeeklyOrdersTarget : 25,
+        adminTierDaysWindowInput: daysWinVal,
+        adminTierConsecutiveDaysInput: consDaysVal,
+        adminTierPlatDiscountInput: s.tierPlatinumDiscount !== undefined ? s.tierPlatinumDiscount : 1,
+        adminTierDiaDiscountInput: s.tierDiamondDiscount !== undefined ? s.tierDiamondDiscount : 2,
+        adminSurgePercentInput: s.surgePercent || 20,
+        adminSurgeDurationInput: s.surgeDurationMinutes || 30,
+        adminBroadcastInput: s.broadcastMessage || '',
+        adminSupportWhatsappInput: s.supportWhatsapp || '201507800875',
+        adminWaitingTimeoutInput: s.waitingTimeoutMinutes || 30,
+        adminMaxConcurrentOrdersInput: s.maxConcurrentOrdersPerCaptain || 3
       };
       const isDirtyNow = Date.now() < adminIncentivesDirtyUntil;
-      Object.keys(m).forEach(id=>{ if(document.getElementById(id)&&document.activeElement.id!==id&&!isDirtyNow) document.getElementById(id).value=m[id]; });
+      Object.keys(m).forEach(id => {
+        if (document.getElementById(id) && document.activeElement.id !== id && !isDirtyNow) {
+          document.getElementById(id).value = m[id];
+        }
+      });
+
+      if (!isDirtyNow) {
+        syncCommissionModeSelects(isPctMode ? 'percentage' : 'fixed');
+      }
 
       const bTargetSel = document.getElementById('adminBroadcastTargetSelect');
       if (bTargetSel && document.activeElement !== bTargetSel) {
@@ -2851,7 +3234,7 @@
           surgeBadge.className = 'badge badge-completed';
           surgeBadge.innerText = `نشط (+${s.surgePercent}%) ⚡`;
           surgeBanner.style.display = 'block';
-          surgeBanner.innerHTML = `🔥 <strong>وقت الذروة شغال دلوقتي!</strong> زيادة <strong>+${s.surgePercent}%</strong> على أجرة المشاوير وعمولة المنصة (أصبحت ${effFee} ج بدلاً من ${f} ج) — ينتهي أوتوماتيكياً بعد <strong>${s.surgeRemainingMinutes} دقيقة</strong> ⏱️`;
+          surgeBanner.innerHTML = `🔥 <strong>وقت الذروة شغال دلوقتي!</strong> زيادة <strong>+${s.surgePercent}%</strong> على أجرة المشاوير — ينتهي أوتوماتيكياً بعد <strong>${s.surgeRemainingMinutes} دقيقة</strong> ⏱️`;
         } else {
           surgeBadge.className = 'badge badge-pending';
           surgeBadge.innerText = 'غير مفعل';
@@ -2859,10 +3242,12 @@
         }
       }
 
-      if(document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
-      if(document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration!==false;
-      if(document.getElementById('adminWelcomeBonusSwitch')) document.getElementById('adminWelcomeBonusSwitch').checked = s.welcomeBonusActive!==false;
-      if(document.getElementById('adminReferralRewardSwitch')) document.getElementById('adminReferralRewardSwitch').checked = s.referralRewardActive!==false;
+      if (document.getElementById('adminMaintenanceSwitch')) document.getElementById('adminMaintenanceSwitch').checked = Boolean(s.maintenanceMode);
+      if (document.getElementById('adminAllowCaptainRegSwitch')) document.getElementById('adminAllowCaptainRegSwitch').checked = s.allowCaptainRegistration !== false;
+      if (document.getElementById('adminAutoSurgeSwitch')) document.getElementById('adminAutoSurgeSwitch').checked = Boolean(s.autoSurgeEnabled);
+      renderAdminPendingTopupsQueue();
+      if (document.getElementById('adminWelcomeBonusSwitch')) document.getElementById('adminWelcomeBonusSwitch').checked = s.welcomeBonusActive !== false;
+      if (document.getElementById('adminReferralRewardSwitch')) document.getElementById('adminReferralRewardSwitch').checked = s.referralRewardActive !== false;
 
       // تحديث مفاتيح التحكم الثلاثة في إشعارات Push الأدمن
       const masterPushOn = s.adminPushMasterEnabled !== false;
@@ -3022,6 +3407,10 @@
       const winDays = Math.max(1, Number(c.tierDaysWindow || STATE.settings.tierDaysWindow || 7));
       const progPct = Math.min(100, Math.round(((c.weeklyCompletedOrders || 0) / targetOrd) * 100));
       const capWa = toAdminWhatsAppNum(c.phone);
+      const isPctMode = STATE.settings && STATE.settings.commissionMode === 'percentage';
+      const currentFeeDisplay = isPctMode
+        ? `${c.effectiveFeePercent ?? STATE.settings.platformFeePercent ?? 13}% (حوالي ${c.effectiveFee ?? 5.2} ج لمشوار 40ج)`
+        : `${c.effectiveFee ?? 7} ج`;
 
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
@@ -3037,7 +3426,7 @@
         </div>
         <div style="font-size:11px; margin:8px 0; line-height:1.7;">
           رقم قومي: ${escapeHtml(c.nationalId || 'محجوب')} | منطقة: <strong>${escapeHtml(c.primaryZone || 'المنصورة')}</strong> | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong><br>
-          📊 مشاوير آخر ${winDays} أيام: <strong>${c.weeklyCompletedOrders || 0} من ${targetOrd} طلب (${progPct}%)</strong> | أيام التميز: <strong>${c.consecutiveQualifiedDays || 0} يوم</strong> | العمولة الحالية: <strong style="color:var(--success);">${c.effectiveFee ?? 7} ج</strong>
+          📊 مشاوير آخر ${winDays} أيام: <strong>${c.weeklyCompletedOrders || 0} من ${targetOrd} طلب (${progPct}%)</strong> | أيام التميز: <strong>${c.consecutiveQualifiedDays || 0} يوم</strong> | العمولة الحالية: <strong style="color:var(--success);">${currentFeeDisplay}</strong>
           ${c.gracefulDemotion ? `<div style="color:#E65100; font-weight:800; margin-top:4px; background:#FFF3E0; padding:4px 8px; border-radius:6px;">🛡️ هبوط تدريجي آمن: الكابتن في فترة الأمان بالبلاتيني 🥈 (كان ماسياً 💎)</div>` : ''}
           ${c.suspendReason ? `<div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; padding:4px 8px; border-radius:6px;">⚠️ سبب الرفض/الإيقاف: ${escapeHtml(c.suspendReason)}</div>` : ''}
         </div>
@@ -3089,8 +3478,11 @@
       if (document.getElementById('adminStatTotalFaresTodaySub')) document.getElementById('adminStatTotalFaresTodaySub').innerText = `📅 اليوم: ${todayFaresSum} ج`;
       if (document.getElementById('adminStatCurrentFeeNote')) {
         const s = STATE.settings || {};
-        const effFee = Number(s.effectivePlatformFee ?? s.platformFee ?? 7);
-        document.getElementById('adminStatCurrentFeeNote').innerText = `📅 اليوم: ${todayCommSum} ج • العمولة: ${effFee} ج`;
+        const isPct = s.commissionMode === 'percentage';
+        const feeSubTxt = isPct
+          ? `${s.platformFeePercent ?? 13}% / ${s.tierPlatinumPercent ?? 12.5}% / ${s.tierDiamondPercent ?? 12}%`
+          : `${Number(s.effectivePlatformFee ?? s.platformFee ?? 7)} ج`;
+        document.getElementById('adminStatCurrentFeeNote').innerText = `📅 اليوم: ${todayCommSum} ج • العمولة: ${feeSubTxt}`;
       }
       if (document.getElementById('adminStatCaptainsSub')) {
         const approvedCnt = STATE.captains.filter(c => c.status === 'معتمد').length;
@@ -3186,6 +3578,18 @@
         const cardExtraCls = isDisputed ? 'adm-ord-disputed' : (isWaiting ? 'adm-ord-waiting' : (isActive ? 'adm-ord-active' : ''));
         const timeStr = o.createdAt ? new Date(o.createdAt).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
+        const hasCustomFare = Boolean(o.customerProposedFare && o.routeDefaultFare && o.customerProposedFare !== o.routeDefaultFare);
+        const offersArr = Array.isArray(o.captainOffers) ? o.captainOffers : [];
+        const offersSummaryHtml = offersArr.length > 0
+          ? `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:8px; padding:5px 8px; margin:4px 0; font-size:10.5px; color:#5D4037;">
+              <strong>🤝 عروض التفاوض على الطلب (${offersArr.length}):</strong>
+              ${offersArr.slice(0, 3).map(ofItem => {
+                const stMap = { pending: '⏳ بانتظار العميل', accepted: '✅ مقبول', countered: `🔄 عرض مقابل (${ofItem.customerCounterFare}ج)`, rejected: '❌ مرفوض', rejected_by_captain: '❌ رفض الكابتن' };
+                return `<div style="margin-top:2px;">• الكابتن <strong>${escapeHtml(ofItem.captainName || ofItem.captainPhone)}</strong> عرض <strong>${ofItem.offeredFare} ج</strong> — [${stMap[ofItem.status] || ofItem.status}]</div>`;
+              }).join('')}
+            </div>`
+          : '';
+
         return `<div class="adm-order-card ${cardExtraCls}">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:4px;">
             <div>
@@ -3193,6 +3597,7 @@
               <span class="badge" style="background:#EFE6E9; color:var(--primary); margin-right:3px;">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
               ${o.promoCode ? `<span class="badge badge-delivering" style="margin-right:3px;">🎟️ ${escapeHtml(o.promoCode)} (-${o.promoDiscount}ج)</span>` : ''}
               ${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-right:3px;">⚡ +${o.surgePercent}%</span>` : ''}
+              ${hasCustomFare ? `<span class="badge badge-awaiting" style="margin-right:3px;">💬 سعر العميل: ${o.customerProposedFare}ج (الأساسي ${o.routeDefaultFare}ج)</span>` : ''}
               ${(o.isCourierStacked || Number(o.assignedCourierActiveCount) > 1) ? `<span class="badge badge-accepted" style="margin-right:3px;">🛵 معه ${o.assignedCourierActiveCount} مشاوير في السكة</span>` : ''}
             </div>
             <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
@@ -3209,6 +3614,8 @@
             <span>💵 الكاش: <strong style="color:var(--primary);">${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--success);">(خصم -${o.discountApplied}ج)</small>` : ''}</span>
             <span>🎯 العمولة: <strong style="color:var(--success);">${o.platformFee} ج</strong> | الصافي: <strong>${o.courierNet} ج</strong></span>
           </div>
+
+          ${offersSummaryHtml}
 
           <div class="adm-contact-row">
             <div class="adm-contact-card">
@@ -3238,6 +3645,9 @@
           </div>
         </div>`;
       }).join('');
+
+      renderAdminSlaWatchdog();
+      renderAdminPricingIntelligence();
     }
 
     async function initAdminApp() {

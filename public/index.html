@@ -296,11 +296,29 @@
     .radar-popup-route-box { background: #FAF7F4; border: 1.5px solid #E9DCE0; border-radius: 13px; padding: 10px 12px; font-size: 12px; line-height: 1.7; display: flex; flex-direction: column; gap: 6px; }
     .radar-popup-finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center; }
     .radar-popup-fin-item { background: #FAF4F6; border: 1px solid #E8DCE0; border-radius: 11px; padding: 8px 6px; }
-    .radar-popup-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; margin-top: 4px; }
-    .btn-popup-accept { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; border-radius: 13px; padding: 13px 14px; font-size: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 5px 15px rgba(46, 125, 50, 0.32); transition: transform 0.15s ease; }
+    .radar-popup-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; margin-top: 4px; }
+    .btn-popup-accept { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; border-radius: 13px; padding: 12px 14px; font-size: 13.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 5px 15px rgba(46, 125, 50, 0.32); transition: transform 0.15s ease; }
     .btn-popup-accept:active { transform: scale(0.97); }
-    .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 13px; padding: 13px 14px; font-size: 13.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.28); transition: transform 0.15s ease; }
+    .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 13px; padding: 12px 14px; font-size: 13px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.28); transition: transform 0.15s ease; }
     .btn-popup-reject:active { transform: scale(0.97); }
+    .btn-popup-offer { grid-column: span 2; background: linear-gradient(135deg, #ED6C02, #E65100); color: #fff; border: none; border-radius: 13px; padding: 11px 14px; font-size: 13px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 12px rgba(230, 81, 0, 0.28); transition: transform 0.15s ease; }
+    .btn-popup-offer:active { transform: scale(0.98); }
+    /* تنسيقات التحكم المرن الموحد في السعر (+ و - والكتابة اليدوية ونسبة الزيادة %) للعميل والكابتن */
+    .fare-negotiation-box { background: #FAF7F4; border: 1.5px dashed rgba(123, 63, 82, 0.28); border-radius: 14px; padding: 10px 12px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px; }
+    .fare-negotiation-header { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; }
+    .fare-negotiation-title { font-size: 11.5px; font-weight: 900; color: var(--primary); line-height: 1.4; display: flex; align-items: center; gap: 5px; }
+    .fare-min-pill { font-size: 10px; font-weight: 800; color: #5F2E3E; background: #EFE6E9; padding: 2px 8px; border-radius: 50px; display: inline-flex; align-items: center; white-space: nowrap; }
+    .fare-adjust-controls { display: flex; align-items: center; gap: 7px; width: 100%; }
+    .fare-step-btn { width: 42px; height: 40px; border-radius: 11px; border: 1.5px solid #D1B8C0; background: #FFFFFF; color: var(--primary); font-size: 14px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; box-shadow: 0 2px 5px rgba(123, 63, 82, 0.06); user-select: none; }
+    .fare-step-btn:active { transform: scale(0.94); background: var(--accent); }
+    .fare-mid-input-wrap { flex: 1; min-width: 0; height: 40px; background: #FFFFFF; border: 1.5px solid #D1B8C0; border-radius: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; gap: 6px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .fare-mid-input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.1); }
+    .fare-mid-input { width: 100%; min-width: 0; border: none !important; outline: none !important; background: transparent !important; text-align: center; font-size: 15px; font-weight: 900; color: var(--primary); padding: 0 !important; height: 100%; }
+    .fare-pct-pill { font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: ltr; background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; }
+    .fare-pct-pill.pct-up { background: #FFF3E0; color: #E65100; border-color: #FFB74D; }
+    .fare-pct-pill.pct-down { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+    .captain-offer-card { background: linear-gradient(135deg, #FFFDF7, #FFF8E1); border: 1.5px solid #FFB74D; border-right: 4.5px solid #ED6C02; border-radius: 13px; padding: 11px 12px; margin: 6px 0; display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.25s ease; }
+    .captain-offer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   </style>
 </head>
 <body>
@@ -365,8 +383,14 @@
               <span class="customer-slogan-text">من أى حتة لأى حتة 😎</span>
               <div class="customer-smart-platform-frame">أول منصة دليفرى ذكية بالدقهلية</div>
             </header>
-            <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color:#fff; border-radius:var(--radius); padding:16px;">
-              <div style="font-size:16px; font-weight:900;">يا هلا يا باشا.. منورنا والله! 🛵✨</div>
+            <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color:#fff; border-radius:var(--radius); padding:15px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="font-size:16px; font-weight:900;">يا هلا يا باشا.. منورنا والله! 🛵✨</div>
+                <span id="customerLiveAvailableCaptainsPill" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.35); color:#fff; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+                  <span style="width:8px; height:8px; background:#69F0AE; border-radius:50%; display:inline-block;"></span>
+                  <span id="customerLiveAvailableCaptainsText">الكباتن ع الرادار جاهزين 👀</span>
+                </span>
+              </div>
               <p style="font-size:12px; opacity:0.9; margin-top:4px;">طلبك في عنينا، ورجالة العنابي جاهزين يطيروا لك فوراً.</p>
             </div>
             <div id="customerMaintenanceAlert" hidden style="display:none; background:#FFEBEE; border:1.5px solid #EF5350; border-radius:14px; padding:14px; text-align:center; color:var(--danger); font-size:12.5px; font-weight:800; line-height:1.6;"></div>
@@ -386,8 +410,16 @@
                     🛍️ هاتلي حاجة ليا
                   </button>
                 </div>
-                <div id="fetchNoticeAlert" style="display:none; background:#FFFDE7; border:1px solid #FFE082; padding:8px 10px; border-radius:10px; font-size:11px; color:#5D4037; margin-top:8px; line-height:1.5;">
-                  💡 <strong>ملحوظة يا باشا:</strong> أجرة المشوار للتوصيل بس، وحساب الحاجة اللي الكابتن هيشتريها بتتحاسبوا عليها كاش مع بعض بالفاتورة عند الباب يا نجم 😉
+                <div id="fetchNoticeAlert" style="display:none; background:#FFFDE7; border:1px solid #FFE082; padding:10px; border-radius:12px; font-size:11px; color:#5D4037; margin-top:8px; line-height:1.5;">
+                  <div>💡 <strong>ملحوظة يا باشا:</strong> أجرة المشوار للتوصيل بس، وحساب الحاجة اللي الكابتن هيشتريها بتتحاسبوا عليها كاش مع بعض بالفاتورة عند الباب يا نجم 😉</div>
+                  <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #FBC02D;">
+                    <span style="font-weight:900; color:#E65100; display:block; margin-bottom:5px;">💵 سقف كاش المشتريات التقريبي (عشان الكابتن يعمل حسابه في الفلوس):</span>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+                      <button type="button" class="inline-map-mode-btn active" id="budgetBtn-under200" onclick="selectPurchaseBudget('أقل من 200 ج')" style="font-size:10.5px; padding:6px 4px;">أقل من 200 ج</button>
+                      <button type="button" class="inline-map-mode-btn" id="budgetBtn-200to500" onclick="selectPurchaseBudget('200 إلى 500 ج')" style="font-size:10.5px; padding:6px 4px;">200 إلى 500 ج</button>
+                      <button type="button" class="inline-map-mode-btn" id="budgetBtn-over500" onclick="selectPurchaseBudget('أكثر من 500 ج')" style="font-size:10.5px; padding:6px 4px;">أكثر من 500 ج</button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- خريطة تحديد الموقع التفاعلية المباشرة (الاختيار في اليمين دائماً لطالب الأوردر) -->
@@ -409,6 +441,18 @@
                 <div id="customerInlineLeafletMap" class="inline-leaflet-canvas"></div>
                 <div class="gps-manual-note" style="margin-top:8px; text-align:center;">
                   💡 لو معرفتش تحدد مكانك ع الخريطة ولا يهمك يا باشا، اكتب العنوان بإيدك بالتفصيل تحت! ✍️
+                </div>
+              </div>
+              <!-- دليل العناوين المفضلة السريع (البيت / الشغل / المحل) بضغطة واحدة -->
+              <div style="background:#FAF7F4; border:1px solid #E5D4DA; border-radius:12px; padding:8px 10px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:11px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-bookmark"></i> عناوينك السريعة (دوس للاختيار أو الحفظ):</span>
+                  <small style="font-size:9.5px; color:var(--text-muted); font-weight:700;">يحفظ ويملا عنوانك في ثانية ⚡</small>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;" id="customerFavAddressesGrid">
+                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-home" onclick="handleFavoriteAddressSlot('home', '🏠 البيت')" style="font-size:11px; padding:6px 4px;">🏠 البيت</button>
+                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-work" onclick="handleFavoriteAddressSlot('work', '💼 الشغل')" style="font-size:11px; padding:6px 4px;">💼 الشغل</button>
+                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-shop" onclick="handleFavoriteAddressSlot('shop', '🏪 المحل')" style="font-size:11px; padding:6px 4px;">🏪 المحل</button>
                 </div>
               </div>
               <!-- شريط الملء السريع لآخر عنوان استخدمه العميل (يظهر تلقائياً للعميل المتكرر) -->
@@ -571,11 +615,16 @@
                 </small>
               </div>
 
-              <!-- كارت أجرة التوصيل الاحترافي المضغوط -->
+              <!-- كارت أجرة التوصيل الاحترافي المضغوط مع التسعير التفاوضي المرن -->
               <div class="price-preview-banner" id="priceBanner">
-                <div class="fare-card-title">
-                  <i class="fa-solid fa-coins"></i>
-                  <span>أجرة التوصيل</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                  <div class="fare-card-title">
+                    <i class="fa-solid fa-coins"></i>
+                    <span>أجرة التوصيل (سعر المشوار: <strong id="routeDefaultPriceBadge">-- ج</strong>)</span>
+                  </div>
+                  <button type="button" id="resetProposedFareBtn" onclick="resetCustomerProposedFare()" style="display:none; background:#EFE6E9; color:var(--primary); border:none; border-radius:20px; padding:3px 9px; font-size:10px; font-weight:800; cursor:pointer;">
+                    إرجاع للسعر الأساسي ↺
+                  </button>
                 </div>
 
                 <div class="fare-price-main-row">
@@ -587,6 +636,24 @@
                   <span class="fare-discount-strip" id="customerDiscountBannerNotice"></span>
                 </div>
 
+                <!-- صندوق التحكم المرن الموحد في السعر للعميل (+ و - والكتابة اليدوية ونسبة الزيادة %) -->
+                <div class="fare-negotiation-box">
+                  <div class="fare-negotiation-header">
+                    <label for="customerProposedFareInput" class="fare-negotiation-title">
+                      <span>🤝 عايز تقترح أو تعدل أجرة المشوار للكابتن؟</span>
+                    </label>
+                    <span id="customerMinFareHint" class="fare-min-pill">الحد الأدنى: -- ج</span>
+                  </div>
+                  <div class="fare-adjust-controls">
+                    <button type="button" class="fare-step-btn" onclick="stepCustomerProposedFare(-5)" title="نقص 5 جنيه">-5</button>
+                    <div class="fare-mid-input-wrap">
+                      <input type="number" inputmode="numeric" id="customerProposedFareInput" class="fare-mid-input" placeholder="سعر المشوار" oninput="handleCustomerProposedFareInput()">
+                      <span id="customerProposedFarePctBadge" class="fare-pct-pill">0%</span>
+                    </div>
+                    <button type="button" class="fare-step-btn" onclick="stepCustomerProposedFare(5)" title="زيادة 5 جنيه">+5</button>
+                  </div>
+                </div>
+
                 <div class="fare-captain-pill">
                   <i class="fa-solid fa-motorcycle" style="color:var(--primary); font-size:12px;"></i>
                   <span>الكابتن هيكوش عليهم حلال عليه 😂💵</span>
@@ -594,7 +661,7 @@
                 <span id="routeDescription" style="display:none;"></span>
 
                 <div class="fare-footnote-text" id="priceHumorMessage">
-                  صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وده هيبلغك بيه الكابتن العنابي لو فيه زيادة 🛵
+                  صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝
                 </div>
               </div>
               <button class="btn-main" id="submitOrderBtn" onclick="createNewCustomerOrder()">
@@ -1136,13 +1203,13 @@
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
   <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> يلا نحول ع الدعم ونشحن 💬</button></div></div>
-  <!-- نافذة الرادار المنبثقة الفورية للأوردرات الجديدة (تظهر لمدة 10 ثوانٍ بدون أرقام هواتف) -->
+  <!-- نافذة الرادار المنبثقة الفورية للأوردرات الجديدة للكابتن (تظهر لمدة 15 ثانية مع تحكم سريع + و - ونسبة الزيادة) -->
   <div class="custom-modal" id="courierNewOrderPopupModal" style="z-index: 2100;">
     <div class="modal-content-card radar-popup-card">
       <div class="radar-popup-header" id="courierPopupHeaderBox">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <span class="badge" id="courierPopupCapacityBadge" style="background:rgba(255,255,255,0.2); color:#fff; font-size:10.5px;">📡 رادار العنابي الفوري</span>
-          <span class="badge" id="courierPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 10 ثوانٍ</span>
+          <span class="badge" id="courierPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 15 ثانية</span>
         </div>
         <h3 id="courierPopupMainTitle" style="font-size:16.5px; font-weight:900; line-height:1.4; margin:0;">
           🔔 طلب جديد لسه نازل ع الرادار!
@@ -1153,8 +1220,29 @@
       </div>
       <div class="radar-popup-body">
         <div id="courierPopupContentDetails"></div>
+
+        <!-- خانة تعديل واقتراح السعر السريعة داخل النافذة المنبثقة للكابتن (+ و - وكتابة يدوية ونسبة الزيادة) -->
+        <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin-top:2px; padding:8px 10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:900; color:#E65100;">💵 عايز تقترح تعديل أجرة المشوار للعميل؟</span>
+            <small id="courierPopupNetPreviewHint" style="font-size:10px; font-weight:800; color:#2E7D32;"></small>
+          </div>
+          <div class="fare-adjust-controls">
+            <button type="button" class="fare-step-btn" onclick="stepCourierPopupOfferFare(-5)">-5</button>
+            <div class="fare-mid-input-wrap" style="border-color:#FFB74D;">
+              <input type="number" inputmode="numeric" id="courierPopupOfferFareInput" class="fare-mid-input" style="color:#E65100;" oninput="handleCourierPopupOfferFareInput()">
+              <span id="courierPopupOfferPctBadge" class="fare-pct-pill pct-up">+20%</span>
+            </div>
+            <button type="button" class="fare-step-btn" onclick="stepCourierPopupOfferFare(5)">+5</button>
+          </div>
+          <button type="button" class="btn-popup-offer" style="padding:9px 12px; font-size:12px;" onclick="proposeHigherFareFromCourierPopup()">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span id="courierPopupSendOfferBtnText">ابعت اقتراح السعر للعميل 🚀</span>
+          </button>
+        </div>
+
         <div style="background:#FAF7F4; border:1px dashed #D1B8C0; border-radius:9px; padding:6px 10px; font-size:10.5px; font-weight:800; color:var(--text-muted); text-align:center;">
-          🔒 أرقام تليفونات العميل والمستلم هتظهرلك فوراً أول ما تقبل الطلب
+          🔒 أرقام تليفونات العميل والمستلم هتظهرلك فوراً أول ما تقبل الطلب أو يوافق العميل على عرضك
         </div>
         <div class="radar-popup-actions">
           <button type="button" class="btn-popup-accept" id="courierPopupAcceptBtn" onclick="acceptOrderFromCourierPopup()">
@@ -1166,6 +1254,53 @@
             <span>رفض ✕</span>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة تنبيه العميل المنبثقة الفورية عند وصول اقتراح سعر جديد من كابتن (تظهر لمدة 15 ثانية بصوت واهتزاز) -->
+  <div class="custom-modal" id="customerCaptainOfferPopupModal" style="z-index: 2150;">
+    <div class="modal-content-card radar-popup-card" style="border-color:#ED6C02;">
+      <div class="radar-popup-header" style="background:linear-gradient(135deg, #E65100, #F57C00);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span class="badge" id="custOfferPopupOrderBadge" style="background:rgba(255,255,255,0.22); color:#fff; font-size:10.5px;">🛵 عرض كابتن فوري</span>
+          <span class="badge" id="custOfferPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 15 ثانية</span>
+        </div>
+        <h3 style="font-size:16px; font-weight:900; line-height:1.4; margin:0;">
+          💵 الكابتن بعتلك اقتراح سعر لمشوارك!
+        </h3>
+      </div>
+      <div class="radar-countdown-track">
+        <div class="radar-countdown-fill" id="custOfferPopupCountdownBar"></div>
+      </div>
+      <div class="radar-popup-body">
+        <div id="custOfferPopupDetailsBox"></div>
+        <div class="radar-popup-actions" style="grid-template-columns: 1.25fr 1fr;">
+          <button type="button" class="btn-popup-accept" onclick="customerRespondFromOfferPopup('accept_offer')">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="custOfferPopupAcceptBtnText">قبول العرض ✅</span>
+          </button>
+          <button type="button" class="btn-popup-reject" onclick="customerRespondFromOfferPopup('reject_offer')">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span>رفض ✕</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة تهنئة الكابتن الفورية عند موافقة العميل على السعر المقترح 🎉 -->
+  <div class="custom-modal" id="captainOfferAcceptedModal" style="z-index: 2180;" onclick="if(event.target === this) closeCaptainOfferAcceptedModal()">
+    <div class="modal-content-card radar-popup-card" style="border-color:#2E7D32;">
+      <div class="radar-popup-header stacked-mode">
+        <div style="font-size:32px; margin-bottom:4px;">🎉🛵</div>
+        <h3 style="font-size:17px; font-weight:900; margin:0;">مبروك يا وحش! العميل وافق على سعرك!</h3>
+      </div>
+      <div class="radar-popup-body" style="text-align:center;">
+        <div id="captainOfferAcceptedDetailsBox" style="font-size:12.5px; line-height:1.7; color:var(--text-main);"></div>
+        <button type="button" class="btn-main" style="background:var(--success); margin-top:6px;" onclick="closeCaptainOfferAcceptedModal()">
+          <i class="fa-solid fa-rocket"></i> توكلنا على الله.. ابدأ المشوار فوراً 🚀
+        </button>
       </div>
     </div>
   </div>
@@ -1523,6 +1658,11 @@
       settings: {
         platformFee: DEFAULT_PLATFORM_FEE,
         effectivePlatformFee: DEFAULT_PLATFORM_FEE,
+        commissionMode: 'fixed',
+        platformFeePercent: 13,
+        tierPlatinumPercent: 12.5,
+        tierDiamondPercent: 12,
+        maxConcurrentOrdersPerCaptain: 3,
         customerPointsPerOrder: DEFAULT_POINTS_PER_ORDER,
         customerRewardThreshold: DEFAULT_POINTS_THRESHOLD,
         customerRewardCash: DEFAULT_REWARD_CASH,
@@ -1544,6 +1684,7 @@
         surgePercent: 0,
         surgeRemainingMinutes: 0,
         promoCodes: [],
+        availablePromoCodes: [],
         supportWhatsapp: DEFAULT_SUPPORT_WHATSAPP,
         broadcastMessage: '',
         broadcastTarget: 'all',
@@ -1652,7 +1793,7 @@
       return { ok: res.ok, status: res.status, data };
     }
 
-    function applyCloudStateSnapshot(cloudState) {
+function applyCloudStateSnapshot(cloudState) {
       if (!cloudState || typeof cloudState !== 'object') return;
       const oldOrders = Array.isArray(STATE.orders) ? STATE.orders : [];
       const oldOrderMap = {}; oldOrders.forEach(o => { oldOrderMap[o.id] = o.status; });
@@ -1662,6 +1803,9 @@
       if (cloudState.customers && typeof cloudState.customers === 'object') STATE.customers = cloudState.customers;
       if (Array.isArray(cloudState.captains)) STATE.captains = cloudState.captains;
       if (Array.isArray(cloudState.orders)) STATE.orders = cloudState.orders;
+      if (cloudState.availableCaptainsCount !== undefined) {
+        STATE.availableCaptainsCount = Math.max(0, Number(cloudState.availableCaptainsCount) || 0);
+      }
       if (cloudState.authenticatedCustomerPhone) {
         STATE.authenticatedCustomerPhone = normalizePhone(cloudState.authenticatedCustomerPhone);
         if (!STATE.customerProfile.savedPhone) {
@@ -1680,22 +1824,61 @@
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) syncActiveCustomerProfile(STATE.customerProfile.savedPhone);
       validateSavedPromoCodeLocally();
       updateCustomerPinFieldVisibility();
+
       if (oldOrders.length > 0) {
         const savedCustPhone = STATE.customerProfile ? STATE.customerProfile.savedPhone : '';
+        const activeCourier = getActiveCourier();
+        const oldOrderObjMap = {};
+        oldOrders.forEach(oldO => { oldOrderObjMap[oldO.id] = oldO; });
+
         STATE.orders.forEach(o => {
           const prevStatus = oldOrderMap[o.id];
+          const prevOrd = oldOrderObjMap[o.id];
+          const ownerPh = resolveOrderClientPhone(o);
+
           if (prevStatus && prevStatus !== o.status) {
-            const ownerPh = resolveOrderClientPhone(o);
             if (STATE.currentRole === 'customer' && savedCustPhone && ownerPh === savedCustPhone) {
               triggerDeviceAlert('customer_status_update');
               showToast(`🔔 جديد في طلبك (${o.id}): ${o.status} 🛵`, 'ok');
             }
+            // نافذة تهنئة فورية للكابتن عند موافقة العميل على عرضه وإسناد المشوار له
+            if (STATE.currentRole === 'courier' && activeCourier && prevStatus === 'في انتظار كابتن' && o.status === 'تم قبول الطلب' && normalizePhone(o.assignedCourierPhone) === normalizePhone(activeCourier.phone)) {
+              const myAcceptedOffer = (o.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone) && x.status === 'accepted');
+              if (myAcceptedOffer && typeof openCaptainOfferAcceptedModal === 'function') {
+                openCaptainOfferAcceptedModal(o);
+              }
+            }
+          }
+
+          // رصد نبضة «الكابتن تحت الباب 🔔» للعميل
+          if (STATE.currentRole === 'customer' && savedCustPhone && ownerPh === savedCustPhone && o.lastBuzzAt && (!prevOrd || Number(o.lastBuzzAt) !== Number(prevOrd.lastBuzzAt))) {
+            triggerDeviceAlert('courier_new_order');
+            showToast(`🔔 الكابتن ${o.assignedCourierName || 'العنابي'} وصل ومستنيك تحت الباب في طلبك (${o.id})! 🛵🏃‍♂️`, 'ok');
+          }
+
+          // تنبيه فوري للكابتن عند وصول سعر مقترح مقابل من العميل أو رفع السعر ع الرادار
+          if (STATE.currentRole === 'courier' && activeCourier && o.status === 'في انتظار كابتن' && prevOrd) {
+            if (Number(o.originalFare) > Number(prevOrd.originalFare || 0)) {
+              courierSeenPopupOrderIds.delete(o.id);
+            }
+            const oldMyOff = (prevOrd.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
+            const newMyOff = (o.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
+            if (newMyOff && newMyOff.status === 'countered' && (!oldMyOff || oldMyOff.status !== 'countered' || Number(oldMyOff.customerCounterFare) !== Number(newMyOff.customerCounterFare))) {
+              triggerDeviceAlert('courier_new_order');
+              showToast(`🤝 العميل في طلب (${o.id}) عدّل السعر إلى (${newMyOff.customerCounterFare || o.originalFare} ج).. اقبله فوراً من الرادار! 🛵`, 'ok');
+            }
           }
         });
       }
-      saveSession(); populateAllZoneDropdowns(); renderAllData(); calculateDeliveryPrice();
+      saveSession();
+      populateAllZoneDropdowns();
+      renderAllData();
+      calculateDeliveryPrice();
       if (typeof evaluateCourierNewOrderPopup === 'function') {
         evaluateCourierNewOrderPopup(oldOrderMap);
+      }
+      if (typeof evaluateCustomerOfferPopup === 'function') {
+        evaluateCustomerOfferPopup();
       }
     }
 
@@ -1770,7 +1953,28 @@
       return (Number.isFinite(eff) && eff >= 0) ? roundMoney(eff) : DEFAULT_PLATFORM_FEE;
     }
 
-    function getEffectiveCaptainFee(captain) {
+    function getEffectiveCaptainFee(captain, orderOriginalFare = null) {
+      const s = STATE.settings || {};
+      const isPctMode = s.commissionMode === 'percentage';
+      if (isPctMode) {
+        let pctRate = Number(s.platformFeePercent ?? 13);
+        if (captain) {
+          if (captain.effectiveFeePercent !== undefined && captain.effectiveFeePercent !== null && Number.isFinite(Number(captain.effectiveFeePercent))) {
+            pctRate = Math.max(0, Number(captain.effectiveFeePercent));
+          } else if (captain.customFee !== null && captain.customFee !== undefined && Number.isFinite(Number(captain.customFee))) {
+            pctRate = Math.max(0, Number(captain.customFee));
+          } else if (captain.tier === 'diamond') {
+            pctRate = Math.max(0, Number(s.tierDiamondPercent ?? 12));
+          } else if (captain.tier === 'platinum') {
+            pctRate = Math.max(0, Number(s.tierPlatinumPercent ?? 12.5));
+          }
+        }
+        const refFare = (orderOriginalFare !== null && orderOriginalFare !== undefined && Number.isFinite(Number(orderOriginalFare)))
+          ? Math.max(0, roundMoney(orderOriginalFare))
+          : 40;
+        return Math.max(0, roundMoney((refFare * pctRate) / 100));
+      }
+
       if (captain && captain.effectiveFee !== undefined && captain.effectiveFee !== null && Number.isFinite(Number(captain.effectiveFee))) {
         return Math.max(0, roundMoney(captain.effectiveFee));
       }
@@ -2648,11 +2852,140 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           if (refInp) refInp.value = '';
         }
       }
+      const availCapTxt = document.getElementById('customerLiveAvailableCaptainsText');
+      if (availCapTxt) {
+        const cnt = Math.max(0, Number(STATE.availableCaptainsCount) || 0);
+        availCapTxt.innerText = cnt > 0
+          ? `متاح حولك الآن: ${cnt} كابتن ع الرادار 👀`
+          : 'رجالة العنابي جاهزين ع الرادار 👀';
+      }
       updateCustomerPinFieldVisibility();
       renderSavedPromoUI();
+      renderFavoriteAddressButtonsUI();
     }
 
     const LAST_CUST_ADDR_KEY = 'ENNABY_LAST_CUST_ADDR_V1';
+    const FAV_CUST_ADDRS_KEY = 'ENNABY_FAV_CUST_ADDRS_V1';
+    let selectedPurchaseBudget = 'أقل من 200 ج';
+
+    function selectPurchaseBudget(budgetLabel) {
+      selectedPurchaseBudget = budgetLabel || 'أقل من 200 ج';
+      const mapIds = {
+        'أقل من 200 ج': 'budgetBtn-under200',
+        '200 إلى 500 ج': 'budgetBtn-200to500',
+        'أكثر من 500 ج': 'budgetBtn-over500'
+      };
+      Object.entries(mapIds).forEach(([lbl, id]) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('active', lbl === selectedPurchaseBudget);
+      });
+    }
+
+    function getCustomerFavAddressesMap() {
+      try {
+        const raw = localStorage.getItem(FAV_CUST_ADDRS_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function renderFavoriteAddressButtonsUI() {
+      const favs = getCustomerFavAddressesMap();
+      const slots = [
+        { key: 'home', id: 'favAddrBtn-home', label: '🏠 البيت' },
+        { key: 'work', id: 'favAddrBtn-work', label: '💼 الشغل' },
+        { key: 'shop', id: 'favAddrBtn-shop', label: '🏪 المحل' }
+      ];
+      slots.forEach(sl => {
+        const btn = document.getElementById(sl.id);
+        if (!btn) return;
+        const saved = favs[sl.key];
+        if (saved && saved.address) {
+          btn.classList.add('active');
+          btn.innerHTML = `${sl.label} ✓`;
+          btn.title = `${saved.zone} - ${saved.address}`;
+        } else {
+          btn.classList.remove('active');
+          btn.innerHTML = `${sl.label} +`;
+        }
+      });
+    }
+
+    function handleFavoriteAddressSlot(slotKey, slotTitle) {
+      const isFetch = STATE.currentTripType === 'fetch';
+      const zoneSel = document.getElementById(isFetch ? 'dropoffZone' : 'pickupZone');
+      const addrInp = document.getElementById(isFetch ? 'dropoffAddress' : 'pickupAddress');
+      const favs = getCustomerFavAddressesMap();
+      const existing = favs[slotKey];
+      const typedAddr = (addrInp ? addrInp.value : '').trim();
+
+      if (existing && existing.address) {
+        if (typedAddr && typedAddr !== existing.address && !typedAddr.includes('ثواني بنلقط')) {
+          openCustomActionModal({
+            title: `عنوان ${slotTitle} 📍`,
+            message: `عنوانك المحفوظ في (${slotTitle}) هو:\n«${existing.zone} - ${existing.address}»\nهل تريد استخدامه الآن أم حفظ العنوان المكتوب حالياً بدلاً منه؟`,
+            confirmText: 'استخدم المحفوظ ⚡',
+            onConfirm: () => {
+              if (zoneSel && STATE.zones.includes(existing.zone)) zoneSel.value = existing.zone;
+              if (addrInp) addrInp.value = existing.address;
+              calculateDeliveryPrice();
+              showToast(`تم ملء عنوان (${slotTitle}) فوراً يا باشا! ⚡`, 'ok');
+            }
+          });
+          return;
+        }
+        if (zoneSel && STATE.zones.includes(existing.zone)) zoneSel.value = existing.zone;
+        if (addrInp) addrInp.value = existing.address;
+        calculateDeliveryPrice();
+        showToast(`تم ملء عنوان (${slotTitle}: ${existing.zone}) في ثانية يا باشا! ⚡`, 'ok');
+      } else {
+        if (!typedAddr || typedAddr.includes('ثواني بنلقط')) {
+          showToast(`اكتب عنوانك في الخانة تحت الأول وبعدين دوس على (${slotTitle}) عشان نحفظهولك علطول! ✍️📍`, 'warn');
+          if (addrInp) addrInp.focus();
+          return;
+        }
+        const curZone = zoneSel ? zoneSel.value : 'المنصورة';
+        favs[slotKey] = { zone: curZone, address: typedAddr };
+        try { localStorage.setItem(FAV_CUST_ADDRS_KEY, JSON.stringify(favs)); } catch (e) {}
+        renderFavoriteAddressButtonsUI();
+        showToast(`حفظنا عنوان (${slotTitle}) عندك! تقدر تختاره بضغطة واحدة في أي مشوار جاي 📌✅`, 'ok');
+      }
+    }
+
+    function reorderPreviousCustomerTrip(orderId) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      selectTripType(ord.tripType === 'fetch' ? 'fetch' : 'send');
+      const pZoneEl = document.getElementById('pickupZone');
+      const pAddrEl = document.getElementById('pickupAddress');
+      const dZoneEl = document.getElementById('dropoffZone');
+      const dAddrEl = document.getElementById('dropoffAddress');
+      const senderInp = document.getElementById('orderSenderPhone');
+      const recipInp = document.getElementById('orderRecipientPhone');
+      const notesInp = document.getElementById('customerOrderNotes');
+
+      if (pZoneEl && STATE.zones.includes(ord.pickupZone)) pZoneEl.value = ord.pickupZone;
+      if (pAddrEl) pAddrEl.value = ord.pickupAddress || '';
+      if (dZoneEl && STATE.zones.includes(ord.dropoffZone)) dZoneEl.value = ord.dropoffZone;
+      if (dAddrEl) dAddrEl.value = ord.dropoffAddress || '';
+
+      const isFetch = ord.tripType === 'fetch';
+      const clientPh = resolveOrderClientPhone(ord) || STATE.customerProfile.savedPhone || '';
+      const otherPh = isFetch ? (ord.senderPhone || '') : (ord.recipientPhone || '');
+      if (senderInp && clientPh) senderInp.value = clientPh;
+      if (recipInp && otherPh) recipInp.value = otherPh;
+      if (notesInp) notesInp.value = cleanDisplayNotesText(ord.customerNotes || '');
+      if (ord.purchaseBudget) selectPurchaseBudget(ord.purchaseBudget);
+
+      customerCustomProposedFare = null;
+      calculateDeliveryPrice();
+      switchCustTab('home');
+      setTimeout(() => {
+        document.getElementById('submitOrderBtn')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+      showToast('ملينا بيانات المشوار بالكامل يا باشا.. راجع السعر ودوس تأكيد الطلب علطول! 🔄🚀', 'ok');
+    }
 
     function toEgyptWhatsAppNumber(rawPhone) {
       const clean = normalizePhone(rawPhone);
@@ -2682,7 +3015,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const parsed = JSON.parse(raw);
         if (!parsed || !parsed.address) { bar.style.display = 'none'; return; }
         bar.style.display = 'flex';
-        txt.innerText = `📍 عنوانك المحفوظ: ${parsed.zone} - ${parsed.address}`;
+        txt.innerText = `📍 آخر عنوان: ${parsed.zone} - ${parsed.address}`;
       } catch (e) {
         bar.style.display = 'none';
       }
@@ -2771,20 +3104,112 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (prev && list.includes(prev)) sel.value = prev;
     }
 
-    function handleZoneChange() { calculateDeliveryPrice(); }
+    let customerCustomProposedFare = null;
+
+    function formatFareDiffPercentMeta(currentFare, baseFare) {
+      const cur = roundMoney(currentFare);
+      const base = roundMoney(baseFare);
+      if (!base || base <= 0) return { text: '0%', cls: 'fare-pct-pill' };
+      const pct = Math.round(((cur - base) / base) * 100);
+      if (pct > 0) return { text: `+${pct}%`, cls: 'fare-pct-pill pct-up' };
+      if (pct < 0) return { text: `${pct}%`, cls: 'fare-pct-pill pct-down' };
+      return { text: '0%', cls: 'fare-pct-pill' };
+    }
+
+    function cleanDisplayNotesText(raw) {
+      if (!raw) return '';
+      let s = String(raw);
+      const metaIdx = s.indexOf('[META:{');
+      if (metaIdx !== -1) s = s.slice(0, metaIdx);
+      return s
+        .replace(/\s*\[META:\{[\s\S]*\}\]/g, '')
+        .replace(/(?:\s*[\]}]){2,}\s*$/g, '')
+        .replace(/^[\]}\s]+$/g, '')
+        .trim();
+    }
+
+    function handleZoneChange() {
+      customerCustomProposedFare = null;
+      calculateDeliveryPrice();
+    }
+
+    function handleCustomerProposedFareInput() {
+      const inp = document.getElementById('customerProposedFareInput');
+      if (!inp) return;
+      const rawVal = normalizeDigits(inp.value).trim();
+      if (rawVal === '') {
+        customerCustomProposedFare = null;
+      } else {
+        const num = roundMoney(rawVal);
+        customerCustomProposedFare = num > 0 ? num : null;
+      }
+      calculateDeliveryPrice();
+    }
+
+    function stepCustomerProposedFare(delta) {
+      const pZone = document.getElementById('pickupZone')?.value || STATE.zones[0] || 'المنصورة';
+      const dZone = document.getElementById('dropoffZone')?.value || STATE.zones[0] || 'المنصورة';
+      const baseRoute = roundMoney(STATE.pricing[`${pZone}|${dZone}`] || 40);
+      const s = STATE.settings || {};
+      const defaultFare = (s.surgeActive && Number(s.surgePercent) > 0)
+        ? roundMoney(baseRoute * (1 + Number(s.surgePercent) / 100))
+        : baseRoute;
+      const minAllowed = Math.max(15, Math.floor(defaultFare * 0.7));
+      const curVal = customerCustomProposedFare !== null ? customerCustomProposedFare : defaultFare;
+      const nextVal = Math.max(minAllowed, roundMoney(curVal + Number(delta || 0)));
+      customerCustomProposedFare = nextVal === defaultFare ? null : nextVal;
+      const inp = document.getElementById('customerProposedFareInput');
+      if (inp) inp.value = nextVal;
+      calculateDeliveryPrice();
+    }
+
+    function resetCustomerProposedFare() {
+      customerCustomProposedFare = null;
+      const inp = document.getElementById('customerProposedFareInput');
+      if (inp) inp.value = '';
+      calculateDeliveryPrice();
+      showToast('رجعنا لسعر المشوار الأساسي يا باشا 🛵✅', 'ok');
+    }
+
     function calculateDeliveryPrice() {
       const pZoneEl = document.getElementById('pickupZone'); const dZoneEl = document.getElementById('dropoffZone'); const priceSpan = document.getElementById('estimatedPrice');
       const strikeSpan = document.getElementById('originalPriceStrike');
       const discountNotice = document.getElementById('customerDiscountBannerNotice'); const submitBtn = document.getElementById('submitOrderBtn'); const routeDescEl = document.getElementById('routeDescription');
+      const routeDefBadge = document.getElementById('routeDefaultPriceBadge');
+      const proposedInp = document.getElementById('customerProposedFareInput');
+      const pctBadgeEl = document.getElementById('customerProposedFarePctBadge');
+      const minHintEl = document.getElementById('customerMinFareHint');
+      const resetBtn = document.getElementById('resetProposedFareBtn');
       if (!pZoneEl || !dZoneEl || !priceSpan || !submitBtn) return null;
       const pZone = pZoneEl.value || STATE.zones[0] || 'المنصورة'; const dZone = dZoneEl.value || STATE.zones[0] || 'المنصورة'; const routeKey = `${pZone}|${dZone}`;
       if (routeDescEl) routeDescEl.innerText = `${pZone} - ${dZone}`;
       if (STATE.pricing[routeKey] !== undefined) {
         const baseFare = Math.max(0, roundMoney(STATE.pricing[routeKey]));
         const s = STATE.settings || {};
-        const fare = (s.surgeActive && Number(s.surgePercent) > 0)
+        const routeDefaultFare = (s.surgeActive && Number(s.surgePercent) > 0)
           ? roundMoney(baseFare * (1 + Number(s.surgePercent) / 100))
           : baseFare;
+        const minAllowedFare = Math.max(15, Math.floor(routeDefaultFare * 0.7));
+
+        if (routeDefBadge) routeDefBadge.innerText = `${routeDefaultFare} ج`;
+        if (minHintEl) minHintEl.innerText = `الحد الأدنى: ${minAllowedFare} ج`;
+
+        const fare = (customerCustomProposedFare !== null && Number.isFinite(customerCustomProposedFare) && customerCustomProposedFare > 0)
+          ? roundMoney(customerCustomProposedFare)
+          : routeDefaultFare;
+
+        if (proposedInp && document.activeElement !== proposedInp) {
+          proposedInp.value = fare;
+        }
+        if (pctBadgeEl) {
+          const pctMeta = formatFareDiffPercentMeta(fare, routeDefaultFare);
+          pctBadgeEl.className = pctMeta.cls;
+          pctBadgeEl.innerText = pctMeta.text;
+        }
+        if (resetBtn) {
+          resetBtn.style.display = (customerCustomProposedFare !== null && customerCustomProposedFare !== routeDefaultFare) ? 'inline-block' : 'none';
+        }
+
         const custPhone = getActiveCustomerPhoneForPricing();
         const custRecord = (custPhone && STATE.customers[custPhone]) ? STATE.customers[custPhone] : STATE.customerProfile;
         const availableWallet = Math.max(0, roundMoney(custRecord ? custRecord.walletBalance : 0));
@@ -2821,7 +3246,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
             discountNotice.style.display = 'none';
           }
         }
-        submitBtn.disabled = false; return { originalFare: fare, finalFare, discount: totalDiscount };
+        submitBtn.disabled = false;
+        return { originalFare: fare, routeDefaultFare, minAllowedFare, finalFare, discount: totalDiscount };
       }
       priceSpan.innerText = 'مش متحدد';
       if (strikeSpan) { strikeSpan.style.display = 'none'; strikeSpan.innerHTML = ''; }
@@ -2846,6 +3272,14 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const isFetch = (STATE.currentTripType === 'fetch'); const defaultPayer = isFetch ? 'العميل عند الاستلام بالباب 🏠' : 'الراسل'; const payer = payerInput ? payerInput.value : defaultPayer;
         const typedPromo = (document.getElementById('orderPromoCodeInput')?.value || '').trim().toUpperCase();
         const activePromoCode = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : (typedPromo || null);
+
+        const priceCalc = calculateDeliveryPrice();
+        if (priceCalc && customerCustomProposedFare !== null && customerCustomProposedFare < priceCalc.minAllowedFare) {
+          showToast(`السعر العادل للمشوار ده مبيقلش عن (${priceCalc.minAllowedFare} جنيه) يا باشا عشان الكابتن يوصلك هوا 🛵⚠️`, 'warn');
+          document.getElementById('customerProposedFareInput')?.focus();
+          return;
+        }
+
         if (!pAddr || !dAddr) { showToast('اكتب عنوان الاستلام والتسليم بالتفصيل يا باشا أو حددهم ع الخريطة 📍⚠️', 'warn'); return; }
         if (isFetch && !notes) {
           showToast('اكتب الحاجة اللي الكابتن هيشتريها وتقريباً في حدود كام جنيه عشان يعمل حسابه يا باشا 🛍️💵', 'warn');
@@ -2882,11 +3316,14 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
             pickupLng: isValidGpsCoord(tempOrderCoords.pickupLat, tempOrderCoords.pickupLng) ? tempOrderCoords.pickupLng : null,
             dropoffLat: isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng) ? tempOrderCoords.dropoffLat : null,
             dropoffLng: isValidGpsCoord(tempOrderCoords.dropoffLat, tempOrderCoords.dropoffLng) ? tempOrderCoords.dropoffLng : null,
-            promoCode: activePromoCode
+            promoCode: activePromoCode,
+            proposedFare: customerCustomProposedFare !== null ? customerCustomProposedFare : undefined,
+            purchaseBudget: isFetch ? selectedPurchaseBudget : null
           });
           if (ok && data.success) {
             STATE.customerProfile.savedPhone = clientPhoneTyped;
             STATE.authenticatedCustomerPhone = clientPhoneTyped;
+            customerCustomProposedFare = null;
             saveCustomerLastUsedAddress(isFetch ? dZone : pZone, isFetch ? dAddr : pAddr);
             saveSession();
             updateCustomerPinFieldVisibility();
@@ -2932,6 +3369,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
                 pInp.value = (savedPromoCodeObj && savedPromoCodeObj.code) ? savedPromoCodeObj.code : '';
               }
             }
+            calculateDeliveryPrice();
             switchCustTab('orders'); showToast(data.message || 'طلبك طار ع الرادار بنجاح يا باشا 🚀', 'ok');
           } else {
             if (data && data.needPin) {
@@ -2983,6 +3421,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const bodyEl = document.getElementById('captainTiersInfoModalBody');
       if (!bodyEl) return;
       const s = STATE.settings || {};
+      const isPctMode = s.commissionMode === 'percentage';
       const baseFee = roundMoney(s.platformFee ?? DEFAULT_PLATFORM_FEE);
       const weeklyTarget = Math.max(1, Number(s.tierWeeklyOrdersTarget ?? 25));
       const daysWin = Math.max(1, Number(s.tierDaysWindow ?? 7));
@@ -2991,38 +3430,78 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const diaDisc = Math.max(0, roundMoney(s.tierDiamondDiscount ?? 2));
       const platFee = Math.max(0, roundMoney(baseFee - platDisc));
       const diaFee = Math.max(0, roundMoney(baseFee - diaDisc));
-      bodyEl.innerHTML = `
-        <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:12px; padding:10px 12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#8D4E15; font-size:13px;">🥉 1. كابتن برونزي (البداية)</strong>
-            <span class="badge tier-badge-bronze">العمولة: ${baseFee} ج</span>
+
+      const bPct = Math.max(0, roundMoney(s.platformFeePercent ?? 13));
+      const pPct = Math.max(0, roundMoney(s.tierPlatinumPercent ?? 12.5));
+      const dPct = Math.max(0, roundMoney(s.tierDiamondPercent ?? 12));
+
+      if (isPctMode) {
+        bodyEl.innerHTML = `
+          <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#8D4E15; font-size:13px;">🥉 1. كابتن برونزي (البداية)</strong>
+              <span class="badge tier-badge-bronze">العمولة: ${bPct}% من المشوار</span>
+            </div>
+            <p style="font-size:11.5px; color:#4E342E; margin:0;">
+              ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، وبتتحاسب بنسبة عمولة (<strong>${bPct}%</strong>) من قيمة المشوار.
+            </p>
           </div>
-          <p style="font-size:11.5px; color:#4E342E; margin:0;">
-            ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
-          </p>
-        </div>
-        <div style="background:#ECEFF1; border:1.5px solid #90A4AE; border-radius:12px; padding:10px 12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#263238; font-size:13px;">🥈 2. كابتن بلاتيني (الوحش)</strong>
-            <span class="badge tier-badge-platinum">خصم ${platDisc} ج (العمولة: ${platFee} ج)</span>
+          <div style="background:#ECEFF1; border:1.5px solid #90A4AE; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#263238; font-size:13px;">🥈 2. كابتن بلاتيني (الوحش)</strong>
+              <span class="badge tier-badge-platinum">عمولة مخفضة: ${pPct}% فقط</span>
+            </div>
+            <p style="font-size:11.5px; color:#263238; margin:0;">
+              أول ما تخلص <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبتنزل عمولتك لـ <strong>${pPct}%</strong> بس من قيمة كل مشوار!
+            </p>
           </div>
-          <p style="font-size:11.5px; color:#263238; margin:0;">
-            أول ما تخلص <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل ${daysWin} أيام.
-          </p>
-        </div>
-        <div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:12px; padding:10px 12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#01579B; font-size:13px;">💎 3. كابتن ماسي (أسطورة الميدان)</strong>
-            <span class="badge tier-badge-diamond">خصم ${diaDisc} ج (العمولة: ${diaFee} ج)</span>
+          <div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#01579B; font-size:13px;">💎 3. كابتن ماسي (أسطورة الميدان)</strong>
+              <span class="badge tier-badge-diamond">أقل عمولة: ${dPct}% فقط 🔥</span>
+            </div>
+            <p style="font-size:11.5px; color:#01579B; margin:0;">
+              لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوم ورا بعض</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبتنزل عمولتك لأقل نسبة <strong>${dPct}%</strong> في كل أوردر! 😍🚀
+            </p>
           </div>
-          <p style="font-size:11.5px; color:#01579B; margin:0;">
-            لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوم ورا بعض</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الأساسية في كل أوردر! 😍🚀
-          </p>
-        </div>
-        <div style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:10px; padding:8px 10px; font-size:11px; color:#1B5E20; font-weight:700;">
-          🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو إنت <strong>كابتن ماسي 💎</strong> ومقدرتش تجيب تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈</strong> وتحتفظ بخصم عمولة البلاتيني كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
-        </div>
-      `;
+          <div style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:10px; padding:8px 10px; font-size:11px; color:#1B5E20; font-weight:700;">
+            🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو إنت <strong>كابتن ماسي 💎</strong> ومقدرتش تجيب تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈 (${pPct}%)</strong> كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
+          </div>
+        `;
+      } else {
+        bodyEl.innerHTML = `
+          <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#8D4E15; font-size:13px;">🥉 1. كابتن برونزي (البداية)</strong>
+              <span class="badge tier-badge-bronze">العمولة: ${baseFee} ج</span>
+            </div>
+            <p style="font-size:11.5px; color:#4E342E; margin:0;">
+              ده مستواك أول ما بتسجل معانا ولحد ما تكمل <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، وبتتحاسب على العمولة الأساسية للمنصة (${baseFee} جنيه).
+            </p>
+          </div>
+          <div style="background:#ECEFF1; border:1.5px solid #90A4AE; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#263238; font-size:13px;">🥈 2. كابتن بلاتيني (الوحش)</strong>
+              <span class="badge tier-badge-platinum">خصم ${platDisc} ج (العمولة: ${platFee} ج)</span>
+            </div>
+            <p style="font-size:11.5px; color:#263238; margin:0;">
+              أول ما تخلص <strong>${weeklyTarget} طلب في ${daysWin} أيام</strong>، السيستم بيرقيك أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وبيخصملك <strong>${platDisc} جنيه</strong> من عمولة كل مشوار! وعشان تحافظ عليه لازم متقلش عن ${weeklyTarget} طلب كل ${daysWin} أيام.
+            </p>
+          </div>
+          <div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:12px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#01579B; font-size:13px;">💎 3. كابتن ماسي (أسطورة الميدان)</strong>
+              <span class="badge tier-badge-diamond">خصم ${diaDisc} ج (العمولة: ${diaFee} ج)</span>
+            </div>
+            <p style="font-size:11.5px; color:#01579B; margin:0;">
+              لو فضلت محافظ على تارجت الـ <strong>${weeklyTarget} طلب كل ${daysWin} أيام</strong> لمدة <strong>${consDaysForDia} يوم ورا بعض</strong>، بتتحول أوتوماتيك لـ <strong>كابتن ماسي 💎</strong> وبيتخصملك <strong>${diaDisc} جنيه</strong> من العمولة الأساسية في كل أوردر! 😍🚀
+            </p>
+          </div>
+          <div style="background:#E8F5E9; border:1.5px dashed #2E7D32; border-radius:10px; padding:8px 10px; font-size:11px; color:#1B5E20; font-weight:700;">
+            🛡️ <strong>مبدأ الهبوط التدريجي الآمن:</strong> لو إنت <strong>كابتن ماسي 💎</strong> ومقدرتش تجيب تارجت الأسبوع لأي ظرف، مش هتنزل للبرونزي 🥉 مرة واحدة! هتنزل خطوة واحدة بس لـ <strong>البلاتيني 🥈</strong> وتحتفظ بخصم عمولة البلاتيني كفرصة أمان عشان ترجع للماسي بسرعة! 💪🛵
+          </div>
+        `;
+      }
     }
 
     function openCaptainTiersModal() {
@@ -3222,9 +3701,66 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         return;
       }
       const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value || 100) || 100;
-      const text = `محتاج أشحن محفظتي بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`;
+      apiRequest('/api/captain/topup-request', 'POST', { amount: amt }).catch(() => {});
+      const text = `محتاج أشحن محفظتي بمبلغ ${amt} ج (سجلت طلب شحن في السيستم) - الكابتن: ${courier.fullName} (${courier.phone})`;
       window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank');
     }
+
+    function courierBuzzCustomerDoor(orderId) {
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/buzz`, 'POST', {});
+        if (ok && data && data.success) {
+          showToast(data.message || 'بعتنا رنّة وتنبيه فوري للعميل إنك مستنيه تحت الباب! 🔔✅', 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر إرسال الرنّة حالياً ⚠️', 'warn');
+        }
+      });
+    }
+
+    function openCaptainOfferAcceptedModal(order) {
+      if (!order) return;
+      const modal = document.getElementById('captainOfferAcceptedModal');
+      const box = document.getElementById('captainOfferAcceptedDetailsBox');
+      if (!modal || !box) return;
+      triggerDeviceAlert('courier_new_order');
+      box.innerHTML = `
+        <div style="background:#E8F5E9; border:1.5px solid #A5D6A7; border-radius:12px; padding:12px; margin-bottom:8px;">
+          <strong style="color:#1B5E20; font-size:15px; display:block;">الطلب (${escapeHtml(order.id)}) بقى معاك رسمياً! 🚀</strong>
+          <div style="margin-top:4px; font-weight:800; color:var(--primary); font-size:14px;">
+            الأجرة المتفق عليها: ${order.originalFare} جنيه (هتقبض كاش: ${order.fare} ج)
+          </div>
+          <div style="font-size:11.5px; color:#2E7D32; margin-top:4px;">
+            📦 من: ${escapeHtml(order.pickupZone)} - ${escapeHtml(order.pickupAddress)}<br>
+            🏁 إلى: ${escapeHtml(order.dropoffZone)} - ${escapeHtml(order.dropoffAddress)}
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:800;">
+          🔓 أرقام تليفونات العميل والمستلم اتفتحت ليك دلوقتي على كارت المشوار في الرادار!
+        </div>
+      `;
+      modal.classList.add('show');
+    }
+
+    function closeCaptainOfferAcceptedModal() {
+      document.getElementById('captainOfferAcceptedModal')?.classList.remove('show');
+    }
+
+    function formatArrivalWaitTimerText(arrivedAtMs) {
+      const start = Number(arrivedAtMs);
+      if (!Number.isFinite(start) || start <= 0) return '00:00';
+      const diffSec = Math.max(0, Math.floor((Date.now() - start) / 1000));
+      const mins = Math.floor(diffSec / 60);
+      const secs = diffSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    setInterval(() => {
+      if (document.hidden) return;
+      document.querySelectorAll('.js-arrival-wait-timer').forEach(el => {
+        const ts = Number(el.getAttribute('data-arrived') || 0);
+        if (ts > 0) el.innerText = formatArrivalWaitTimerText(ts);
+      });
+    }, 1000);
 
     let currentCourierRadarFilter = 'all';
 
@@ -3316,14 +3852,28 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }, 120);
     }
 
-    // ==================== محرك النافذة المنبثقة الفورية لأوردرات الرادار (10 ثوانٍ) ====================
-    const COURIER_POPUP_DURATION_MS = 10000;
+    // ==================== محرك النافذة المنبثقة الفورية لأوردرات الرادار للكابتن (15 ثانية) ====================
+    const COURIER_POPUP_DURATION_MS = 15000;
     const courierSeenPopupOrderIds = new Set();
     let courierPopupOrderQueue = [];
     let currentPopupOrderId = null;
     let courierPopupIntervalId = null;
     let courierPopupEndTime = 0;
     let courierPopupInitialSeedDone = false;
+    let courierPopupBaseFare = 40;
+    let courierPopupCustomOfferFare = 45;
+
+    // حفظ القيم المؤقتة لخانات السعر داخل كروت طلبات العميل وكروت رادار الكابتن
+    const customerOrderFareDrafts = {};
+    const courierOrderOfferDrafts = {};
+
+    // ==================== محرك النافذة المنبثقة الفورية لعروض الكباتن عند العميل (15 ثانية) ====================
+    const CUSTOMER_OFFER_POPUP_DURATION_MS = 15000;
+    const customerSeenOfferSignatures = new Set();
+    let customerOfferPopupQueue = [];
+    let currentCustomerPopupOffer = null;
+    let customerOfferPopupIntervalId = null;
+    let customerOfferPopupEndTime = 0;
 
     function calcGpsDistanceKm(lat1, lng1, lat2, lng2) {
       if (!isValidGpsCoord(lat1, lng1) || !isValidGpsCoord(lat2, lng2)) return null;
@@ -3344,7 +3894,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         return {
           isNear: true,
           isRouteMatch: inPrimary,
-          reasonText: inPrimary ? `📍 في منطقتك الأساسية (${courier.primaryZone})` : `📍 المسار: ${order.pickupZone} ⬅️ ${order.dropoffZone}`
+          reasonText: inPrimary ? `📍 في منطقتك الأساسية (${courier.primaryZone})` : `📍 المشوار: ${order.pickupZone} ⬅️ ${order.dropoffZone}`
         };
       }
 
@@ -3372,8 +3922,54 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         isRouteMatch,
         reasonText: isRouteMatch
           ? `🎯 قريب منك وعلى نفس خط سيرك (${order.pickupZone} ⬅️ ${order.dropoffZone})`
-          : `🛣️ مسار الطلب: من (${order.pickupZone}) إلى (${order.dropoffZone})`
+          : `🛣️ خط المشوار: من (${order.pickupZone}) إلى (${order.dropoffZone})`
       };
+    }
+
+    function updateCourierPopupOfferUI() {
+      const inp = document.getElementById('courierPopupOfferFareInput');
+      const pctBadge = document.getElementById('courierPopupOfferPctBadge');
+      const netHint = document.getElementById('courierPopupNetPreviewHint');
+      const sendTxt = document.getElementById('courierPopupSendOfferBtnText');
+      const courier = getActiveCourier();
+      const offerVal = Math.max(15, roundMoney(courierPopupCustomOfferFare || courierPopupBaseFare));
+
+      if (inp && document.activeElement !== inp) inp.value = offerVal;
+      if (pctBadge) {
+        const pctMeta = formatFareDiffPercentMeta(offerVal, courierPopupBaseFare);
+        pctBadge.className = pctMeta.cls;
+        pctBadge.innerText = pctMeta.text;
+      }
+      if (netHint && courier) {
+        const estFee = getEffectiveCaptainFee(courier, offerVal);
+        const estNet = Math.max(0, roundMoney(offerVal - estFee));
+        netHint.innerText = `صافيك: ${estNet} ج`;
+      }
+      if (sendTxt) {
+        sendTxt.innerText = `ابعت اقتراح (${offerVal} ج) للعميل 🚀`;
+      }
+    }
+
+    function stepCourierPopupOfferFare(delta) {
+      const ord = STATE.orders.find(x => x.id === currentPopupOrderId);
+      const minOffer = Math.max(15, Math.floor(((ord && ord.routeDefaultFare) || courierPopupBaseFare || 35) * 0.7));
+      courierPopupCustomOfferFare = Math.max(minOffer, roundMoney((courierPopupCustomOfferFare || courierPopupBaseFare) + Number(delta || 0)));
+      const inp = document.getElementById('courierPopupOfferFareInput');
+      if (inp) inp.value = courierPopupCustomOfferFare;
+      // مد مهلة النافذة المنبثقة 8 ثوانٍ إضافية عند تفاعل الكابتن مع الأزرار حتى لا تغلق أثناء التعديل
+      courierPopupEndTime = Math.max(courierPopupEndTime, Date.now() + 8000);
+      updateCourierPopupOfferUI();
+    }
+
+    function handleCourierPopupOfferFareInput() {
+      const inp = document.getElementById('courierPopupOfferFareInput');
+      if (!inp) return;
+      const val = roundMoney(inp.value);
+      if (val > 0) {
+        courierPopupCustomOfferFare = val;
+        courierPopupEndTime = Math.max(courierPopupEndTime, Date.now() + 8000);
+        updateCourierPopupOfferUI();
+      }
     }
 
     function closeCourierNewOrderPopup(markDismissed = true) {
@@ -3394,11 +3990,18 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (!courier || courier.status !== 'معتمد' || !courier.isAvailable || STATE.currentRole !== 'courier') return;
       if (STATE.settings && STATE.settings.maintenanceMode) return;
 
+      const anyOtherModalOpen = Array.from(document.querySelectorAll('.custom-modal.show')).some(m => m.id !== 'courierNewOrderPopupModal');
+      if (anyOtherModalOpen) {
+        if (order && order.id && !courierPopupOrderQueue.includes(order.id)) {
+          courierPopupOrderQueue.unshift(order.id);
+        }
+        return;
+      }
+
       const myActiveOrders = getCourierActiveOrders(courier.phone);
       const myActiveCount = myActiveOrders.length;
       const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
 
-      // إذا وصل الكابتن للحد الأقصى المسموح به من لوحة الأدمن، لا تظهر له النافذة المنبثقة
       if (myActiveCount >= maxConcurrent) {
         closeCourierNewOrderPopup(false);
         return;
@@ -3434,10 +4037,16 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
 
       const isFetch = order.tripType === 'fetch';
-      const effectiveFee = getEffectiveCaptainFee(courier);
-      const displayNet = Math.max(0, roundMoney(Number(order.originalFare || order.fare) - effectiveFee));
+      const orderOrigFare = roundMoney(order.originalFare || order.fare || 40);
+      courierPopupBaseFare = orderOrigFare;
+      courierPopupCustomOfferFare = roundMoney(orderOrigFare + 5);
+
+      const effectiveFee = getEffectiveCaptainFee(courier, orderOrigFare);
+      const displayNet = Math.max(0, roundMoney(orderOrigFare - effectiveFee));
       const proxInfo = checkOrderProximityToCourier(order, courier, myActiveOrders);
       const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة من الباشا:';
+      const cleanNotes = cleanDisplayNotesText(order.customerNotes);
+      const hasCustProposed = Boolean(order.customerProposedFare && order.routeDefaultFare && order.customerProposedFare !== order.routeDefaultFare);
 
       const discountNoteHtml = order.discountApplied > 0
         ? `<div class="yellow-discount-note" style="margin:2px 0 0;">🟡 العميل معاه خصم (${order.discountApplied} ج) هتاخد منه (${order.fare} ج) والباقي هينزل في محفظتك أول ما تقبل 😎💲</div>`
@@ -3452,7 +4061,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       detailsBox.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
           <strong style="font-size:14px; color:var(--primary);">${escapeHtml(order.id)}</strong>
-          <div style="display:flex; gap:4px; align-items:center;">
+          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+            ${order.purchaseBudget ? `<span class="badge badge-delivering">💵 كاش المشتريات: ${escapeHtml(order.purchaseBudget)}</span>` : ''}
+            ${hasCustProposed ? `<span class="badge badge-awaiting">💬 سعر مقترح (${order.customerProposedFare}ج)</span>` : ''}
             ${order.surgePercent > 0 ? `<span class="badge badge-pending">⚡ ذروة +${order.surgePercent}%</span>` : ''}
             <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
           </div>
@@ -3462,7 +4073,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           <div>📦 <strong style="color:var(--primary);">الاستلام (${escapeHtml(order.pickupZone)}):</strong> ${escapeHtml(order.pickupAddress)}</div>
           <div style="border-top:1px dashed #E2D5DA; padding-top:5px;">🏁 <strong style="color:var(--success);">التسليم (${escapeHtml(order.dropoffZone)}):</strong> ${escapeHtml(order.dropoffAddress)}</div>
           <div style="border-top:1px dashed #E2D5DA; padding-top:5px; font-size:11px; color:var(--text-muted);">⚖️ <strong>الحجم/الوزن:</strong> ${escapeHtml(order.packageType)} | <strong>الدفع:</strong> ${escapeHtml(order.payer)}</div>
-          ${order.customerNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:8px; padding:6px 8px; color:#5D4037; font-weight:700; font-size:11.5px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(order.customerNotes)}</div>` : ''}
+          ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:8px; padding:6px 8px; color:#5D4037; font-weight:700; font-size:11.5px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
         </div>
         <div class="radar-popup-finance-grid">
           <div class="radar-popup-fin-item">
@@ -3477,11 +4088,15 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         ${discountNoteHtml}
       `;
 
+      const popInp = document.getElementById('courierPopupOfferFareInput');
+      if (popInp) popInp.value = courierPopupCustomOfferFare;
+      updateCourierPopupOfferUI();
+
       if (barFill) {
         barFill.style.width = '100%';
         barFill.classList.remove('urgent');
       }
-      if (timerBadge) timerBadge.innerText = '⏳ 10 ثوانٍ';
+      if (timerBadge) timerBadge.innerText = '⏳ 15 ثانية';
 
       modal.classList.add('show');
       triggerDeviceAlert('courier_new_order');
@@ -3493,7 +4108,6 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const now = Date.now();
         const remMs = courierPopupEndTime - now;
 
-        // فحص لحظي: هل ما زال الطلب متاحاً ولم يلتقطه كابتن آخر؟ وهل الكابتن لم يتجاوز الحد الأقصى؟
         const liveOrd = STATE.orders.find(x => x.id === currentPopupOrderId);
         const liveCourier = getActiveCourier();
         const liveActiveCnt = liveCourier ? getCourierActiveOrders(liveCourier.phone).length : 0;
@@ -3521,10 +4135,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const remSec = Math.max(1, Math.ceil(remMs / 1000));
         if (barFill) {
           barFill.style.width = `${pct}%`;
-          barFill.classList.toggle('urgent', remSec <= 3);
+          barFill.classList.toggle('urgent', remSec <= 4);
         }
         if (timerBadge) {
-          timerBadge.innerText = `⏳ ${remSec} ${remSec <= 2 ? 'ثانية' : 'ثوانٍ'}`;
+          timerBadge.innerText = `⏳ ${remSec} ${remSec <= 2 ? 'ثانية' : (remSec <= 10 ? 'ثوانٍ' : 'ثانية')}`;
         }
       }, 100);
     }
@@ -3551,7 +4165,6 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function evaluateCourierNewOrderPopup(oldOrderMap = {}) {
       const waitingOrders = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن');
 
-      // عند أول تحميل للتطبيق، نستثني الطلبات القديمة التي مر عليها أكثر من 30 ثانية حتى لا تزعج الكابتن عند تحديث الصفحة
       if (!courierPopupInitialSeedDone) {
         courierPopupInitialSeedDone = true;
         const now = Date.now();
@@ -3570,13 +4183,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const myActiveCount = myActiveOrders.length;
       const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
 
-      // إذا وصل الكابتن للحد الأقصى للمشاوير المحددة من الأدمن، لا نفتح النافذة (ولا نضع علامة seen حتى تفتح له لو رفع الأدمن العدد)
       if (myActiveCount >= maxConcurrent) {
         if (currentPopupOrderId) closeCourierNewOrderPopup(false);
         return;
       }
 
-      // ترتيب الطلبات المنتظرة بحيث تكون الأولوية للطلبات الواقعة على خط سير الكابتن ثم الأحدث
       const candidates = waitingOrders.filter(o => !courierSeenPopupOrderIds.has(o.id));
       if (candidates.length === 0) return;
 
@@ -3606,7 +4217,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const courier = getActiveCourier();
       if (!courier || courier.status !== 'معتمد') return;
 
-      const reqFee = getEffectiveCaptainFee(courier);
+      const targetOrd = STATE.orders.find(o => o.id === targetOrderId);
+      const reqFee = getEffectiveCaptainFee(courier, targetOrd ? (targetOrd.originalFare || targetOrd.fare) : null);
       if (roundMoney(courier.walletBalance || 0) < reqFee) {
         openInsufficientWalletModal();
         return;
@@ -3618,8 +4230,401 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function rejectOrderFromCourierPopup() {
       if (!currentPopupOrderId) return;
       closeCourierNewOrderPopup(true);
-      showToast('تم تخطي الإشعار.. الطلب لسه موجود في قائمة الرادار لو حبيت ترجعله 📡', 'ok');
+      showToast('تم تخطي الإشعار.. الطلب لسه موجود في قائمة الرادار لو حبيت ترجعله أو تبعت عرض 📡', 'ok');
       processNextCourierPopupInQueue();
+    }
+
+    function sendCourierOfferDirect(orderId, offeredFareRaw) {
+      const courier = getActiveCourier();
+      if (!courier) return;
+      if (courier.status === 'قيد المراجعة') {
+        triggerDeviceAlert('warning');
+        showToast('⏳ حسابك لسه بيتراجع يا نجم الطيارين 😎', 'warn');
+        return;
+      }
+      if (courier.status !== 'معتمد') {
+        triggerDeviceAlert('warning');
+        showToast(`حسابك ${courier.status} دلوقتي.. كلّم الإدارة ⛔`, 'warn');
+        return;
+      }
+
+      const targetOrd = STATE.orders.find(o => o.id === orderId);
+      if (!targetOrd || targetOrd.status !== 'في انتظار كابتن') {
+        showToast('الأوردر مبقاش متاح ع الرادار دلوقتي يا بطل 🏃‍♂️', 'warn');
+        return;
+      }
+
+      const offeredFare = roundMoney(offeredFareRaw);
+      const minOffer = Math.max(15, Math.floor(((targetOrd.routeDefaultFare || targetOrd.originalFare || 35)) * 0.7));
+      if (!Number.isFinite(offeredFare) || offeredFare < minOffer) {
+        showToast(`اكتب سعر منطقي للمشوار (لا يقل عن ${minOffer} ج) يا بطل 💵⚠️`, 'warn');
+        return;
+      }
+
+      const reqFee = getEffectiveCaptainFee(courier, offeredFare);
+      if (roundMoney(courier.walletBalance || 0) < reqFee) {
+        openInsufficientWalletModal();
+        return;
+      }
+
+      courierOrderOfferDrafts[orderId] = offeredFare;
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/offer`, 'POST', {
+          action: 'propose',
+          offeredFare
+        });
+        if (ok && data && data.success) {
+          showToast(data.message || `وصل عرضك (${offeredFare} ج) للعميل بنجاح! أول ما يوافق هيتسندلك الطلب فوراً 🛵💵`, 'ok');
+          processNextCourierPopupInQueue();
+        } else {
+          const msg = (data && data.message) ? String(data.message) : '';
+          if (msg.includes('رصيد محفظتك') || msg.includes('اشحن محفظتك')) {
+            openInsufficientWalletModal();
+          } else {
+            showToast(msg || 'تعذر إرسال العرض حالياً ⚠️', 'warn');
+          }
+        }
+      });
+    }
+
+    function proposeHigherFareFromCourierPopup() {
+      const targetOrderId = currentPopupOrderId;
+      if (!targetOrderId) return;
+      const inp = document.getElementById('courierPopupOfferFareInput');
+      const offeredFare = roundMoney(inp ? inp.value : courierPopupCustomOfferFare);
+      closeCourierNewOrderPopup(true);
+      sendCourierOfferDirect(targetOrderId, offeredFare);
+    }
+
+    // دوال التحكم السريع بالسعر داخل كارت الرادار للكابتن (+5 / -5 / كتابة يدوية)
+    function stepCourierCardOfferFare(orderId, delta) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      const baseFare = roundMoney(ord.originalFare || ord.fare || 40);
+      const minOffer = Math.max(15, Math.floor(((ord.routeDefaultFare || baseFare)) * 0.7));
+      const inp = document.getElementById(`courCardOfferInput-${orderId}`);
+      const curVal = roundMoney(inp ? inp.value : (courierOrderOfferDrafts[orderId] || (baseFare + 5)));
+      const nextVal = Math.max(minOffer, roundMoney(curVal + Number(delta || 0)));
+      courierOrderOfferDrafts[orderId] = nextVal;
+      if (inp) inp.value = nextVal;
+      updateCourierCardOfferRowUI(orderId, nextVal, baseFare);
+    }
+
+    function handleCourierCardOfferInput(orderId) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      const baseFare = roundMoney(ord.originalFare || ord.fare || 40);
+      const inp = document.getElementById(`courCardOfferInput-${orderId}`);
+      if (!inp) return;
+      const val = roundMoney(inp.value);
+      if (val > 0) {
+        courierOrderOfferDrafts[orderId] = val;
+        updateCourierCardOfferRowUI(orderId, val, baseFare);
+      }
+    }
+
+    function updateCourierCardOfferRowUI(orderId, offerVal, baseFare) {
+      const pctBadge = document.getElementById(`courCardOfferPct-${orderId}`);
+      const netHint = document.getElementById(`courCardOfferNet-${orderId}`);
+      const courier = getActiveCourier();
+      if (pctBadge) {
+        const pctMeta = formatFareDiffPercentMeta(offerVal, baseFare);
+        pctBadge.className = pctMeta.cls;
+        pctBadge.innerText = pctMeta.text;
+      }
+      if (netHint && courier) {
+        const fee = getEffectiveCaptainFee(courier, offerVal);
+        const net = Math.max(0, roundMoney(offerVal - fee));
+        netHint.innerText = `صافيك: ${net} ج`;
+      }
+    }
+
+    function submitCourierCardOfferFare(orderId) {
+      const inp = document.getElementById(`courCardOfferInput-${orderId}`);
+      const ord = STATE.orders.find(o => o.id === orderId);
+      const fallback = ord ? roundMoney((ord.originalFare || 40) + 5) : 45;
+      const offeredFare = roundMoney(inp ? inp.value : (courierOrderOfferDrafts[orderId] || fallback));
+      sendCourierOfferDirect(orderId, offeredFare);
+    }
+
+    function courierProposeOrderFare(orderId) {
+      submitCourierCardOfferFare(orderId);
+    }
+
+    function courierRespondToCounterOffer(orderId, action) {
+      if (action === 'accept') {
+        courierAcceptOrder(orderId);
+        return;
+      }
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/offer`, 'POST', {
+          action: 'reject_counter'
+        });
+        if (ok && data && data.success) {
+          showToast(data.message || 'تم رفض السعر المقترح، وتقدر تبعت عرض جديد للعميل لو حبيت 🛵', 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر تنفيذ الإجراء حالياً ⚠️', 'warn');
+        }
+      });
+    }
+
+    // ==================== تشغيل نافذة العميل المنبثقة لمدة 15 ثانية عند وصول عرض كابتن ====================
+    function closeCustomerCaptainOfferPopup() {
+      if (customerOfferPopupIntervalId) {
+        clearInterval(customerOfferPopupIntervalId);
+        customerOfferPopupIntervalId = null;
+      }
+      currentCustomerPopupOffer = null;
+      const modal = document.getElementById('customerCaptainOfferPopupModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function openCustomerCaptainOfferPopup(offerPayload) {
+      if (!offerPayload || STATE.currentRole !== 'customer') return;
+      const ord = STATE.orders.find(o => o.id === offerPayload.orderId && o.status === 'في انتظار كابتن');
+      if (!ord) {
+        processNextCustomerOfferPopupInQueue();
+        return;
+      }
+
+      currentCustomerPopupOffer = offerPayload;
+      customerSeenOfferSignatures.add(offerPayload.sig);
+
+      const modal = document.getElementById('customerCaptainOfferPopupModal');
+      const ordBadge = document.getElementById('custOfferPopupOrderBadge');
+      const timerBadge = document.getElementById('custOfferPopupTimerBadge');
+      const barFill = document.getElementById('custOfferPopupCountdownBar');
+      const detailsBox = document.getElementById('custOfferPopupDetailsBox');
+      const acceptBtnTxt = document.getElementById('custOfferPopupAcceptBtnText');
+      if (!modal || !detailsBox) return;
+
+      const offeredAmt = roundMoney(offerPayload.offeredFare);
+      const baseFare = roundMoney(ord.routeDefaultFare || ord.originalFare || offeredAmt);
+      const pctMeta = formatFareDiffPercentMeta(offeredAmt, baseFare);
+      const cashAfterDisc = Math.max(0, roundMoney(offeredAmt - (ord.discountApplied || 0)));
+      const tierCls = getCaptainTierBadgeClass(offerPayload.tier);
+
+      if (ordBadge) ordBadge.innerText = `🛵 طلب ${ord.id}`;
+      if (acceptBtnTxt) acceptBtnTxt.innerText = `قبول العرض (${offeredAmt} ج) ✅`;
+
+      detailsBox.innerHTML = `
+        <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:13px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <strong style="font-size:14px; color:var(--primary);"><i class="fa-solid fa-motorcycle"></i> الكابتن: ${escapeHtml(offerPayload.captainName)}</strong>
+            <span class="badge ${tierCls}" style="font-size:10.5px;">${escapeHtml(offerPayload.tierBadgeText)}</span>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); font-weight:700;">
+            📍 المشوار: من (${escapeHtml(ord.pickupZone)}) إلى (${escapeHtml(ord.dropoffZone)}) • المركبة: <strong>${escapeHtml(offerPayload.vehicleType || 'موتوسيكل')}</strong>
+          </div>
+          <div style="background:#FFFFFF; border:1.5px solid #FFE082; border-radius:11px; padding:10px; text-align:center;">
+            <span style="font-size:11px; color:#5D4037; font-weight:800; display:block;">💵 السعر المقترح من الكابتن لتوصيل المشوار:</span>
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px;">
+              <strong style="font-size:22px; font-weight:900; color:var(--primary);">${offeredAmt} جنيه</strong>
+              <span class="${pctMeta.cls}">${pctMeta.text}</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:3px;">
+              (بدلاً من ${ord.originalFare} ج)${ord.discountApplied > 0 ? ` — هتدفع كاش <strong style="color:var(--success);">${cashAfterDisc} ج</strong> بعد خصمك 🎁` : ''}
+            </div>
+          </div>
+          <div style="font-size:10.5px; color:#78350F; font-weight:800; text-align:center;">
+            💡 لو انتهت الـ 15 ثانية، هتلاقي العرض موجود في صفحة «طلباتي» تقدر تقبله أو ترفضه في أي وقت!
+          </div>
+        </div>
+      `;
+
+      if (barFill) {
+        barFill.style.width = '100%';
+        barFill.classList.remove('urgent');
+      }
+      if (timerBadge) timerBadge.innerText = '⏳ 15 ثانية';
+
+      modal.classList.add('show');
+      triggerDeviceAlert('courier_new_order');
+
+      if (customerOfferPopupIntervalId) clearInterval(customerOfferPopupIntervalId);
+      customerOfferPopupEndTime = Date.now() + CUSTOMER_OFFER_POPUP_DURATION_MS;
+
+      customerOfferPopupIntervalId = setInterval(() => {
+        const now = Date.now();
+        const remMs = customerOfferPopupEndTime - now;
+        const liveOrd = STATE.orders.find(o => o.id === offerPayload.orderId);
+        const stillPending = liveOrd && liveOrd.status === 'في انتظار كابتن' && Array.isArray(liveOrd.captainOffers) &&
+          liveOrd.captainOffers.some(x => normalizePhone(x.captainPhone) === normalizePhone(offerPayload.captainPhone) && x.status === 'pending');
+
+        if (!stillPending || remMs <= 0) {
+          closeCustomerCaptainOfferPopup();
+          renderCustomerOrdersList();
+          processNextCustomerOfferPopupInQueue();
+          return;
+        }
+
+        const pct = Math.max(0, Math.min(100, (remMs / CUSTOMER_OFFER_POPUP_DURATION_MS) * 100));
+        const remSec = Math.max(1, Math.ceil(remMs / 1000));
+        if (barFill) {
+          barFill.style.width = `${pct}%`;
+          barFill.classList.toggle('urgent', remSec <= 4);
+        }
+        if (timerBadge) {
+          timerBadge.innerText = `⏳ ${remSec} ${remSec <= 2 ? 'ثانية' : (remSec <= 10 ? 'ثوانٍ' : 'ثانية')}`;
+        }
+      }, 100);
+    }
+
+    function processNextCustomerOfferPopupInQueue() {
+      if (currentCustomerPopupOffer || STATE.currentRole !== 'customer') return;
+      while (customerOfferPopupQueue.length > 0) {
+        const nextOffer = customerOfferPopupQueue.shift();
+        if (customerSeenOfferSignatures.has(nextOffer.sig)) continue;
+        const ord = STATE.orders.find(o => o.id === nextOffer.orderId && o.status === 'في انتظار كابتن');
+        if (ord) {
+          const liveOff = (ord.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(nextOffer.captainPhone) && x.status === 'pending');
+          if (liveOff) {
+            setTimeout(() => openCustomerCaptainOfferPopup(nextOffer), 200);
+            return;
+          }
+        }
+      }
+    }
+
+    function evaluateCustomerOfferPopup() {
+      if (STATE.currentRole !== 'customer') return;
+      const sPhone = normalizePhone(
+        (STATE.customerProfile && STATE.customerProfile.savedPhone) ||
+        STATE.authenticatedCustomerPhone ||
+        getActiveCustomerPhoneForPricing()
+      );
+      if (!sPhone) return;
+
+      const myWaitingOrders = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن' && resolveOrderClientPhone(o) === sPhone);
+      myWaitingOrders.forEach(o => {
+        const pendingOffers = (Array.isArray(o.captainOffers) ? o.captainOffers : []).filter(ofItem => ofItem && ofItem.status === 'pending');
+        pendingOffers.forEach(ofItem => {
+          const capPh = normalizePhone(ofItem.captainPhone || '');
+          const offeredFare = roundMoney(ofItem.offeredFare || o.originalFare);
+          const offerStamp = Number(ofItem.at || ofItem.updatedAt || 0);
+          const sig = `${o.id}|${capPh}|${offeredFare}|${offerStamp}`;
+          if (!customerSeenOfferSignatures.has(sig)) {
+            const payload = {
+              sig,
+              orderId: o.id,
+              captainPhone: capPh,
+              captainName: ofItem.captainName || 'كابتن العنابي',
+              vehicleType: ofItem.vehicleType || 'موتوسيكل',
+              tier: ofItem.tier || 'bronze',
+              tierBadgeText: ofItem.tierBadgeText || 'كابتن برونزي 🥉',
+              offeredFare
+            };
+            // إذا كان نفس الكابتن يحدث سعره والنافذة مفتوحة له، نحدثها فوراً، وإلا نضيفها للطابور
+            if (currentCustomerPopupOffer && currentCustomerPopupOffer.orderId === o.id && currentCustomerPopupOffer.captainPhone === capPh) {
+              closeCustomerCaptainOfferPopup();
+              openCustomerCaptainOfferPopup(payload);
+              return;
+            }
+            if (!customerOfferPopupQueue.some(q => q.sig === sig)) {
+              customerOfferPopupQueue.push(payload);
+            }
+          }
+        });
+      });
+
+      if (!currentCustomerPopupOffer) {
+        processNextCustomerOfferPopupInQueue();
+      }
+    }
+
+    function customerRespondFromOfferPopup(action) {
+      if (!currentCustomerPopupOffer) return;
+      const { orderId, captainPhone } = currentCustomerPopupOffer;
+      closeCustomerCaptainOfferPopup();
+      customerRespondToCaptainOffer(orderId, captainPhone, action);
+    }
+
+    function customerRespondToCaptainOffer(orderId, captainPhone, action) {
+      if (action === 'accept_offer' || action === 'reject_offer') {
+        withActionLock(async () => {
+          const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/negotiate`, 'POST', {
+            action,
+            captainPhone
+          });
+          if (ok && data && data.success) {
+            showToast(data.message || (action === 'accept_offer' ? 'تم قبول عرض الكابتن وهو في طريقه ليك دلوقتي! 🛵🚀' : 'تم رفض العرض وطلبك لسه متاح ع الرادار 📡'), 'ok');
+            processNextCustomerOfferPopupInQueue();
+          } else {
+            showToast((data && data.message) || 'تعذر تنفيذ الإجراء حالياً ⚠️', 'warn');
+          }
+        });
+        return;
+      }
+    }
+
+    // دوال التحكم السريع بالسعر للعميل داخل صفحة «طلباتي» (+5 / -5 / كتابة يدوية ونسبة الزيادة %)
+    function stepCustomerCardOrderFare(orderId, delta) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      const baseRef = roundMoney(ord.routeDefaultFare || ord.originalFare || 40);
+      const minAllowed = Math.max(15, Math.floor(baseRef * 0.7));
+      const inp = document.getElementById(`custCardFareInput-${orderId}`);
+      const curVal = roundMoney(inp ? inp.value : (customerOrderFareDrafts[orderId] || ord.originalFare || baseRef));
+      const nextVal = Math.max(minAllowed, roundMoney(curVal + Number(delta || 0)));
+      customerOrderFareDrafts[orderId] = nextVal;
+      if (inp) inp.value = nextVal;
+      updateCustomerCardFareRowUI(orderId, nextVal, baseRef);
+    }
+
+    function handleCustomerCardOrderFareInput(orderId) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      const baseRef = roundMoney(ord.routeDefaultFare || ord.originalFare || 40);
+      const inp = document.getElementById(`custCardFareInput-${orderId}`);
+      if (!inp) return;
+      const val = roundMoney(inp.value);
+      if (val > 0) {
+        customerOrderFareDrafts[orderId] = val;
+        updateCustomerCardFareRowUI(orderId, val, baseRef);
+      }
+    }
+
+    function updateCustomerCardFareRowUI(orderId, fareVal, baseRef) {
+      const pctBadge = document.getElementById(`custCardFarePct-${orderId}`);
+      if (pctBadge) {
+        const pctMeta = formatFareDiffPercentMeta(fareVal, baseRef);
+        pctBadge.className = pctMeta.cls;
+        pctBadge.innerText = pctMeta.text;
+      }
+    }
+
+    function submitCustomerCardOrderFare(orderId, targetCaptainPhone = '') {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord || ord.status !== 'في انتظار كابتن') return;
+      const baseRef = roundMoney(ord.routeDefaultFare || ord.originalFare || 40);
+      const minAllowed = Math.max(15, Math.floor(baseRef * 0.7));
+      const inp = document.getElementById(`custCardFareInput-${orderId}`);
+      const newFare = roundMoney(inp ? inp.value : (customerOrderFareDrafts[orderId] || ord.originalFare));
+
+      if (!Number.isFinite(newFare) || newFare < minAllowed) {
+        showToast(`أقل سعر عادل للمشوار ده هو (${minAllowed} جنيه) يا باشا 💵⚠️`, 'warn');
+        return;
+      }
+
+      customerOrderFareDrafts[orderId] = newFare;
+      const pendingOfferCap = targetCaptainPhone || ((Array.isArray(ord.captainOffers) && ord.captainOffers.find(x => x && x.status === 'pending'))?.captainPhone || '');
+
+      withActionLock(async () => {
+        const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/negotiate`, 'POST', {
+          action: pendingOfferCap ? 'counter_offer' : 'update_fare',
+          captainPhone: pendingOfferCap || undefined,
+          newFare
+        });
+        if (ok && data && data.success) {
+          showToast(data.message || `تم تحديث أجرة المشوار إلى (${newFare} ج) وإبلاغ الكباتن فوراً! 🚀`, 'ok');
+        } else {
+          showToast((data && data.message) || 'تعذر تحديث السعر ⚠️', 'warn');
+        }
+      });
+    }
+
+    function customerUpdateWaitingOrderFare(orderId) {
+      submitCustomerCardOrderFare(orderId);
     }
 
     function executeCourierAcceptOrderRequest(orderId) {
@@ -3647,7 +4652,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         return;
       }
       if (courier && courier.status === 'معتمد') {
-        const reqFee = getEffectiveCaptainFee(courier);
+        const targetOrd = STATE.orders.find(o => o.id === orderId);
+        const reqFee = getEffectiveCaptainFee(courier, targetOrd ? (targetOrd.originalFare || targetOrd.fare) : null);
         if (roundMoney(courier.walletBalance || 0) < reqFee) {
           openInsufficientWalletModal();
           return;
@@ -3660,7 +4666,6 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           return;
         }
         if (myActiveOrders.length > 0) {
-          const targetOrd = STATE.orders.find(o => o.id === orderId);
           const routeTxt = targetOrd ? `من (${targetOrd.pickupZone} - ${targetOrd.pickupAddress}) إلى (${targetOrd.dropoffZone} - ${targetOrd.dropoffAddress})` : '';
           openCustomActionModal({
             title: 'ضم الأوردر معاك في السكة 🛵➕',
@@ -3726,7 +4731,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const courier = getActiveCourier(); const loginSec = document.getElementById('courierLoginSection'); const dashSec = document.getElementById('courierDashboardContent'); const regSec = document.getElementById('courierSubView-register');
       if (courier) { if (loginSec) loginSec.style.display = 'none'; if (regSec) regSec.style.display = 'none'; if (dashSec) dashSec.style.display = 'flex'; } else { if (dashSec) dashSec.style.display = 'none'; if (regSec && regSec.style.display === 'block') { if (loginSec) loginSec.style.display = 'none'; } else { if (loginSec) loginSec.style.display = 'block'; } }
       if (courier) {
-        const s = STATE.settings || {}; const effectiveFee = getEffectiveCaptainFee(courier); const courPtsPerOrder = Math.max(1, Number(s.courierPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const courThreshold = Math.max(5, Number(s.courierRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const courRewardCash = Math.max(1, roundMoney(s.courierRewardCash ?? DEFAULT_REWARD_CASH));
+        const s = STATE.settings || {};
+        const isPctMode = s.commissionMode === 'percentage';
+        const effectiveFee = getEffectiveCaptainFee(courier);
+        const effPctRate = courier.effectiveFeePercent ?? (courier.tier === 'diamond' ? (s.tierDiamondPercent ?? 12) : (courier.tier === 'platinum' ? (s.tierPlatinumPercent ?? 12.5) : (s.platformFeePercent ?? 13)));
+        const courPtsPerOrder = Math.max(1, Number(s.courierPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const courThreshold = Math.max(5, Number(s.courierRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const courRewardCash = Math.max(1, roundMoney(s.courierRewardCash ?? DEFAULT_REWARD_CASH));
         document.getElementById('courierNameHeading').innerText = `كابتن: ${courier.fullName}`; document.getElementById('courierIdHeading').innerText = `#${courier.phone.slice(-4)}`; document.getElementById('courierWalletBalanceDisplay').innerHTML = `${roundMoney(courier.walletBalance).toFixed(2)} <span>جنيه</span>`; document.getElementById('courierPointsDisplay').innerText = `${courier.points || 0} نقطة`; const progPct = Math.min(100, Math.round(((courier.points || 0) / courThreshold) * 100)); document.getElementById('courierPointsProgress').style.width = `${progPct}%`;
         const tierBadgeTxt = courier.tierBadgeText || 'كابتن برونزي 🥉';
         const tierCls = getCaptainTierBadgeClass(courier.tier);
@@ -3753,21 +4762,24 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (profProgBar) profProgBar.style.width = `${tierPct}%`;
         let shortStatusHtml = '';
         let detailedStatusHtml = '';
+        const diaBenefitTxt = isPctMode ? `بأقل عمولة ${s.tierDiamondPercent ?? 12}%` : `بخصم ${courier.tierDiscount || 2} ج`;
+        const platBenefitTxt = isPctMode ? `بعمولة مخفضة ${s.tierPlatinumPercent ?? 12.5}%` : `بخصم ${courier.tierDiscount || 1} ج`;
+
         if (courier.tier === 'diamond') {
-          shortStatusHtml = `💎 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام — خليك محافظ على مستواك عشان تفضل في القمة الماسية بخصم ${courier.tierDiscount || 2} ج! 🚀`;
-          detailedStatusHtml = `💎 <strong>إنت في القمة يا نجم (كابتن ماسي)!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 2} ج</strong> على عمولة كل مشوار! كمّل التارجت عشان تحافظ على الماسي 🚀🔥`;
+          shortStatusHtml = `💎 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام — خليك محافظ على مستواك عشان تفضل في القمة الماسية (${diaBenefitTxt})! 🚀`;
+          detailedStatusHtml = `💎 <strong>إنت في القمة يا نجم (كابتن ماسي)!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد ${diaBenefitTxt} على كل مشوار! كمّل التارجت عشان تحافظ على الماسي 🚀🔥`;
         } else if (courier.tier === 'platinum') {
           if (courier.gracefulDemotion) {
             shortStatusHtml = `🛡️ <strong>فترة الأمان (كابتن بلاتيني 🥈):</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وترجع للمستوى الماسي 💎!`;
-            detailedStatusHtml = `🛡️ <strong>ميزة الهبوط التدريجي الآمن:</strong> إنت دلوقتي في فترة الأمان بمستوى <strong>كابتن بلاتيني 🥈</strong> (بخصم ${courier.tierDiscount || 1} ج) بدل ما تنزل للبرونزي! خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وترجع فوراً لـ <strong>كابتن ماسي 💎</strong>! 💪🛵`;
+            detailedStatusHtml = `🛡️ <strong>ميزة الهبوط التدريجي الآمن:</strong> إنت دلوقتي في فترة الأمان بمستوى <strong>كابتن بلاتيني 🥈</strong> (${platBenefitTxt}) بدل ما تنزل للبرونزي! خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وترجع فوراً لـ <strong>كابتن ماسي 💎</strong>! 💪🛵`;
           } else {
             const remDaysForDia = Math.max(0, consDaysTarget - consDaysDone);
-            shortStatusHtml = `🥈 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> (خصم ${courier.tierDiscount || 1} ج) — فاضلك <strong>${remDaysForDia} يوم</strong> بالتارجت وتطلع للماسي 💎!`;
-            detailedStatusHtml = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد بخصم <strong>${courier.tierDiscount || 1} ج</strong> من العمولة! فاضلك <strong>${remDaysForDia} يوم</strong> ورا بعض بالتارجت وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
+            shortStatusHtml = `🥈 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> (${platBenefitTxt}) — فاضلك <strong>${remDaysForDia} يوم</strong> بالتارجت وتطلع للماسي 💎!`;
+            detailedStatusHtml = `🥈 <strong>عاش يا كابتن بلاتيني!</strong> خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام ومستفيد ${platBenefitTxt}! فاضلك <strong>${remDaysForDia} يوم</strong> ورا بعض بالتارجت وتترقى أوتوماتيك لـ <strong>كابتن ماسي 💎</strong>!`;
           }
         } else {
-          shortStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى للبلاتيني 🥈 وتكسب خصم العمولة!`;
-          detailedStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام (${tierPct}%). شد حيلك فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب خصم فوري على العمولة في كل مشوار! 💪🛵`;
+          shortStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> — فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى للبلاتيني 🥈 وتكسب تخفيض العمولة!`;
+          detailedStatusHtml = `🥉 خلصت <strong>${curWeekCnt} من ${wTarget} طلب</strong> في آخر ${dWin} أيام (${tierPct}%). شد حيلك فاضلك <strong>${remOrdersThisWeek} طلبات</strong> وتترقى أوتوماتيك لـ <strong>كابتن بلاتيني 🥈</strong> وتكسب تخفيض فوري على العمولة في كل مشوار! 💪🛵`;
         }
         if (homeSubTxt) homeSubTxt.innerHTML = shortStatusHtml;
         if (tierProgBox) tierProgBox.innerHTML = detailedStatusHtml;
@@ -3791,8 +4803,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
             return true;
           });
 
+          const customFeeUnit = isPctMode ? `${courier.customFee}%` : `${effectiveFee} جنيه`;
           const customFeeBanner = (courier.customFee !== null && courier.customFee !== undefined)
-            ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 إنت شغال على عمولة خاصة "${effectiveFee} جنيه" دلوقتي — السبب: ${escapeHtml(courier.customFeeReason || 'تقدير خاص من الإدارة')} 🛵</div>`
+            ? `<div style="background:#E1F5FE; border:1.5px solid #0288D1; color:#01579B; padding:10px 12px; border-radius:12px; font-size:11.5px; font-weight:800;">🎯 إنت شغال على عمولة خاصة "${customFeeUnit}" دلوقتي — السبب: ${escapeHtml(courier.customFeeReason || 'تقدير خاص من الإدارة')} 🛵</div>`
             : '';
 
           // شريط إشعار دعوة الأصدقاء الديناميكي للكابتن (يتغير أوتوماتيكياً فور تعديل عدد المشاوير أو المبلغ من الإدارة)
@@ -3821,12 +4834,22 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (rPerOrd) rPerOrd.innerText = `${courPtsPerOrder} نقط`; if (rTarget) rTarget.innerText = `${courThreshold} نقطة`; if (rCash) rCash.innerText = `${courRewardCash} جنيه كاش فوري`;
         const commNoticeEl = document.getElementById('courierCommissionNoticeText');
         if (commNoticeEl) {
-          if (effectiveFee === 0) {
-            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: 0 ج (إعفاء 🎉)`;
-          } else if (courier.customFee !== null && courier.customFee !== undefined) {
-            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولتك الخاصة: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
+          if (isPctMode) {
+            if (effPctRate === 0) {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: 0% (إعفاء 🎉)`;
+            } else if (courier.customFee !== null && courier.customFee !== undefined) {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • نسبتك الخاصة: ${effPctRate}% من المشوار`;
+            } else {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: ${effPctRate}% من الأجرة`;
+            }
           } else {
-            commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
+            if (effectiveFee === 0) {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: 0 ج (إعفاء 🎉)`;
+            } else if (courier.customFee !== null && courier.customFee !== undefined) {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولتك الخاصة: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
+            } else {
+              commNoticeEl.innerText = `المستوى: ${tierBadgeTxt} • عمولة المشوار: ${effectiveFee} ج${s.surgeActive ? ' ⚡' : ''}`;
+            }
           }
         }
         const badgeEl = document.getElementById('courierStatusBadgeDisplay'); if (badgeEl) { badgeEl.innerText = courier.status === 'معتمد' ? 'معتمد ✅' : courier.status; badgeEl.className = `badge ${courier.status === 'معتمد' ? 'badge-verified' : (courier.status === 'موقوف' ? 'badge-rejected' : 'badge-review')}`; }
@@ -4068,23 +5091,41 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       return '';
     }
 
-    function renderCustomerOrdersList() {
-      const container = document.getElementById('customerOrdersList'); const badgeEl = document.getElementById('custNavBadge'); if (!container) return;
-      const sPhone = STATE.customerProfile.savedPhone; const myOrders = sPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === sPhone) : [];
+function renderCustomerOrdersList() {
+      const container = document.getElementById('customerOrdersList');
+      const badgeEl = document.getElementById('custNavBadge');
+      if (!container) return;
+
+      // عدم مقاطعة العميل إذا كان يكتب حالياً داخل خانة تعديل السعر
+      if (document.activeElement && container.contains(document.activeElement) && document.activeElement.classList.contains('js-inline-fare-input')) {
+        return;
+      }
+
+      const sPhone = normalizePhone(STATE.customerProfile.savedPhone || STATE.authenticatedCustomerPhone || '');
+      const myOrders = sPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === sPhone) : [];
       const activeCount = myOrders.filter(o => o.status !== 'مكتمل' && o.status !== 'قيد مراجعة الاعتراض' && o.status !== 'تمت التسوية الإدارية' && !String(o.status || '').includes('ملغي')).length;
-      if (badgeEl) { badgeEl.innerText = activeCount; badgeEl.style.display = activeCount > 0 ? 'flex' : 'none'; }
-      if (myOrders.length === 0) { container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`; return; }
+      if (badgeEl) {
+        badgeEl.innerText = activeCount;
+        badgeEl.style.display = activeCount > 0 ? 'flex' : 'none';
+      }
+      if (myOrders.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);" class="card">لسه مفيش أوردرات مسجلة يا باشا.. اطلب أول مشوار ليك دلوقتي أو رجّع حسابك برقمك والـ PIN من تبويب «حسابي» 🛵</div>`;
+        return;
+      }
       const recentCustomerOrders = myOrders.slice(0, 10);
       container.innerHTML = recentCustomerOrders.map(o => {
-        const canCancel = o.status === 'في انتظار كابتن' || o.status === 'تم قبول الطلب';
+        const isWaiting = o.status === 'في انتظار كابتن';
+        const canCancel = isWaiting || o.status === 'تم قبول الطلب';
         const isDelivered = o.status === 'مكتمل';
         const isCancelled = String(o.status || '').includes('ملغي');
         const isCaptainApology = Boolean(o.adminResolutionNote && String(o.adminResolutionNote).startsWith('اعتذار الكابتن'));
         const canRate = isDelivered && o.rating === null;
         const canDispute = isDelivered && o.rating === null && !o.disputeReason && (!o.adminResolutionNote || isCaptainApology);
         const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
+        const cleanNotes = cleanDisplayNotesText(o.customerNotes);
+
         let statusTextForCustomer = o.status;
-        if (o.status === 'في انتظار كابتن' && isCaptainApology) statusTextForCustomer = 'الكابتن السابق اعتذر عن المشوار، وطلبك رجع ع الرادار لكابتن تاني فوراً 🔄🛵';
+        if (isWaiting && isCaptainApology) statusTextForCustomer = 'الكابتن السابق اعتذر عن المشوار، وطلبك رجع ع الرادار لكابتن تاني فوراً 🔄🛵';
         else if (o.status === 'الكابتن وصل للاستلام') statusTextForCustomer = 'الكابتن وصل مكان الاستلام وبيستلم المصلحة أهو 🛵';
         else if (o.status === 'استلم الطرد وفي السكة') statusTextForCustomer = 'الكابتن استلم الأوردر يا نجم العالم وطاير بيه في السكة 🚀';
         else if (o.status === 'الكابتن وصل للتسليم') statusTextForCustomer = 'الكابتن وصل بالمصلحة تحت العنوان وجاهز للتسليم 🔔';
@@ -4095,147 +5136,216 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (o.discountApplied > 0) {
           if (isCancelled) {
             discountLineHtml = `<div style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:6px 9px; border-radius:8px; margin-top:4px; font-weight:800;">🔄 اطمن يا باشا: خصمك (${o.discountApplied} ج${o.promoCode ? ` / كود ${escapeHtml(o.promoCode)}` : ''}) رجعلك تاني ولسه معاك لأن الطلب مكتملش 🎁✅</div>`;
-          } else if (o.status === 'في انتظار كابتن' && isCaptainApology) {
+          } else if (isWaiting && isCaptainApology) {
             discountLineHtml = `<div style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; padding:6px 9px; border-radius:8px; margin-top:4px; font-weight:800;">🎁 خصمك (-${o.discountApplied} ج${o.promoCode ? ` شامل كود ${escapeHtml(o.promoCode)}` : ''}) لسه شغال ومحفوظ معاك في الطلب، ولو لغيت الطلب هيرجع لمحفظتك/كودك فوراً ✅</div>`;
           } else {
             discountLineHtml = `<div style="color:var(--success); font-weight:700;">🎁 اتخصملك هدية: -${o.discountApplied} ج ${o.promoCode ? `(شامل كود ${escapeHtml(o.promoCode)})` : ''}</div>`;
           }
         }
 
+        // عرض اقتراحات الأسعار من الكباتن داخل كارت الطلب مع زرّي قبول (أخضر) ورفض (أحمر)
+        let captainOffersHtml = '';
+        if (isWaiting && Array.isArray(o.captainOffers) && o.captainOffers.length > 0) {
+          const activeOffers = o.captainOffers.filter(ofItem => ofItem && (ofItem.status === 'pending' || ofItem.status === 'countered' || ofItem.status === 'rejected_by_captain'));
+          if (activeOffers.length > 0) {
+            captainOffersHtml = activeOffers.map(ofItem => {
+              const capPh = escapeHtml(ofItem.captainPhone || '');
+              const capNm = escapeHtml(ofItem.captainName || 'كابتن العنابي');
+              const capBadge = escapeHtml(ofItem.tierBadgeText || 'كابتن برونزي 🥉');
+              const tierCls = getCaptainTierBadgeClass(ofItem.tier);
+              const offeredAmt = roundMoney(ofItem.offeredFare || o.originalFare);
+              const cashAfterDisc = Math.max(0, roundMoney(offeredAmt - (o.discountApplied || 0)));
+
+              if (ofItem.status === 'countered') {
+                return `<div class="captain-offer-card" style="background:#E1F5FE; border-color:#81D4FA; border-right-color:#0288D1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                    <strong style="color:#01579B; font-size:12px;">🤝 بعتنا سعرك المقترح (${ofItem.customerCounterFare} ج) للكابتن "${capNm}"</strong>
+                    <span class="badge ${tierCls}" style="font-size:10px;">${capBadge}</span>
+                  </div>
+                  <div style="font-size:11px; color:#0277BD; font-weight:700;">في انتظار موافقة الكابتن.. أو تقدر تقبل عرضه (${offeredAmt} ج) فوراً:</div>
+                  <div class="captain-offer-actions">
+                    <button type="button" class="btn-popup-accept" style="padding:8px 10px; font-size:11.5px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                    <button type="button" class="btn-popup-reject" style="padding:8px 10px; font-size:11.5px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                  </div>
+                </div>`;
+              }
+
+              return `<div class="captain-offer-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                  <strong style="color:#E65100; font-size:12.5px;"><i class="fa-solid fa-hand-holding-dollar"></i> يوجد اقتراح سعر من الكابتن "${capNm}"</strong>
+                  <span class="badge ${tierCls}" style="font-size:10px;">${capBadge}</span>
+                </div>
+                <div style="font-size:12px; color:#5D4037; font-weight:800; line-height:1.5;">
+                  السعر المقترح لتوصيل المشوار: <strong style="color:var(--primary); font-size:14px;">${offeredAmt} جنيه</strong> (بدلاً من ${o.originalFare} ج)${o.discountApplied > 0 ? ` — هتدفع كاش <strong>${cashAfterDisc} ج</strong> بعد خصمك` : ''}.
+                </div>
+                <div class="captain-offer-actions">
+                  <button type="button" class="btn-popup-accept" style="padding:9px 10px; font-size:12px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                  <button type="button" class="btn-popup-reject" style="padding:9px 10px; font-size:12px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                </div>
+              </div>`;
+            }).join('');
+          }
+        }
+
+        // محفز الـ 3 دقائق الذكي + خانة التحكم المرن في أجرة المشوار داخل صفحة طلباتي للعميل
+        let inlineFareControlHtml = '';
+        if (isWaiting) {
+          const baseRef = roundMoney(o.routeDefaultFare || o.originalFare || 40);
+          const minAllowed = Math.max(15, Math.floor(baseRef * 0.7));
+          const draftVal = roundMoney(customerOrderFareDrafts[o.id] || o.originalFare || baseRef);
+          const pctMeta = formatFareDiffPercentMeta(draftVal, baseRef);
+          const waitingMs = Date.now() - (Number(o.createdAt) || Date.now());
+          const quickPlus5Fare = roundMoney((o.originalFare || baseRef) + 5);
+
+          const stimulusBannerHtml = waitingMs >= 180000
+            ? `<div style="background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:10px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span style="font-size:11px; font-weight:800; color:#E65100;">⚡ الطلب منتظر من شوية.. تحب تزود +5 ج عشان الكباتن البعيدة تلقطه هوا؟</span>
+                <button type="button" class="btn-main" style="width:auto; padding:5px 10px; font-size:11px; background:#E65100;" onclick="customerOrderFareDrafts['${escapeHtml(o.id)}']=${quickPlus5Fare}; submitCustomerCardOrderFare('${escapeHtml(o.id)}')">زود لـ ${quickPlus5Fare} ج فوراً 🚀</button>
+              </div>`
+            : '';
+
+          inlineFareControlHtml = `
+            <div class="fare-negotiation-box" style="margin-top:8px;">
+              ${stimulusBannerHtml}
+              <div class="fare-negotiation-header">
+                <span class="fare-negotiation-title">🤝 تعديل أو اقتراح أجرة المشوار للكباتن (الحالي: ${o.originalFare} ج):</span>
+                <span class="fare-min-pill">الحد الأدنى: ${minAllowed} ج</span>
+              </div>
+              <div class="fare-adjust-controls">
+                <button type="button" class="fare-step-btn" onclick="stepCustomerCardOrderFare('${escapeHtml(o.id)}', -5)">-5</button>
+                <div class="fare-mid-input-wrap">
+                  <input type="number" inputmode="numeric" id="custCardFareInput-${escapeHtml(o.id)}" class="fare-mid-input js-inline-fare-input" value="${draftVal}" oninput="handleCustomerCardOrderFareInput('${escapeHtml(o.id)}')">
+                  <span id="custCardFarePct-${escapeHtml(o.id)}" class="${pctMeta.cls}">${pctMeta.text}</span>
+                </div>
+                <button type="button" class="fare-step-btn" onclick="stepCustomerCardOrderFare('${escapeHtml(o.id)}', 5)">+5</button>
+              </div>
+              <button type="button" class="btn-main" style="padding:9px 12px; font-size:12px; background:#E65100;" onclick="submitCustomerCardOrderFare('${escapeHtml(o.id)}')">
+                <i class="fa-solid fa-coins"></i> اعتماد وتحديث أجرة المشوار ع الرادار 🚀
+              </button>
+            </div>
+          `;
+        }
+
+        // عداد الانتظار الرسمي المشترك عند وصول الكابتن لعنوان الاستلام أو التسليم
+        const isAtDoorStage = (o.status === 'الكابتن وصل للاستلام' || o.status === 'الكابتن وصل للتسليم');
+        const arrivalTimerHtml = (isAtDoorStage && o.arrivedAt)
+          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:10px; padding:7px 10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#E65100;">
+              <span>⏱️ وقت انتظار الكابتن عند العنوان:</span>
+              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:14px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
+            </div>`
+          : '';
+
+        const canReorder = isDelivered || isCancelled || o.status === 'تمت التسوية الإدارية';
         const noteTitleLabel = isCaptainApology ? 'سبب اعتذار الكابتن السابق' : 'رد وقرار الإدارة';
         const stepperHtml = buildOrderVisualStepperHtml(o.status);
         const captainCardHtml = buildCustomerAssignedCaptainCardHtml(o);
         const notesLabelInCard = o.tripType === 'fetch' ? '🛍️ المشتريات والميزانية' : '📝 ملحوظتك';
         const elapsedTxt = formatOrderElapsedTime(o.createdAt);
 
-        return `<div class="card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><div><strong>${escapeHtml(o.id)}</strong> <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:4px;">(${elapsedTxt})</span></div><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div>${stepperHtml}<div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}</div>${captainCardHtml}${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}<div style="font-size:12px; line-height:1.7;"><div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong></div><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>${o.customerNotes ? `<div style="background:#FAF7F4; padding:5px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>${notesLabelInCard}:</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>${discountLineHtml}${o.rating !== null ? `<div style="color:#FFA000; font-weight:800;">✅ تم تأكيد الاستلام وتقييم الكابتن: ${o.rating} ⭐</div>` : ''}${o.disputeReason ? `<div style="color:var(--danger); font-weight:700;">الشكوى اللي بعتها: ${escapeHtml(o.disputeReason)}</div>` : ''}${o.adminResolutionNote ? `<div style="color:var(--primary); font-weight:800; margin-top:3px;">${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}</div><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">${hasGps ? `<button type="button" class="btn-secondary" style="padding:6px 10px; font-size:11px; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف اللوكيشن ع الخريطة 📍</button>` : ''}${canCancel ? `<button type="button" class="btn-danger" data-action="cust-cancel" data-id="${escapeHtml(o.id)}">إلغاء الطلب</button>` : ''}${canRate ? `<button type="button" class="btn-main" style="padding:6px 10px; font-size:11px; flex:1;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> تأكيد الاستلام وتقييم الكابتن ⭐</button>` : ''}${canDispute ? `<button type="button" class="btn-danger" style="padding:6px 10px; font-size:11px;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}">بلّغ عن مشكلة ⚠️</button>` : ''}</div></div>`;
+        return `<div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div>
+              <strong>${escapeHtml(o.id)}</strong>
+              <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:4px;">(${elapsedTxt})</span>
+            </div>
+            <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
+          </div>
+          ${stepperHtml}
+          <div style="background:#FAF7F4; padding:8px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:12px; color:var(--primary);">
+            إيه الأخبار دلوقتي: ${escapeHtml(statusTextForCustomer)}
+          </div>
+          ${arrivalTimerHtml}
+          ${captainOffersHtml}
+          ${captainCardHtml}
+          ${isDelivered ? `<div style="background: linear-gradient(135deg, #FFF9C4, #FFF176); border: 1.5px solid #FBC02D; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #5D4037; font-size: 12px; font-weight: 800; line-height: 1.6;">عديت على تماسيح وأسود في الطريق 😵 بس الحمد لله الأوردر اتسلم متخافش 😂💪</div>` : ''}
+          <div style="font-size:12px; line-height:1.7;">
+            <div>النوع: <strong>${o.tripType === 'fetch' ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد'}</strong> ${o.purchaseBudget ? `<span class="badge badge-delivering" style="margin-right:4px;">💵 كاش المشتريات: ${escapeHtml(o.purchaseBudget)}</span>` : ''}</div>
+            <div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div>
+            <div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div>
+            ${cleanNotes ? `<div style="background:#FAF7F4; padding:5px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>${notesLabelInCard}:</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+            <div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>
+            ${discountLineHtml}
+            ${o.rating !== null && o.rating !== undefined ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">⭐ تقييمك للمشوار: ${o.rating} نجوم</div>` : ''}
+            ${o.disputeReason ? `<div style="color:var(--danger); background:#FFEBEE; border:1px solid #FFCDD2; padding:6px 8px; border-radius:8px; font-weight:800; margin-top:6px;">⚠️ شكوتك المسجلة: ${escapeHtml(o.disputeReason)}</div>` : ''}
+            ${o.adminResolutionNote ? `<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:6px 8px; border-radius:8px; font-weight:800; margin-top:6px;">📝 ${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}
+          </div>
+          ${inlineFareControlHtml}
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            ${hasGps && !isCancelled ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
+            ${canCancel ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-cancel" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-xmark"></i> إلغاء الطلب</button>` : ''}
+            ${canRate ? `<button type="button" class="btn-main" style="flex:1; background:#FFB300; color:#302A2D;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> قيّم الكابتن ⭐</button>` : ''}
+            ${canDispute ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-triangle-exclamation"></i> بلّغ عن مشكلة</button>` : ''}
+            ${canReorder ? `<button type="button" class="btn-secondary" style="width:100%; margin-top:4px;" onclick="reorderPreviousCustomerTrip('${escapeHtml(o.id)}')"><i class="fa-solid fa-rotate-right"></i> اطلب نفس المشوار تاني بضغطة واحدة 🔄</button>` : ''}
+          </div>
+        </div>`;
       }).join('');
     }
 
-    function renderCourierFeed() {
-      const container = document.getElementById('courierOrdersFeed'); const courier = getActiveCourier(); if (!courier || !container) return;
-      const myActiveOrders = getCourierActiveOrders(courier.phone);
-      const myActiveCount = myActiveOrders.length;
-      const maxConcurrent = Math.max(1, Number(STATE.settings?.maxConcurrentOrdersPerCaptain ?? 3));
+    function renderCustomerProfileSection() {
+      const s = STATE.settings || {};
+      const custPtsPerOrder = Math.max(1, Number(s.customerPointsPerOrder) || DEFAULT_POINTS_PER_ORDER);
+      const custThreshold = Math.max(5, Number(s.customerRewardThreshold) || DEFAULT_POINTS_THRESHOLD);
+      const custRewardCash = Math.max(1, roundMoney(s.customerRewardCash ?? DEFAULT_REWARD_CASH));
 
-      // إظهار أو إخفاء زر الخريطة المجمعة عند حمل مشوارين أو أكثر
-      const combinedMapWrap = document.getElementById('courierCombinedActiveMapBtnWrap');
-      if (combinedMapWrap) {
-        combinedMapWrap.style.display = myActiveCount > 1 ? 'block' : 'none';
-      }
+      const sPhone = normalizePhone(STATE.customerProfile.savedPhone || STATE.authenticatedCustomerPhone || '');
+      if (sPhone) syncActiveCustomerProfile(sPhone);
 
-      // استخراج المناطق النشطة في خط سير الكابتن الحالي لتمييز الطلبات التي تقع في سكته
-      const activeZonesSet = new Set();
-      myActiveOrders.forEach(actOrd => {
-        if (actOrd.pickupZone) activeZonesSet.add(actOrd.pickupZone);
-        if (actOrd.dropoffZone) activeZonesSet.add(actOrd.dropoffZone);
-      });
+      const titleEl = document.getElementById('custDisplayTitle');
+      const phoneEl = document.getElementById('custDisplayPhone');
+      const syncFormBox = document.getElementById('custAccountSyncFormBox');
+      const toggleSyncBtn = document.getElementById('toggleCustSyncFormBtn');
+      const syncPhoneInp = document.getElementById('custProfilePhoneSyncInput');
 
-      const waiting = STATE.orders.filter(o => o.status === 'في انتظار كابتن'); const canSeeRadar = courier.isAvailable || courier.status === 'قيد المراجعة' || courier.status === 'موقوف';
-      const rawVisible = STATE.orders.filter(o => {
-        if (o.status === 'مكتمل' || o.status === 'قيد مراجعة الاعتراض' || o.status === 'تمت التسوية الإدارية' || String(o.status || '').includes('ملغي')) return false;
-        if (o.assignedCourierPhone === courier.phone) return true;
-        if (o.status === 'في انتظار كابتن' && canSeeRadar) {
-          if (currentCourierRadarFilter === 'myZone') {
-            return o.pickupZone === courier.primaryZone || o.dropoffZone === courier.primaryZone;
-          }
-          if (currentCourierRadarFilter === 'onRoute') {
-            if (activeZonesSet.size === 0) return o.pickupZone === courier.primaryZone;
-            return activeZonesSet.has(o.pickupZone) || activeZonesSet.has(o.dropoffZone);
-          }
-          return true;
-        }
-        return false;
-      });
-
-      // تثبيت مشاوير الكابتن النشطة في قمة الرادار، ثم الطلبات الواقعة على خط سيره، ثم الأحدث
-      const visible = [...rawVisible].sort((a, b) => {
-        const aMine = a.assignedCourierPhone === courier.phone ? 1 : 0;
-        const bMine = b.assignedCourierPhone === courier.phone ? 1 : 0;
-        if (aMine !== bMine) return bMine - aMine;
-        if (aMine && bMine) return (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0);
-        const aRouteMatch = (activeZonesSet.has(a.pickupZone) || activeZonesSet.has(a.dropoffZone)) ? 1 : 0;
-        const bRouteMatch = (activeZonesSet.has(b.pickupZone) || activeZonesSet.has(b.dropoffZone)) ? 1 : 0;
-        if (aRouteMatch !== bRouteMatch) return bRouteMatch - aRouteMatch;
-        return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
-      });
-
-      const availCount = canSeeRadar ? waiting.length : 0; const availBadge = document.getElementById('availableOrdersBadge'); if (availBadge) availBadge.innerText = `${availCount} متاح`;
-      const navRadarBadge = document.getElementById('courNavRadarBadge'); if (navRadarBadge) { navRadarBadge.innerText = availCount; navRadarBadge.style.display = availCount > 0 ? 'flex' : 'none'; }
-      if (visible.length === 0) {
-        const emptyFilterNote = currentCourierRadarFilter !== 'all'
-          ? 'مفيش أوردرات مطابقة للفلتر ده دلوقتي.. دوس على «🌍 الكل» عشان تشوف كل الرادار 📡'
-          : 'مفيش أوردرات على الرادار دلوقتي يا بطل.. خليك مستعد! 📡';
-        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">${emptyFilterNote}</div>`;
-        return;
-      }
-      const effectiveFee = getEffectiveCaptainFee(courier);
-      let activeSeqIndex = 0;
-
-      container.innerHTML = visible.map(o => {
-        const isMine = o.assignedCourierPhone === courier.phone; const isWaiting = o.status === 'في انتظار كابتن'; const isFetch = o.tripType === 'fetch'; const displayFee = isWaiting ? effectiveFee : o.platformFee; const displayNet = isWaiting ? Math.max(0, roundMoney(o.originalFare - effectiveFee)) : o.courierNet;
-        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
-        const isOnMyRoute = Boolean(isWaiting && myActiveCount > 0 && (activeZonesSet.has(o.pickupZone) || activeZonesSet.has(o.dropoffZone)));
-        const elapsedTxt = formatOrderElapsedTime(o.createdAt);
-
-        let discountNoteHtml = '';
-        if (o.discountApplied > 0) {
-          if (isWaiting) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل ده شكله له واسطة ومعاه خصم/كود 😵 بس متقلقش الفرق (${o.discountApplied} ج) هينزل في محفظتك أول ما تقبل الطلب 😎»</div>`; }
-          else if (isMine) { discountNoteHtml = `<div class="yellow-discount-note">🟡 «العميل عنده خصم (${o.discountApplied} ج) يعني هتاخد منه (${o.fare} جنيه) وباقي المبلغ نزل في محفظتك أول ما قبلت الطلب 💲✌️»</div>`; }
-        }
-        let acceptBtnText = 'اقبل الطلب وأمرك لله 😂🛵'; let acceptBtnStyle = '';
-        if (courier.status === 'قيد المراجعة') { acceptBtnText = 'حسابك لسه بيتراجع (تفرج بس دلوقتي) ⏳'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        else if (courier.status !== 'معتمد') { acceptBtnText = 'حسابك موقوف مؤقتاً (تفرج بس) ⛔'; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        else if (myActiveCount >= maxConcurrent) { acceptBtnText = `معاك ${myActiveCount} مشاوير شغالة.. خلّص واحد الأول 🛵`; acceptBtnStyle = 'background:#8E7D84; cursor:pointer;'; }
-        else if (myActiveCount > 0) { acceptBtnText = 'خده معاك في سكتك يا بطل 🛵➕'; acceptBtnStyle = 'background:linear-gradient(135deg, #2E7D32, #1B5E20);'; }
-
-        const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة من الباشا:';
-        let activeRibbonHtml = '';
-        if (isMine) {
-          activeSeqIndex++;
-          const ribbonTitle = myActiveCount > 1
-            ? `🔥 مشوارك الشغال (${activeSeqIndex} من ${myActiveCount})`
-            : `🔥 مشوارك الشغال دلوقتي`;
-          activeRibbonHtml = `<div class="active-mission-ribbon"><span>${ribbonTitle}</span><span>حدّث خط السير خطوة بخطوة 👇</span></div>`;
-        }
-
-        return `<div class="card ${isMine ? 'active-mission-card' : ''}" style="border:1.5px solid ${isMine ? 'var(--primary)' : (isOnMyRoute ? '#2E7D32' : 'rgba(123,63,82,0.15)')};">${activeRibbonHtml}<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;"><div><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong> <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:3px;">(${elapsedTxt})</span></div><div>${isOnMyRoute ? `<span class="badge badge-completed" style="margin-left:4px;">🎯 على خط سيرك!</span>` : ''}${o.surgePercent > 0 ? `<span class="badge badge-pending" style="margin-left:4px;">⚡ ذروة +${o.surgePercent}%</span>` : ''}<span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div></div>${discountNoteHtml}<div style="font-size:12px; line-height:1.7; margin:8px 0;"><div>الاستلام: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>التسليم: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>الحجم/الوزن: <strong>${escapeHtml(o.packageType)}</strong></div>${o.customerNotes ? `<div style="background:#FFFDE7; border:1.5px solid #FBC02D; padding:7px 9px; border-radius:9px; margin:5px 0; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(o.customerNotes)}</div>` : ''}<div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | هتقبض كاش: <strong>${o.fare} ج</strong> | صافيك الكلي: <strong>${displayNet} ج</strong> <small style="color:var(--text-muted);">(عمولتك: ${displayFee} ج)</small></div>${isMine ? buildCourierContactButtonsHtml(o) : ''}</div><div style="display:flex; flex-direction:column; gap:6px;">${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; font-size:12px; padding:9px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان العميل والاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isWaiting ? `<button type="button" class="btn-main" style="${acceptBtnStyle}" data-action="cour-accept" data-id="${escapeHtml(o.id)}">${acceptBtnText}</button>` : ''}${(o.status === 'تم قبول الطلب' && isMine) ? `<button type="button" class="btn-main" style="background:#0288D1;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام"><i class="fa-solid fa-location-dot"></i> وصلت مكان الاستلام 📍</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار عن المشوار ورجوعه للرادار (قبل الاستلام)</button>` : ''}${(o.status === 'الكابتن وصل للاستلام' && isMine) ? `<button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة"><i class="fa-solid fa-box-open"></i> استلمت الطلب بتاعك يا نجم العالم 🌟📦</button><button type="button" class="btn-danger" style="width:100%;" data-action="cour-release" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-rotate-left"></i> اعتذار وإلغاء استلام الطلب (غير مطابق للمواصفات / مشكلة)</button>` : ''}${(o.status === 'استلم الطرد وفي السكة' && isMine) ? `<button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم"><i class="fa-solid fa-location-pin"></i> وصلت مكان التسليم 📍🏁</button>` : ''}${(o.status === 'الكابتن وصل للتسليم' && isMine) ? `<button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-circle-check"></i> سلمت الأوردر والحمد لله كله تمام ✅</button>` : ''}</div></div>`;
-      }).join('');
-    }
-
-    function renderCustomerProfileView() {
-      const prof = STATE.customerProfile; if (prof.savedPhone && STATE.customers[prof.savedPhone]) { syncActiveCustomerProfile(prof.savedPhone); }
-      const myOrders = prof.savedPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === prof.savedPhone) : [];
-      const s = STATE.settings || {}; const custPtsPerOrder = Math.max(1, Number(s.customerPointsPerOrder) || DEFAULT_POINTS_PER_ORDER); const custThreshold = Math.max(5, Number(s.customerRewardThreshold) || DEFAULT_POINTS_THRESHOLD); const custRewardCash = Math.max(1, roundMoney(s.customerRewardCash ?? DEFAULT_REWARD_CASH));
-      const titleEl = document.getElementById('custDisplayTitle'); const phoneEl = document.getElementById('custDisplayPhone'); const balEl = document.getElementById('custWalletBalanceDisplay'); const ptsEl = document.getElementById('custPointsDisplay'); const progEl = document.getElementById('custPointsProgress'); const cntEl = document.getElementById('custTotalOrdersCount');
-      if (titleEl) titleEl.innerText = prof.title;
+      if (titleEl) titleEl.innerText = STATE.customerProfile.title || 'باشا مصر اللي منورنا 👑';
       if (phoneEl) {
-        phoneEl.innerHTML = prof.savedPhone
-          ? `<span dir="ltr" style="font-weight:800; color:var(--primary);">${escapeHtml(prof.savedPhone)}</span> <span style="opacity:0.5;">•</span> <span>المنصورة</span>`
-          : `<span>لسه مربطتش رقم موبايلك يا باشا • المنصورة</span>`;
+        if (sPhone) {
+          const isVerified = isCustomerSessionActiveForPhone(sPhone);
+          phoneEl.innerHTML = `<span dir="ltr" style="font-weight:900; color:var(--primary);">${escapeHtml(sPhone)}</span> • المنصورة ${isVerified ? '<span class="badge badge-completed" style="font-size:10px; padding:2px 8px;">حساب موثق 🔒✅</span>' : ''}`;
+        } else {
+          phoneEl.innerText = 'لسه مربطتش رقم موبايلك • المنصورة';
+        }
       }
-      const syncBox = document.getElementById('custAccountSyncFormBox'); const toggleSyncBtn = document.getElementById('toggleCustSyncFormBtn');
-      if (syncBox && toggleSyncBtn) {
-        const hasSaved = Boolean(prof.savedPhone);
-        toggleSyncBtn.style.display = hasSaved ? 'inline-flex' : 'none';
-        syncBox.style.display = (!hasSaved || forceShowCustSyncForm) ? 'block' : 'none';
-        toggleSyncBtn.innerHTML = (hasSaved && forceShowCustSyncForm)
-          ? '<i class="fa-solid fa-xmark" style="font-size:11px;"></i><span>إخفاء</span>'
-          : '<i class="fa-solid fa-rotate" style="font-size:11px;"></i><span>تبديل الحساب</span>';
+
+      if (syncPhoneInp && sPhone && document.activeElement !== syncPhoneInp && !syncPhoneInp.value) {
+        syncPhoneInp.value = sPhone;
       }
-      const profPhoneInp = document.getElementById('custProfilePhoneSyncInput'); if (profPhoneInp && document.activeElement !== profPhoneInp && prof.savedPhone) { profPhoneInp.value = prof.savedPhone; }
-      if (balEl) balEl.innerHTML = `${roundMoney(prof.walletBalance).toFixed(2)} <span>جنيه</span>`; if (ptsEl) ptsEl.innerText = `${prof.points || 0} نقطة`;
-      const progPct = Math.min(100, Math.round(((prof.points || 0) / custThreshold) * 100)); if (progEl) progEl.style.width = `${progPct}%`; if (cntEl) cntEl.innerText = `${myOrders.length} مشوار`;
-      const cPerOrd = document.getElementById('custRulePointsPerOrder'); const cTarget = document.getElementById('custRulePointsTarget'); const cCash = document.getElementById('custRuleRewardCash');
-      if (cPerOrd) cPerOrd.innerText = `${custPtsPerOrder} نقط عنابي`; if (cTarget) cTarget.innerText = `${custThreshold} نقطة`; if (cCash) cCash.innerText = `${custRewardCash} جنيه كاش فوري`;
-      renderCustomerProfilePromoCodes();
-      if (!promoCountdownIntervalId) startPromoCountdownTicker();
-      const txContainer = document.getElementById('custWalletTransactionsList');
-      if (txContainer) {
-        const txList = (prof.walletTransactions || []).slice(0, 10);
-        txContainer.innerHTML = txList.length === 0
+
+      if (sPhone && isCustomerSessionActiveForPhone(sPhone)) {
+        if (toggleSyncBtn) toggleSyncBtn.style.display = 'inline-flex';
+        if (syncFormBox) syncFormBox.style.display = forceShowCustSyncForm ? 'block' : 'none';
+      } else {
+        if (toggleSyncBtn) toggleSyncBtn.style.display = 'none';
+        if (syncFormBox) syncFormBox.style.display = 'block';
+      }
+
+      const myOrders = sPhone ? STATE.orders.filter(o => resolveOrderClientPhone(o) === sPhone && (o.status === 'مكتمل' || o.status === 'تمت التسوية الإدارية')) : [];
+      const walletEl = document.getElementById('custWalletBalanceDisplay');
+      const ordersCntEl = document.getElementById('custTotalOrdersCount');
+      const ptsEl = document.getElementById('custPointsDisplay');
+      const progEl = document.getElementById('custPointsProgress');
+
+      const curWallet = roundMoney(STATE.customerProfile.walletBalance || 0);
+      const curPoints = Math.max(0, Number(STATE.customerProfile.points) || 0);
+      const pct = Math.min(100, Math.round((curPoints / custThreshold) * 100));
+
+      if (walletEl) walletEl.innerHTML = `${curWallet.toFixed(2)} <span style="font-size:13px; font-weight:600;">جنيه</span>`;
+      if (ordersCntEl) ordersCntEl.innerText = `${myOrders.length} مشوار`;
+      if (ptsEl) ptsEl.innerText = `${curPoints} نقطة`;
+      if (progEl) progEl.style.width = `${pct}%`;
+
+      const rPerOrd = document.getElementById('custRulePointsPerOrder');
+      const rTarget = document.getElementById('custRulePointsTarget');
+      const rCash = document.getElementById('custRuleRewardCash');
+      if (rPerOrd) rPerOrd.innerText = `${custPtsPerOrder} نقط عنابي`;
+      if (rTarget) rTarget.innerText = `${custThreshold} نقطة`;
+      if (rCash) rCash.innerText = `${custRewardCash} جنيه كاش فوري`;
+
+      const txListEl = document.getElementById('custWalletTransactionsList');
+      if (txListEl) {
+        const list = (STATE.customerProfile.walletTransactions || []).slice(0, 10);
+        txListEl.innerHTML = list.length === 0
           ? `<div style="color:var(--text-muted); text-align:center; padding:10px 6px; font-size:11.5px; font-weight:700;">لسه مفيش أي حركات ولا هدايا نزلتلك لحد دلوقتي يا باشا.</div>`
-          : txList.map(t => `<div class="wallet-tx-item">
+          : list.map(t => `<div class="wallet-tx-item">
               <div class="wallet-tx-info">
                 <span class="wallet-tx-title">${escapeHtml(t.title)}</span>
                 <span class="wallet-tx-time">${escapeHtml(formatTxTime(t))}</span>
@@ -4243,96 +5353,395 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
               <span class="wallet-tx-amount ${t.type === 'خصم' ? 'tx-minus' : 'tx-plus'}">${t.type === 'خصم' ? '-' : '+'}${t.amount} ج</span>
             </div>`).join('');
       }
+
+      renderCustomerProfilePromoCodes();
     }
 
-    function renderAllData() { renderGlobalBannersAndSettings(); renderCustomerProfileView(); renderCustomerOrdersList(); renderCourierScreen(); renderCourierFeed(); updateBottomNavVisibility(); }
-    function isWarningMessage(msg) { return /(طماع|غير|أقل|عفواً|عذراً|برجاء|اكتب|حدد|إجباري|موقوف|مرفوض|بيتراجع|خطأ|لا يمكن|مسجل بالفعل|تعذر|ممتلئة|صيانة|مغلق|معلش|ملحقناش|معرفناش|لخبطة|مش مظبوط|مش شغال|⚠️|⛔|❌|✋|⏳)/.test(msg); }
-    function hideToast() { const toast = document.getElementById('toast'); if (toast) toast.classList.remove('show'); if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; } }
+    function renderCourierFeed() {
+      const feed = document.getElementById('courierOrdersFeed');
+      const availBadge = document.getElementById('availableOrdersBadge');
+      const navRadarBadge = document.getElementById('courNavRadarBadge');
+      const combinedMapWrap = document.getElementById('courierCombinedActiveMapBtnWrap');
+      if (!feed) return;
+
+      // عدم مقاطعة الكابتن أثناء كتابة سعر مقترح داخل كارت الرادار
+      if (document.activeElement && feed.contains(document.activeElement) && document.activeElement.classList.contains('js-inline-courier-offer-input')) {
+        return;
+      }
+
+      const courier = getActiveCourier();
+      const allWaiting = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن');
+
+      if (availBadge) availBadge.innerText = `${allWaiting.length} متاح`;
+      if (navRadarBadge) {
+        navRadarBadge.innerText = allWaiting.length;
+        navRadarBadge.style.display = allWaiting.length > 0 ? 'flex' : 'none';
+      }
+
+      if (!courier) {
+        feed.innerHTML = '';
+        return;
+      }
+
+      const myActiveOrders = getCourierActiveOrders(courier.phone);
+      if (combinedMapWrap) {
+        combinedMapWrap.style.display = myActiveOrders.length >= 2 ? 'block' : 'none';
+      }
+
+      let filteredWaiting = [...allWaiting];
+      if (currentCourierRadarFilter === 'myZone') {
+        filteredWaiting = filteredWaiting.filter(o => o.pickupZone === courier.primaryZone || o.dropoffZone === courier.primaryZone);
+      } else if (currentCourierRadarFilter === 'onRoute') {
+        filteredWaiting = filteredWaiting.filter(o => checkOrderProximityToCourier(o, courier, myActiveOrders).isRouteMatch);
+      }
+
+      const activeCardsHtml = myActiveOrders.map((o, idx) => {
+        const isFetch = o.tripType === 'fetch';
+        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
+        const cleanNotes = cleanDisplayNotesText(o.customerNotes);
+        const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة الباشا:';
+        const isAtDoor = (o.status === 'الكابتن وصل للاستلام' || o.status === 'الكابتن وصل للتسليم');
+
+        const waitTimerHtml = (isAtDoor && o.arrivedAt)
+          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:10px; padding:7px 10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#E65100;">
+              <span>⏱️ عداد انتظارك عند العنوان:</span>
+              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:14px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
+            </div>`
+          : '';
+
+        let stepActionBtnsHtml = '';
+        if (o.status === 'تم قبول الطلب') {
+          stepActionBtnsHtml = `
+            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px; margin-top:10px;">
+              <button type="button" class="btn-main" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام">
+                <i class="fa-solid fa-location-dot"></i> وصلت للاستلام 📍
+              </button>
+              <button type="button" class="btn-danger" data-action="cour-release" data-id="${escapeHtml(o.id)}">
+                اعتذار 🔄
+              </button>
+            </div>`;
+        } else if (o.status === 'الكابتن وصل للاستلام') {
+          stepActionBtnsHtml = `
+            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px; margin-top:10px;">
+              <button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة">
+                <i class="fa-solid fa-box-open"></i> استلمت وفي السكة 🚀
+              </button>
+              <button type="button" class="btn-danger" data-action="cour-release" data-id="${escapeHtml(o.id)}">
+                اعتذار 🔄
+              </button>
+            </div>`;
+        } else if (o.status === 'استلم الطرد وفي السكة') {
+          stepActionBtnsHtml = `
+            <button type="button" class="btn-main" style="margin-top:10px; background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم">
+              <i class="fa-solid fa-bell"></i> وصلت مكان التسليم تحت الباب 🔔
+            </button>`;
+        } else if (o.status === 'الكابتن وصل للتسليم') {
+          stepActionBtnsHtml = `
+            <button type="button" class="btn-main" style="margin-top:10px; background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-circle-check"></i> تم التسليم وقبضت الكاش (${o.fare} ج) ✅
+            </button>`;
+        }
+
+        return `<div class="card active-mission-card">
+          <div class="active-mission-ribbon">
+            <span>🔥 مشوار شغال معاك دلوقتي (${idx + 1} من ${myActiveOrders.length})</span>
+            <span>${escapeHtml(o.id)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
+            <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
+          </div>
+          ${waitTimerHtml}
+          <div style="font-size:12px; line-height:1.75; background:#FAF7F4; padding:10px; border-radius:12px; border:1px solid #E9DCE0;">
+            <div>📦 <strong>من (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
+            <div>🏁 <strong>إلى (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
+            <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع عند:</strong> ${escapeHtml(o.payer)}</div>
+            ${o.purchaseBudget ? `<div style="color:#6A1B9A; font-weight:800;">💵 سقف كاش المشتريات: ${escapeHtml(o.purchaseBudget)}</div>` : ''}
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:6px 8px; border-radius:8px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+            <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #D1B8C0; display:flex; justify-content:space-between; align-items:center;">
+              <span>💵 تقبض كاش: <strong style="color:var(--primary); font-size:14px;">${o.fare} ج</strong></span>
+              <span>🤑 صافيك: <strong style="color:var(--success); font-size:14px;">${o.courierNet} ج</strong></span>
+            </div>
+          </div>
+          ${buildCourierContactButtonsHtml(o)}
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B; font-size:11.5px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
+            <button type="button" class="btn-secondary" style="flex:1; background:#FFF8E1; color:#E65100; border:1px solid #FFB74D; font-size:11.5px;" onclick="courierBuzzCustomerDoor('${escapeHtml(o.id)}')">
+              <i class="fa-solid fa-bell"></i> رن جرس للعميل 🔔
+            </button>
+          </div>
+          ${stepActionBtnsHtml}
+        </div>`;
+      }).join('');
+
+      if (!courier.isAvailable && myActiveOrders.length === 0) {
+        feed.innerHTML = `<div class="card" style="text-align:center; padding:22px 16px; color:var(--text-muted);">
+          <i class="fa-solid fa-mug-hot" style="font-size:28px; color:var(--primary); margin-bottom:8px; display:block;"></i>
+          <strong>إنت قافل الرادار وفي استراحة دلوقتي يا بطل ☕</strong>
+          <p style="font-size:11.5px; margin-top:4px;">افتح زرار «حالة الاستعداد للأوردرات» فوق عشان تلقط الأوردرات الجديدة فوراً! 📡🛵</p>
+        </div>`;
+        return;
+      }
+
+      const waitingCardsHtml = filteredWaiting.map(o => {
+        const isFetch = o.tripType === 'fetch';
+        const hasGps = isValidGpsCoord(o.pickupLat, o.pickupLng) || isValidGpsCoord(o.dropoffLat, o.dropoffLng);
+        const cleanNotes = cleanDisplayNotesText(o.customerNotes);
+        const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة الباشا:';
+        const orderOrigFare = roundMoney(o.originalFare || o.fare || 40);
+        const effectiveFee = getEffectiveCaptainFee(courier, orderOrigFare);
+        const displayNet = Math.max(0, roundMoney(orderOrigFare - effectiveFee));
+        const proxInfo = checkOrderProximityToCourier(o, courier, myActiveOrders);
+        const elapsedTxt = formatOrderElapsedTime(o.createdAt);
+        const hasCustProposed = Boolean(o.customerProposedFare && o.routeDefaultFare && o.customerProposedFare !== o.routeDefaultFare);
+
+        const myOffer = (Array.isArray(o.captainOffers) ? o.captainOffers : []).find(x => normalizePhone(x.captainPhone) === normalizePhone(courier.phone));
+        let myOfferBannerHtml = '';
+        if (myOffer) {
+          if (myOffer.status === 'countered') {
+            myOfferBannerHtml = `<div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:11px; padding:9px 11px; margin:8px 0; font-size:11.5px; color:#01579B; font-weight:800;">
+              <div>🤝 العميل بعتلك سعر مقابل: <strong>${myOffer.customerCounterFare || o.originalFare} جنيه</strong> (بدل عرضك ${myOffer.offeredFare} ج)</div>
+              <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:6px; margin-top:6px;">
+                <button type="button" class="btn-popup-accept" style="padding:7px 10px; font-size:11.5px;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'accept')">قبول السعر (${o.originalFare} ج) ✅</button>
+                <button type="button" class="btn-popup-reject" style="padding:7px 10px; font-size:11.5px;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'reject')">رفض ✕</button>
+              </div>
+            </div>`;
+          } else if (myOffer.status === 'pending') {
+            myOfferBannerHtml = `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:#E65100; font-weight:800;">
+              ⏳ بعتّ للعميل اقتراح سعر (<strong>${myOffer.offeredFare} ج</strong>) وفي انتظار موافقته.. أو تقدر تعدل عرضك تحت:
+            </div>`;
+          } else if (myOffer.status === 'rejected') {
+            myOfferBannerHtml = `<div style="background:#FFEBEE; border:1px dashed #EF5350; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:var(--danger); font-weight:800;">
+              ❌ العميل اعتذر عن عرضك السابق (${myOffer.offeredFare} ج).. تقدر تقبل الطلب بسعره الحالي أو تقترح سعر أقرب:
+            </div>`;
+          }
+        }
+
+        const draftOfferVal = roundMoney(courierOrderOfferDrafts[o.id] || (myOffer ? myOffer.offeredFare : (orderOrigFare + 5)));
+        const offerPctMeta = formatFareDiffPercentMeta(draftOfferVal, orderOrigFare);
+        const estOfferFee = getEffectiveCaptainFee(courier, draftOfferVal);
+        const estOfferNet = Math.max(0, roundMoney(draftOfferVal - estOfferFee));
+
+        return `<div class="card" style="border:1.5px solid ${proxInfo.isRouteMatch ? '#2E7D32' : '#E9DCE0'};">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+            <div>
+              <strong style="font-size:13.5px; color:var(--primary);">${escapeHtml(o.id)}</strong>
+              <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:4px;">(${elapsedTxt})</span>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+              ${o.purchaseBudget ? `<span class="badge badge-delivering">💵 مشتريات: ${escapeHtml(o.purchaseBudget)}</span>` : ''}
+              ${hasCustProposed ? `<span class="badge badge-awaiting">💬 سعر العميل: ${o.customerProposedFare}ج</span>` : ''}
+              ${o.surgePercent > 0 ? `<span class="badge badge-pending">⚡ ذروة +${o.surgePercent}%</span>` : ''}
+              <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
+            </div>
+          </div>
+
+          ${proxInfo.reasonText ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FAF7F4'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : 'var(--text-muted)'}; border-radius:8px; padding:4px 8px; font-size:10.5px; font-weight:800; margin-bottom:6px;">${escapeHtml(proxInfo.reasonText)}</div>` : ''}
+
+          <div style="font-size:12px; line-height:1.7;">
+            <div>📦 <strong>الاستلام (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
+            <div>🏁 <strong>التسليم (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
+            <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع:</strong> ${escapeHtml(o.payer)}</div>
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:8px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+          </div>
+
+          <div style="background:#FAF4F6; border:1px solid #E8DCE0; border-radius:10px; padding:8px 10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+            <span>💵 تقبض كاش: <strong style="color:var(--primary); font-size:14px;">${o.fare} ج</strong></span>
+            <span>🤑 صافيك (عمولة ${effectiveFee}ج): <strong style="color:var(--success); font-size:14px;">${displayNet} ج</strong></span>
+          </div>
+
+          ${o.discountApplied > 0 ? `<div class="yellow-discount-note">🟡 العميل معاه خصم (${o.discountApplied} ج) هتاخد منه كاش (${o.fare} ج) والتعويض (${o.discountApplied} ج) هينزل في محفظتك فوراً أول ما تقبل 😎💲</div>` : ''}
+
+          ${myOfferBannerHtml}
+
+          <!-- صندوق اقتراح تعديل السعر للكابتن على الرادار (+5 / -5 / كتابة يدوية ونسبة الزيادة %) -->
+          <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin:8px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11px; font-weight:900; color:#E65100;">💵 شايف المشوار يستاهل أكتر؟ اقترح سعرك للعميل:</span>
+              <small id="courCardOfferNet-${escapeHtml(o.id)}" style="font-size:10px; font-weight:800; color:#2E7D32;">صافيك: ${estOfferNet} ج</small>
+            </div>
+            <div class="fare-adjust-controls">
+              <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', -5)">-5</button>
+              <div class="fare-mid-input-wrap" style="border-color:#FFB74D;">
+                <input type="number" inputmode="numeric" id="courCardOfferInput-${escapeHtml(o.id)}" class="fare-mid-input js-inline-courier-offer-input" style="color:#E65100;" value="${draftOfferVal}" oninput="handleCourierCardOfferInput('${escapeHtml(o.id)}')">
+                <span id="courCardOfferPct-${escapeHtml(o.id)}" class="${offerPctMeta.cls}">${offerPctMeta.text}</span>
+              </div>
+              <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', 5)">+5</button>
+            </div>
+            <button type="button" class="btn-secondary" style="width:100%; background:#ED6C02; color:#fff; padding:8px 12px; font-size:11.5px; font-weight:900;" onclick="submitCourierCardOfferFare('${escapeHtml(o.id)}')">
+              <i class="fa-solid fa-paper-plane"></i> ابعت اقتراح السعر للعميل 🚀
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; padding:10px 12px; font-size:12px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة</button>` : ''}
+            <button type="button" class="btn-main" style="flex:1; background:var(--success);" data-action="cour-accept" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-motorcycle"></i> ${myActiveOrders.length > 0 ? 'ضم الأوردر معاك في السكة 🛵➕' : `اقبل الأوردر (${orderOrigFare} ج) 🛵✅`}
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+
+      if (!activeCardsHtml && !waitingCardsHtml) {
+        feed.innerHTML = `<div class="card" style="text-align:center; padding:24px 16px; color:var(--text-muted);">
+          <i class="fa-solid fa-satellite-dish" style="font-size:28px; color:var(--primary); margin-bottom:8px; display:block;"></i>
+          <strong>الرادار هادي دلوقتي يا وحش 📡</strong>
+          <p style="font-size:11.5px; margin-top:4px;">خليك فاتح الاستعداد، وأول ما ينزل أوردر جديد هيرن عندك فوراً بنافذة منبثقة! 🛵🔥</p>
+        </div>`;
+      } else {
+        feed.innerHTML = activeCardsHtml + waitingCardsHtml;
+      }
+    }
+
+    function openTopupModal() {
+      document.getElementById('topupModal')?.classList.add('show');
+    }
+
+    function closeTopupModal() {
+      document.getElementById('topupModal')?.classList.remove('show');
+    }
+
+    function redirectToWhatsAppTopup() {
+      const courier = getActiveCourier();
+      const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value || 100);
+      if (!courier) {
+        showToast('سجل دخولك الأول يا كابتن ⚠️', 'warn');
+        return;
+      }
+      if (!amt || amt <= 0) {
+        showToast('اكتب مبلغ شحن صحيح يا بطل ⚠️', 'warn');
+        return;
+      }
+      closeTopupModal();
+      apiRequest('/api/captain/topup-request', 'POST', { amount: amt }).catch(() => {});
+      const msg = `السلام عليكم يا رجالة العنابي 🛵، أنا الكابتن ${courier.fullName} (${courier.phone}) وعاوز أشحن محفظتي بمبلغ (${amt} جنيه) وسجلت طلب الشحن في السيستم ⚡`;
+      window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('toast');
+      if (toast) toast.classList.remove('show');
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+    }
+
     function showToast(msg, type = 'auto') {
-      const toast = document.getElementById('toast'); const toastIcon = document.getElementById('toastIcon'); const toastMsg = document.getElementById('toastMsg'); const mockup = document.getElementById('phoneMockup');
-      if (!toast || !toastMsg || !mockup) return;
-      toastMsg.innerText = msg; const isWarn = type === 'warn' ? true : (type === 'ok' ? false : isWarningMessage(msg));
-      toast.classList.toggle('toast-warning', isWarn); toast.classList.toggle('toast-success', !isWarn);
-      if (toastIcon) { toastIcon.className = isWarn ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check'; toastIcon.style.color = isWarn ? '#FF8A80' : '#4CAF50'; }
-      let targetTop = 58; const mockupRect = mockup.getBoundingClientRect();
-      if (lastInteractedElement && document.body.contains(lastInteractedElement)) {
+      const toast = document.getElementById('toast');
+      const tMsg = document.getElementById('toastMsg');
+      const tIcon = document.getElementById('toastIcon');
+      const mockup = document.getElementById('phoneMockup');
+      if (!toast || !tMsg) return;
+
+      tMsg.innerText = msg;
+      const isWarn = type === 'warn' || /(غير|أقل|عفواً|برجاء|اكتب|إجباري|موقوف|مرفوض|خطأ|تعذر|صيانة|مقفل|مش|لازم|⚠️|⛔|❌)/.test(msg);
+      toast.className = `toast-box ${isWarn ? 'toast-warning' : 'toast-success'}`;
+      if (tIcon) {
+        tIcon.className = isWarn ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+        tIcon.style.color = isWarn ? '#FF8A80' : '#4CAF50';
+      }
+
+      let targetTop = 52;
+      if (mockup && lastInteractedElement && document.body.contains(lastInteractedElement)) {
+        const mockupRect = mockup.getBoundingClientRect();
         const elRect = lastInteractedElement.getBoundingClientRect();
         if (elRect.width > 0 && elRect.height > 0) {
-          const relativeY = elRect.top - mockupRect.top - 64; const minTop = 48; const maxTop = Math.max(minTop, mockup.clientHeight - 135); targetTop = Math.max(minTop, Math.min(relativeY, maxTop));
+          const relativeY = elRect.top - mockupRect.top - 62;
+          const minTop = 16;
+          const maxTop = Math.max(minTop, mockup.clientHeight - 130);
+          targetTop = Math.max(minTop, Math.min(relativeY, maxTop));
         }
       }
-      toast.style.top = `${Math.round(targetTop)}px`; toast.classList.add('show');
+      toast.style.top = `${Math.round(targetTop)}px`;
+      toast.classList.add('show');
+
       if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { toast.classList.remove('show'); toastTimer = null; }, 3600);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3800);
     }
 
-    function openTopupModal() { document.getElementById('topupModal')?.classList.add('show'); }
-    function closeTopupModal() { document.getElementById('topupModal')?.classList.remove('show'); }
-    function redirectToWhatsAppTopup() { const courier = getActiveCourier(); const amt = roundMoney(document.getElementById('courierTopupAmountInput')?.value); if (!courier) { showToast('سجل دخولك الأول يا كابتن ⚠️', 'warn'); return; } if (amt <= 0) { showToast('اكتب مبلغ شحن مظبوط يا بطل ⚠️', 'warn'); return; } const text = `محتاج أشحن محفظتي بمبلغ ${amt} ج - الكابتن: ${courier.fullName} (${courier.phone})`; window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(text)}`, '_blank'); closeTopupModal(); }
-
-    function setupDelegatedEvents() {
-      document.getElementById('phoneScreen')?.addEventListener('click', function(e) {
-        const btn = e.target.closest('[data-action]'); if (!btn) return;
-        const action = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');
-        if (action === 'cust-cancel') customerCancelOrder(id);
-        else if (action === 'cust-rate') openRatingModal(id);
-        else if (action === 'cust-dispute') customerOpenDispute(id);
-        else if (action === 'cour-accept') courierAcceptOrder(id);
-        else if (action === 'cour-advance') courierAdvanceOrderStatus(id, btn.getAttribute('data-next'));
-        else if (action === 'cour-release') courierReleaseOrder(id);
-        else if (action === 'cour-complete') courierCompleteDeliveryInstantly(id);
-        else if (action === 'view-order-map') openCourierOrderMapModal(id);
-        else if (action === 'go-radar') switchCourierTab('home');
-      });
+    function renderAllData() {
+      renderGlobalBannersAndSettings();
+      renderCustomerProfileSection();
+      renderCustomerOrdersList();
+      renderCourierScreen();
+      renderCourierFeed();
     }
 
-function hideUnifiedSplashScreen() {
-      const splashes = document.querySelectorAll('#ios-splash-screen');
-      if (!splashes.length) return;
-      splashes.forEach(splash => {
-        splash.style.pointerEvents = 'none';
+    // تفويض الأحداث الموحد للأزرار الديناميكية داخل كروت الطلبات والرادار
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      const orderId = btn.getAttribute('data-id') || '';
+
+      if (action === 'view-order-map' && orderId) {
+        openCourierOrderMapModal(orderId);
+      } else if (action === 'go-radar') {
+        switchCourierTab('home');
+      } else if (action === 'cust-cancel' && orderId) {
+        customerCancelOrder(orderId);
+      } else if (action === 'cust-rate' && orderId) {
+        openRatingModal(orderId);
+      } else if (action === 'cust-dispute' && orderId) {
+        customerOpenDispute(orderId);
+      } else if (action === 'cour-accept' && orderId) {
+        courierAcceptOrder(orderId);
+      } else if (action === 'cour-release' && orderId) {
+        courierReleaseOrder(orderId);
+      } else if (action === 'cour-advance' && orderId) {
+        const nextSt = btn.getAttribute('data-next') || '';
+        if (nextSt) courierAdvanceOrderStatus(orderId, nextSt);
+      } else if (action === 'cour-complete' && orderId) {
+        courierCompleteDeliveryInstantly(orderId);
+      }
+    });
+
+    function hideSplashScreenOnce() {
+      const splash = document.getElementById('ios-splash-screen');
+      if (splash) {
         splash.style.opacity = '0';
-      });
-      setTimeout(() => {
-        splashes.forEach(splash => splash.remove());
-        try { sessionStorage.setItem('ENNABY_SPLASH_SHOWN_V1', '1'); } catch (e) {}
-        if (customerInlineMap) customerInlineMap.invalidateSize();
-      }, 300);
+        setTimeout(() => {
+          if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 320);
+      }
+      try {
+        sessionStorage.setItem('ENNABY_SPLASH_SHOWN_V1', '1');
+      } catch (e) {}
     }
 
-    async function initApp() {
-      // حد أقصى للأمان (1.8 ثانية) لإخفاء شاشة التحميل حتى لو كان الإنترنت بطيئاً عند المستخدم
-      const splashSafetyTimer = setTimeout(hideUnifiedSplashScreen, 1800);
-
-      if (window.matchMedia('(max-width: 480px)').matches) document.getElementById('deviceContainer')?.classList.add('fullscreen');
-      if (STATE.isAppInstalled) reportActualAppInstallOnce();
-      setupDelegatedEvents(); populateAllZoneDropdowns();
-      initCustomerInlineLeafletMap();
-      if (STATE.customerProfile && STATE.customerProfile.savedPhone) { const senderInput = document.getElementById('orderSenderPhone'); if (senderInput) senderInput.value = STATE.customerProfile.savedPhone; }
+    async function initPublicApp() {
+      populateAllZoneDropdowns();
       selectTripType(STATE.currentTripType || 'send');
-      updateCustomerPinFieldVisibility();
-      renderSavedPromoUI();
-      calculateDeliveryPrice();
-      await syncFromCloudServer(true);
-
-      // إخفاء شاشة التحميل فوراً بمجرد جاهزية البيانات والواجهة
-      clearTimeout(splashSafetyTimer);
-      hideUnifiedSplashScreen();
-      switchRole(STATE.currentRole === 'courier' ? 'courier' : 'customer');
+      if (STATE.customerProfile && STATE.customerProfile.savedPhone) {
+        const senderInp = document.getElementById('orderSenderPhone');
+        if (senderInp && !senderInp.value) senderInp.value = STATE.customerProfile.savedPhone;
+      }
+      switchRole(STATE.currentRole || 'customer');
       switchCustTab(STATE.currentCustTab || 'home');
       if (getActiveCourier()) {
         switchCourierTab(STATE.currentCourTab || 'home');
-        subscribeUserToPush(STATE.activeCourierPhone);
-      } else if (STATE.customerProfile && STATE.customerProfile.savedPhone) {
-        subscribeUserToPush(STATE.customerProfile.savedPhone);
-      } else {
-        // تسجيل الهاتف كزائر محمّل للتطبيق ليصله تذكير التسجيل والعروض العامة
-        subscribeUserToPush(null);
       }
-      updateBottomNavVisibility();
+
+      initCustomerInlineLeafletMap();
+      startPromoCountdownTicker();
+      renderAllData();
+      calculateDeliveryPrice();
+
+      await syncFromCloudServer(true);
+      hideSplashScreenOnce();
+      subscribeUserToPush();
       sendCustomerPresencePing();
-      setInterval(() => { if (!document.hidden) syncFromCloudServer(true); }, 8000);
-      setInterval(() => { if (!document.hidden) sendCustomerPresencePing(); }, 25000);
+
+      setInterval(() => {
+        if (!document.hidden) {
+          syncFromCloudServer(true);
+          sendCustomerPresencePing();
+        }
+      }, 6000);
+
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           syncFromCloudServer(true);
@@ -4341,7 +5750,7 @@ function hideUnifiedSplashScreen() {
       });
     }
 
-    document.addEventListener('DOMContentLoaded', initApp);
+    document.addEventListener('DOMContentLoaded', initPublicApp);
   </script>
 </body>
 </html>
