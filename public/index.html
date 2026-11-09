@@ -124,17 +124,25 @@
     .customer-smart-platform-frame { display: inline-block; font-size: 10.5px; font-weight: 800; color: var(--primary); padding: 2px 12px; border-radius: 8px; margin-top: 5px; border: 1px solid rgba(123, 63, 82, 0.24); background: rgba(123, 63, 82, 0.04); letter-spacing: 0.1px; }
     .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid rgba(123, 63, 82, 0.08); }
     .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .btn-main { background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 12px 18px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-shadow: 0 4px 12px rgba(123, 63, 82, 0.25); transition: all 0.2s ease; }
+    /* أزرار مستطيلة مدمجة وصغيرة متناسقة مع شاشات الهواتف (تمنع الشكل المربع نهائياً) */
+    .btn-main { background: var(--primary); color: #fff; border: none; border-radius: 9px !important; padding: 0 12px !important; height: 35px !important; min-height: 35px !important; max-height: 36px !important; font-size: 11.5px !important; font-weight: 800; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; width: 100%; line-height: 1.2; white-space: nowrap !important; flex-wrap: nowrap !important; box-shadow: 0 3px 8px rgba(123, 63, 82, 0.18); transition: all 0.2s ease; }
     .btn-main:active { transform: scale(0.98); background: var(--primary-dark); }
     .btn-main:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
-    .btn-secondary { background: var(--accent); color: var(--primary); border: none; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-danger { background: #FFEBEE; color: var(--danger); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .btn-success { background: #E8F5E9; color: var(--success); border: none; border-radius: 12px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
-    .input-label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
-    .input-field, .select-field, .textarea-field { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 13px; color: var(--text-main); font-weight: 600; outline: none; transition: border-color 0.2s; }
+    .btn-secondary { background: var(--accent); color: var(--primary); border: none; border-radius: 8px !important; padding: 0 10px !important; height: 33px !important; min-height: 33px !important; max-height: 35px !important; font-size: 11px !important; font-weight: 800; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; line-height: 1.2; white-space: nowrap !important; flex-wrap: nowrap !important; transition: all 0.2s ease; }
+    .btn-secondary:active { transform: scale(0.98); }
+    .btn-danger { background: #FFEBEE; color: var(--danger); border: 1px solid #FFCDD2; border-radius: 8px !important; padding: 0 10px !important; height: 33px !important; min-height: 33px !important; max-height: 35px !important; font-size: 11px !important; font-weight: 800; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; line-height: 1.2; white-space: nowrap !important; flex-wrap: nowrap !important; transition: all 0.2s ease; }
+    .btn-danger:active { transform: scale(0.98); }
+    .btn-success { background: #E8F5E9; color: var(--success); border: 1px solid #C8E6C9; border-radius: 8px !important; padding: 0 10px !important; height: 33px !important; min-height: 33px !important; max-height: 35px !important; font-size: 11px !important; font-weight: 800; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; line-height: 1.2; white-space: nowrap !important; flex-wrap: nowrap !important; transition: all 0.2s ease; }
+    .btn-success:active { transform: scale(0.98); }
+    .order-card-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; width: 100%; }
+    .order-card-actions > button { flex: 0 0 34px !important; width: 100% !important; height: 34px !important; min-height: 34px !important; max-height: 35px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 800 !important; border-radius: 8px !important; white-space: nowrap !important; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; }
+    .order-card-actions-row { display: flex; flex-direction: row; gap: 6px; align-items: center; width: 100%; }
+    .order-card-actions-row > button { flex: 1 1 0 !important; width: auto !important; min-width: 0; height: 34px !important; min-height: 34px !important; max-height: 35px !important; padding: 0 8px !important; font-size: 11px !important; font-weight: 800 !important; border-radius: 8px !important; white-space: nowrap !important; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 4px; }
+    .input-group { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .input-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+    .input-field, .select-field, .textarea-field { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 12.5px; color: var(--text-main); font-weight: 600; outline: none; transition: border-color 0.2s; }
     .input-field:focus, .select-field:focus, .textarea-field:focus { border-color: var(--primary); background: #fff; }
-    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; text-align: center; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 50px; font-size: 10.5px; font-weight: 800; text-align: center; white-space: nowrap; }
     .badge-pending { background: #FFF3E0; color: #B26A00; }
     .badge-accepted { background: #E1F5FE; color: #0277BD; }
     .badge-delivering { background: #F3E5F5; color: #7B1FA2; }
@@ -149,123 +157,121 @@
     .tier-badge-platinum { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #263238; border: 1px solid #90A4AE; }
     .tier-badge-diamond { background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; box-shadow: 0 2px 8px rgba(2, 136, 209, 0.22); }
     .gps-captured-pill { display: none; align-items: center; justify-content: space-between; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-top: 4px; gap: 8px; }
-    /* إطار الملاحظات المميز لإرشاد كتابة العنوان يدوياً أسفل الخريطة */
-    .gps-manual-note { display: block; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border: 1.5px dashed #FBC02D; border-radius: 10px; padding: 7px 10px; font-size: 11px; color: #5D4037; font-weight: 800; margin-top: 6px; line-height: 1.5; text-align: right; }
-    /* الخريطة المدمجة المباشرة (InDrive Style) داخل التصميم الكلاسيكي */
-    .inline-live-map-card { background: #FAF7F4; border: 1.5px solid var(--primary); border-radius: 16px; padding: 10px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .gps-manual-note { display: block; background: linear-gradient(135deg, #FFFDE7, #FFF9C4); border: 1.5px dashed #FBC02D; border-radius: 10px; padding: 6px 10px; font-size: 11px; color: #5D4037; font-weight: 800; margin-top: 6px; line-height: 1.45; text-align: right; }
+    .inline-live-map-card { background: #FAF7F4; border: 1.5px solid var(--primary); border-radius: 16px; padding: 10px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
     .inline-map-mode-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 10px; padding: 7px 8px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; text-align: center; }
-    .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.25); }
-    .inline-leaflet-canvas { width: 100%; height: 195px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
-    /* تصميم متناسق وموحد وعصري لكارت الاستلام وكارت التسليم (ترتيب رأسي كامل للموبايل) */
-    .route-party-card { border-radius: 18px; padding: 16px; margin-bottom: 0; transition: all 0.25s ease; position: relative; }
+    .inline-map-mode-btn { border: 1px solid rgba(123, 63, 82, 0.2); background: #fff; color: var(--text-muted); border-radius: 8px; height: 32px; padding: 0 8px; font-size: 10.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s; text-align: center; white-space: nowrap; }
+    .inline-map-mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.22); }
+    .inline-leaflet-canvas { width: 100%; height: 185px; border-radius: 12px; border: 1px solid #E8DFE3; overflow: hidden; z-index: 5; }
+    .route-party-card { border-radius: 16px; padding: 14px; margin-bottom: 0; transition: all 0.25s ease; position: relative; }
     .route-party-pickup { background: linear-gradient(180deg, #FFFFFF 0%, #FDF9FA 100%); border: 1.5px solid #E5D4DA; border-right: 5px solid var(--primary); box-shadow: 0 6px 18px rgba(123, 63, 82, 0.06); }
-    .route-party-dropoff { background: linear-gradient(180deg, #FFFFFF 0%, #F6FBF7 100%); border: 1.5px solid #C8E6C9; border-right: 5px solid var(--success); box-shadow: 0 6px 18px rgba(46, 125, 50, 0.06); margin-bottom: 14px; }
-    .route-party-header { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 14px; padding-bottom: 11px; border-bottom: 1px dashed rgba(123, 63, 82, 0.18); }
+    .route-party-dropoff { background: linear-gradient(180deg, #FFFFFF 0%, #F6FBF7 100%); border: 1.5px solid #C8E6C9; border-right: 5px solid var(--success); box-shadow: 0 6px 18px rgba(46, 125, 50, 0.06); margin-bottom: 12px; }
+    .route-party-header { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px dashed rgba(123, 63, 82, 0.18); }
     .route-party-dropoff .route-party-header { border-bottom-color: rgba(46, 125, 50, 0.22); }
     .route-step-top-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-    .route-step-number { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #FFFFFF; flex-shrink: 0; }
+    .route-step-number { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 900; color: #FFFFFF; flex-shrink: 0; }
     .route-step-number.step-pickup { background: var(--primary); box-shadow: 0 2px 6px rgba(123, 63, 82, 0.28); }
     .route-step-number.step-dropoff { background: var(--success); box-shadow: 0 2px 6px rgba(46, 125, 50, 0.28); }
-    .route-party-badge { font-size: 13px; font-weight: 900; padding: 4px 12px; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px; line-height: 1.35; }
+    .route-party-badge { font-size: 12.5px; font-weight: 900; padding: 3px 10px; border-radius: 50px; display: inline-flex; align-items: center; gap: 5px; line-height: 1.35; }
     .route-party-pickup .route-party-badge { background: var(--accent); color: var(--primary); }
     .route-party-dropoff .route-party-badge { background: #E8F5E9; color: var(--success); }
-    .route-party-subtitle { font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin: 0 4px 0 0; line-height: 1.4; }
-    .route-fields-grid { display: grid; grid-template-columns: 118px 1fr; gap: 8px; width: 100%; margin-bottom: 10px; align-items: end; }
+    .route-party-subtitle { font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 0 4px 0 0; line-height: 1.4; }
+    .route-fields-grid { display: grid; grid-template-columns: 114px 1fr; gap: 8px; width: 100%; margin-bottom: 8px; align-items: end; }
     .route-field-col { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; }
-    .route-field-label { font-size: 11.5px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .route-field-label { font-size: 11px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
     .route-party-dropoff .route-field-label { color: var(--success); }
-    .route-party-card .input-field, .route-party-card .select-field { width: 100%; height: 43px; background-color: #FFFFFF !important; border: 1.5px solid #E2D5DA; border-radius: 11px; font-size: 13px; font-weight: 700; color: var(--text-main); padding: 0 12px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-    /* شريط التتبع البصري لمراحل الطلب (Order Visual Stepper) */
-    .order-stepper { display: flex; align-items: center; justify-content: space-between; position: relative; margin: 10px 0 12px; padding: 0 4px; }
+    .route-party-card .input-field, .route-party-card .select-field { width: 100%; height: 40px; background-color: #FFFFFF !important; border: 1.5px solid #E2D5DA; border-radius: 10px; font-size: 12.5px; font-weight: 700; color: var(--text-main); padding: 0 11px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .order-stepper { display: flex; align-items: center; justify-content: space-between; position: relative; margin: 8px 0 10px; padding: 0 4px; }
     .order-stepper::before { content: ""; position: absolute; top: 13px; right: 12%; left: 12%; height: 2.5px; background: #E9DCE0; z-index: 1; }
     .order-step-item { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; z-index: 2; flex: 1; }
-    .order-step-circle { width: 28px; height: 28px; border-radius: 50%; background: #FAF7F4; border: 2px solid #D1B8C0; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.25s ease; }
+    .order-step-circle { width: 26px; height: 26px; border-radius: 50%; background: #FAF7F4; border: 2px solid #D1B8C0; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.25s ease; }
     .order-step-item.step-done .order-step-circle { background: var(--success); border-color: var(--success); color: #FFFFFF; }
-    .order-step-item.step-current .order-step-circle { background: var(--primary); border-color: var(--primary); color: #FFFFFF; box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.16); transform: scale(1.08); }
+    .order-step-item.step-current .order-step-circle { background: var(--primary); border-color: var(--primary); color: #FFFFFF; box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.16); transform: scale(1.06); }
     .order-step-label { font-size: 9.5px; font-weight: 800; color: var(--text-muted); text-align: center; line-height: 1.2; white-space: nowrap; }
     .order-step-item.step-done .order-step-label { color: var(--success); }
     .order-step-item.step-current .order-step-label { color: var(--primary); font-weight: 900; }
     .route-party-dropoff .input-field, .route-party-dropoff .select-field { border-color: #C8E6C9; }
-    .route-party-card .input-field::placeholder { color: #9E9498; font-weight: 600; font-size: 12.5px; }
+    .route-party-card .input-field::placeholder { color: #9E9498; font-weight: 600; font-size: 12px; }
     .route-party-card .input-field:focus, .route-party-card .select-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.1); }
     .route-party-dropoff .input-field:focus, .route-party-dropoff .select-field:focus { border-color: var(--success); box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
     .route-select-wrap { position: relative; width: 100%; }
-    .zone-select-box { appearance: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; background-image: none !important; padding: 0 14px 0 38px !important; font-weight: 800 !important; color: var(--primary) !important; cursor: pointer; }
+    .zone-select-box { appearance: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; background-image: none !important; padding: 0 12px 0 34px !important; font-weight: 800 !important; color: var(--primary) !important; cursor: pointer; }
     .route-party-dropoff .zone-select-box { color: var(--success) !important; }
-    .route-select-arrow { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 13px; color: var(--primary); }
+    .route-select-arrow { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 12px; color: var(--primary); }
     .route-party-dropoff .route-select-arrow { color: var(--success); }
-    .route-party-connector { display: flex; align-items: center; justify-content: center; margin: 10px 0; position: relative; }
+    .route-party-connector { display: flex; align-items: center; justify-content: center; margin: 8px 0; position: relative; }
     .route-party-connector::before { content: ""; position: absolute; left: 22%; right: 22%; height: 1px; border-top: 1.5px dashed rgba(123, 63, 82, 0.22); z-index: 1; }
-    .route-connector-badge { width: 34px; height: 34px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid var(--accent); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 3px 8px rgba(123, 63, 82, 0.12); z-index: 2; }
-    /* شريط تقدم مستوى الكابتن الحي */
-    .tier-live-progress-wrap { background: linear-gradient(135deg, #FFFFFF, #F5FBFF); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 10px 12px; }
-    .tier-live-progress-track { background: #E1F5FE; border-radius: 50px; height: 9px; width: 100%; overflow: hidden; margin: 6px 0; border: 1px solid #B3E5FC; }
+    .route-connector-badge { width: 30px; height: 30px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid var(--accent); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(123, 63, 82, 0.12); z-index: 2; }
+    .tier-live-progress-wrap { background: linear-gradient(135deg, #FFFFFF, #F5FBFF); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 9px 12px; }
+    .tier-live-progress-track { background: #E1F5FE; border-radius: 50px; height: 8px; width: 100%; overflow: hidden; margin: 5px 0; border: 1px solid #B3E5FC; }
     .tier-live-progress-fill { background: linear-gradient(90deg, #0288D1, #26C6DA); height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 50px; }
     .upload-card-box { border: 1.5px dashed var(--primary); background: #FAF7F4; border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease; }
     .upload-preview-container { position: relative; width: 100%; height: 100px; border-radius: 10px; overflow: hidden; display: none; }
     .upload-preview-container img { width: 100%; height: 100%; object-fit: cover; }
     .remove-upload-btn { position: absolute; top: 5px; left: 5px; background: rgba(211, 47, 47, 0.85); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 100vw; height: calc(65px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); z-index: 90; -webkit-transform: translateZ(0); transform: translateZ(0); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 800; background: none; border: none; cursor: pointer; padding: 6px 4px; position: relative; flex: 1; line-height: 1.2; }
-    .nav-item i { font-size: 18px; line-height: 1; display: inline-block; min-height: 18px; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 100vw; height: calc(62px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #FFFFFF; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(123, 63, 82, 0.09); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); z-index: 90; -webkit-transform: translateZ(0); transform: translateZ(0); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-muted); text-decoration: none; font-size: 10.5px; font-weight: 800; background: none; border: none; cursor: pointer; padding: 5px 4px; position: relative; flex: 1; line-height: 1.2; }
+    .nav-item i { font-size: 17px; line-height: 1; display: inline-block; min-height: 17px; }
     .nav-item.active { color: var(--primary); }
-    /* ضمان عدم تأثر صور مربعات خريطة Leaflet بقواعد الـ CSS في متصفح آيفون (iOS WebKit) */
     .leaflet-container img.leaflet-tile { max-width: none !important; max-height: none !important; width: 256px !important; height: 256px !important; visibility: visible !important; opacity: 1 !important; }
     .nav-badge-count { position: absolute; top: 2px; right: calc(50% - 18px); background: var(--primary); color: white; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 50px; display: flex; align-items: center; justify-content: center; }
-    .toast-box { position: absolute; top: 52px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px) scale(0.96); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.18s ease; pointer-events: none; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.12); }
+    .toast-box { position: absolute; top: 52px; left: 16px; right: 16px; background: #302A2D; color: #fff; padding: 11px 14px; border-radius: 13px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); z-index: 1500; opacity: 0; transform: translateY(-12px) scale(0.96); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.18s ease; pointer-events: none; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.12); }
     .toast-box.toast-warning { background: #3B2326; border-color: #FF8A80; }
     .toast-box.toast-success { background: #233329; border-color: #81C784; }
     .toast-box.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .toast-close-x { font-size: 14px; opacity: 0.75; padding: 0 4px; line-height: 1; }
-    .switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #FAF7F4; border-radius: 12px; }
-    .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+    .switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: #FAF7F4; border-radius: 12px; }
+    .switch { position: relative; display: inline-block; width: 46px; height: 24px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .3s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; right: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; right: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(-22px); }
-    /* تصميم مضغوط واحترافي لشريط كود الخصم وكارت أجرة التوصيل (Mobile-First) */
-    .promo-compact-card { display: none; background: #FAF7FC; border: 1px solid #E1BEE7; border-radius: 12px; padding: 9px 11px; margin-bottom: 10px; }
-    .promo-compact-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
-    .promo-compact-title { font-size: 11.5px; font-weight: 800; color: #6A1B9A; display: inline-flex; align-items: center; gap: 5px; margin: 0; }
+    .promo-compact-card { display: none; background: #FAF7FC; border: 1px solid #E1BEE7; border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }
+    .promo-compact-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 5px; }
+    .promo-compact-title { font-size: 11px; font-weight: 800; color: #6A1B9A; display: inline-flex; align-items: center; gap: 5px; margin: 0; }
     .promo-compact-row { display: flex; align-items: center; gap: 6px; width: 100%; }
-    .promo-compact-input { flex: 1; min-width: 0; height: 38px !important; padding: 0 11px !important; font-size: 12px !important; font-weight: 800 !important; background: #FFFFFF !important; border: 1px solid #D1C4E9 !important; border-radius: 9px !important; text-transform: uppercase; color: var(--text-main); }
-    .promo-compact-input::placeholder { font-size: 11px; font-weight: 600; color: #9E9498; }
+    .promo-compact-input { flex: 1; min-width: 0; height: 34px !important; padding: 0 10px !important; font-size: 11.5px !important; font-weight: 800 !important; background: #FFFFFF !important; border: 1px solid #D1C4E9 !important; border-radius: 8px !important; text-transform: uppercase; color: var(--text-main); }
+    .promo-compact-input::placeholder { font-size: 10.5px; font-weight: 600; color: #9E9498; }
     .promo-compact-input:focus { border-color: #6A1B9A !important; box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.1); }
-    .promo-compact-btn { width: auto !important; height: 38px; padding: 0 12px !important; font-size: 11.5px !important; font-weight: 800 !important; border-radius: 9px !important; background: #6A1B9A !important; color: #FFFFFF !important; border: none; white-space: nowrap !important; flex-shrink: 0; display: inline-flex !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; box-shadow: 0 2px 6px rgba(106, 27, 154, 0.18) !important; }
-    .promo-compact-hint { font-size: 9.5px; color: #7B5299; font-weight: 700; margin-top: 5px; display: block; line-height: 1.35; }
-    .price-preview-banner { background: #FFFFFF; border: 1px solid #E8DCE0; border-right: 4px solid var(--primary); border-radius: 14px; padding: 11px 12px; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 7px; box-shadow: 0 2px 10px rgba(123, 63, 82, 0.05); }
-    .fare-card-title { font-size: 11.5px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 5px; line-height: 1.2; }
+    .promo-compact-btn { width: auto !important; height: 34px !important; min-height: 34px !important; padding: 0 11px !important; font-size: 11px !important; font-weight: 800 !important; border-radius: 8px !important; background: #6A1B9A !important; color: #FFFFFF !important; border: none; white-space: nowrap !important; flex-shrink: 0; display: inline-flex !important; align-items: center; justify-content: center; gap: 4px; cursor: pointer; box-shadow: 0 2px 6px rgba(106, 27, 154, 0.18) !important; }
+    .promo-compact-hint { font-size: 9.5px; color: #7B5299; font-weight: 700; margin-top: 4px; display: block; line-height: 1.35; }
+    .price-preview-banner { background: #FFFFFF; border: 1px solid #E8DCE0; border-right: 4px solid var(--primary); border-radius: 14px; padding: 10px 11px; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 10px rgba(123, 63, 82, 0.05); }
+    .fare-card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 5px; line-height: 1.2; }
     .fare-card-title i { color: var(--primary); font-size: 12px; }
     .fare-price-main-row { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-top: 1px; width: 100%; }
-    .fare-price-current { font-size: 21px; font-weight: 900; color: var(--primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap; }
-    .fare-price-currency { font-size: 12px; font-weight: 800; color: var(--primary); margin-right: 1px; white-space: nowrap; }
-    .fare-price-old-pill { display: none; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--danger); background: #FFEBEE; border: 1px solid #FFCDD2; padding: 2px 6px; border-radius: 6px; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
+    .fare-price-current { font-size: 20px; font-weight: 900; color: var(--primary); line-height: 1.1; letter-spacing: -0.3px; white-space: nowrap; }
+    .fare-price-currency { font-size: 11.5px; font-weight: 800; color: var(--primary); margin-right: 1px; white-space: nowrap; }
+    .fare-price-old-pill { display: none; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; color: var(--danger); background: #FFEBEE; border: 1px solid #FFCDD2; padding: 2px 6px; border-radius: 6px; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
     .fare-price-old-pill del { color: var(--danger); font-weight: 900; text-decoration: line-through; }
-    .fare-discount-strip { display: none; align-items: center; gap: 3px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--success); padding: 2px 6px; border-radius: 6px; font-size: 10.5px; font-weight: 800; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
-    .fare-captain-pill { background: #FAF4F6; border: 1px solid #EFE3E7; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; line-height: 1.4; }
-    .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: #78350F; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FDE68A; border-right: 3.5px solid #F59E0B; border-radius: 9px; padding: 6px 10px; line-height: 1.5; margin-top: 1px; }
-    /* تنسيقات كارت الكابتن للعميل وأزرار الاتصال والواتساب والمشوار النشط للكابتن */
-    .saved-address-bar { display: none; align-items: center; justify-content: space-between; gap: 8px; background: #FFF8F9; border: 1px solid #E5D4DA; border-radius: 11px; padding: 7px 11px; margin-bottom: 10px; font-size: 11px; font-weight: 800; color: var(--primary); }
-    .saved-address-apply-btn { background: var(--primary); color: #fff; border: none; border-radius: 50px; padding: 4px 11px; font-size: 10.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(123, 63, 82, 0.2); }
-    .order-captain-card { background: linear-gradient(135deg, #FAF7F4, #F5ECEF); border: 1.5px solid #E2D2D8; border-right: 4px solid var(--primary); border-radius: 12px; padding: 10px 12px; margin: 8px 0; display: flex; flex-direction: column; gap: 8px; }
-    .contact-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; width: 100%; }
-    .btn-call-pill { background: var(--primary); color: #fff !important; text-decoration: none; border-radius: 9px; padding: 7px 10px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(123, 63, 82, 0.2); }
-    .btn-wa-pill { background: #25D366; color: #fff !important; text-decoration: none; border-radius: 9px; padding: 7px 10px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(37, 211, 102, 0.22); }
-    .courier-party-contact-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 11px; padding: 8px 10px; margin-top: 6px; display: flex; flex-direction: column; gap: 7px; }
-    .active-mission-card { border: 2px solid var(--primary) !important; background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%) !important; box-shadow: 0 8px 22px rgba(123, 63, 82, 0.14) !important; position: relative; overflow: hidden; }
-    .active-mission-ribbon { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-size: 11px; font-weight: 900; padding: 5px 12px; margin: -18px -18px 10px -18px; display: flex; align-items: center; justify-content: space-between; }
-    /* تمييز بصري تفاعلي لبطاقات اختيار الدافع (الراسل / المستلم) */
-    label:has(input[name="payer"]) { border: 1.5px solid #E8DFE3; transition: all 0.2s ease; }
+    .fare-discount-strip { display: none; align-items: center; gap: 3px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--success); padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 800; line-height: 1.35; white-space: nowrap; flex-shrink: 0; }
+    .fare-captain-pill { background: #FAF4F6; border: 1px solid #EFE3E7; color: var(--primary-dark); font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 7px; display: inline-flex; align-items: center; gap: 5px; width: fit-content; max-width: 100%; line-height: 1.35; }
+    .fare-footnote-text { font-size: 10.5px; font-weight: 700; color: #78350F; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FDE68A; border-right: 3.5px solid #F59E0B; border-radius: 8px; padding: 5px 9px; line-height: 1.45; margin-top: 1px; }
+    .saved-address-bar { display: none !important; }
+    .order-captain-card { background: linear-gradient(135deg, #FAF7F4, #F5ECEF); border: 1.5px solid #E2D2D8; border-right: 4px solid var(--primary); border-radius: 12px; padding: 9px 11px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
+    .contact-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    .btn-call-pill { background: var(--primary); color: #fff !important; text-decoration: none; border-radius: 8px; height: 32px; padding: 0 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; box-shadow: 0 2px 5px rgba(123, 63, 82, 0.18); }
+    .btn-wa-pill { background: #25D366; color: #fff !important; text-decoration: none; border-radius: 8px; height: 32px; padding: 0 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; box-shadow: 0 2px 5px rgba(37, 211, 102, 0.2); }
+    .courier-party-contact-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 10px; padding: 7px 9px; margin-top: 5px; display: flex; flex-direction: column; gap: 6px; }
+    .active-mission-card { border: 2px solid var(--primary) !important; background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%) !important; box-shadow: 0 6px 18px rgba(123, 63, 82, 0.12) !important; position: relative; overflow: hidden; }
+    .active-mission-ribbon { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-size: 10.5px; font-weight: 900; padding: 4px 11px; margin: -18px -18px 8px -18px; display: flex; align-items: center; justify-content: space-between; }
+
+    /* شريط الماليات المستطيل المتناسق (تقبض كاش + صافيك بعد العمولة) في جميع كروت الكابتن */
+    .courier-finance-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 5px 0; width: 100%; }
+    .courier-fin-pill { display: flex; align-items: center; justify-content: space-between; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 10.5px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .courier-fin-pill.cash-pill { background: #FAF4F6; border: 1px solid #E5D4DA; color: var(--text-main); }
+    .courier-fin-pill.cash-pill strong { font-size: 12.5px; font-weight: 900; color: var(--primary); }
+    .courier-fin-pill.net-pill { background: #E8F5E9; border: 1px solid #C8E6C9; color: #1B5E20; }
+    .courier-fin-pill.net-pill strong { font-size: 12.5px; font-weight: 900; color: var(--success); }
+
+    label:has(input[name="payer"]) { border: 1.5px solid #E8DFE3; min-height: 36px; padding: 6px 10px !important; transition: all 0.2s ease; }
     label:has(input[name="payer"]:checked) { background: #FDF4F6 !important; border-color: var(--primary) !important; color: var(--primary); box-shadow: 0 2px 8px rgba(123, 63, 82, 0.12); }
-    input[name="payer"] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; }
-    .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    input[name="payer"] { accent-color: var(--primary); width: 14px; height: 14px; flex-shrink: 0; }
+    .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
     .custom-modal.show { display: flex; }
-    .modal-content-card { background: #fff; border-radius: 20px; width: 100%; max-width: 380px; padding: 20px; position: relative; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
-    .yellow-discount-note { background: #FFFDE7; border: 1.5px solid #FBC02D; padding: 8px 10px; font-size: 11.5px; margin: 8px 0; border-radius: 10px; font-weight: 800; color: #5D4037; line-height: 1.5; }
-    .sub-tab-section { display: flex; flex-direction: column; gap: 14px; animation: fadeIn 0.25s ease-in-out; }
-    /* صندوق التمرير الداخلي الأنيق لكشف حساب المحفظة وسجل الهدايا (آخر 10 حركات) */
+    .modal-content-card { background: #fff; border-radius: 18px; width: 100%; max-width: 365px; padding: 15px; position: relative; box-shadow: var(--shadow-lg); max-height: 92dvh; overflow-y: auto; }
+    .yellow-discount-note { background: #FFFDE7; border: 1px solid #FBC02D; padding: 4px 8px; font-size: 10px; margin: 3px 0; border-radius: 7px; font-weight: 800; color: #5D4037; line-height: 1.35; }
+    .sub-tab-section { display: flex; flex-direction: column; gap: 12px; animation: fadeIn 0.25s ease-in-out; }
     .wallet-log-scroll-box { max-height: 235px; overflow-y: auto; overflow-x: hidden; background: #FAF7F4; border: 1.5px solid #E9DCE0; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
     .wallet-log-scroll-box::-webkit-scrollbar { width: 4px; }
     .wallet-log-scroll-box::-webkit-scrollbar-track { background: transparent; }
@@ -278,47 +284,167 @@
     .wallet-tx-amount.tx-plus { background: #E8F5E9; color: var(--success); border: 1px solid #C8E6C9; }
     .wallet-tx-amount.tx-minus { background: #FFEBEE; color: var(--danger); border: 1px solid #FFCDD2; }
 
-    /* إصلاح مشكلة تقطع الحروف العربية في النص الإرشادي على هواتف آبل */
     #orderCustomerPin::placeholder, 
     #custProfilePinSyncInput::placeholder {
       letter-spacing: normal !important;
     }
 
-    /* تنسيقات النافذة المنبثقة الفورية لأوردرات الرادار (10 ثوانٍ) */
-    .radar-popup-card { max-width: 395px; padding: 0; overflow: hidden; border: 2px solid var(--primary); animation: radarPopIn 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-    @keyframes radarPopIn { from { opacity: 0; transform: scale(0.9) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-    .radar-popup-header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 14px 16px 12px; text-align: center; position: relative; }
+    /* تنسيقات النافذة المنبثقة المصغرة والمضغوطة لأوردرات الرادار لتظهر كاملة 100% على جميع الهواتف */
+    .radar-popup-card { max-width: 356px; padding: 0; overflow-x: hidden; overflow-y: auto; max-height: 92dvh; border: 2px solid var(--primary); border-radius: 15px; animation: radarPopIn 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+    @keyframes radarPopIn { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .radar-popup-header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 7px 11px 6px; text-align: center; position: relative; }
     .radar-popup-header.stacked-mode { background: linear-gradient(135deg, #1B5E20, #2E7D32); }
-    .radar-countdown-track { width: 100%; height: 7px; background: #E9DCE0; overflow: hidden; position: relative; }
+    .radar-countdown-track { width: 100%; height: 4px; background: #E9DCE0; overflow: hidden; position: relative; }
     .radar-countdown-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #2E7D32, #66BB6A); transition: width 0.1s linear, background 0.3s ease; }
     .radar-countdown-fill.urgent { background: linear-gradient(90deg, #D32F2F, #FF5252); }
-    .radar-popup-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; }
-    .radar-popup-route-box { background: #FAF7F4; border: 1.5px solid #E9DCE0; border-radius: 13px; padding: 10px 12px; font-size: 12px; line-height: 1.7; display: flex; flex-direction: column; gap: 6px; }
-    .radar-popup-finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center; }
-    .radar-popup-fin-item { background: #FAF4F6; border: 1px solid #E8DCE0; border-radius: 11px; padding: 8px 6px; }
-    .radar-popup-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; margin-top: 4px; }
-    .btn-popup-accept { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; border-radius: 13px; padding: 12px 14px; font-size: 13.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 5px 15px rgba(46, 125, 50, 0.32); transition: transform 0.15s ease; }
+    .radar-popup-body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 5px; background: #FFFFFF; }
+    .radar-popup-route-box { background: #FAF7F4; border: 1px solid #E9DCE0; border-radius: 9px; padding: 5px 8px; font-size: 10.5px; line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
+    .radar-popup-finance-grid { display: flex; flex-direction: row; gap: 6px; margin-top: 4px; width: 100%; }
+    .radar-popup-fin-item { flex: 1; background: #FAF4F6; border: 1px solid #E8DCE0; border-radius: 6px; height: 28px; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .radar-popup-fin-item.net-profit { background: #E8F5E9; border-color: #C8E6C9; color: #1B5E20; }
+    .radar-popup-actions { display: grid; grid-template-columns: 1.4fr 1fr; gap: 6px; margin: 2px 0; }
+    .btn-popup-accept { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; border-radius: 8px !important; height: 33px !important; min-height: 33px !important; max-height: 34px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 8px rgba(46, 125, 50, 0.25); transition: transform 0.15s ease; }
     .btn-popup-accept:active { transform: scale(0.97); }
-    .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 13px; padding: 12px 14px; font-size: 13px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.28); transition: transform 0.15s ease; }
+    .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 8px !important; height: 33px !important; min-height: 33px !important; max-height: 34px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.22); transition: transform 0.15s ease; }
     .btn-popup-reject:active { transform: scale(0.97); }
-    .btn-popup-offer { grid-column: span 2; background: linear-gradient(135deg, #ED6C02, #E65100); color: #fff; border: none; border-radius: 13px; padding: 11px 14px; font-size: 13px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 12px rgba(230, 81, 0, 0.28); transition: transform 0.15s ease; }
+    .btn-popup-offer { grid-column: span 2; background: linear-gradient(135deg, #ED6C02, #E65100); color: #fff; border: none; border-radius: 8px !important; height: 31px !important; min-height: 31px !important; max-height: 32px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 6px rgba(230, 81, 0, 0.22); transition: transform 0.15s ease; }
     .btn-popup-offer:active { transform: scale(0.98); }
-    /* تنسيقات التحكم المرن الموحد في السعر (+ و - والكتابة اليدوية ونسبة الزيادة %) للعميل والكابتن */
-    .fare-negotiation-box { background: #FAF7F4; border: 1.5px dashed rgba(123, 63, 82, 0.28); border-radius: 14px; padding: 10px 12px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px; }
-    .fare-negotiation-header { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; }
-    .fare-negotiation-title { font-size: 11.5px; font-weight: 900; color: var(--primary); line-height: 1.4; display: flex; align-items: center; gap: 5px; }
-    .fare-min-pill { font-size: 10px; font-weight: 800; color: #5F2E3E; background: #EFE6E9; padding: 2px 8px; border-radius: 50px; display: inline-flex; align-items: center; white-space: nowrap; }
-    .fare-adjust-controls { display: flex; align-items: center; gap: 7px; width: 100%; }
-    .fare-step-btn { width: 42px; height: 40px; border-radius: 11px; border: 1.5px solid #D1B8C0; background: #FFFFFF; color: var(--primary); font-size: 14px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; box-shadow: 0 2px 5px rgba(123, 63, 82, 0.06); user-select: none; }
+
+    /* تنسيقات كارت اقتراح وتعديل الأجرة المصغر والمستطيل */
+    .fare-negotiation-box { background: #FAF7F4; border: 1.5px dashed rgba(123, 63, 82, 0.26); border-radius: 10px; padding: 6px 8px; margin-top: 2px; display: flex; flex-direction: column; gap: 5px; }
+    .fare-negotiation-header { display: flex; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px; width: 100%; }
+    .fare-negotiation-title { font-size: 10.5px; font-weight: 900; color: var(--primary); line-height: 1.25; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fare-min-pill { font-size: 9.5px; font-weight: 800; color: #5F2E3E; background: #EFE6E9; padding: 1px 6px; border-radius: 50px; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
+    .fare-adjust-controls { display: flex; align-items: center; gap: 5px; width: 100%; }
+    .fare-step-btn { width: 42px; height: 30px !important; min-height: 30px !important; border-radius: 7px; border: 1.5px solid #D1B8C0; background: #FFFFFF; color: var(--primary); font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
     .fare-step-btn:active { transform: scale(0.94); background: var(--accent); }
-    .fare-mid-input-wrap { flex: 1; min-width: 0; height: 40px; background: #FFFFFF; border: 1.5px solid #D1B8C0; border-radius: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; gap: 6px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-    .fare-mid-input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.1); }
-    .fare-mid-input { width: 100%; min-width: 0; border: none !important; outline: none !important; background: transparent !important; text-align: center; font-size: 15px; font-weight: 900; color: var(--primary); padding: 0 !important; height: 100%; }
-    .fare-pct-pill { font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: ltr; background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; }
+    .fare-mid-input-wrap { flex: 1; min-width: 0; height: 30px; background: #FFFFFF; border: 1.5px solid #D1B8C0; border-radius: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; gap: 4px; transition: border-color 0.2s ease; }
+    .fare-mid-input-wrap:focus-within { border-color: var(--primary); }
+    .fare-mid-input { width: 100%; min-width: 0; border: none !important; outline: none !important; background: transparent !important; text-align: center; font-size: 13.5px; font-weight: 900; color: var(--primary); padding: 0 !important; height: 100%; }
+    .fare-pct-pill { font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: ltr; background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; }
     .fare-pct-pill.pct-up { background: #FFF3E0; color: #E65100; border-color: #FFB74D; }
     .fare-pct-pill.pct-down { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
-    .captain-offer-card { background: linear-gradient(135deg, #FFFDF7, #FFF8E1); border: 1.5px solid #FFB74D; border-right: 4.5px solid #ED6C02; border-radius: 13px; padding: 11px 12px; margin: 6px 0; display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.25s ease; }
-    .captain-offer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .captain-offer-card { background: linear-gradient(135deg, #FFFDF7, #FFF8E1); border: 1.5px solid #FFB74D; border-right: 4px solid #ED6C02; border-radius: 10px; padding: 8px 10px; margin: 5px 0; display: flex; flex-direction: column; gap: 6px; animation: fadeIn 0.25s ease; }
+    .captain-offer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    /* --- تنسيق المربعات المالية المدمجة للكابتن (في سطر واحد متناسق بدون انقسام حرف ج) --- */
+.financial-summary-compact {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    background-color: #FAF4F6;
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin: 6px 0;
+    border: 1px solid #E8DCE0;
+    gap: 6px;
+}
+
+.finance-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.finance-title {
+    font-size: 10.5px;
+    color: #5D4037;
+    margin-bottom: 2px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* وضع الرقم وحرف الجيم على سطر واحد أفقياً مع منع الانقسام نهائياً */
+.finance-amount {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 3px;
+    line-height: 1.15;
+    white-space: nowrap !important;
+}
+
+.finance-amount .number {
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.finance-amount .currency {
+    font-size: 11.5px;
+    color: #7B3F52;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* الخط الفاصل بين المبلغين */
+.divider {
+    width: 1.5px;
+    height: 28px;
+    background-color: #E2D5DA;
+    margin: 0 4px;
+}
+
+/* تمييز مربع صافيك بعد العمولة */
+.highlight-net .number {
+    color: var(--success);
+}
+.highlight-net .currency {
+    color: #1B5E20;
+}
+
+/* شارة صافي الربح داخل كارت اقتراح السعر غير قابلة للانقسام على سطرين */
+.net-profit-pill-nowrap {
+    font-size: 10.5px !important;
+    font-weight: 900 !important;
+    color: #1B5E20 !important;
+    background: #E8F5E9;
+    border: 1px solid #C8E6C9;
+    padding: 2px 8px;
+    border-radius: 50px;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* شريط أزرار الزيادة السريعة بضغطة واحدة (+5 ج | +10 ج | +15 ج) */
+.quick-fare-chips-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+    width: 100%;
+    margin: 2px 0;
+}
+
+.quick-fare-chip-btn {
+    height: 26px !important;
+    min-height: 26px !important;
+    border-radius: 7px !important;
+    border: 1px solid #FFB74D;
+    background: #FFFFFF;
+    color: #E65100;
+    font-size: 10.5px !important;
+    font-weight: 900 !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap !important;
+    transition: all 0.15s ease;
+    padding: 0 6px !important;
+}
+
+.quick-fare-chip-btn:active,
+.quick-fare-chip-btn.active-chip {
+    background: #E65100;
+    color: #FFFFFF;
+    border-color: #E65100;
+    transform: scale(0.96);
+}
   </style>
 </head>
 <body>
@@ -443,30 +569,12 @@
                   💡 لو معرفتش تحدد مكانك ع الخريطة ولا يهمك يا باشا، اكتب العنوان بإيدك بالتفصيل تحت! ✍️
                 </div>
               </div>
-              <!-- دليل العناوين المفضلة السريع (البيت / الشغل / المحل) بضغطة واحدة -->
-              <div style="background:#FAF7F4; border:1px solid #E5D4DA; border-radius:12px; padding:8px 10px; margin-bottom:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <span style="font-size:11px; font-weight:900; color:var(--primary);"><i class="fa-solid fa-bookmark"></i> عناوينك السريعة (دوس للاختيار أو الحفظ):</span>
-                  <small style="font-size:9.5px; color:var(--text-muted); font-weight:700;">يحفظ ويملا عنوانك في ثانية ⚡</small>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;" id="customerFavAddressesGrid">
-                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-home" onclick="handleFavoriteAddressSlot('home', '🏠 البيت')" style="font-size:11px; padding:6px 4px;">🏠 البيت</button>
-                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-work" onclick="handleFavoriteAddressSlot('work', '💼 الشغل')" style="font-size:11px; padding:6px 4px;">💼 الشغل</button>
-                  <button type="button" class="inline-map-mode-btn" id="favAddrBtn-shop" onclick="handleFavoriteAddressSlot('shop', '🏪 المحل')" style="font-size:11px; padding:6px 4px;">🏪 المحل</button>
-                </div>
+              
+              <!-- عناصر مخفية للحفاظ على التوافق البرمجي الكامل دون استهلاك مساحة في الصفحة -->
+              <div class="saved-address-bar" id="savedCustomerAddressBar" style="display:none !important;">
+                <span id="savedCustomerAddressText"></span>
               </div>
-              <!-- شريط الملء السريع لآخر عنوان استخدمه العميل (يظهر تلقائياً للعميل المتكرر) -->
-              <div class="saved-address-bar" id="savedCustomerAddressBar">
-                <span id="savedCustomerAddressText" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📍 آخر عنوان ليك محفوظ</span>
-                <button type="button" class="saved-address-apply-btn" onclick="applySavedCustomerAddress()">
-                  <i class="fa-solid fa-bolt"></i> استخدم عنواني ⚡
-                </button>
-              </div>
-              <!-- خيار تثبيت العنوان والرقم للطلبات المتتالية السريعة (للمحلات والتجار والعميل المتكرر) -->
-              <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#FAF4F6; border:1px dashed rgba(123,63,82,0.3); border-radius:11px; padding:7px 11px; margin-bottom:10px; font-size:11px; font-weight:800; color:var(--primary); cursor:pointer;">
-                <span>📌 ثبّت عنواني ورقمي للطلبات الجاية (وضع المحلات والتجار 🏪)</span>
-                <input type="checkbox" id="pinCustomerAddressToggle" style="accent-color:var(--primary); width:16px; height:16px; cursor:pointer;">
-              </label>
+              <input type="checkbox" id="pinCustomerAddressToggle" style="display:none !important;">
 
               <!-- الكارت الأول: بيانات المرسل ومكان الاستلام (تصميم رأسي عصري وموحد) -->
               <div class="route-party-card route-party-pickup" id="pickupPartyCard">
@@ -1203,56 +1311,63 @@
     <div style="position:relative; width:92%; max-width:500px; text-align:center;"><button onclick="closeImageViewer()" style="position:absolute; top:-38px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;" aria-label="إغلاق">✕</button><img id="imagePreviewFull" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background:#fff;" alt="معاينة المستند"></div>
   </div>
   <div class="custom-modal" id="topupModal"><div class="modal-content-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><h3 style="font-size:15px; font-weight:900; color:var(--primary); margin:0;">شحن محفظة الكابتن 🛵💸</h3><button onclick="closeTopupModal()" style="border:none; background:none; font-size:18px; cursor:pointer;">✕</button></div><input type="number" inputmode="numeric" id="courierTopupAmountInput" class="input-field" placeholder="المبلغ (جنيه)" value="100"><button class="btn-main" style="background:#25D366; margin-top:8px;" onclick="redirectToWhatsAppTopup()"><i class="fa-brands fa-whatsapp"></i> يلا نحول ع الدعم ونشحن 💬</button></div></div>
-  <!-- نافذة الرادار المنبثقة الفورية للأوردرات الجديدة للكابتن (تظهر لمدة 15 ثانية مع تحكم سريع + و - ونسبة الزيادة) -->
-  <div class="custom-modal" id="courierNewOrderPopupModal" style="z-index: 2100;">
-    <div class="modal-content-card radar-popup-card">
-      <div class="radar-popup-header" id="courierPopupHeaderBox">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span class="badge" id="courierPopupCapacityBadge" style="background:rgba(255,255,255,0.2); color:#fff; font-size:10.5px;">📡 رادار العنابي الفوري</span>
-          <span class="badge" id="courierPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 15 ثانية</span>
+  <!-- نافذة الرادار المنبثقة الفورية للأوردرات الجديدة للكابتن (تظهر لمدة 15 ثانية بتصميم مدمج وأزرار قبول/رفض أعلى خانة التفاوض) -->
+  <div class="custom-modal" id="courierNewOrderPopupModal" style="z-index: 2100; padding: 12px;">
+    <div class="modal-content-card radar-popup-card" style="max-width: 375px;">
+      <div class="radar-popup-header" id="courierPopupHeaderBox" style="padding: 10px 14px 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="badge" id="courierPopupCapacityBadge" style="background:rgba(255,255,255,0.2); color:#fff; font-size:10px; padding:2px 8px;">📡 رادار العنابي الفوري</span>
+          <span class="badge" id="courierPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:10.5px; font-weight:900; padding:2px 8px;">⏳ 15 ثانية</span>
         </div>
-        <h3 id="courierPopupMainTitle" style="font-size:16.5px; font-weight:900; line-height:1.4; margin:0;">
+        <h3 id="courierPopupMainTitle" style="font-size:14.5px; font-weight:900; line-height:1.3; margin:0;">
           🔔 طلب جديد لسه نازل ع الرادار!
         </h3>
       </div>
-      <div class="radar-countdown-track">
+      <div class="radar-countdown-track" style="height: 5px;">
         <div class="radar-countdown-fill" id="courierPopupCountdownBar"></div>
       </div>
-      <div class="radar-popup-body">
+      <div class="radar-popup-body" style="padding: 10px 12px 12px; gap: 7px;">
         <div id="courierPopupContentDetails"></div>
 
-        <!-- خانة تعديل واقتراح السعر السريعة داخل النافذة المنبثقة للكابتن (+ و - وكتابة يدوية ونسبة الزيادة) -->
-        <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin-top:2px; padding:8px 10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:900; color:#E65100;">💵 عايز تقترح تعديل أجرة المشوار للعميل؟</span>
-            <small id="courierPopupNetPreviewHint" style="font-size:10px; font-weight:800; color:#2E7D32;"></small>
+        <!-- زرا قبول أو رفض سعر العميل الحالي مباشرة فوق خانة اقتراح تعديل الأجرة -->
+        <div class="radar-popup-actions" style="margin-top: 2px; gap: 7px;">
+          <button type="button" class="btn-popup-accept" id="courierPopupAcceptBtn" style="padding: 9px 10px; font-size: 12.5px; border-radius: 11px; white-space: nowrap;" onclick="acceptOrderFromCourierPopup()">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="courierPopupAcceptBtnText">قبول الطلب ✅</span>
+          </button>
+          <button type="button" class="btn-popup-reject" style="padding: 9px 10px; font-size: 12px; border-radius: 11px; white-space: nowrap;" onclick="rejectOrderFromCourierPopup()">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span>رفض ✕</span>
+          </button>
+        </div>
+
+        <!-- خانة تعديل واقتراح السعر السريعة أسفل زري القبول والرفض مع أزرار الزيادة بضغطة واحدة -->
+        <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin-top:0; padding:5px 7px; gap:4px; border-radius:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom: 1px; flex-wrap:nowrap;">
+            <span style="font-size:11px; font-weight:900; color:#E65100; white-space:nowrap;">💵 اقترح أجرتك:</span>
+            <small id="courierPopupNetPreviewHint" class="net-profit-pill-nowrap"></small>
           </div>
-          <div class="fare-adjust-controls">
-            <button type="button" class="fare-step-btn" onclick="stepCourierPopupOfferFare(-5)">-5</button>
-            <div class="fare-mid-input-wrap" style="border-color:#FFB74D;">
-              <input type="number" inputmode="numeric" id="courierPopupOfferFareInput" class="fare-mid-input" style="color:#E65100;" oninput="handleCourierPopupOfferFareInput()">
+          <div class="quick-fare-chips-row">
+            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-5" onclick="setCourierPopupQuickIncrement(5)">+5 ج ⚡</button>
+            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-10" onclick="setCourierPopupQuickIncrement(10)">+10 ج 🔥</button>
+            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-15" onclick="setCourierPopupQuickIncrement(15)">+15 ج 🚀</button>
+          </div>
+          <div class="fare-adjust-controls" style="gap:6px;">
+            <button type="button" class="fare-step-btn" style="width:38px; height:30px; font-size:12.5px;" onclick="stepCourierPopupOfferFare(-5)">-5</button>
+            <div class="fare-mid-input-wrap" style="border-color:#FFB74D; height:30px;">
+              <input type="number" inputmode="numeric" id="courierPopupOfferFareInput" class="fare-mid-input" style="color:#E65100; font-size:13.5px;" oninput="handleCourierPopupOfferFareInput()">
               <span id="courierPopupOfferPctBadge" class="fare-pct-pill pct-up">+20%</span>
             </div>
-            <button type="button" class="fare-step-btn" onclick="stepCourierPopupOfferFare(5)">+5</button>
+            <button type="button" class="fare-step-btn" style="width:38px; height:30px; font-size:12.5px;" onclick="stepCourierPopupOfferFare(5)">+5</button>
           </div>
-          <button type="button" class="btn-popup-offer" style="padding:9px 12px; font-size:12px;" onclick="proposeHigherFareFromCourierPopup()">
+          <button type="button" class="btn-popup-offer" style="padding:7px 10px; font-size:11px; border-radius:8px; white-space:nowrap;" onclick="proposeHigherFareFromCourierPopup()">
             <i class="fa-solid fa-paper-plane"></i>
             <span id="courierPopupSendOfferBtnText">ابعت اقتراح السعر للعميل 🚀</span>
           </button>
         </div>
 
-        <div style="background:#FAF7F4; border:1px dashed #D1B8C0; border-radius:9px; padding:6px 10px; font-size:10.5px; font-weight:800; color:var(--text-muted); text-align:center;">
-          🔒 أرقام تليفونات العميل والمستلم هتظهرلك فوراً أول ما تقبل الطلب أو يوافق العميل على عرضك
-        </div>
-        <div class="radar-popup-actions">
-          <button type="button" class="btn-popup-accept" id="courierPopupAcceptBtn" onclick="acceptOrderFromCourierPopup()">
-            <i class="fa-solid fa-circle-check"></i>
-            <span id="courierPopupAcceptBtnText">قبول الطلب ✅</span>
-          </button>
-          <button type="button" class="btn-popup-reject" onclick="rejectOrderFromCourierPopup()">
-            <i class="fa-solid fa-circle-xmark"></i>
-            <span>رفض ✕</span>
-          </button>
+        <div style="background:#FAF7F4; border:1px dashed #D1B8C0; border-radius:8px; padding:4px 8px; font-size:9.5px; font-weight:800; color:var(--text-muted); text-align:center;">
+          🔒 أرقام العميل والمستلم بتظهرلك فوراً أول ما تقبل الطلب أو يوافق العميل على عرضك
         </div>
       </div>
     </div>
@@ -1316,16 +1431,16 @@
         <span style="color:var(--primary);">بس إحنا لسه فيها ✌️💲</span>
       </p>
       <div style="display:flex; gap:8px;">
-        <button type="button" class="btn-main" style="background:#25D366; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); flex:1.3;" onclick="openDirectWhatsAppTopupFromModal()">
+        <button type="button" class="btn-main" style="background:#25D366; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); flex:1.3; width:auto; height:42px; padding:0 12px; font-size:12.5px; white-space:nowrap;" onclick="openDirectWhatsAppTopupFromModal()">
           <i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> اشحن دلوقتي
         </button>
-        <button type="button" class="btn-main" style="flex:1;" onclick="closeInsufficientWalletModal()">
+        <button type="button" class="btn-secondary" style="flex:1; width:auto; height:42px; padding:0 12px; font-size:12.5px; white-space:nowrap;" onclick="closeInsufficientWalletModal()">
           بعدين
         </button>
       </div>
     </div>
   </div>
-  <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">فيه مشكلة في الأوردر؟ بلّغنا فوراً ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكيلنا إيه اللي حصل بالتفصيل يا باشا..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger);" onclick="confirmCustomerDispute()">ابعت الشكوى للإدارة</button><button class="btn-secondary" onclick="closeDisputeModal()">خلاص رجعت في كلامي</button></div></div></div>
+  <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">فيه مشكلة في الأوردر؟ بلّغنا فوراً ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكيلنا إيه اللي حصل بالتفصيل يا باشا..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger); flex:1.25; width:auto; height:42px; padding:0 12px; font-size:12.5px; white-space:nowrap;" onclick="confirmCustomerDispute()">ابعت الشكوى للإدارة</button><button class="btn-secondary" style="flex:1; width:auto; height:42px; padding:0 12px; font-size:12px; white-space:nowrap;" onclick="closeDisputeModal()">خلاص رجعت في كلامي</button></div></div></div>
   <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">قيّم الكابتن الشقيان يا باشا 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:26px; color:#FFB300; margin-bottom:10px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><div id="ratingStarFeedbackText" style="font-size:12px; font-weight:800; color:var(--primary); background:#FAF4F6; border:1px dashed rgba(123,63,82,0.25); border-radius:10px; padding:6px 10px; margin-bottom:12px;">⭐⭐⭐⭐⭐ — طيار عنابي أصلي وأجدع كابتن! 😍🔥</div><button class="btn-main" onclick="submitOrderRating()">اعتمد التقييم الحلو ده ⭐</button></div></div>
   
   <div class="custom-modal" id="captainSuccessModal">
@@ -1601,14 +1716,70 @@
     }
     function formatTxTime(t) { if (!t) return ''; if (t.at && Number.isFinite(Number(t.at))) return formatCairoDateTime(t.at); return String(t.time || ''); }
 
+    let speechEngineUnlocked = false;
+    let courierWakeLockSentinel = null;
+
     function unlockAudioEngine() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-        if (!ennabyAudioCtx) ennabyAudioCtx = new AudioContextClass();
-        if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
+        if (AudioContextClass) {
+          if (!ennabyAudioCtx) ennabyAudioCtx = new AudioContextClass();
+          if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
+        }
+      } catch (e) {}
+      try {
+        if (!speechEngineUnlocked && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
+          speechEngineUnlocked = true;
+          const silentUtter = new SpeechSynthesisUtterance('');
+          silentUtter.volume = 0;
+          window.speechSynthesis.speak(silentUtter);
+        }
+      } catch (e) {}
+      syncCourierScreenWakeLock();
+    }
+
+    function speakNewRadarOrderAlert() {
+      try {
+        if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance('طلب جديد على الرادار');
+        utter.lang = 'ar-EG';
+        utter.rate = 1.05;
+        utter.pitch = 1.0;
+        utter.volume = 1.0;
+        const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+        const arVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
+        if (arVoice) utter.voice = arVoice;
+        window.speechSynthesis.speak(utter);
       } catch (e) {}
     }
+
+    async function syncCourierScreenWakeLock() {
+      try {
+        if (!('wakeLock' in navigator)) return;
+        const courier = typeof getActiveCourier === 'function' ? getActiveCourier() : null;
+        const shouldKeepAwake = Boolean(
+          !document.hidden &&
+          STATE &&
+          STATE.currentRole === 'courier' &&
+          courier &&
+          courier.status === 'معتمد' &&
+          courier.isAvailable
+        );
+        if (shouldKeepAwake) {
+          if (!courierWakeLockSentinel || courierWakeLockSentinel.released) {
+            courierWakeLockSentinel = await navigator.wakeLock.request('screen');
+          }
+        } else if (courierWakeLockSentinel && !courierWakeLockSentinel.released) {
+          await courierWakeLockSentinel.release();
+          courierWakeLockSentinel = null;
+        }
+      } catch (e) {}
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) syncCourierScreenWakeLock();
+    });
 
     function triggerDeviceAlert(alertType) {
       try {
@@ -1620,22 +1791,26 @@
       } catch (e) {}
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-        if (!ennabyAudioCtx) ennabyAudioCtx = new AudioContextClass();
-        if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
-        const now = ennabyAudioCtx.currentTime;
-        const notes = alertType === 'courier_new_order' ? [587.33, 880.00, 1174.66] : [523.25, 659.25, 783.99];
-        notes.forEach((freq, idx) => {
-          const osc = ennabyAudioCtx.createOscillator(); const gain = ennabyAudioCtx.createGain();
-          osc.type = alertType === 'courier_new_order' ? 'triangle' : 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.13);
-          gain.gain.setValueAtTime(0.001, now + idx * 0.13);
-          gain.gain.exponentialRampToValueAtTime(0.25, now + idx * 0.13 + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.13 + 0.20);
-          osc.connect(gain); gain.connect(ennabyAudioCtx.destination);
-          osc.start(now + idx * 0.13); osc.stop(now + idx * 0.13 + 0.21);
-        });
+        if (AudioContextClass) {
+          if (!ennabyAudioCtx) ennabyAudioCtx = new AudioContextClass();
+          if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
+          const now = ennabyAudioCtx.currentTime;
+          const notes = alertType === 'courier_new_order' ? [587.33, 880.00, 1174.66] : [523.25, 659.25, 783.99];
+          notes.forEach((freq, idx) => {
+            const osc = ennabyAudioCtx.createOscillator(); const gain = ennabyAudioCtx.createGain();
+            osc.type = alertType === 'courier_new_order' ? 'triangle' : 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.13);
+            gain.gain.setValueAtTime(0.001, now + idx * 0.13);
+            gain.gain.exponentialRampToValueAtTime(0.25, now + idx * 0.13 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.13 + 0.20);
+            osc.connect(gain); gain.connect(ennabyAudioCtx.destination);
+            osc.start(now + idx * 0.13); osc.stop(now + idx * 0.13 + 0.21);
+          });
+        }
       } catch (e) {}
+      if (alertType === 'courier_new_order') {
+        setTimeout(() => speakNewRadarOrderAlert(), 260);
+      }
     }
 
     function getDefaultSession() {
@@ -2859,9 +3034,19 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           ? `متاح حولك الآن: ${cnt} كابتن ع الرادار 👀`
           : 'رجالة العنابي جاهزين ع الرادار 👀';
       }
+      const humorEl = document.getElementById('priceHumorMessage');
+      if (humorEl) {
+        const defaultHumor = 'صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝';
+        const msgTxt = s.priceHumorMessage !== undefined ? String(s.priceHumorMessage).trim() : defaultHumor;
+        if (msgTxt) {
+          humorEl.innerText = msgTxt;
+          humorEl.style.display = 'block';
+        } else {
+          humorEl.style.display = 'none';
+        }
+      }
       updateCustomerPinFieldVisibility();
       renderSavedPromoUI();
-      renderFavoriteAddressButtonsUI();
     }
 
     const LAST_CUST_ADDR_KEY = 'ENNABY_LAST_CUST_ADDR_V1';
@@ -3007,18 +3192,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
     function renderSavedCustomerAddressBar() {
       const bar = document.getElementById('savedCustomerAddressBar');
-      const txt = document.getElementById('savedCustomerAddressText');
-      if (!bar || !txt) return;
-      try {
-        const raw = localStorage.getItem(LAST_CUST_ADDR_KEY);
-        if (!raw) { bar.style.display = 'none'; return; }
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.address) { bar.style.display = 'none'; return; }
-        bar.style.display = 'flex';
-        txt.innerText = `📍 آخر عنوان: ${parsed.zone} - ${parsed.address}`;
-      } catch (e) {
-        bar.style.display = 'none';
-      }
+      if (bar) bar.style.display = 'none';
     }
 
     function applySavedCustomerAddress() {
@@ -3948,6 +4122,18 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (sendTxt) {
         sendTxt.innerText = `ابعت اقتراح (${offerVal} ج) للعميل 🚀`;
       }
+      [5, 10, 15].forEach(inc => {
+        const chip = document.getElementById(`popupQuickChip-${inc}`);
+        if (chip) chip.classList.toggle('active-chip', roundMoney(courierPopupBaseFare + inc) === offerVal);
+      });
+    }
+
+    function setCourierPopupQuickIncrement(incAmount) {
+      courierPopupCustomOfferFare = roundMoney((courierPopupBaseFare || 40) + Number(incAmount || 5));
+      const inp = document.getElementById('courierPopupOfferFareInput');
+      if (inp) inp.value = courierPopupCustomOfferFare;
+      courierPopupEndTime = Math.max(courierPopupEndTime, Date.now() + 8000);
+      updateCourierPopupOfferUI();
     }
 
     function stepCourierPopupOfferFare(delta) {
@@ -4032,57 +4218,61 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           ? 'طلب جديد لو فى طريقك اقبله ✌️'
           : '🔔 طلب جديد لسه نازل ع الرادار!';
       }
-      if (acceptBtnTxt) {
-        acceptBtnTxt.innerText = isStackedMode ? 'اقبله في سكتك ✌️✅' : 'قبول الطلب ✅';
-      }
-
       const isFetch = order.tripType === 'fetch';
       const orderOrigFare = roundMoney(order.originalFare || order.fare || 40);
       courierPopupBaseFare = orderOrigFare;
       courierPopupCustomOfferFare = roundMoney(orderOrigFare + 5);
 
+      if (acceptBtnTxt) {
+        acceptBtnTxt.innerText = isStackedMode ? `اقبله في سكتك (${orderOrigFare} ج)` : `قبول بـ (${orderOrigFare} ج)`;
+      }
+
       const effectiveFee = getEffectiveCaptainFee(courier, orderOrigFare);
       const displayNet = Math.max(0, roundMoney(orderOrigFare - effectiveFee));
       const proxInfo = checkOrderProximityToCourier(order, courier, myActiveOrders);
-      const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة من الباشا:';
+      const notesHeadingLabel = isFetch ? '🛍️ المشتريات:' : '📝 ملحوظة:';
       const cleanNotes = cleanDisplayNotesText(order.customerNotes);
       const hasCustProposed = Boolean(order.customerProposedFare && order.routeDefaultFare && order.customerProposedFare !== order.routeDefaultFare);
 
       const discountNoteHtml = order.discountApplied > 0
-        ? `<div class="yellow-discount-note" style="margin:2px 0 0;">🟡 العميل معاه خصم (${order.discountApplied} ج) هتاخد منه (${order.fare} ج) والباقي هينزل في محفظتك أول ما تقبل 😎💲</div>`
+        ? `<div class="yellow-discount-note" style="margin:3px 0 0; padding:5px 8px; font-size:10.5px;">🟡 العميل معاه خصم (${order.discountApplied} ج) هتاخد كاش (${order.fare} ج) والتعويض هينزل في محفظتك فوراً 😎💲</div>`
         : '';
 
-      const routeMatchBannerHtml = proxInfo.reasonText
-        ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FFF8E1'}; border:1px solid ${proxInfo.isRouteMatch ? '#A5D6A7' : '#FFE082'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : '#5D4037'}; border-radius:9px; padding:5px 10px; font-size:11px; font-weight:800; text-align:center;">
-            ${escapeHtml(proxInfo.reasonText)}
-          </div>`
-        : '';
+      const routeMatchBannerHtml = ''; // تم تفريغ الشريط بناءً على طلبك لتقليص الحجم
 
       detailsBox.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-          <strong style="font-size:14px; color:var(--primary);">${escapeHtml(order.id)}</strong>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+          <strong style="font-size:12px; color:var(--primary);">${escapeHtml(order.id)}</strong>
           <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
-            ${order.purchaseBudget ? `<span class="badge badge-delivering">💵 كاش المشتريات: ${escapeHtml(order.purchaseBudget)}</span>` : ''}
-            ${hasCustProposed ? `<span class="badge badge-awaiting">💬 سعر مقترح (${order.customerProposedFare}ج)</span>` : ''}
-            ${order.surgePercent > 0 ? `<span class="badge badge-pending">⚡ ذروة +${order.surgePercent}%</span>` : ''}
-            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
+            ${order.purchaseBudget ? `<span class="badge badge-delivering" style="font-size:9.5px; padding:2px 7px;">💵 ${escapeHtml(order.purchaseBudget)}</span>` : ''}
+            ${hasCustProposed ? `<span class="badge badge-awaiting" style="font-size:9.5px; padding:2px 7px;">💬 مقترح (${order.customerProposedFare}ج)</span>` : ''}
+            ${order.surgePercent > 0 ? `<span class="badge badge-pending" style="font-size:9.5px; padding:2px 7px;">⚡ +${order.surgePercent}%</span>` : ''}
+            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}" style="font-size:9.5px; padding:2px 7px;">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
           </div>
         </div>
-        ${routeMatchBannerHtml}
-        <div class="radar-popup-route-box">
-          <div>📦 <strong style="color:var(--primary);">الاستلام (${escapeHtml(order.pickupZone)}):</strong> ${escapeHtml(order.pickupAddress)}</div>
-          <div style="border-top:1px dashed #E2D5DA; padding-top:5px;">🏁 <strong style="color:var(--success);">التسليم (${escapeHtml(order.dropoffZone)}):</strong> ${escapeHtml(order.dropoffAddress)}</div>
-          <div style="border-top:1px dashed #E2D5DA; padding-top:5px; font-size:11px; color:var(--text-muted);">⚖️ <strong>الحجم/الوزن:</strong> ${escapeHtml(order.packageType)} | <strong>الدفع:</strong> ${escapeHtml(order.payer)}</div>
-          ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:8px; padding:6px 8px; color:#5D4037; font-weight:700; font-size:11.5px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+        
+        <div class="radar-popup-route-box" style="padding:5px 8px; font-size:11px; line-height:1.4; gap:3px; margin-top:4px;">
+          <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📦 <strong style="color:var(--primary);">من:</strong> ${escapeHtml(order.pickupZone)} - ${escapeHtml(order.pickupAddress)}</div>
+          <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top:1px dashed #E2D5DA; padding-top:3px;">🏁 <strong style="color:var(--success);">إلى:</strong> ${escapeHtml(order.dropoffZone)} - ${escapeHtml(order.dropoffAddress)}</div>
+          <div style="border-top:1px dashed #E2D5DA; padding-top:3px; font-size:10px; color:var(--text-muted);">⚖️ ${escapeHtml(order.packageType)} | 💰 الدفع: ${escapeHtml(order.payer)}</div>
+          ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:5px; padding:3px 6px; color:#5D4037; font-weight:700; font-size:10px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
         </div>
-        <div class="radar-popup-finance-grid">
-          <div class="radar-popup-fin-item">
-            <span style="font-size:10.5px; color:var(--text-muted); font-weight:800; display:block;">💵 هتقبض كاش</span>
-            <strong style="font-size:16px; font-weight:900; color:var(--primary);">${order.fare} ج</strong>
+
+        <div class="financial-summary-compact">
+          <div class="finance-box">
+            <span class="finance-title">هتقبض كاش</span>
+            <div class="finance-amount">
+              <span class="number">${order.fare}</span>
+              <span class="currency">ج</span>
+            </div>
           </div>
-          <div class="radar-popup-fin-item" style="background:#E8F5E9; border-color:#C8E6C9;">
-            <span style="font-size:10.5px; color:#1B5E20; font-weight:800; display:block;">🤑 صافي ربحك (عمولة ${effectiveFee}ج)</span>
-            <strong style="font-size:16px; font-weight:900; color:var(--success);">${displayNet} ج</strong>
+          <div class="divider"></div>
+          <div class="finance-box highlight-net">
+            <span class="finance-title">صافيك بعد العمولة</span>
+            <div class="finance-amount">
+              <span class="number">${displayNet}</span>
+              <span class="currency">ج</span>
+            </div>
           </div>
         </div>
         ${discountNoteHtml}
@@ -4296,7 +4486,18 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       sendCourierOfferDirect(targetOrderId, offeredFare);
     }
 
-    // دوال التحكم السريع بالسعر داخل كارت الرادار للكابتن (+5 / -5 / كتابة يدوية)
+    // دوال التحكم السريع بالسعر داخل كارت الرادار للكابتن (+5 / +10 / +15 / -5 / كتابة يدوية)
+    function setCourierCardQuickIncrement(orderId, incAmount) {
+      const ord = STATE.orders.find(o => o.id === orderId);
+      if (!ord) return;
+      const baseFare = roundMoney(ord.originalFare || ord.fare || 40);
+      const nextVal = roundMoney(baseFare + Number(incAmount || 5));
+      courierOrderOfferDrafts[orderId] = nextVal;
+      const inp = document.getElementById(`courCardOfferInput-${orderId}`);
+      if (inp) inp.value = nextVal;
+      updateCourierCardOfferRowUI(orderId, nextVal, baseFare);
+    }
+
     function stepCourierCardOfferFare(orderId, delta) {
       const ord = STATE.orders.find(o => o.id === orderId);
       if (!ord) return;
@@ -4337,6 +4538,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const net = Math.max(0, roundMoney(offerVal - fee));
         netHint.innerText = `صافيك: ${net} ج`;
       }
+      [5, 10, 15].forEach(inc => {
+        const chip = document.getElementById(`cardQuickChip-${orderId}-${inc}`);
+        if (chip) chip.classList.toggle('active-chip', roundMoney(baseFare + inc) === roundMoney(offerVal));
+      });
     }
 
     function submitCourierCardOfferFare(orderId) {
@@ -4973,7 +5178,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (isDelivered) privacyMsg = '🔒 خفينا أرقام العميل والمستلم أوتوماتيك طالما الأوردر اتسلم بالسلامة.';
         else if (isCancelled) privacyMsg = '🔒 خفينا الأرقام أوتوماتيك للحفاظ على الخصوصية لأن الأوردر اتلغى.';
 
-        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>هتقبض كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!hidePhones ? buildCourierContactButtonsHtml(o) : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${privacyMsg}</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل ليك: ${o.rating} ⭐</div>` : ''}</div>${hasGps && !hidePhones ? `<button type="button" class="btn-secondary" style="margin-top:8px; width:100%; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> شوف مكان الاستلام والتسليم ع الخريطة 🗺️📍</button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="margin-top:6px; width:100%;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i> روح للرادار عشان تحدّث حالة المشوار 🛵</button>` : ''}</div>`;
+        return `<div class="card" style="border:1.5px solid ${isActive ? 'var(--primary)' : 'rgba(123,63,82,0.1)'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong>${escapeHtml(o.id)} (${isFetch ? '🛍️ هاتلي' : '📦 طرد'})</strong><span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span></div><div style="font-size:12px; line-height:1.7;"><div>من: ${escapeHtml(o.pickupZone)} - ${escapeHtml(o.pickupAddress)}</div><div>إلى: ${escapeHtml(o.dropoffZone)} - ${escapeHtml(o.dropoffAddress)}</div><div>هتقبض كاش: <strong>${o.fare} ج</strong> | صافي ربحك: <strong style="color:var(--success);">${o.courierNet} ج</strong></div>${!hidePhones ? buildCourierContactButtonsHtml(o) : `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${privacyMsg}</div>`}${o.rating ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">تقييم العميل ليك: ${o.rating} ⭐</div>` : ''}</div><div class="order-card-actions">${hasGps && !hidePhones ? `<button type="button" class="btn-secondary" style="width:100%; height:40px; font-size:11.5px; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC; white-space:nowrap;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>عرض مكان الاستلام والتسليم ع الخريطة</span></button>` : ''}${isActive ? `<button type="button" class="btn-secondary" style="width:100%; height:40px; font-size:11.5px; white-space:nowrap;" data-action="go-radar"><i class="fa-solid fa-satellite-dish"></i><span>روح للرادار عشان تحدّث حالة المشوار</span></button>` : ''}</div></div>`;
       }).join('');
     }
 
@@ -5164,8 +5369,8 @@ function renderCustomerOrdersList() {
                   </div>
                   <div style="font-size:11px; color:#0277BD; font-weight:700;">في انتظار موافقة الكابتن.. أو تقدر تقبل عرضه (${offeredAmt} ج) فوراً:</div>
                   <div class="captain-offer-actions">
-                    <button type="button" class="btn-popup-accept" style="padding:8px 10px; font-size:11.5px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
-                    <button type="button" class="btn-popup-reject" style="padding:8px 10px; font-size:11.5px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                    <button type="button" class="btn-popup-accept" style="height:38px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                    <button type="button" class="btn-popup-reject" style="height:38px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
                   </div>
                 </div>`;
               }
@@ -5179,8 +5384,8 @@ function renderCustomerOrdersList() {
                   السعر المقترح لتوصيل المشوار: <strong style="color:var(--primary); font-size:14px;">${offeredAmt} جنيه</strong> (بدلاً من ${o.originalFare} ج)${o.discountApplied > 0 ? ` — هتدفع كاش <strong>${cashAfterDisc} ج</strong> بعد خصمك` : ''}.
                 </div>
                 <div class="captain-offer-actions">
-                  <button type="button" class="btn-popup-accept" style="padding:9px 10px; font-size:12px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
-                  <button type="button" class="btn-popup-reject" style="padding:9px 10px; font-size:12px;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                  <button type="button" class="btn-popup-accept" style="height:38px; padding:0 10px; font-size:12px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                  <button type="button" class="btn-popup-reject" style="height:38px; padding:0 10px; font-size:12px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
                 </div>
               </div>`;
             }).join('');
@@ -5200,7 +5405,7 @@ function renderCustomerOrdersList() {
           const stimulusBannerHtml = waitingMs >= 180000
             ? `<div style="background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:10px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span style="font-size:11px; font-weight:800; color:#E65100;">⚡ الطلب منتظر من شوية.. تحب تزود +5 ج عشان الكباتن البعيدة تلقطه هوا؟</span>
-                <button type="button" class="btn-main" style="width:auto; padding:5px 10px; font-size:11px; background:#E65100;" onclick="customerOrderFareDrafts['${escapeHtml(o.id)}']=${quickPlus5Fare}; submitCustomerCardOrderFare('${escapeHtml(o.id)}')">زود لـ ${quickPlus5Fare} ج فوراً 🚀</button>
+                <button type="button" class="btn-main" style="width:auto; min-height:34px; padding:5px 12px; font-size:11px; background:#E65100; white-space:nowrap;" onclick="customerOrderFareDrafts['${escapeHtml(o.id)}']=${quickPlus5Fare}; submitCustomerCardOrderFare('${escapeHtml(o.id)}')">زود لـ ${quickPlus5Fare} ج فوراً 🚀</button>
               </div>`
             : '';
 
@@ -5219,8 +5424,8 @@ function renderCustomerOrdersList() {
                 </div>
                 <button type="button" class="fare-step-btn" onclick="stepCustomerCardOrderFare('${escapeHtml(o.id)}', 5)">+5</button>
               </div>
-              <button type="button" class="btn-main" style="padding:9px 12px; font-size:12px; background:#E65100;" onclick="submitCustomerCardOrderFare('${escapeHtml(o.id)}')">
-                <i class="fa-solid fa-coins"></i> اعتماد وتحديث أجرة المشوار ع الرادار 🚀
+              <button type="button" class="btn-main" style="height:40px; padding:0 12px; font-size:12px; background:#E65100; white-space:nowrap;" onclick="submitCustomerCardOrderFare('${escapeHtml(o.id)}')">
+                <i class="fa-solid fa-coins"></i><span>اعتماد وتحديث أجرة المشوار ع الرادار</span>
               </button>
             </div>
           `;
@@ -5241,6 +5446,8 @@ function renderCustomerOrdersList() {
         const captainCardHtml = buildCustomerAssignedCaptainCardHtml(o);
         const notesLabelInCard = o.tripType === 'fetch' ? '🛍️ المشتريات والميزانية' : '📝 ملحوظتك';
         const elapsedTxt = formatOrderElapsedTime(o.createdAt);
+
+        const hasTopActionRow = (hasGps && !isCancelled) || canCancel || canRate || canDispute;
 
         return `<div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -5270,12 +5477,14 @@ function renderCustomerOrdersList() {
             ${o.adminResolutionNote ? `<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:6px 8px; border-radius:8px; font-weight:800; margin-top:6px;">📝 ${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}
           </div>
           ${inlineFareControlHtml}
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-            ${hasGps && !isCancelled ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
-            ${canCancel ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-cancel" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-xmark"></i> إلغاء الطلب</button>` : ''}
-            ${canRate ? `<button type="button" class="btn-main" style="flex:1; background:#FFB300; color:#302A2D;" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star"></i> قيّم الكابتن ⭐</button>` : ''}
-            ${canDispute ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-triangle-exclamation"></i> بلّغ عن مشكلة</button>` : ''}
-            ${canReorder ? `<button type="button" class="btn-secondary" style="width:100%; margin-top:4px;" onclick="reorderPreviousCustomerTrip('${escapeHtml(o.id)}')"><i class="fa-solid fa-rotate-right"></i> اطلب نفس المشوار تاني بضغطة واحدة 🔄</button>` : ''}
+          <div class="order-card-actions">
+            ${hasTopActionRow ? `<div class="order-card-actions-row">
+              ${hasGps && !isCancelled ? `<button type="button" class="btn-secondary" style="flex:0.85; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot" style="font-size:12px;"></i><span>الخريطة</span></button>` : ''}
+              ${canCancel ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-cancel" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-xmark" style="font-size:13px;"></i><span>إلغاء الطلب</span></button>` : ''}
+              ${canRate ? `<button type="button" class="btn-main" style="flex:1.15; background:linear-gradient(135deg, #FFB300, #FFA000); color:#302A2D; border:none; box-shadow:0 3px 8px rgba(255, 179, 0, 0.25);" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star" style="font-size:12px;"></i><span>قيّم الكابتن</span></button>` : ''}
+              ${canDispute ? `<button type="button" class="btn-danger" style="flex:1.1;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-triangle-exclamation" style="font-size:11.5px;"></i><span>بلّغ عن مشكلة</span></button>` : ''}
+            </div>` : ''}
+            ${canReorder ? `<button type="button" class="btn-secondary" style="width:100%; height:40px; padding:0 12px; font-size:12px; font-weight:800; border-radius:11px; background:var(--accent); color:var(--primary); border:1px solid rgba(123, 63, 82, 0.18); white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:7px;" onclick="reorderPreviousCustomerTrip('${escapeHtml(o.id)}')"><i class="fa-solid fa-rotate-right" style="font-size:12.5px;"></i><span>اطلب نفس المشوار تاني</span></button>` : ''}
           </div>
         </div>`;
       }).join('');
@@ -5357,7 +5566,7 @@ function renderCustomerOrdersList() {
       renderCustomerProfilePromoCodes();
     }
 
-    function renderCourierFeed() {
+function renderCourierFeed() {
       const feed = document.getElementById('courierOrdersFeed');
       const availBadge = document.getElementById('availableOrdersBadge');
       const navRadarBadge = document.getElementById('courNavRadarBadge');
@@ -5365,7 +5574,7 @@ function renderCustomerOrdersList() {
       if (!feed) return;
 
       // عدم مقاطعة الكابتن أثناء كتابة سعر مقترح داخل كارت الرادار
-      if (document.activeElement && feed.contains(document.activeElement) && document.activeElement.classList.contains('js-inline-courier-offer-input')) {
+      if (document.activeElement && feed.contains(document.activeElement) && (document.activeElement.classList.contains('js-inline-courier-offer-input') || document.activeElement.classList.contains('js-courier-card-offer-input'))) {
         return;
       }
 
@@ -5401,76 +5610,96 @@ function renderCustomerOrdersList() {
         const cleanNotes = cleanDisplayNotesText(o.customerNotes);
         const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة الباشا:';
         const isAtDoor = (o.status === 'الكابتن وصل للاستلام' || o.status === 'الكابتن وصل للتسليم');
+        const effectiveFee = roundMoney(o.platformFee ?? getEffectiveCaptainFee(courier, o.originalFare || o.fare));
+        const displayNet = roundMoney(o.courierNet ?? Math.max(0, roundMoney((o.originalFare || o.fare) - effectiveFee)));
 
         const waitTimerHtml = (isAtDoor && o.arrivedAt)
-          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:10px; padding:7px 10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#E65100;">
+          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:9px; padding:6px 10px; margin:6px 0; display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; color:#E65100;">
               <span>⏱️ عداد انتظارك عند العنوان:</span>
-              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:14px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
+              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:13.5px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
             </div>`
           : '';
 
         let stepActionBtnsHtml = '';
         if (o.status === 'تم قبول الطلب') {
           stepActionBtnsHtml = `
-            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px; margin-top:10px;">
-              <button type="button" class="btn-main" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام">
-                <i class="fa-solid fa-location-dot"></i> وصلت للاستلام 📍
+            <div class="order-card-actions-row">
+              <button type="button" class="btn-main" style="flex:1.45;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام">
+                <i class="fa-solid fa-location-dot"></i><span>وصلت للاستلام 📍</span>
               </button>
-              <button type="button" class="btn-danger" data-action="cour-release" data-id="${escapeHtml(o.id)}">
-                اعتذار 🔄
+              <button type="button" class="btn-danger" style="flex:0.85;" data-action="cour-release" data-id="${escapeHtml(o.id)}">
+                <i class="fa-solid fa-rotate-left"></i><span>اعتذار</span>
               </button>
             </div>`;
         } else if (o.status === 'الكابتن وصل للاستلام') {
           stepActionBtnsHtml = `
-            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:8px; margin-top:10px;">
-              <button type="button" class="btn-main" style="background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة">
-                <i class="fa-solid fa-box-open"></i> استلمت وفي السكة 🚀
+            <div class="order-card-actions-row">
+              <button type="button" class="btn-main" style="flex:1.45; background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة">
+                <i class="fa-solid fa-box-open"></i><span>استلمت وفي السكة 🚀</span>
               </button>
-              <button type="button" class="btn-danger" data-action="cour-release" data-id="${escapeHtml(o.id)}">
-                اعتذار 🔄
+              <button type="button" class="btn-danger" style="flex:0.85;" data-action="cour-release" data-id="${escapeHtml(o.id)}">
+                <i class="fa-solid fa-rotate-left"></i><span>اعتذار</span>
               </button>
             </div>`;
         } else if (o.status === 'استلم الطرد وفي السكة') {
           stepActionBtnsHtml = `
-            <button type="button" class="btn-main" style="margin-top:10px; background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم">
-              <i class="fa-solid fa-bell"></i> وصلت مكان التسليم تحت الباب 🔔
+            <button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم">
+              <i class="fa-solid fa-flag-checkered"></i><span>وصلت مكان التسليم تحت الباب 🏁</span>
             </button>`;
         } else if (o.status === 'الكابتن وصل للتسليم') {
           stepActionBtnsHtml = `
-            <button type="button" class="btn-main" style="margin-top:10px; background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}">
-              <i class="fa-solid fa-circle-check"></i> تم التسليم وقبضت الكاش (${o.fare} ج) ✅
+            <button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-circle-check"></i><span>تم التسليم وقبضت الكاش (${o.fare} ج) ✅</span>
             </button>`;
         }
 
         return `<div class="card active-mission-card">
           <div class="active-mission-ribbon">
             <span>🔥 مشوار شغال معاك دلوقتي (${idx + 1} من ${myActiveOrders.length})</span>
-            <span>${escapeHtml(o.id)}</span>
+            <strong dir="ltr">${escapeHtml(o.id)}</strong>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
             <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
             <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
           </div>
           ${waitTimerHtml}
-          <div style="font-size:12px; line-height:1.75; background:#FAF7F4; padding:10px; border-radius:12px; border:1px solid #E9DCE0;">
+          <div style="font-size:11.5px; line-height:1.65; background:#FAF7F4; padding:8px 10px; border-radius:10px; border:1px solid #E9DCE0;">
             <div>📦 <strong>من (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
             <div>🏁 <strong>إلى (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
             <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع عند:</strong> ${escapeHtml(o.payer)}</div>
             ${o.purchaseBudget ? `<div style="color:#6A1B9A; font-weight:800;">💵 سقف كاش المشتريات: ${escapeHtml(o.purchaseBudget)}</div>` : ''}
-            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:6px 8px; border-radius:8px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
-            <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #D1B8C0; display:flex; justify-content:space-between; align-items:center;">
-              <span>💵 تقبض كاش: <strong style="color:var(--primary); font-size:14px;">${o.fare} ج</strong></span>
-              <span>🤑 صافيك: <strong style="color:var(--success); font-size:14px;">${o.courierNet} ج</strong></span>
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:7px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+          </div>
+
+          <!-- المربعات المالية الموحدة على سطر واحد بدون انقسام حرف ج -->
+          <div class="financial-summary-compact">
+            <div class="finance-box">
+              <span class="finance-title">💵 تقبض كاش</span>
+              <div class="finance-amount">
+                <span class="number">${o.fare}</span>
+                <span class="currency">ج</span>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="finance-box highlight-net">
+              <span class="finance-title">🤑 صافيك بعد العمولة</span>
+              <div class="finance-amount">
+                <span class="number">${displayNet}</span>
+                <span class="currency">ج</span>
+              </div>
             </div>
           </div>
+
           ${buildCourierContactButtonsHtml(o)}
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
-            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B; font-size:11.5px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة 📍</button>` : ''}
-            <button type="button" class="btn-secondary" style="flex:1; background:#FFF8E1; color:#E65100; border:1px solid #FFB74D; font-size:11.5px;" onclick="courierBuzzCustomerDoor('${escapeHtml(o.id)}')">
-              <i class="fa-solid fa-bell"></i> رن جرس للعميل 🔔
-            </button>
+          <div class="order-card-actions">
+            <div class="order-card-actions-row">
+              ${hasGps ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة 📍</span></button>` : ''}
+              <button type="button" class="btn-secondary" style="flex:1.15; background:#FFF8E1; color:#E65100; border:1px solid #FFB74D;" onclick="courierBuzzCustomerDoor('${escapeHtml(o.id)}')">
+                <i class="fa-solid fa-bell"></i><span>رن جرس للعميل 🔔</span>
+              </button>
+            </div>
+            ${stepActionBtnsHtml}
           </div>
-          ${stepActionBtnsHtml}
         </div>`;
       }).join('');
 
@@ -5499,19 +5728,19 @@ function renderCustomerOrdersList() {
         let myOfferBannerHtml = '';
         if (myOffer) {
           if (myOffer.status === 'countered') {
-            myOfferBannerHtml = `<div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:11px; padding:9px 11px; margin:8px 0; font-size:11.5px; color:#01579B; font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:10px; padding:8px 10px; margin:6px 0; font-size:11px; color:#01579B; font-weight:800;">
               <div>🤝 العميل بعتلك سعر مقابل: <strong>${myOffer.customerCounterFare || o.originalFare} جنيه</strong> (بدل عرضك ${myOffer.offeredFare} ج)</div>
-              <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:6px; margin-top:6px;">
-                <button type="button" class="btn-popup-accept" style="padding:7px 10px; font-size:11.5px;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'accept')">قبول السعر (${o.originalFare} ج) ✅</button>
-                <button type="button" class="btn-popup-reject" style="padding:7px 10px; font-size:11.5px;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'reject')">رفض ✕</button>
+              <div class="order-card-actions-row" style="margin-top:5px;">
+                <button type="button" class="btn-popup-accept" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'accept')">قبول السعر (${o.originalFare} ج) ✅</button>
+                <button type="button" class="btn-popup-reject" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'reject')">رفض ✕</button>
               </div>
             </div>`;
           } else if (myOffer.status === 'pending') {
-            myOfferBannerHtml = `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:#E65100; font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:9px; padding:6px 9px; margin:5px 0; font-size:10.5px; color:#E65100; font-weight:800;">
               ⏳ بعتّ للعميل اقتراح سعر (<strong>${myOffer.offeredFare} ج</strong>) وفي انتظار موافقته.. أو تقدر تعدل عرضك تحت:
             </div>`;
           } else if (myOffer.status === 'rejected') {
-            myOfferBannerHtml = `<div style="background:#FFEBEE; border:1px dashed #EF5350; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:var(--danger); font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#FFEBEE; border:1px dashed #EF5350; border-radius:9px; padding:6px 9px; margin:5px 0; font-size:10.5px; color:var(--danger); font-weight:800;">
               ❌ العميل اعتذر عن عرضك السابق (${myOffer.offeredFare} ج).. تقدر تقبل الطلب بسعره الحالي أو تقترح سعر أقرب:
             </div>`;
           }
@@ -5523,9 +5752,9 @@ function renderCustomerOrdersList() {
         const estOfferNet = Math.max(0, roundMoney(draftOfferVal - estOfferFee));
 
         return `<div class="card" style="border:1.5px solid ${proxInfo.isRouteMatch ? '#2E7D32' : '#E9DCE0'};">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:5px;">
             <div>
-              <strong style="font-size:13.5px; color:var(--primary);">${escapeHtml(o.id)}</strong>
+              <strong style="font-size:13px; color:var(--primary);">${escapeHtml(o.id)}</strong>
               <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:4px;">(${elapsedTxt})</span>
             </div>
             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
@@ -5536,29 +5765,56 @@ function renderCustomerOrdersList() {
             </div>
           </div>
 
-          ${proxInfo.reasonText ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FAF7F4'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : 'var(--text-muted)'}; border-radius:8px; padding:4px 8px; font-size:10.5px; font-weight:800; margin-bottom:6px;">${escapeHtml(proxInfo.reasonText)}</div>` : ''}
+          ${proxInfo.reasonText ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FAF7F4'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : 'var(--text-muted)'}; border-radius:7px; padding:4px 8px; font-size:10.5px; font-weight:800; margin-bottom:6px;">${escapeHtml(proxInfo.reasonText)}</div>` : ''}
 
-          <div style="font-size:12px; line-height:1.7;">
+          <div style="font-size:11.5px; line-height:1.65;">
             <div>📦 <strong>الاستلام (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
             <div>🏁 <strong>التسليم (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
             <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع:</strong> ${escapeHtml(o.payer)}</div>
-            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:8px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:7px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
           </div>
 
-          <div style="background:#FAF4F6; border:1px solid #E8DCE0; border-radius:10px; padding:8px 10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-            <span>💵 تقبض كاش: <strong style="color:var(--primary); font-size:14px;">${o.fare} ج</strong></span>
-            <span>🤑 صافيك (عمولة ${effectiveFee}ج): <strong style="color:var(--success); font-size:14px;">${displayNet} ج</strong></span>
+          <!-- المربعات المالية الموحدة للكابتن (45 ج | 39.15 ج على سطر واحد بدون انقسام) -->
+          <div class="financial-summary-compact">
+            <div class="finance-box">
+              <span class="finance-title">💵 تقبض كاش</span>
+              <div class="finance-amount">
+                <span class="number">${o.fare}</span>
+                <span class="currency">ج</span>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="finance-box highlight-net">
+              <span class="finance-title">🤑 صافيك بعد العمولة</span>
+              <div class="finance-amount">
+                <span class="number">${displayNet}</span>
+                <span class="currency">ج</span>
+              </div>
+            </div>
           </div>
 
           ${o.discountApplied > 0 ? `<div class="yellow-discount-note">🟡 العميل معاه خصم (${o.discountApplied} ج) هتاخد منه كاش (${o.fare} ج) والتعويض (${o.discountApplied} ج) هينزل في محفظتك فوراً أول ما تقبل 😎💲</div>` : ''}
 
           ${myOfferBannerHtml}
 
-          <!-- صندوق اقتراح تعديل السعر للكابتن على الرادار (+5 / -5 / كتابة يدوية ونسبة الزيادة %) -->
-          <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin:8px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:11px; font-weight:900; color:#E65100;">💵 شايف المشوار يستاهل أكتر؟ اقترح سعرك للعميل:</span>
-              <small id="courCardOfferNet-${escapeHtml(o.id)}" style="font-size:10px; font-weight:800; color:#2E7D32;">صافيك: ${estOfferNet} ج</small>
+          <!-- زر قبول الأوردر بالسعر المعروض يظهر مباشرة فوق خانة اقتراح السعر -->
+          <div class="order-card-actions-row" style="margin:6px 0;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:0.8; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></button>` : ''}
+            <button type="button" class="btn-main" style="flex:1.5; background:var(--success);" data-action="cour-accept" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-motorcycle"></i><span>${myActiveOrders.length > 0 ? `ضم الأوردر معاك (${orderOrigFare} ج)` : `اقبل الأوردر (${orderOrigFare} ج)`}</span>
+            </button>
+          </div>
+
+          <!-- كارت اقتراح تعديل السعر للكابتن على الرادار مع شريط الزيادة السريعة (+5 ج | +10 ج | +15 ج) -->
+          <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin:4px 0 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:nowrap;">
+              <span style="font-size:10.5px; font-weight:900; color:#E65100; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">💵 أو اقترح سعرك للعميل:</span>
+              <small id="courCardOfferNet-${escapeHtml(o.id)}" class="net-profit-pill-nowrap">صافيك: ${estOfferNet} ج</small>
+            </div>
+            <div class="quick-fare-chips-row">
+              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 5) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-5" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 5)">+5 ج ⚡</button>
+              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 10) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-10" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 10)">+10 ج 🔥</button>
+              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 15) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-15" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 15)">+15 ج 🚀</button>
             </div>
             <div class="fare-adjust-controls">
               <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', -5)">-5</button>
@@ -5568,15 +5824,8 @@ function renderCustomerOrdersList() {
               </div>
               <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', 5)">+5</button>
             </div>
-            <button type="button" class="btn-secondary" style="width:100%; background:#ED6C02; color:#fff; padding:8px 12px; font-size:11.5px; font-weight:900;" onclick="submitCourierCardOfferFare('${escapeHtml(o.id)}')">
-              <i class="fa-solid fa-paper-plane"></i> ابعت اقتراح السعر للعميل 🚀
-            </button>
-          </div>
-
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            ${hasGps ? `<button type="button" class="btn-secondary" style="background:#E1F5FE; color:#01579B; padding:10px 12px; font-size:12px;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i> الخريطة</button>` : ''}
-            <button type="button" class="btn-main" style="flex:1; background:var(--success);" data-action="cour-accept" data-id="${escapeHtml(o.id)}">
-              <i class="fa-solid fa-motorcycle"></i> ${myActiveOrders.length > 0 ? 'ضم الأوردر معاك في السكة 🛵➕' : `اقبل الأوردر (${orderOrigFare} ج) 🛵✅`}
+            <button type="button" class="btn-main" style="background:linear-gradient(135deg, #ED6C02, #E65100);" onclick="submitCourierCardOfferFare('${escapeHtml(o.id)}')">
+              <i class="fa-solid fa-paper-plane"></i><span>ابعت اقتراح السعر للعميل 🚀</span>
             </button>
           </div>
         </div>`;
@@ -5591,6 +5840,7 @@ function renderCustomerOrdersList() {
       } else {
         feed.innerHTML = activeCardsHtml + waitingCardsHtml;
       }
+      syncCourierScreenWakeLock();
     }
 
     function openTopupModal() {

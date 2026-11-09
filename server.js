@@ -1196,6 +1196,9 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   const adminPushMasterEnabled = storedIncentives.adminPushMasterEnabled !== false;
   const adminPushCustomersEnabled = storedIncentives.adminPushCustomersEnabled !== false;
   const adminPushCaptainsEnabled = storedIncentives.adminPushCaptainsEnabled !== false;
+  const priceHumorMessage = storedIncentives.priceHumorMessage !== undefined
+    ? String(storedIncentives.priceHumorMessage)
+    : 'صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝';
 
   const rawCustomersRows = customersRes.data || [];
   const rawCaptainsRows = captainsRes.data || [];
@@ -1250,6 +1253,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     supportWhatsapp: sRow.support_whatsapp || '201507800875',
     broadcastMessage: sRow.broadcast_message || '',
     broadcastTarget,
+    priceHumorMessage,
     waitingTimeoutMinutes: Number(sRow.waiting_timeout_minutes ?? 30),
     maintenanceMode: Boolean(sRow.maintenance_mode),
     allowCaptainRegistration: sRow.allow_captain_registration !== false,
@@ -1324,6 +1328,9 @@ async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraS
     referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
     maxConcurrentOrdersPerCaptain: Math.max(1, Number(prevSettings.maxConcurrentOrdersPerCaptain ?? 3)),
     broadcastTarget: prevSettings.broadcastTarget || 'all',
+    priceHumorMessage: prevSettings.priceHumorMessage !== undefined
+      ? String(prevSettings.priceHumorMessage)
+      : 'صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝',
     tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
     tierDaysWindow: Math.max(1, Number(prevSettings.tierDaysWindow ?? 7)),
     tierConsecutiveDaysForDiamond: Math.max(1, Number(prevSettings.tierConsecutiveDaysForDiamond ?? 28)),
@@ -3846,12 +3853,13 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (
     (body.broadcastMessage !== undefined ||
       body.broadcastTarget !== undefined ||
+      body.priceHumorMessage !== undefined ||
       body.supportWhatsapp !== undefined ||
       body.waitingTimeoutMinutes !== undefined ||
       body.maxConcurrentOrdersPerCaptain !== undefined ||
       body.maintenanceMode !== undefined ||
       body.allowCaptainRegistration !== undefined) &&
-    !requireAdminPerm(req, res, ['manageSettings', 'manageOrders'])
+    !requireAdminPerm(req, res, ['manageSettings', 'manageOrders', 'managePricing'])
   ) {
     return;
   }
@@ -3915,6 +3923,7 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
   if (body.referralRequiredOrders !== undefined) partialIncentives.referralRequiredOrders = Math.max(1, Number(body.referralRequiredOrders));
   if (body.maxConcurrentOrdersPerCaptain !== undefined) partialIncentives.maxConcurrentOrdersPerCaptain = Math.max(1, Number(body.maxConcurrentOrdersPerCaptain));
   if (body.broadcastTarget !== undefined) partialIncentives.broadcastTarget = String(body.broadcastTarget).trim();
+  if (body.priceHumorMessage !== undefined) partialIncentives.priceHumorMessage = String(body.priceHumorMessage).trim();
 
   if (body.adminPushMasterEnabled !== undefined) partialIncentives.adminPushMasterEnabled = Boolean(body.adminPushMasterEnabled);
   if (body.adminPushCustomersEnabled !== undefined) partialIncentives.adminPushCustomersEnabled = Boolean(body.adminPushCustomersEnabled);
