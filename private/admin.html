@@ -109,7 +109,7 @@
     .trend-pill-neutral { background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
     .adm-order-card { background: #FAF7F4; padding: 12px; border-radius: 14px; border: 1.5px solid #E9DCE0; font-size: 11.5px; line-height: 1.65; transition: all 0.2s ease; }
     .adm-order-card.adm-ord-disputed { background: #FFF8FA; border-color: #F48FB1; border-right: 4.5px solid #C2185B; }
-    .adm-order-card.adm-ord-waiting { background: #FFFDF7; border-color: #FFE082; border-right: 4.5px solid #ED6C02; }
+    .adm-order-card.adm-ord-waiting { background: #FDFBFD; border-color: #C8A6BE; border-right: 4.5px solid #5A2846; }
     .adm-order-card.adm-ord-active { background: #F8FDFF; border-color: #B3E5FC; border-right: 4.5px solid #0288D1; }
     .adm-route-box { background: #FFFFFF; border: 1px solid #EFE6E9; border-radius: 10px; padding: 7px 10px; margin: 6px 0; font-size: 11px; }
     .adm-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0; }
@@ -117,6 +117,64 @@
     .adm-mini-actions { display: flex; gap: 5px; align-items: center; }
     .adm-btn-call { flex: 1; background: var(--primary); color: #fff !important; text-decoration: none; height: 28px; padding: 0 8px; border-radius: 7px; font-size: 10.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
     .adm-btn-wa { flex: 1; background: #25D366; color: #fff !important; text-decoration: none; height: 28px; padding: 0 8px; border-radius: 7px; font-size: 10.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+
+    /* توحيد الهوية اللونية لجميع الكروت والأزرار والشارات البرتقالية إلى البنفسجي البرجاندي الغامق (#5A2846) */
+    :root {
+      --warning: #5A2846 !important;
+      --plum-dark: #5A2846;
+      --plum-deeper: #431B33;
+      --plum-soft-bg: #F7F0F5;
+      --plum-soft-border: #C8A6BE;
+    }
+    .badge-pending {
+      background: #F5ECF2 !important;
+      color: #5A2846 !important;
+    }
+    .badge-awaiting {
+      background: #F7F0F5 !important;
+      color: #5A2846 !important;
+      border: 1px solid #C8A6BE !important;
+    }
+    #admCard-kpiStats .kpi-card[style*="#E65100"] {
+      border-right-color: #5A2846 !important;
+    }
+    #adminStatTotalCustomersCount,
+    #adminStatWaitingRadarSub,
+    span[style*="#B26A00"],
+    div[style*="#B26A00"],
+    strong[style*="#E65100"],
+    span[style*="#E65100"],
+    h2[style*="#E65100"] {
+      color: #5A2846 !important;
+    }
+    #admCard-customerResetPin {
+      border: 1.5px solid #C8A6BE !important;
+      background: #F7F0F5 !important;
+    }
+    #admCard-customerResetPin .card-title {
+      color: #5A2846 !important;
+    }
+    #admCard-surgePricing {
+      border: 2px solid #5A2846 !important;
+      background: #FDFBFD !important;
+    }
+    #adminSurgeLiveBanner,
+    #admCard-surgePricing .switch-wrapper,
+    div[style*="#FFF3E0"],
+    div[style*="#FFF8E1"] {
+      background: linear-gradient(135deg, #F7F0F5, #EFE2EC) !important;
+      border-color: #C8A6BE !important;
+      color: #5A2846 !important;
+    }
+    #admCard-customerResetPin .btn-main,
+    #admCard-surgePricing .btn-main,
+    button[style*="#E65100"],
+    button[style*="#ED6C02"] {
+      background: linear-gradient(135deg, #5A2846, #431B33) !important;
+      border-color: #431B33 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 8px rgba(90, 40, 70, 0.22) !important;
+    }
   </style>
 </head>
 <body>
@@ -1562,7 +1620,7 @@
 
       const metricColors = {
         installs: '#00838F',
-        customers: '#E65100',
+        customers: '#5A2846',
         captains: '#0277BD',
         completedOrders: '#2E7D32'
       };
@@ -3601,8 +3659,8 @@ function renderAdminDynamicSettingsInputs() {
         const hasCustomFare = Boolean(o.customerProposedFare && o.routeDefaultFare && o.customerProposedFare !== o.routeDefaultFare);
         const offersArr = Array.isArray(o.captainOffers) ? o.captainOffers : [];
         const offersSummaryHtml = offersArr.length > 0
-          ? `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:8px; padding:5px 8px; margin:4px 0; font-size:10.5px; color:#5D4037;">
-              <strong>🤝 عروض التفاوض على الطلب (${offersArr.length}):</strong>
+          ? `<div style="background:#F7F0F5; border:1px dashed #C8A6BE; border-radius:8px; padding:5px 8px; margin:4px 0; font-size:10.5px; color:#431B33;">
+              <strong style="color:#5A2846;">🤝 عروض التفاوض على الطلب (${offersArr.length}):</strong>
               ${offersArr.slice(0, 3).map(ofItem => {
                 const stMap = { pending: '⏳ بانتظار العميل', accepted: '✅ مقبول', countered: `🔄 عرض مقابل (${ofItem.customerCounterFare}ج)`, rejected: '❌ مرفوض', rejected_by_captain: '❌ رفض الكابتن' };
                 return `<div style="margin-top:2px;">• الكابتن <strong>${escapeHtml(ofItem.captainName || ofItem.captainPhone)}</strong> عرض <strong>${ofItem.offeredFare} ج</strong> — [${stMap[ofItem.status] || ofItem.status}]</div>`;

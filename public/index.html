@@ -86,7 +86,11 @@
       --text-muted: #665E62;
       --accent: #E9DCE0;
       --success: #2E7D32;
-      --warning: #ED6C02;
+      --warning: #5A2846;
+      --plum-dark: #5A2846;
+      --plum-deeper: #431B33;
+      --plum-soft-bg: #F7F0F5;
+      --plum-soft-border: #C8A6BE;
       --danger: #D32F2F;
       --font-family: 'Cairo', system-ui, -apple-system, sans-serif;
       --shadow-sm: 0 2px 8px rgba(123, 63, 82, 0.06);
@@ -143,10 +147,10 @@
     .input-field, .select-field, .textarea-field { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #E8DFE3; background: #FAF7F4; font-size: 12.5px; color: var(--text-main); font-weight: 600; outline: none; transition: border-color 0.2s; }
     .input-field:focus, .select-field:focus, .textarea-field:focus { border-color: var(--primary); background: #fff; }
     .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 50px; font-size: 10.5px; font-weight: 800; text-align: center; white-space: nowrap; }
-    .badge-pending { background: #FFF3E0; color: #B26A00; }
+    .badge-pending { background: #F5ECF2; color: #5A2846; }
     .badge-accepted { background: #E1F5FE; color: #0277BD; }
     .badge-delivering { background: #F3E5F5; color: #7B1FA2; }
-    .badge-awaiting { background: #FFF8E1; color: #E65100; border: 1px solid #FFE082; }
+    .badge-awaiting { background: #F7F0F5; color: #5A2846; border: 1px solid #C8A6BE; }
     .badge-disputed { background: #FCE4EC; color: #C2185B; border: 1px solid #F8BBD0; }
     .badge-completed { background: #E8F5E9; color: #2E7D32; }
     .badge-rejected { background: #FFEBEE; color: #D32F2F; }
@@ -307,25 +311,43 @@
     .btn-popup-accept:active { transform: scale(0.97); }
     .btn-popup-reject { background: linear-gradient(135deg, #D32F2F, #B71C1C); color: #fff; border: none; border-radius: 8px !important; height: 33px !important; min-height: 33px !important; max-height: 34px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.22); transition: transform 0.15s ease; }
     .btn-popup-reject:active { transform: scale(0.97); }
-    .btn-popup-offer { grid-column: span 2; background: linear-gradient(135deg, #ED6C02, #E65100); color: #fff; border: none; border-radius: 8px !important; height: 31px !important; min-height: 31px !important; max-height: 32px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 6px rgba(230, 81, 0, 0.22); transition: transform 0.15s ease; }
+    .btn-popup-offer { grid-column: span 2; background: linear-gradient(135deg, #5A2846, #431B33); color: #fff; border: none; border-radius: 8px !important; height: 31px !important; min-height: 31px !important; max-height: 32px !important; padding: 0 10px !important; font-size: 11px !important; font-weight: 900; cursor: pointer; display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; white-space: nowrap !important; box-shadow: 0 2px 6px rgba(90, 40, 70, 0.25); transition: transform 0.15s ease; }
     .btn-popup-offer:active { transform: scale(0.98); }
 
-    /* تنسيقات كارت اقتراح وتعديل الأجرة المصغر والمستطيل */
-    .fare-negotiation-box { background: #FAF7F4; border: 1.5px dashed rgba(123, 63, 82, 0.26); border-radius: 10px; padding: 6px 8px; margin-top: 2px; display: flex; flex-direction: column; gap: 5px; }
+    /* تنسيقات كارت اقتراح وتعديل الأجرة بالهوية البنفسجية البرجاندي الغامقة */
+    .fare-negotiation-box { background: #F7F0F5; border: 1.5px dashed #C8A6BE; border-radius: 10px; padding: 6px 8px; margin-top: 2px; display: flex; flex-direction: column; gap: 5px; }
     .fare-negotiation-header { display: flex; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px; width: 100%; }
-    .fare-negotiation-title { font-size: 10.5px; font-weight: 900; color: var(--primary); line-height: 1.25; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fare-negotiation-title { font-size: 10.5px; font-weight: 900; color: #5A2846; line-height: 1.25; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .fare-min-pill { font-size: 9.5px; font-weight: 800; color: #5F2E3E; background: #EFE6E9; padding: 1px 6px; border-radius: 50px; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
     .fare-adjust-controls { display: flex; align-items: center; gap: 5px; width: 100%; }
-    .fare-step-btn { width: 42px; height: 30px !important; min-height: 30px !important; border-radius: 7px; border: 1.5px solid #D1B8C0; background: #FFFFFF; color: var(--primary); font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
+    .fare-step-btn { width: 42px; height: 30px !important; min-height: 30px !important; border-radius: 7px; border: 1.5px solid #C8A6BE; background: #FFFFFF; color: #5A2846; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; user-select: none; }
     .fare-step-btn:active { transform: scale(0.94); background: var(--accent); }
-    .fare-mid-input-wrap { flex: 1; min-width: 0; height: 30px; background: #FFFFFF; border: 1.5px solid #D1B8C0; border-radius: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; gap: 4px; transition: border-color 0.2s ease; }
-    .fare-mid-input-wrap:focus-within { border-color: var(--primary); }
-    .fare-mid-input { width: 100%; min-width: 0; border: none !important; outline: none !important; background: transparent !important; text-align: center; font-size: 13.5px; font-weight: 900; color: var(--primary); padding: 0 !important; height: 100%; }
+    .fare-mid-input-wrap { flex: 1; min-width: 0; height: 30px; background: #FFFFFF; border: 1.5px solid #C8A6BE; border-radius: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; gap: 4px; transition: border-color 0.2s ease; }
+    .fare-mid-input-wrap:focus-within { border-color: #5A2846; }
+    .fare-mid-input { width: 100%; min-width: 0; border: none !important; outline: none !important; background: transparent !important; text-align: center; font-size: 13.5px; font-weight: 900; color: #5A2846; padding: 0 !important; height: 100%; }
     .fare-pct-pill { font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 50px; white-space: nowrap; flex-shrink: 0; direction: ltr; background: #ECEFF1; color: #455A64; border: 1px solid #CFD8DC; }
-    .fare-pct-pill.pct-up { background: #FFF3E0; color: #E65100; border-color: #FFB74D; }
+    .fare-pct-pill.pct-up { background: #F5ECF2; color: #5A2846; border-color: #C8A6BE; }
     .fare-pct-pill.pct-down { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
-    .captain-offer-card { background: linear-gradient(135deg, #FFFDF7, #FFF8E1); border: 1.5px solid #FFB74D; border-right: 4px solid #ED6C02; border-radius: 10px; padding: 8px 10px; margin: 5px 0; display: flex; flex-direction: column; gap: 6px; animation: fadeIn 0.25s ease; }
+    .captain-offer-card { background: linear-gradient(135deg, #FDFBFD, #F7F0F5); border: 1.5px solid #C8A6BE; border-right: 4px solid #5A2846; border-radius: 10px; padding: 8px 10px; margin: 5px 0; display: flex; flex-direction: column; gap: 6px; animation: fadeIn 0.25s ease; }
     .captain-offer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .quick-fare-chips-row { display: none !important; }
+
+    /* تنسيقات شريط البحث الذكي داخل الخريطة مع قائمة الاقتراحات التلقائية (Google Maps Style) */
+    .map-search-box-wrap { position: relative; width: 100%; margin-bottom: 8px; z-index: 30; }
+    .map-search-input-bar { display: flex; align-items: center; background: #FFFFFF; border: 1.5px solid #D1B8C0; border-radius: 50px; padding: 0 6px 0 10px; height: 38px; box-shadow: 0 3px 10px rgba(123, 63, 82, 0.1); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .map-search-input-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123, 63, 82, 0.14); }
+    .map-search-icon { color: var(--primary); font-size: 13px; margin: 0 6px; flex-shrink: 0; }
+    .map-search-input { flex: 1; min-width: 0; border: none !important; outline: none !important; background: transparent !important; font-size: 12px; font-weight: 700; color: var(--text-main); height: 100%; padding: 0 4px; }
+    .map-search-input::placeholder { color: #8E8287; font-weight: 600; font-size: 11px; }
+    .map-search-clear-btn { background: #EFE6E9; color: var(--primary); border: none; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 900; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 4px; }
+    .map-search-go-btn { background: linear-gradient(135deg, var(--primary), #5A2846); color: #fff; border: none; border-radius: 50px; height: 28px; padding: 0 11px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; flex-shrink: 0; white-space: nowrap; }
+    .map-search-suggestions { display: none; position: absolute; top: calc(100% + 4px); right: 0; left: 0; background: #FFFFFF; border: 1.5px solid var(--primary); border-radius: 12px; box-shadow: 0 10px 25px rgba(48, 42, 45, 0.22); max-height: 210px; overflow-y: auto; z-index: 999; }
+    .map-search-suggestion-item { padding: 8px 11px; border-bottom: 1px solid #F2E9EC; cursor: pointer; display: flex; align-items: flex-start; gap: 8px; text-align: right; transition: background 0.15s ease; }
+    .map-search-suggestion-item:last-child { border-bottom: none; }
+    .map-search-suggestion-item:hover, .map-search-suggestion-item:active { background: #FAF4F6; }
+    .map-search-suggestion-item i { color: var(--primary); font-size: 13px; margin-top: 3px; flex-shrink: 0; }
+    .map-search-sug-main { font-size: 11.5px; font-weight: 800; color: var(--text-main); line-height: 1.35; display: block; }
+    .map-search-sug-sub { font-size: 10px; font-weight: 700; color: var(--text-muted); line-height: 1.3; display: block; margin-top: 1px; }
     /* --- تنسيق المربعات المالية المدمجة للكابتن (في سطر واحد متناسق بدون انقسام حرف ج) --- */
 .financial-summary-compact {
     display: grid;
@@ -564,6 +586,18 @@
                   <button type="button" class="inline-map-mode-btn" id="inlineMapLeftOtherBtn" onclick="handleInlineMapLeftBtnClick()">
                     🏁 اختار مكان التسليم
                   </button>
+                </div>
+                <!-- شريط البحث الذكي داخل الخريطة مع اقتراحات العناوين الفورية (مثل خرائط جوجل) -->
+                <div class="map-search-box-wrap" id="inlineMapSearchBoxWrap">
+                  <div class="map-search-input-bar">
+                    <i class="fa-solid fa-magnifying-glass map-search-icon" id="inlineMapSearchStatusIcon"></i>
+                    <input type="text" id="inlineMapSearchInput" class="map-search-input" placeholder="ابحث هنا عن شارع، محل، أو منطقة في المنصورة..." autocomplete="off" oninput="handleInlineMapSearchInput()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); executeInlineMapPlaceSearch(this.value, true); }">
+                    <button type="button" id="inlineMapSearchClearBtn" class="map-search-clear-btn" onclick="clearInlineMapSearch()" title="مسح البحث">✕</button>
+                    <button type="button" class="map-search-go-btn" onclick="executeInlineMapPlaceSearch(document.getElementById('inlineMapSearchInput')?.value, true)">
+                      <span>بحث</span>
+                    </button>
+                  </div>
+                  <div id="inlineMapSearchSuggestions" class="map-search-suggestions"></div>
                 </div>
                 <div id="customerInlineLeafletMap" class="inline-leaflet-canvas"></div>
                 <div class="gps-manual-note" style="margin-top:8px; text-align:center;">
@@ -1343,15 +1377,15 @@
         </div>
 
         <!-- خانة تعديل واقتراح السعر السريعة أسفل زري القبول والرفض -->
-        <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin-top:0; padding:5px 7px; gap:4px; border-radius:10px;">
+        <div class="fare-negotiation-box" style="background:#F7F0F5; border-color:#C8A6BE; margin-top:0; padding:5px 7px; gap:4px; border-radius:10px;">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom: 2px; flex-wrap:nowrap;">
-            <span style="font-size:11px; font-weight:900; color:#E65100; white-space:nowrap;">💵 اقترح أجرتك:</span>
+            <span style="font-size:11px; font-weight:900; color:#5A2846; white-space:nowrap;">💵 اقترح أجرتك:</span>
             <small id="courierPopupNetPreviewHint" class="net-profit-pill-nowrap"></small>
           </div>
           <div class="fare-adjust-controls" style="gap:6px;">
             <button type="button" class="fare-step-btn" style="width:38px; height:30px; font-size:12.5px;" onclick="stepCourierPopupOfferFare(-5)">-5</button>
-            <div class="fare-mid-input-wrap" style="border-color:#FFB74D; height:30px;">
-              <input type="number" inputmode="numeric" id="courierPopupOfferFareInput" class="fare-mid-input" style="color:#E65100; font-size:13.5px;" oninput="handleCourierPopupOfferFareInput()">
+            <div class="fare-mid-input-wrap" style="border-color:#C8A6BE; height:30px;">
+              <input type="number" inputmode="numeric" id="courierPopupOfferFareInput" class="fare-mid-input" style="color:#5A2846; font-size:13.5px;" oninput="handleCourierPopupOfferFareInput()">
               <span id="courierPopupOfferPctBadge" class="fare-pct-pill pct-up">+20%</span>
             </div>
             <button type="button" class="fare-step-btn" style="width:38px; height:30px; font-size:12.5px;" onclick="stepCourierPopupOfferFare(5)">+5</button>
@@ -1371,8 +1405,8 @@
 
   <!-- نافذة تنبيه العميل المنبثقة الفورية عند وصول اقتراح سعر جديد من كابتن (تظهر لمدة 15 ثانية بصوت واهتزاز) -->
   <div class="custom-modal" id="customerCaptainOfferPopupModal" style="z-index: 2150;">
-    <div class="modal-content-card radar-popup-card" style="border-color:#ED6C02;">
-      <div class="radar-popup-header" style="background:linear-gradient(135deg, #E65100, #F57C00);">
+    <div class="modal-content-card radar-popup-card" style="border-color:#5A2846;">
+      <div class="radar-popup-header" style="background:linear-gradient(135deg, #5A2846, #431B33);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <span class="badge" id="custOfferPopupOrderBadge" style="background:rgba(255,255,255,0.22); color:#fff; font-size:10.5px;">🛵 عرض كابتن فوري</span>
           <span class="badge" id="custOfferPopupTimerBadge" style="background:#FFF9C4; color:#5D4037; font-size:11px; font-weight:900;">⏳ 15 ثانية</span>
@@ -2184,6 +2218,173 @@ function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArr
     }
 
     // ==================== محرك الخرائط التفاعلي وقراءة اسم الشارع الفعلي من الخريطة (Reverse Geocoding) ====================
+    let mapSearchDebounceTimer = null;
+    let mapSearchRequestSeq = 0;
+    let lastMapSearchResults = [];
+
+    function handleInlineMapSearchInput() {
+      const inp = document.getElementById('inlineMapSearchInput');
+      const clearBtn = document.getElementById('inlineMapSearchClearBtn');
+      const sugBox = document.getElementById('inlineMapSearchSuggestions');
+      const q = (inp ? inp.value : '').trim();
+
+      if (clearBtn) clearBtn.style.display = q.length > 0 ? 'inline-flex' : 'none';
+      if (mapSearchDebounceTimer) clearTimeout(mapSearchDebounceTimer);
+
+      if (q.length < 2) {
+        if (sugBox) {
+          sugBox.style.display = 'none';
+          sugBox.innerHTML = '';
+        }
+        return;
+      }
+
+      mapSearchDebounceTimer = setTimeout(() => {
+        executeInlineMapPlaceSearch(q, false);
+      }, 320);
+    }
+
+    function clearInlineMapSearch() {
+      const inp = document.getElementById('inlineMapSearchInput');
+      const clearBtn = document.getElementById('inlineMapSearchClearBtn');
+      const sugBox = document.getElementById('inlineMapSearchSuggestions');
+      if (inp) inp.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      if (sugBox) {
+        sugBox.style.display = 'none';
+        sugBox.innerHTML = '';
+      }
+    }
+
+    async function executeInlineMapPlaceSearch(rawQuery, isManualButton = false) {
+      const q = String(rawQuery || '').trim();
+      const sugBox = document.getElementById('inlineMapSearchSuggestions');
+      const iconEl = document.getElementById('inlineMapSearchStatusIcon');
+      if (!sugBox) return;
+
+      if (q.length < 2) {
+        if (isManualButton) showToast('اكتب اسم الشارع أو المكان الأول في خانة البحث يا باشا 🔍', 'warn');
+        return;
+      }
+
+      const reqSeq = ++mapSearchRequestSeq;
+      if (iconEl) iconEl.className = 'fa-solid fa-spinner fa-spin map-search-icon';
+      sugBox.style.display = 'block';
+      sugBox.innerHTML = `<div style="padding:10px; text-align:center; font-size:11px; font-weight:800; color:var(--primary);"><i class="fa-solid fa-spinner fa-spin"></i> جاري البحث عن العناوين المقترحة...</div>`;
+
+      try {
+        const hasCityHint = /(المنصورة|المنصوره|طلخا|سندوب|جديلة|جديله|الدقهلية|الدقهليه|ميت|شربين|بلقاس|اجا|أجا|دكرنس)/i.test(q);
+        const biasedQuery = hasCityHint ? q : `${q} المنصورة الدقهلية`;
+
+        let url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(biasedQuery)}&countrycodes=eg&addressdetails=1&accept-language=ar&limit=6`;
+        let res = await fetch(url);
+        let data = res.ok ? await res.json() : [];
+
+        if ((!Array.isArray(data) || data.length === 0) && !hasCityHint) {
+          const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&countrycodes=eg&viewbox=31.20,31.20,31.60,30.90&bounded=0&addressdetails=1&accept-language=ar&limit=6`;
+          const res2 = await fetch(fallbackUrl);
+          if (res2.ok) data = await res2.json();
+        }
+
+        if (reqSeq !== mapSearchRequestSeq) return;
+        if (iconEl) iconEl.className = 'fa-solid fa-magnifying-glass map-search-icon';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          sugBox.innerHTML = `<div style="padding:10px; text-align:center; font-size:11px; font-weight:700; color:var(--text-muted);">ملقيناش مكان بالاسم ده.. جرب تكتب اسم شارع أو معلم مشهور جنبك 📍</div>`;
+          return;
+        }
+
+        lastMapSearchResults = data.map(item => {
+          const addr = item.address || {};
+          const mainName = item.name || addr.amenity || addr.shop || addr.road || addr.pedestrian || addr.neighbourhood || addr.suburb || String(item.display_name || '').split(',')[0] || q;
+          const subParts = [
+            addr.road && addr.road !== mainName ? addr.road : '',
+            addr.neighbourhood || addr.suburb || addr.quarter || addr.city_district || '',
+            addr.city || addr.town || addr.village || ''
+          ].filter(Boolean);
+          const subText = subParts.length > 0
+            ? subParts.join('، ')
+            : String(item.display_name || '').split(',').slice(1, 4).map(s => s.trim()).join('، ');
+          const cleanFull = subText ? `${mainName}، ${subText}` : mainName;
+          return {
+            lat: Number(item.lat),
+            lng: Number(item.lon),
+            mainName: String(mainName).trim(),
+            subText: String(subText).trim(),
+            cleanFull: String(cleanFull).trim(),
+            rawDisplay: String(item.display_name || '')
+          };
+        });
+
+        sugBox.innerHTML = lastMapSearchResults.map((r, idx) => `
+          <div class="map-search-suggestion-item" onclick="selectInlineMapSearchResult(${idx})">
+            <i class="fa-solid fa-location-dot"></i>
+            <div style="flex:1; min-width:0;">
+              <span class="map-search-sug-main">${escapeHtml(r.mainName)}</span>
+              ${r.subText ? `<span class="map-search-sug-sub">${escapeHtml(r.subText)}</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        if (iconEl) iconEl.className = 'fa-solid fa-magnifying-glass map-search-icon';
+        sugBox.innerHTML = `<div style="padding:10px; text-align:center; font-size:11px; font-weight:700; color:var(--danger);">تعذر البحث حالياً، تقدر تحط الدبوس ع الخريطة أو تكتب العنوان بإيدك تحت ✍️</div>`;
+      }
+    }
+
+    function selectInlineMapSearchResult(idx) {
+      const item = lastMapSearchResults[idx];
+      if (!item || !isValidGpsCoord(item.lat, item.lng)) return;
+
+      const sugBox = document.getElementById('inlineMapSearchSuggestions');
+      const inp = document.getElementById('inlineMapSearchInput');
+      if (sugBox) sugBox.style.display = 'none';
+      if (inp) inp.value = item.mainName;
+
+      const targetKey = inlineMapActiveTarget === 'dropoff' ? 'dropoff' : 'pickup';
+      const lat = Number(item.lat.toFixed(6));
+      const lng = Number(item.lng.toFixed(6));
+
+      reverseGeocodeReqId[targetKey]++;
+      if (targetKey === 'pickup') {
+        tempOrderCoords.pickupLat = lat;
+        tempOrderCoords.pickupLng = lng;
+      } else {
+        tempOrderCoords.dropoffLat = lat;
+        tempOrderCoords.dropoffLng = lng;
+      }
+
+      tempResolvedAddresses[targetKey] = item.cleanFull;
+      const addrInp = document.getElementById(targetKey === 'pickup' ? 'pickupAddress' : 'dropoffAddress');
+      const pillTxt = document.getElementById(targetKey === 'pickup' ? 'pickupGpsCapturedText' : 'dropoffGpsCapturedText');
+      if (addrInp) addrInp.value = item.cleanFull;
+      if (pillTxt) pillTxt.innerText = `✅ العنوان من الخريطة: ${item.cleanFull}`;
+
+      const zoneSel = document.getElementById(targetKey === 'pickup' ? 'pickupZone' : 'dropoffZone');
+      if (zoneSel && Array.isArray(STATE.zones)) {
+        const hay = `${item.cleanFull} ${item.rawDisplay}`;
+        const matchedZone = STATE.zones.find(z => z && hay.includes(z));
+        if (matchedZone && zoneSel.value !== matchedZone) {
+          zoneSel.value = matchedZone;
+          calculateDeliveryPrice();
+        }
+      }
+
+      syncInlineMapMarkers(targetKey);
+      updateGpsPillsUI();
+      if (customerInlineMap) {
+        customerInlineMap.setView([lat, lng], 16);
+      }
+      showToast(`تم تحديد (${item.mainName}) ع الخريطة وكتابة العنوان بنجاح! 📍✅`, 'ok');
+    }
+
+    document.addEventListener('click', function(ev) {
+      const wrap = document.getElementById('inlineMapSearchBoxWrap');
+      const sugBox = document.getElementById('inlineMapSearchSuggestions');
+      if (wrap && sugBox && !wrap.contains(ev.target)) {
+        sugBox.style.display = 'none';
+      }
+    });
+
     async function fetchArabicAddressFromCoords(lat, lng) {
       try {
         const res = await fetch(
@@ -5366,30 +5567,30 @@ function renderCustomerOrdersList() {
                   </div>
                   <div style="font-size:11px; color:#0277BD; font-weight:700;">في انتظار موافقة الكابتن.. أو تقدر تقبل عرضه (${offeredAmt} ج) فوراً:</div>
                   <div class="captain-offer-actions">
-                    <button type="button" class="btn-popup-accept" style="height:38px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
-                    <button type="button" class="btn-popup-reject" style="height:38px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                    <button type="button" class="btn-popup-accept" style="height:36px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                    <button type="button" class="btn-popup-reject" style="height:36px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
                   </div>
                 </div>`;
               }
 
               return `<div class="captain-offer-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-                  <strong style="color:#E65100; font-size:12.5px;"><i class="fa-solid fa-hand-holding-dollar"></i> يوجد اقتراح سعر من الكابتن "${capNm}"</strong>
+                  <strong style="color:#5A2846; font-size:12px;"><i class="fa-solid fa-hand-holding-dollar"></i> يوجد اقتراح سعر من الكابتن "${capNm}"</strong>
                   <span class="badge ${tierCls}" style="font-size:10px;">${capBadge}</span>
                 </div>
-                <div style="font-size:12px; color:#5D4037; font-weight:800; line-height:1.5;">
-                  السعر المقترح لتوصيل المشوار: <strong style="color:var(--primary); font-size:14px;">${offeredAmt} جنيه</strong> (بدلاً من ${o.originalFare} ج)${o.discountApplied > 0 ? ` — هتدفع كاش <strong>${cashAfterDisc} ج</strong> بعد خصمك` : ''}.
+                <div style="font-size:11.5px; color:#431B33; font-weight:800; line-height:1.5;">
+                  السعر المقترح لتوصيل المشوار: <strong style="color:var(--primary); font-size:13.5px;">${offeredAmt} جنيه</strong> (بدلاً من ${o.originalFare} ج)${o.discountApplied > 0 ? ` — هتدفع كاش <strong>${cashAfterDisc} ج</strong> بعد خصمك` : ''}.
                 </div>
                 <div class="captain-offer-actions">
-                  <button type="button" class="btn-popup-accept" style="height:38px; padding:0 10px; font-size:12px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
-                  <button type="button" class="btn-popup-reject" style="height:38px; padding:0 10px; font-size:12px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
+                  <button type="button" class="btn-popup-accept" style="height:36px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'accept_offer')">قبول (${offeredAmt} ج) ✅</button>
+                  <button type="button" class="btn-popup-reject" style="height:36px; padding:0 10px; font-size:11.5px; white-space:nowrap;" onclick="customerRespondToCaptainOffer('${escapeHtml(o.id)}', '${capPh}', 'reject_offer')">رفض ✕</button>
                 </div>
               </div>`;
             }).join('');
           }
         }
 
-        // محفز الـ 3 دقائق الذكي + خانة التحكم المرن في أجرة المشوار داخل صفحة طلباتي للعميل
+        // محفز الـ 3 دقائق الذكي + خانة التحكم المرن في أجرة المشوار داخل صفحة طلباتي للعميل بالهوية البنفسجية البرجاندي
         let inlineFareControlHtml = '';
         if (isWaiting) {
           const baseRef = roundMoney(o.routeDefaultFare || o.originalFare || 40);
@@ -5400,9 +5601,9 @@ function renderCustomerOrdersList() {
           const quickPlus5Fare = roundMoney((o.originalFare || baseRef) + 5);
 
           const stimulusBannerHtml = waitingMs >= 180000
-            ? `<div style="background:linear-gradient(135deg, #FFF3E0, #FFE0B2); border:1.5px solid #FFB74D; border-radius:10px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span style="font-size:11px; font-weight:800; color:#E65100;">⚡ الطلب منتظر من شوية.. تحب تزود +5 ج عشان الكباتن البعيدة تلقطه هوا؟</span>
-                <button type="button" class="btn-main" style="width:auto; min-height:34px; padding:5px 12px; font-size:11px; background:#E65100; white-space:nowrap;" onclick="customerOrderFareDrafts['${escapeHtml(o.id)}']=${quickPlus5Fare}; submitCustomerCardOrderFare('${escapeHtml(o.id)}')">زود لـ ${quickPlus5Fare} ج فوراً 🚀</button>
+            ? `<div style="background:linear-gradient(135deg, #F7F0F5, #EFE2EC); border:1.5px solid #C8A6BE; border-radius:10px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span style="font-size:11px; font-weight:800; color:#5A2846;">⚡ الطلب منتظر من شوية.. تحب تزود +5 ج عشان الكباتن البعيدة تلقطه هوا؟</span>
+                <button type="button" class="btn-main" style="width:auto; min-height:32px; padding:0 12px; font-size:11px; background:linear-gradient(135deg, #5A2846, #431B33); white-space:nowrap;" onclick="customerOrderFareDrafts['${escapeHtml(o.id)}']=${quickPlus5Fare}; submitCustomerCardOrderFare('${escapeHtml(o.id)}')">زود لـ ${quickPlus5Fare} ج فوراً 🚀</button>
               </div>`
             : '';
 
@@ -5410,7 +5611,7 @@ function renderCustomerOrdersList() {
             <div class="fare-negotiation-box" style="margin-top:8px;">
               ${stimulusBannerHtml}
               <div class="fare-negotiation-header">
-                <span class="fare-negotiation-title">🤝 تعديل أو اقتراح أجرة المشوار للكباتن (الحالي: ${o.originalFare} ج):</span>
+                <span class="fare-negotiation-title">🤝 تعديل أو اقتراح أجرة المشوار (الحالي: ${o.originalFare} ج):</span>
                 <span class="fare-min-pill">الحد الأدنى: ${minAllowed} ج</span>
               </div>
               <div class="fare-adjust-controls">
@@ -5421,7 +5622,7 @@ function renderCustomerOrdersList() {
                 </div>
                 <button type="button" class="fare-step-btn" onclick="stepCustomerCardOrderFare('${escapeHtml(o.id)}', 5)">+5</button>
               </div>
-              <button type="button" class="btn-main" style="height:40px; padding:0 12px; font-size:12px; background:#E65100; white-space:nowrap;" onclick="submitCustomerCardOrderFare('${escapeHtml(o.id)}')">
+              <button type="button" class="btn-main" style="height:36px; padding:0 12px; font-size:11.5px; background:linear-gradient(135deg, #5A2846, #431B33); white-space:nowrap;" onclick="submitCustomerCardOrderFare('${escapeHtml(o.id)}')">
                 <i class="fa-solid fa-coins"></i><span>اعتماد وتحديث أجرة المشوار ع الرادار</span>
               </button>
             </div>
@@ -5431,7 +5632,7 @@ function renderCustomerOrdersList() {
         // عداد الانتظار الرسمي المشترك عند وصول الكابتن لعنوان الاستلام أو التسليم
         const isAtDoorStage = (o.status === 'الكابتن وصل للاستلام' || o.status === 'الكابتن وصل للتسليم');
         const arrivalTimerHtml = (isAtDoorStage && o.arrivedAt)
-          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:10px; padding:7px 10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#E65100;">
+          ? `<div style="background:#F7F0F5; border:1.5px dashed #5A2846; border-radius:10px; padding:7px 10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#5A2846;">
               <span>⏱️ وقت انتظار الكابتن عند العنوان:</span>
               <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:14px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
             </div>`
@@ -5469,7 +5670,7 @@ function renderCustomerOrdersList() {
             ${cleanNotes ? `<div style="background:#FAF7F4; padding:5px 8px; border-radius:6px; margin:4px 0; color:#5D4037;"><strong>${notesLabelInCard}:</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
             <div>الدفع: <strong>${escapeHtml(o.payer)}</strong> | اللي هيتدفع كاش: <strong>${o.fare} ج</strong> ${o.discountApplied > 0 ? `<small style="color:var(--text-muted);">(بدل ${o.originalFare} ج)</small>` : ''}</div>
             ${discountLineHtml}
-            ${o.rating !== null && o.rating !== undefined ? `<div style="color:#FFA000; font-weight:800; margin-top:4px;">⭐ تقييمك للمشوار: ${o.rating} نجوم</div>` : ''}
+            ${o.rating !== null && o.rating !== undefined ? `<div style="color:#5A2846; font-weight:800; margin-top:4px;">⭐ تقييمك للمشوار: ${o.rating} نجوم</div>` : ''}
             ${o.disputeReason ? `<div style="color:var(--danger); background:#FFEBEE; border:1px solid #FFCDD2; padding:6px 8px; border-radius:8px; font-weight:800; margin-top:6px;">⚠️ شكوتك المسجلة: ${escapeHtml(o.disputeReason)}</div>` : ''}
             ${o.adminResolutionNote ? `<div style="color:#5D4037; background:#FFFDE7; border:1px dashed #FBC02D; padding:6px 8px; border-radius:8px; font-weight:800; margin-top:6px;">📝 ${noteTitleLabel}: ${escapeHtml(o.adminResolutionNote)}</div>` : ''}
           </div>
@@ -5478,10 +5679,10 @@ function renderCustomerOrdersList() {
             ${hasTopActionRow ? `<div class="order-card-actions-row">
               ${hasGps && !isCancelled ? `<button type="button" class="btn-secondary" style="flex:0.85; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot" style="font-size:12px;"></i><span>الخريطة</span></button>` : ''}
               ${canCancel ? `<button type="button" class="btn-danger" style="flex:1;" data-action="cust-cancel" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-xmark" style="font-size:13px;"></i><span>إلغاء الطلب</span></button>` : ''}
-              ${canRate ? `<button type="button" class="btn-main" style="flex:1.15; background:linear-gradient(135deg, #FFB300, #FFA000); color:#302A2D; border:none; box-shadow:0 3px 8px rgba(255, 179, 0, 0.25);" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star" style="font-size:12px;"></i><span>قيّم الكابتن</span></button>` : ''}
+              ${canRate ? `<button type="button" class="btn-main" style="flex:1.15; background:linear-gradient(135deg, #5A2846, #431B33); color:#FFFFFF; border:none; box-shadow:0 3px 8px rgba(90, 40, 70, 0.25);" data-action="cust-rate" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-star" style="font-size:12px; color:#FFD54F;"></i><span>قيّم الكابتن</span></button>` : ''}
               ${canDispute ? `<button type="button" class="btn-danger" style="flex:1.1;" data-action="cust-dispute" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-triangle-exclamation" style="font-size:11.5px;"></i><span>بلّغ عن مشكلة</span></button>` : ''}
             </div>` : ''}
-            ${canReorder ? `<button type="button" class="btn-secondary" style="width:100%; height:40px; padding:0 12px; font-size:12px; font-weight:800; border-radius:11px; background:var(--accent); color:var(--primary); border:1px solid rgba(123, 63, 82, 0.18); white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:7px;" onclick="reorderPreviousCustomerTrip('${escapeHtml(o.id)}')"><i class="fa-solid fa-rotate-right" style="font-size:12.5px;"></i><span>اطلب نفس المشوار تاني</span></button>` : ''}
+            ${canReorder ? `<button type="button" class="btn-secondary" style="width:100%; height:36px; padding:0 12px; font-size:11.5px; font-weight:800; border-radius:10px; background:var(--accent); color:var(--primary); border:1px solid rgba(123, 63, 82, 0.18); white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:7px;" onclick="reorderPreviousCustomerTrip('${escapeHtml(o.id)}')"><i class="fa-solid fa-rotate-right" style="font-size:12px;"></i><span>اطلب نفس المشوار تاني بضغطة واحدة</span></button>` : ''}
           </div>
         </div>`;
       }).join('');
@@ -5563,7 +5764,7 @@ function renderCustomerOrdersList() {
       renderCustomerProfilePromoCodes();
     }
 
-function renderCourierFeed() {
+    function renderCourierFeed() {
       const feed = document.getElementById('courierOrdersFeed');
       const availBadge = document.getElementById('availableOrdersBadge');
       const navRadarBadge = document.getElementById('courNavRadarBadge');
@@ -5571,7 +5772,7 @@ function renderCourierFeed() {
       if (!feed) return;
 
       // عدم مقاطعة الكابتن أثناء كتابة سعر مقترح داخل كارت الرادار
-      if (document.activeElement && feed.contains(document.activeElement) && (document.activeElement.classList.contains('js-inline-courier-offer-input') || document.activeElement.classList.contains('js-courier-card-offer-input'))) {
+      if (document.activeElement && feed.contains(document.activeElement) && document.activeElement.classList.contains('js-inline-courier-offer-input')) {
         return;
       }
 
@@ -5607,22 +5808,20 @@ function renderCourierFeed() {
         const cleanNotes = cleanDisplayNotesText(o.customerNotes);
         const notesHeadingLabel = isFetch ? '🛍️ المشتريات وميزانية الباشا:' : '📝 ملحوظة الباشا:';
         const isAtDoor = (o.status === 'الكابتن وصل للاستلام' || o.status === 'الكابتن وصل للتسليم');
-        const effectiveFee = roundMoney(o.platformFee ?? getEffectiveCaptainFee(courier, o.originalFare || o.fare));
-        const displayNet = roundMoney(o.courierNet ?? Math.max(0, roundMoney((o.originalFare || o.fare) - effectiveFee)));
 
         const waitTimerHtml = (isAtDoor && o.arrivedAt)
-          ? `<div style="background:#FFF8E1; border:1.5px dashed #FFA000; border-radius:9px; padding:6px 10px; margin:6px 0; display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; color:#E65100;">
+          ? `<div style="background:#F7F0F5; border:1.5px dashed #5A2846; border-radius:10px; padding:7px 10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-weight:800; color:#5A2846;">
               <span>⏱️ عداد انتظارك عند العنوان:</span>
-              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:13.5px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
+              <strong class="js-arrival-wait-timer" data-arrived="${Number(o.arrivedAt)}" style="font-size:14px; direction:ltr;">${formatArrivalWaitTimerText(o.arrivedAt)}</strong>
             </div>`
           : '';
 
         let stepActionBtnsHtml = '';
         if (o.status === 'تم قبول الطلب') {
           stepActionBtnsHtml = `
-            <div class="order-card-actions-row">
+            <div class="order-card-actions-row" style="margin-top:8px;">
               <button type="button" class="btn-main" style="flex:1.45;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للاستلام">
-                <i class="fa-solid fa-location-dot"></i><span>وصلت للاستلام 📍</span>
+                <i class="fa-solid fa-location-dot"></i><span>وصلت للاستلام</span>
               </button>
               <button type="button" class="btn-danger" style="flex:0.85;" data-action="cour-release" data-id="${escapeHtml(o.id)}">
                 <i class="fa-solid fa-rotate-left"></i><span>اعتذار</span>
@@ -5630,9 +5829,9 @@ function renderCourierFeed() {
             </div>`;
         } else if (o.status === 'الكابتن وصل للاستلام') {
           stepActionBtnsHtml = `
-            <div class="order-card-actions-row">
+            <div class="order-card-actions-row" style="margin-top:8px;">
               <button type="button" class="btn-main" style="flex:1.45; background:#7B1FA2;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="استلم الطرد وفي السكة">
-                <i class="fa-solid fa-box-open"></i><span>استلمت وفي السكة 🚀</span>
+                <i class="fa-solid fa-box-open"></i><span>استلمت وفي السكة</span>
               </button>
               <button type="button" class="btn-danger" style="flex:0.85;" data-action="cour-release" data-id="${escapeHtml(o.id)}">
                 <i class="fa-solid fa-rotate-left"></i><span>اعتذار</span>
@@ -5640,63 +5839,45 @@ function renderCourierFeed() {
             </div>`;
         } else if (o.status === 'استلم الطرد وفي السكة') {
           stepActionBtnsHtml = `
-            <button type="button" class="btn-main" style="background:#E65100;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم">
-              <i class="fa-solid fa-flag-checkered"></i><span>وصلت مكان التسليم تحت الباب 🏁</span>
+            <button type="button" class="btn-main" style="margin-top:8px; height:36px; font-size:11.5px; background:linear-gradient(135deg, #5A2846, #431B33); white-space:nowrap;" data-action="cour-advance" data-id="${escapeHtml(o.id)}" data-next="الكابتن وصل للتسليم">
+              <i class="fa-solid fa-bell"></i><span>وصلت مكان التسليم تحت الباب</span>
             </button>`;
         } else if (o.status === 'الكابتن وصل للتسليم') {
           stepActionBtnsHtml = `
-            <button type="button" class="btn-main" style="background:var(--success);" data-action="cour-complete" data-id="${escapeHtml(o.id)}">
-              <i class="fa-solid fa-circle-check"></i><span>تم التسليم وقبضت الكاش (${o.fare} ج) ✅</span>
+            <button type="button" class="btn-main" style="margin-top:8px; height:36px; font-size:12px; background:var(--success); white-space:nowrap;" data-action="cour-complete" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-circle-check"></i><span>تم التسليم وقبضت الكاش (${o.fare} ج)</span>
             </button>`;
         }
 
         return `<div class="card active-mission-card">
           <div class="active-mission-ribbon">
             <span>🔥 مشوار شغال معاك دلوقتي (${idx + 1} من ${myActiveOrders.length})</span>
-            <strong dir="ltr">${escapeHtml(o.id)}</strong>
+            <span>${escapeHtml(o.id)}</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
             <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}">${isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد'}</span>
             <span class="badge ${getStatusBadgeClass(o.status)}">${escapeHtml(o.status)}</span>
           </div>
           ${waitTimerHtml}
-          <div style="font-size:11.5px; line-height:1.65; background:#FAF7F4; padding:8px 10px; border-radius:10px; border:1px solid #E9DCE0;">
+          <div style="font-size:12px; line-height:1.75; background:#FAF7F4; padding:10px; border-radius:12px; border:1px solid #E9DCE0;">
             <div>📦 <strong>من (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
             <div>🏁 <strong>إلى (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
             <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع عند:</strong> ${escapeHtml(o.payer)}</div>
             ${o.purchaseBudget ? `<div style="color:#6A1B9A; font-weight:800;">💵 سقف كاش المشتريات: ${escapeHtml(o.purchaseBudget)}</div>` : ''}
-            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:7px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
-          </div>
-
-          <!-- المربعات المالية الموحدة على سطر واحد بدون انقسام حرف ج -->
-          <div class="financial-summary-compact">
-            <div class="finance-box">
-              <span class="finance-title">💵 تقبض كاش</span>
-              <div class="finance-amount">
-                <span class="number">${o.fare}</span>
-                <span class="currency">ج</span>
-              </div>
-            </div>
-            <div class="divider"></div>
-            <div class="finance-box highlight-net">
-              <span class="finance-title">🤑 صافيك بعد العمولة</span>
-              <div class="finance-amount">
-                <span class="number">${displayNet}</span>
-                <span class="currency">ج</span>
-              </div>
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:6px 8px; border-radius:8px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+            <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #D1B8C0; display:flex; justify-content:space-between; align-items:center;">
+              <span>💵 تقبض كاش: <strong style="color:var(--primary); font-size:14px;">${o.fare} ج</strong></span>
+              <span>🤑 صافيك: <strong style="color:var(--success); font-size:14px;">${o.courierNet} ج</strong></span>
             </div>
           </div>
-
           ${buildCourierContactButtonsHtml(o)}
-          <div class="order-card-actions">
-            <div class="order-card-actions-row">
-              ${hasGps ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة 📍</span></button>` : ''}
-              <button type="button" class="btn-secondary" style="flex:1.15; background:#FFF8E1; color:#E65100; border:1px solid #FFB74D;" onclick="courierBuzzCustomerDoor('${escapeHtml(o.id)}')">
-                <i class="fa-solid fa-bell"></i><span>رن جرس للعميل 🔔</span>
-              </button>
-            </div>
-            ${stepActionBtnsHtml}
+          <div class="order-card-actions-row" style="margin-top:8px;">
+            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:1; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></button>` : ''}
+            <button type="button" class="btn-secondary" style="flex:1.15; background:#F7F0F5; color:#5A2846; border:1px solid #C8A6BE;" onclick="courierBuzzCustomerDoor('${escapeHtml(o.id)}')">
+              <i class="fa-solid fa-bell"></i><span>رن جرس للعميل</span>
+            </button>
           </div>
+          ${stepActionBtnsHtml}
         </div>`;
       }).join('');
 
@@ -5725,19 +5906,19 @@ function renderCourierFeed() {
         let myOfferBannerHtml = '';
         if (myOffer) {
           if (myOffer.status === 'countered') {
-            myOfferBannerHtml = `<div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:10px; padding:8px 10px; margin:6px 0; font-size:11px; color:#01579B; font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#E1F5FE; border:1.5px solid #29B6F6; border-radius:11px; padding:9px 11px; margin:8px 0; font-size:11.5px; color:#01579B; font-weight:800;">
               <div>🤝 العميل بعتلك سعر مقابل: <strong>${myOffer.customerCounterFare || o.originalFare} جنيه</strong> (بدل عرضك ${myOffer.offeredFare} ج)</div>
-              <div class="order-card-actions-row" style="margin-top:5px;">
-                <button type="button" class="btn-popup-accept" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'accept')">قبول السعر (${o.originalFare} ج) ✅</button>
-                <button type="button" class="btn-popup-reject" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'reject')">رفض ✕</button>
+              <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:6px; margin-top:6px;">
+                <button type="button" class="btn-popup-accept" style="height:34px; padding:0 10px; font-size:11px; white-space:nowrap;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'accept')">قبول السعر (${o.originalFare} ج) ✅</button>
+                <button type="button" class="btn-popup-reject" style="height:34px; padding:0 10px; font-size:11px; white-space:nowrap;" onclick="courierRespondToCounterOffer('${escapeHtml(o.id)}', 'reject')">رفض ✕</button>
               </div>
             </div>`;
           } else if (myOffer.status === 'pending') {
-            myOfferBannerHtml = `<div style="background:#FFF8E1; border:1px dashed #FFB74D; border-radius:9px; padding:6px 9px; margin:5px 0; font-size:10.5px; color:#E65100; font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#F7F0F5; border:1px dashed #C8A6BE; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:#5A2846; font-weight:800;">
               ⏳ بعتّ للعميل اقتراح سعر (<strong>${myOffer.offeredFare} ج</strong>) وفي انتظار موافقته.. أو تقدر تعدل عرضك تحت:
             </div>`;
           } else if (myOffer.status === 'rejected') {
-            myOfferBannerHtml = `<div style="background:#FFEBEE; border:1px dashed #EF5350; border-radius:9px; padding:6px 9px; margin:5px 0; font-size:10.5px; color:var(--danger); font-weight:800;">
+            myOfferBannerHtml = `<div style="background:#FFEBEE; border:1px dashed #EF5350; border-radius:10px; padding:7px 10px; margin:6px 0; font-size:11px; color:var(--danger); font-weight:800;">
               ❌ العميل اعتذر عن عرضك السابق (${myOffer.offeredFare} ج).. تقدر تقبل الطلب بسعره الحالي أو تقترح سعر أقرب:
             </div>`;
           }
@@ -5749,7 +5930,7 @@ function renderCourierFeed() {
         const estOfferNet = Math.max(0, roundMoney(draftOfferVal - estOfferFee));
 
         return `<div class="card" style="border:1.5px solid ${proxInfo.isRouteMatch ? '#2E7D32' : '#E9DCE0'};">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:5px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
             <div>
               <strong style="font-size:13px; color:var(--primary);">${escapeHtml(o.id)}</strong>
               <span style="font-size:10px; color:var(--text-muted); font-weight:800; margin-right:4px;">(${elapsedTxt})</span>
@@ -5762,16 +5943,13 @@ function renderCourierFeed() {
             </div>
           </div>
 
-          ${proxInfo.reasonText ? `<div style="background:${proxInfo.isRouteMatch ? '#E8F5E9' : '#FAF7F4'}; color:${proxInfo.isRouteMatch ? '#1B5E20' : 'var(--text-muted)'}; border-radius:7px; padding:4px 8px; font-size:10.5px; font-weight:800; margin-bottom:6px;">${escapeHtml(proxInfo.reasonText)}</div>` : ''}
-
-          <div style="font-size:11.5px; line-height:1.65;">
-            <div>📦 <strong>الاستلام (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
-            <div>🏁 <strong>التسليم (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
-            <div>⚖️ <strong>الحجم:</strong> ${escapeHtml(o.packageType)} | <strong>الدفع:</strong> ${escapeHtml(o.payer)}</div>
-            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:5px 8px; border-radius:7px; margin-top:4px; color:#5D4037; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+          <div style="font-size:11.5px; line-height:1.5; background:#FAF7F4; border:1px solid #E9DCE0; border-radius:10px; padding:7px 9px;">
+            <div>📦 <strong style="color:var(--primary);">من (${escapeHtml(o.pickupZone)}):</strong> ${escapeHtml(o.pickupAddress)}</div>
+            <div style="border-top:1px dashed #E2D5DA; padding-top:4px; margin-top:3px;">🏁 <strong style="color:var(--success);">إلى (${escapeHtml(o.dropoffZone)}):</strong> ${escapeHtml(o.dropoffAddress)}</div>
+            <div style="border-top:1px dashed #E2D5DA; padding-top:3px; margin-top:3px; font-size:10.5px; color:var(--text-muted);">⚖️ ${escapeHtml(o.packageType)} | 💰 الدفع: ${escapeHtml(o.payer)}</div>
+            ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; padding:4px 7px; border-radius:7px; margin-top:4px; color:#5D4037; font-size:10.5px; font-weight:700;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
           </div>
 
-          <!-- المربعات المالية الموحدة للكابتن (45 ج | 39.15 ج على سطر واحد بدون انقسام) -->
           <div class="financial-summary-compact">
             <div class="finance-box">
               <span class="finance-title">💵 تقبض كاش</span>
@@ -5790,39 +5968,34 @@ function renderCourierFeed() {
             </div>
           </div>
 
-          ${o.discountApplied > 0 ? `<div class="yellow-discount-note">🟡 العميل معاه خصم (${o.discountApplied} ج) هتاخد منه كاش (${o.fare} ج) والتعويض (${o.discountApplied} ج) هينزل في محفظتك فوراً أول ما تقبل 😎💲</div>` : ''}
+          ${o.discountApplied > 0 ? `<div class="yellow-discount-note" style="padding:5px 8px; font-size:10.5px; margin:4px 0;">🟡 خصم للعميل (${o.discountApplied} ج) ينزل بمحفظتك فوراً عند القبول 💲</div>` : ''}
 
           ${myOfferBannerHtml}
 
-          <!-- زر قبول الأوردر بالسعر المعروض يظهر مباشرة فوق خانة اقتراح السعر -->
+          <!-- زر قبول الأوردر بسعر العميل الحالي + الخريطة في الأعلى أولاً -->
           <div class="order-card-actions-row" style="margin:6px 0;">
-            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:0.8; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></button>` : ''}
-            <button type="button" class="btn-main" style="flex:1.5; background:var(--success);" data-action="cour-accept" data-id="${escapeHtml(o.id)}">
-              <i class="fa-solid fa-motorcycle"></i><span>${myActiveOrders.length > 0 ? `ضم الأوردر معاك (${orderOrigFare} ج)` : `اقبل الأوردر (${orderOrigFare} ج)`}</span>
+            ${hasGps ? `<button type="button" class="btn-secondary" style="flex:0.85; height:35px !important; background:#E1F5FE; color:#01579B; border:1px solid #B3E5FC;" data-action="view-order-map" data-id="${escapeHtml(o.id)}"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></button>` : ''}
+            <button type="button" class="btn-main" style="flex:1.45; height:35px !important; background:var(--success);" data-action="cour-accept" data-id="${escapeHtml(o.id)}">
+              <i class="fa-solid fa-motorcycle"></i><span>${myActiveOrders.length > 0 ? `ضم الأوردر (${orderOrigFare} ج)` : `اقبل الأوردر (${orderOrigFare} ج)`}</span>
             </button>
           </div>
 
-          <!-- كارت اقتراح تعديل السعر للكابتن على الرادار مع شريط الزيادة السريعة (+5 ج | +10 ج | +15 ج) -->
-          <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin:4px 0 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:nowrap;">
-              <span style="font-size:10.5px; font-weight:900; color:#E65100; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">💵 أو اقترح سعرك للعميل:</span>
+          <!-- صندوق اقتراح الأجرة بحجم مصغر وسطر واحد (اقترح أجرتك) بدون أزرار 5 و 10 و 15 وباللون البنفسجي الغامق -->
+          <div class="fare-negotiation-box" style="background:#F7F0F5; border-color:#C8A6BE; margin:0; padding:6px 8px; gap:5px; border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; white-space:nowrap;">
+              <span style="font-size:11px; font-weight:900; color:#5A2846; white-space:nowrap;">💵 اقترح أجرتك:</span>
               <small id="courCardOfferNet-${escapeHtml(o.id)}" class="net-profit-pill-nowrap">صافيك: ${estOfferNet} ج</small>
             </div>
-            <div class="quick-fare-chips-row">
-              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 5) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-5" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 5)">+5 ج ⚡</button>
-              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 10) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-10" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 10)">+10 ج 🔥</button>
-              <button type="button" class="quick-fare-chip-btn ${roundMoney(orderOrigFare + 15) === draftOfferVal ? 'active-chip' : ''}" id="cardQuickChip-${escapeHtml(o.id)}-15" onclick="setCourierCardQuickIncrement('${escapeHtml(o.id)}', 15)">+15 ج 🚀</button>
-            </div>
-            <div class="fare-adjust-controls">
-              <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', -5)">-5</button>
-              <div class="fare-mid-input-wrap" style="border-color:#FFB74D;">
-                <input type="number" inputmode="numeric" id="courCardOfferInput-${escapeHtml(o.id)}" class="fare-mid-input js-inline-courier-offer-input" style="color:#E65100;" value="${draftOfferVal}" oninput="handleCourierCardOfferInput('${escapeHtml(o.id)}')">
-                <span id="courCardOfferPct-${escapeHtml(o.id)}" class="${offerPctMeta.cls}">${offerPctMeta.text}</span>
+            <div class="fare-adjust-controls" style="gap:5px;">
+              <button type="button" class="fare-step-btn" style="width:36px; height:30px; font-size:12px; border-radius:7px;" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', -5)">-5</button>
+              <div class="fare-mid-input-wrap" style="border-color:#C8A6BE; height:30px; border-radius:7px;">
+                <input type="number" inputmode="numeric" id="courCardOfferInput-${escapeHtml(o.id)}" class="fare-mid-input js-inline-courier-offer-input" style="color:#5A2846; font-size:13.5px;" value="${draftOfferVal}" oninput="handleCourierCardOfferInput('${escapeHtml(o.id)}')">
+                <span id="courCardOfferPct-${escapeHtml(o.id)}" class="${offerPctMeta.cls}" style="font-size:9px; padding:1px 5px;">${offerPctMeta.text}</span>
               </div>
-              <button type="button" class="fare-step-btn" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', 5)">+5</button>
+              <button type="button" class="fare-step-btn" style="width:36px; height:30px; font-size:12px; border-radius:7px;" onclick="stepCourierCardOfferFare('${escapeHtml(o.id)}', 5)">+5</button>
             </div>
-            <button type="button" class="btn-main" style="background:linear-gradient(135deg, #ED6C02, #E65100);" onclick="submitCourierCardOfferFare('${escapeHtml(o.id)}')">
-              <i class="fa-solid fa-paper-plane"></i><span>ابعت اقتراح السعر للعميل 🚀</span>
+            <button type="button" class="btn-secondary" style="width:100%; height:32px !important; background:linear-gradient(135deg, #5A2846, #431B33); color:#fff; padding:0 10px; font-size:11px; font-weight:900; border-radius:8px !important; white-space:nowrap;" onclick="submitCourierCardOfferFare('${escapeHtml(o.id)}')">
+              <i class="fa-solid fa-paper-plane"></i><span>ابعت اقتراح السعر للعميل</span>
             </button>
           </div>
         </div>`;
@@ -5837,7 +6010,6 @@ function renderCourierFeed() {
       } else {
         feed.innerHTML = activeCardsHtml + waitingCardsHtml;
       }
-      syncCourierScreenWakeLock();
     }
 
     function openTopupModal() {
@@ -5915,6 +6087,7 @@ function renderCourierFeed() {
       renderCustomerOrdersList();
       renderCourierScreen();
       renderCourierFeed();
+      syncCourierScreenWakeLock();
     }
 
     // تفويض الأحداث الموحد للأزرار الديناميكية داخل كروت الطلبات والرادار
