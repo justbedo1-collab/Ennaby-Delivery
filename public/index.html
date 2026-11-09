@@ -2289,13 +2289,13 @@ function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArr
       const leftBtn = document.getElementById('inlineMapLeftOtherBtn');
       if (rightBtn && leftBtn) {
         if (isFetch) {
-          rightBtn.innerHTML = '🏁 اختار مكان التسليم ع الخريطة';
-          leftBtn.innerHTML = '🏪 اختار مكان الاستلام ع الخريطة';
+          rightBtn.innerHTML = '🏁 اختار مكان التسليم ';
+          leftBtn.innerHTML = '🏪 اختار مكان الاستلام ';
           rightBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
           leftBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
         } else {
-          rightBtn.innerHTML = '📦 اختار مكان الاستلام ع الخريطة';
-          leftBtn.innerHTML = '🏁 اختار مكان التسليم ع الخريطة';
+          rightBtn.innerHTML = '📦 اختار مكان الاستلام ';
+          leftBtn.innerHTML = '🏁 اختار مكان التسليم ';
           rightBtn.classList.toggle('active', inlineMapActiveTarget === 'pickup');
           leftBtn.classList.toggle('active', inlineMapActiveTarget === 'dropoff');
         }
