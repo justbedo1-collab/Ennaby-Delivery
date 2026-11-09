@@ -537,10 +537,11 @@
                   </button>
                 </div>
                 <div id="fetchNoticeAlert" style="display:none; background:#FFFDE7; border:1px solid #FFE082; padding:10px; border-radius:12px; font-size:11px; color:#5D4037; margin-top:8px; line-height:1.5;">
-                  <div>💡 <strong>ملحوظة يا باشا:</strong> أجرة المشوار للتوصيل بس، وحساب الحاجة اللي الكابتن هيشتريها بتتحاسبوا عليها كاش مع بعض بالفاتورة عند الباب يا نجم 😉</div>
+                  <div>💡 <strong>ملحوظة يا باشا:</strong> أجرة المشوار للتوصيل بس، وحساب الحاجة اللي الكابتن هيشتريها بتتحاسبوا عليها كاش مع بعض بالفاتورة عند الباب (أو اختار «بدون حساب» لو دافع مسبقاً أو بتستلم من صاحبك) 😉</div>
                   <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #FBC02D;">
-                    <span style="font-weight:900; color:#E65100; display:block; margin-bottom:5px;">💵 سقف كاش المشتريات التقريبي (عشان الكابتن يعمل حسابه في الفلوس):</span>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+                    <span style="font-weight:900; color:#E65100; display:block; margin-bottom:6px;">💵 سقف كاش المشتريات التقريبي (عشان الكابتن يعمل حسابه في الفلوس):</span>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                      <button type="button" class="inline-map-mode-btn" id="budgetBtn-noCash" onclick="selectPurchaseBudget('بدون حساب (خالص)')" style="font-size:10.5px; padding:6px 4px;">بدون حساب ✅</button>
                       <button type="button" class="inline-map-mode-btn active" id="budgetBtn-under200" onclick="selectPurchaseBudget('أقل من 200 ج')" style="font-size:10.5px; padding:6px 4px;">أقل من 200 ج</button>
                       <button type="button" class="inline-map-mode-btn" id="budgetBtn-200to500" onclick="selectPurchaseBudget('200 إلى 500 ج')" style="font-size:10.5px; padding:6px 4px;">200 إلى 500 ج</button>
                       <button type="button" class="inline-map-mode-btn" id="budgetBtn-over500" onclick="selectPurchaseBudget('أكثر من 500 ج')" style="font-size:10.5px; padding:6px 4px;">أكثر من 500 ج</button>
@@ -1341,16 +1342,11 @@
           </button>
         </div>
 
-        <!-- خانة تعديل واقتراح السعر السريعة أسفل زري القبول والرفض مع أزرار الزيادة بضغطة واحدة -->
+        <!-- خانة تعديل واقتراح السعر السريعة أسفل زري القبول والرفض -->
         <div class="fare-negotiation-box" style="background:#FFF8E1; border-color:#FFB74D; margin-top:0; padding:5px 7px; gap:4px; border-radius:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom: 1px; flex-wrap:nowrap;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom: 2px; flex-wrap:nowrap;">
             <span style="font-size:11px; font-weight:900; color:#E65100; white-space:nowrap;">💵 اقترح أجرتك:</span>
             <small id="courierPopupNetPreviewHint" class="net-profit-pill-nowrap"></small>
-          </div>
-          <div class="quick-fare-chips-row">
-            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-5" onclick="setCourierPopupQuickIncrement(5)">+5 ج ⚡</button>
-            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-10" onclick="setCourierPopupQuickIncrement(10)">+10 ج 🔥</button>
-            <button type="button" class="quick-fare-chip-btn" id="popupQuickChip-15" onclick="setCourierPopupQuickIncrement(15)">+15 ج 🚀</button>
           </div>
           <div class="fare-adjust-controls" style="gap:6px;">
             <button type="button" class="fare-step-btn" style="width:38px; height:30px; font-size:12.5px;" onclick="stepCourierPopupOfferFare(-5)">-5</button>
@@ -3056,6 +3052,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     function selectPurchaseBudget(budgetLabel) {
       selectedPurchaseBudget = budgetLabel || 'أقل من 200 ج';
       const mapIds = {
+        'بدون حساب (خالص)': 'budgetBtn-noCash',
         'أقل من 200 ج': 'budgetBtn-under200',
         '200 إلى 500 ج': 'budgetBtn-200to500',
         'أكثر من 500 ج': 'budgetBtn-over500'
@@ -3239,7 +3236,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         if (recipientPhoneLabel) { recipientPhoneLabel.innerText = 'رقم المحل أو الشخص اللي هنشتري/نستلم منه 🏪'; recipientPhoneLabel.style.color = 'var(--primary)'; }
         if (payerOption1Radio) { payerOption1Radio.value = 'العميل عند الاستلام بالباب 🏠'; payerOption1Radio.checked = true; } if (payerOption1Text) payerOption1Text.innerText = 'أنا لما الكابتن يوصلي (المستلم) 🏠';
         if (payerOption2Radio) { payerOption2Radio.value = 'مكان الشراء (مدفوعة هناك) 🏪'; payerOption2Radio.checked = false; } if (payerOption2Text) payerOption2Text.innerText = 'المحل / مكان الاستلام (مدفوعة هناك) 🏪';
-        if (notesLabel) { notesLabel.innerText = '🛍️ اكتب الحاجة اللي الكابتن هيشتريها وتقريباً في حدود كام جنيه؟ 👇'; notesLabel.style.color = '#E65100'; }
+        if (notesLabel) { notesLabel.innerText = '🛍️ اكتب الحاجة اللي الكابتن هيشتريها ولو عليها فلوس تقريباً في حدود كام ؟ 👇'; notesLabel.style.color = '#E65100'; }
         if (notesInput) { notesInput.placeholder = 'اكتب هنا المشتريات وتمنها التقريبي عشان الكابتن يعمل حسابه في الكاش (مثلاً: أوردر من مطعم كذا بحوالي 150 ج)...'; }
         setInlineMapTargetMode('dropoff');
       } else {
