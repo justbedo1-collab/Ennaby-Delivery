@@ -1206,9 +1206,36 @@
       }
     })();
 
-    document.addEventListener('pointerdown', function(e) {
-      const target = e.target.closest('button, a, select, input, label, textarea');
-      if (target && !target.closest('#toast')) lastInteractedElement = target;
+    let lastInteractedRelativeY = null;
+
+    function recordAdminInteractionTarget(e) {
+      const target = e.target && e.target.closest ? e.target.closest('button, a, select, input, label, textarea, .switch') : null;
+      if (!target || target.closest('#toast')) return;
+      const mockup = document.getElementById('phoneMockup') || document.querySelector('.phone-mockup');
+      const isInsideActionModal = Boolean(target.closest('#customActionModal'));
+
+      if (!isInsideActionModal) {
+        lastInteractedElement = target;
+        if (mockup) {
+          const mockupRect = mockup.getBoundingClientRect();
+          const elRect = target.getBoundingClientRect();
+          if (elRect.width > 0 && elRect.height > 0) {
+            lastInteractedRelativeY = elRect.top - mockupRect.top;
+          }
+        }
+      }
+    }
+
+    document.addEventListener('pointerdown', recordAdminInteractionTarget, true);
+    document.addEventListener('click', recordAdminInteractionTarget, true);
+    document.addEventListener('change', recordAdminInteractionTarget, true);
+    document.addEventListener('input', function(e) {
+      if (e.target && e.target.closest && e.target.closest('#adminDashboardContent')) {
+        if (typeof markAdminIncentivesDirty === 'function') markAdminIncentivesDirty();
+      }
+    }, true);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') recordAdminInteractionTarget(e);
     }, true);
 
     let SESSION = (() => {
@@ -1314,20 +1341,32 @@
     }
 
     async function apiRequest(ep, meth='POST', bdy=null) {
-      const opts = { method:meth, credentials:'include', headers:{} };
-      if(bdy!==null) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(bdy); }
-      const res = await fetch(`${API_BASE}${ep}`, opts);
-      const data = await res.json().catch(()=>({}));
-      if(res.status === 401 && !ep.includes('/auth/admin/login')) {
-        STATE.activeAdminUser = null;
-        saveSession();
-        renderAdminScreen();
+      try {
+        const opts = { method:meth, credentials:'include', headers:{} };
+        if(bdy!==null) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(bdy); }
+        const res = await fetch(`${API_BASE}${ep}`, opts);
+        const data = await res.json().catch(()=>({}));
+        if((res.status === 401 || res.status === 403) && !ep.includes('/auth/admin/login')) {
+          if (res.status === 401 || (data && String(data.message || '').includes('تعطيل'))) {
+            STATE.activeAdminUser = null;
+            STATE.adminAccounts = [];
+            saveSession();
+            renderAdminScreen();
+          }
+        }
+        if(data && data.state) {
+          try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch(e){}
+          applyCloudStateSnapshot(data.state);
+        }
+        return { ok: res.ok, status: res.status, data };
+      } catch (netErr) {
+        console.warn('Admin API network warning:', netErr);
+        return {
+          ok: false,
+          status: 0,
+          data: { success: false, message: 'تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت 🌐⚠️' }
+        };
       }
-      if(data && data.state) {
-        try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch(e){}
-        applyCloudStateSnapshot(data.state);
-      }
-      return { ok: res.ok, status: res.status, data };
     }
 
     function applyCloudStateSnapshot(cloud) {
@@ -1349,6 +1388,10 @@
       if(cloud.authenticatedAdminUsername) {
         STATE.activeAdminUser = cloud.authenticatedAdminUsername;
         saveSession();
+      } else if (cloud.authenticatedAdminUsername === null) {
+        STATE.activeAdminUser = null;
+        STATE.adminAccounts = [];
+        saveSession();
       }
       renderAdminScreen();
     }
@@ -1366,6 +1409,11 @@
               applyCloudStateSnapshot(data.state);
             }
           }
+        } else if (res.status === 401) {
+          STATE.activeAdminUser = null;
+          STATE.adminAccounts = [];
+          saveSession();
+          renderAdminScreen();
         }
       } catch(e) {} finally { isCloudSyncInFlight = false; }
     }
@@ -1386,15 +1434,21 @@
         btn.disabled = true;
         btn.innerHTML = loadingHtml;
       }
-      Promise.resolve(fn()).finally(() => {
-        if (btn && document.body.contains(btn)) {
-          if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
-            btn.innerHTML = origHtml;
+      Promise.resolve()
+        .then(() => fn())
+        .catch(err => {
+          console.error('Admin action error:', err);
+          showToast('حدث خطأ أثناء تنفيذ العملية، حاول مرة أخرى ⚠️', 'warn');
+        })
+        .finally(() => {
+          if (btn && document.body.contains(btn)) {
+            if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
+              btn.innerHTML = origHtml;
+            }
+            btn.disabled = origDisabled;
           }
-          btn.disabled = origDisabled;
-        }
-        setTimeout(() => { actionLock = false; }, 260);
-      });
+          setTimeout(() => { actionLock = false; }, 260);
+        });
     }
 
     function showToast(msg, type='auto') {
@@ -1407,14 +1461,35 @@
       if(tIcon) { tIcon.className = isWarn?'fa-solid fa-circle-exclamation':'fa-solid fa-circle-check'; tIcon.style.color = isWarn?'#FF8A80':'#4CAF50'; }
 
       let targetTop = 24;
-      if (mockup && lastInteractedElement && document.body.contains(lastInteractedElement)) {
+      if (mockup) {
         const mockupRect = mockup.getBoundingClientRect();
-        const elRect = lastInteractedElement.getBoundingClientRect();
-        if (elRect.width > 0 && elRect.height > 0) {
-          const relativeY = elRect.top - mockupRect.top - 62;
-          const minTop = 16;
-          const maxTop = Math.max(minTop, mockup.clientHeight - 125);
-          targetTop = Math.max(minTop, Math.min(relativeY, maxTop));
+        let resolvedRelativeY = null;
+
+        const actionModal = document.getElementById('customActionModal');
+        const isModalStillOpen = actionModal && actionModal.classList.contains('show');
+        const modalConfirmBtn = document.getElementById('customActionModalConfirmBtn');
+
+        if (isModalStillOpen && modalConfirmBtn) {
+          const btnRect = modalConfirmBtn.getBoundingClientRect();
+          if (btnRect.width > 0 && btnRect.height > 0) {
+            resolvedRelativeY = btnRect.top - mockupRect.top - 8;
+          }
+        } else if (lastInteractedElement && document.body.contains(lastInteractedElement)) {
+          const elRect = lastInteractedElement.getBoundingClientRect();
+          if (elRect.width > 0 && elRect.height > 0) {
+            resolvedRelativeY = elRect.top - mockupRect.top - 8;
+            lastInteractedRelativeY = elRect.top - mockupRect.top;
+          }
+        }
+
+        if (resolvedRelativeY === null && lastInteractedRelativeY !== null) {
+          resolvedRelativeY = lastInteractedRelativeY - 8;
+        }
+
+        if (resolvedRelativeY !== null) {
+          const minTop = 14;
+          const maxTop = Math.max(minTop, mockup.clientHeight - 115);
+          targetTop = Math.max(minTop, Math.min(resolvedRelativeY, maxTop));
         }
       }
       toast.style.top = `${Math.round(targetTop)}px`;
@@ -1434,10 +1509,12 @@
     function getActiveAdmin() {
       if (!STATE.activeAdminUser) return null;
       if (Array.isArray(STATE.adminAccounts) && STATE.adminAccounts.length > 0) {
-        const found = STATE.adminAccounts.find(a => a.username.toLowerCase() === String(STATE.activeAdminUser).toLowerCase());
+        const found = STATE.adminAccounts.find(
+          a => a && String(a.username || '').toLowerCase() === String(STATE.activeAdminUser).toLowerCase() && a.status !== 'معطل'
+        );
         return found || null;
       }
-      return { name: STATE.activeAdminUser, username: STATE.activeAdminUser, isMaster: false, status: 'نشط', permissions: {} };
+      return null;
     }
 
     function isMasterAdmin(adm=null) { const a = adm||getActiveAdmin(); return Boolean(a&&a.isMaster); }
@@ -1862,12 +1939,22 @@
       document.getElementById('customActionModalTitle').style.color = isDanger?'var(--danger)':'var(--primary)';
       document.getElementById('customActionModalMessage').innerText = message;
       document.getElementById('customActionModalInputWrap').style.display = needInput?'block':'none';
-      if(needInput) { const inp=document.getElementById('customActionModalInput'); inp.value=defaultValue; inp.placeholder=inputPlaceholder; setTimeout(()=>inp.focus(),80); }
+      const inp = document.getElementById('customActionModalInput');
+      if(needInput && inp) {
+        inp.value = defaultValue;
+        inp.placeholder = inputPlaceholder;
+        inp.onkeydown = function(ev) { if (ev.key === 'Enter' && typeof customModalCallback === 'function') customModalCallback(); };
+        setTimeout(()=>inp.focus(),80);
+      }
       const b=document.getElementById('customActionModalConfirmBtn'); b.innerText=confirmText; b.style.background=isDanger?'var(--danger)':'var(--primary)';
       customModalCallback = function() {
-        const v = document.getElementById('customActionModalInput').value.trim();
+        const v = inp ? inp.value.trim() : '';
         if(needInput&&!v){ showToast('برجاء كتابة القيمة أو التفاصيل أولاً ⚠️','warn'); return; }
-        closeCustomActionModal(); if(typeof onConfirm==='function') onConfirm(v);
+        closeCustomActionModal();
+        if(typeof onConfirm==='function') {
+          if (actionLock) onConfirm(v);
+          else withActionLock(() => onConfirm(v));
+        }
       };
       b.onclick = customModalCallback; document.getElementById('customActionModal').classList.add('show');
     }
@@ -2017,9 +2104,9 @@
 
     function updateAdminTiersLiveNote() {
       const mode = (document.getElementById('adminTierCommissionModeSelect')?.value || STATE.settings.commissionMode || 'fixed') === 'percentage' ? 'percentage' : 'fixed';
-      const wOrd = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
-      const dWin = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
-      const cDays = Math.max(dWin, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
+      const wOrd = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25), 10) || 25);
+      const dWin = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminTierDaysWindowInput')?.value || 7), 10) || 7);
+      const cDays = Math.max(dWin, parseInt(normalizeDigits(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28), 10) || 28);
       const pDisc = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
       const dDisc = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
       const bPct = Math.max(0, roundMoney(document.getElementById('adminTierBronzePercentInput')?.value ?? STATE.settings.platformFeePercent ?? 13));
@@ -2049,9 +2136,9 @@
     function adminSaveCaptainTiersConfig() {
       withActionLock(async () => {
         const commissionMode = document.getElementById('adminTierCommissionModeSelect')?.value === 'percentage' ? 'percentage' : 'fixed';
-        const tierWeeklyOrdersTarget = Math.max(1, Number(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25));
-        const tierDaysWindow = Math.max(1, Number(document.getElementById('adminTierDaysWindowInput')?.value || 7));
-        const tierConsecutiveDaysForDiamond = Math.max(tierDaysWindow, Number(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28));
+        const tierWeeklyOrdersTarget = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminTierWeeklyOrdersInput')?.value || 25), 10) || 25);
+        const tierDaysWindow = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminTierDaysWindowInput')?.value || 7), 10) || 7);
+        const tierConsecutiveDaysForDiamond = Math.max(tierDaysWindow, parseInt(normalizeDigits(document.getElementById('adminTierConsecutiveDaysInput')?.value || 28), 10) || 28);
         const tierWeeksForDiamond = Math.max(1, Math.ceil(tierConsecutiveDaysForDiamond / tierDaysWindow));
         const tierPlatinumDiscount = Math.max(0, roundMoney(document.getElementById('adminTierPlatDiscountInput')?.value ?? 1));
         const tierDiamondDiscount = Math.max(0, roundMoney(document.getElementById('adminTierDiaDiscountInput')?.value ?? 2));
@@ -2244,8 +2331,9 @@
     // ==================== تسعير وقت الذروة والذروة التلقائية الذكية (Surge & Auto-Surge) ====================
     function adminTriggerSurgePricing(action) {
       withActionLock(async () => {
-        const surgePercent = Math.max(1, Number(document.getElementById('adminSurgePercentInput')?.value || 20));
-        const surgeDurationMinutes = Math.max(1, Number(document.getElementById('adminSurgeDurationInput')?.value || 30));
+        const surgePercent = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminSurgePercentInput')?.value || 20), 10) || 20);
+        const surgeDurationMinutes = Math.max(1, parseInt(normalizeDigits(document.getElementById('adminSurgeDurationInput')?.value || 30), 10) || 30);
+        adminIncentivesDirtyUntil = 0;
 
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
           surgeAction: action,
@@ -2615,7 +2703,10 @@
         const cp = document.getElementById('masterAdminCurrentPassInput')?.value;
         const np = document.getElementById('masterAdminNewPassInput')?.value.trim();
         const rp = document.getElementById('masterAdminConfirmPassInput')?.value.trim();
-        if(np!==rp) { showToast('المرور غير متطابق ⚠️','warn'); return; }
+        if (!nm || !un) { showToast('برجاء كتابة الاسم واسم المستخدم ⚠️', 'warn'); return; }
+        if (!cp) { showToast('برجاء إدخال كلمة المرور الحالية للتأكيد 🔒⚠️', 'warn'); return; }
+        if (np && np.length < 4) { showToast('كلمة المرور الجديدة يجب ألا تقل عن 4 أحرف أو أرقام ⚠️', 'warn'); return; }
+        if (np !== rp) { showToast('كلمة المرور الجديدة وتأكيدها غير متطابقين ⚠️', 'warn'); return; }
         const {ok, data} = await apiRequest('/api/admin/accounts/master','POST',{name:nm,username:un,currentPassword:cp,newPassword:np});
         if(ok&&data.success) {
           if (un) { STATE.activeAdminUser = un; saveSession(); }
@@ -2643,7 +2734,10 @@
         const un = document.getElementById('subAdminUserInput')?.value.trim();
         const pa = document.getElementById('subAdminPassInput')?.value.trim();
         const cp = document.getElementById('subAdminConfirmPassInput')?.value.trim();
-        if(pa!==cp) { showToast('كلمة المرور غير متطابقة ⚠️','warn'); return; }
+        if (!nm || !un) { showToast('برجاء كتابة الاسم واسم المستخدم للمسؤول ⚠️', 'warn'); return; }
+        if (!ou && (!pa || pa.length < 4)) { showToast('كلمة المرور للمسؤول الجديد مطلوبة (4 أحرف/أرقام على الأقل) ⚠️', 'warn'); return; }
+        if (pa && pa.length < 4) { showToast('كلمة المرور يجب ألا تقل عن 4 أحرف أو أرقام ⚠️', 'warn'); return; }
+        if (pa !== cp) { showToast('كلمة المرور غير متطابقة ⚠️', 'warn'); return; }
         const prms = {}; ADMIN_PERM_KEYS.forEach(k=>prms[k]=Boolean(document.getElementById(`permSwitch-${k}`)?.checked));
         const {ok, data} = await apiRequest('/api/admin/accounts/sub','POST',{origUsername:ou,name:nm,username:un,password:pa,permissions:prms});
         if(ok&&data.success) { resetSubAdminForm(); showToast('تم حفظ المسؤول ✅','ok'); } else showToast((data&&data.message)||'خطأ ⚠️','warn');
@@ -2661,9 +2755,9 @@
     function adminToggleSubAdminStatus(u) {
       const t=STATE.adminAccounts.find(a=>a.username===u&&!a.isMaster); if(!t)return;
       const wd = t.status!=='معطل';
-      openCustomActionModal({ title: wd?`تعطيل ${escapeHtml(t.name)}`:`تنشيط ${escapeHtml(t.name)}`, message:`موافق؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
+      openCustomActionModal({ title: wd?`تعطيل ${escapeHtml(t.name)}`:`تنشيط ${escapeHtml(t.name)}`, message:`هل أنت متأكد من ${wd?'تعطيل':'تنشيط'} حساب المسؤول (${escapeHtml(t.name)})؟`, confirmText:wd?'تعطيل ⛔':'تنشيط ✅', isDanger:wd, onConfirm: async ()=>{
         const {ok, data} = await apiRequest(`/api/admin/accounts/${encodeURIComponent(u)}/toggle`,'POST',{});
-        if(ok&&data.success) showToast('تم التحديث ✅','ok'); else showToast('تعذر ⚠️','warn');
+        if(ok&&data.success) showToast('تم تحديث حالة المسؤول ✅','ok'); else showToast((data&&data.message)||'تعذر تحديث الحالة ⚠️','warn');
       }});
     }
 
@@ -2741,10 +2835,10 @@
     function adminExecuteManualTopup() {
       withActionLock(async () => {
         const ph = document.getElementById('adminManualTopupCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualTopupAmount')?.value);
-        if(!ph||am<=0) { showToast('حدد بيانات صحيحة ⚠️','warn'); return; }
+        if(!ph||am<=0) { showToast('حدد الكابتن ومبلغ شحن أكبر من صفر ⚠️','warn'); return; }
         openCustomActionModal({title:'شحن كابتن', message:`تأكيد شحن ${am} ج للكابتن؟`, confirmText:'شحن ✅', onConfirm: async ()=>{
           const {ok, data}=await apiRequest('/api/admin/wallets/captain-topup','POST',{phone:ph, amount:am});
-          if(ok&&data.success){ document.getElementById('adminManualTopupAmount').value=''; showToast('تم الشحن ✅','ok'); } else showToast('تعذر ⚠️','warn');
+          if(ok&&data.success){ document.getElementById('adminManualTopupAmount').value=''; showToast('تم شحن محفظة الكابتن بنجاح ✅','ok'); } else showToast((data&&data.message)||'تعذر تنفيذ الشحن ⚠️','warn');
         }});
       });
     }
@@ -2752,10 +2846,10 @@
     function adminExecuteManualDeduct() {
       withActionLock(async () => {
         const ph = document.getElementById('adminManualDeductCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminManualDeductAmount')?.value); const re = document.getElementById('adminManualDeductReason')?.value.trim();
-        if(!ph||am<=0||!re) { showToast('اكمل البيانات ⚠️','warn'); return; }
+        if(!ph||am<=0||!re) { showToast('حدد الكابتن والمبلغ وسبب الخصم ⚠️','warn'); return; }
         openCustomActionModal({title:'خصم إداري', message:`خصم ${am} ج بسبب: ${escapeHtml(re)}؟`, confirmText:'خصم ⛔', isDanger:true, onConfirm: async ()=>{
           const {ok, data}=await apiRequest('/api/admin/wallets/captain-deduct','POST',{phone:ph, amount:am, reason:re});
-          if(ok&&data.success){ document.getElementById('adminManualDeductAmount').value=''; document.getElementById('adminManualDeductReason').value=''; showToast('تم الخصم ✅','ok'); } else showToast('تعذر ⚠️','warn');
+          if(ok&&data.success){ document.getElementById('adminManualDeductAmount').value=''; document.getElementById('adminManualDeductReason').value=''; showToast('تم تنفيذ الخصم الإداري ✅','ok'); } else showToast((data&&data.message)||'تعذر تنفيذ الخصم ⚠️','warn');
         }});
       });
     }
@@ -2772,9 +2866,9 @@
     function adminExecuteCustomerCompensation() {
       withActionLock(async () => {
         const ph = normalizePhone(document.getElementById('adminCustomerPhoneInput')?.value); const am = roundMoney(document.getElementById('adminCustCompAmount')?.value); const re = document.getElementById('adminCustCompReason')?.value.trim();
-        if(!isValidEgyptianPhone(ph)||am<=0) { showToast('بيانات غير صحيحة ⚠️','warn'); return; }
+        if(!isValidEgyptianPhone(ph)||am<=0) { showToast('أدخل رقم عميل مصري صحيح ومبلغ أكبر من صفر ⚠️','warn'); return; }
         const {ok, data} = await apiRequest('/api/admin/wallets/customer-compensate','POST',{phone:ph,amount:am,reason:re});
-        if(ok&&data.success){ document.getElementById('adminCustCompAmount').value=''; document.getElementById('adminCustCompReason').value=''; showToast('تم إضافة الرصيد للعميل ✅','ok'); } else showToast('تعذر ⚠️','warn');
+        if(ok&&data.success){ document.getElementById('adminCustCompAmount').value=''; document.getElementById('adminCustCompReason').value=''; showToast('تم إضافة الرصيد لمحفظة العميل ✅','ok'); } else showToast((data&&data.message)||'تعذر إضافة الرصيد ⚠️','warn');
       });
     }
 
@@ -2782,9 +2876,9 @@
       withActionLock(async () => {
         const commissionMode = document.getElementById('adminCommissionModeSelect')?.value === 'percentage' ? 'percentage' : 'fixed';
         const platformFee = Math.max(0, roundMoney(document.getElementById('adminPlatformFeeInput')?.value ?? 7));
-        const platformFeePercent = Math.max(0, roundMoney(document.getElementById('adminPlatformFeePercentInput')?.value ?? 13));
-        const tierPlatinumPercent = Math.max(0, roundMoney(document.getElementById('adminPlatformPlatPercentInput')?.value ?? 12.5));
-        const tierDiamondPercent = Math.max(0, roundMoney(document.getElementById('adminPlatformDiaPercentInput')?.value ?? 12));
+        const platformFeePercent = Math.min(100, Math.max(0, roundMoney(document.getElementById('adminPlatformFeePercentInput')?.value ?? 13)));
+        const tierPlatinumPercent = Math.min(100, Math.max(0, roundMoney(document.getElementById('adminPlatformPlatPercentInput')?.value ?? 12.5)));
+        const tierDiamondPercent = Math.min(100, Math.max(0, roundMoney(document.getElementById('adminPlatformDiaPercentInput')?.value ?? 12)));
 
         adminIncentivesDirtyUntil = 0;
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', {
@@ -2802,7 +2896,7 @@
             'ok'
           );
         } else {
-          showToast('تعذر حفظ نظام العمولة ⚠️', 'warn');
+          showToast((data && data.message) || 'تعذر حفظ نظام العمولة ⚠️', 'warn');
         }
       });
     }
@@ -2825,7 +2919,7 @@
         ? `عمولة فردية مخصصة: <strong>${cap.customFee}${unitLbl}</strong> (${escapeHtml(cap.customFeeReason)})`
         : `يتبع نظام المستويات (${escapeHtml(cap.tierBadgeText || 'كابتن برونزي 🥉')} — العمولة الفعلية: <strong>${defaultRateVal}${unitLbl}</strong>)`;
 
-const reInp = document.getElementById('adminCustomFeeReasonInput');
+      const reInp = document.getElementById('adminCustomFeeReasonInput');
       if (document.activeElement !== amtInp && document.activeElement !== reInp) {
         if (amtInp) amtInp.value = hc ? cap.customFee : defaultRateVal;
         if (reInp) reInp.value = cap.customFeeReason || '';
@@ -2834,10 +2928,14 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
 
     function adminSaveCaptainCustomFee() {
       withActionLock(async () => {
-        const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; const am = roundMoney(document.getElementById('adminCustomFeeAmountInput')?.value); const re = document.getElementById('adminCustomFeeReasonInput')?.value.trim();
-        if(!p||am<0||!re) { showToast('أكمل البيانات ⚠️','warn'); return; }
+        const p = document.getElementById('adminCustomFeeCaptainSelect')?.value;
+        const rawAmt = roundMoney(document.getElementById('adminCustomFeeAmountInput')?.value);
+        const isPct = (STATE.settings && STATE.settings.commissionMode === 'percentage');
+        const am = isPct ? Math.min(100, Math.max(0, rawAmt)) : Math.max(0, rawAmt);
+        const re = document.getElementById('adminCustomFeeReasonInput')?.value.trim();
+        if(!p||rawAmt<0||!re) { showToast('أكمل بيانات العمولة الخاصة والسبب ⚠️','warn'); return; }
         const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,customFee:am,reason:re,reset:false});
-        if(ok&&data.success)showToast('تم الفردي ✅','ok'); else showToast('تعذر ⚠️','warn');
+        if(ok&&data.success)showToast('تم اعتماد العمولة الخاصة للكابتن ✅','ok'); else showToast((data&&data.message)||'تعذر الحفظ ⚠️','warn');
       });
     }
 
@@ -2845,7 +2943,7 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
       withActionLock(async () => {
         const p = document.getElementById('adminCustomFeeCaptainSelect')?.value; if(!p)return;
         const {ok, data}=await apiRequest('/api/admin/captains/custom-fee','POST',{phone:p,reset:true});
-        if(ok&&data.success)showToast('تم الإرجاع للعامة/المستويات ✅','ok'); else showToast('تعذر ⚠️','warn');
+        if(ok&&data.success)showToast('تم إرجاع الكابتن للعمولة العامة/المستويات ✅','ok'); else showToast((data&&data.message)||'تعذر الإرجاع ⚠️','warn');
       });
     }
 
@@ -2943,7 +3041,7 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
             showToast(referralRewardActive ? `تم اعتماد مكافأة الدعوة (${referralRewardAmount} ج بعد ${formatArabicTripsCount(referralRequiredOrders)}) وتحديث إشعار الكابتن فوراً 🤝✅` : 'تم إيقاف برنامج دعوة الأصدقاء ⛔', 'ok');
           }
         } else {
-          showToast('تعذر حفظ إعدادات الحوافز ⚠️', 'warn');
+          showToast((data && data.message) || 'تعذر حفظ إعدادات الحوافز ⚠️', 'warn');
         }
       });
     }
@@ -2952,15 +3050,16 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
       withActionLock(async () => {
         const rawVal = normalizeDigits(document.getElementById(id)?.value || '').trim();
         const v = Number(rawVal);
-        if (!Number.isFinite(v) || v < 1) {
-          showToast('برجاء إدخال رقم صحيح أكبر من الصفر ⚠️', 'warn');
+        const minAllowed = (key === 'customerRewardThreshold' || key === 'courierRewardThreshold') ? 5 : 1;
+        if (!Number.isFinite(v) || v < minAllowed) {
+          showToast(`برجاء إدخال رقم صحيح لا يقل عن (${minAllowed}) ⚠️`, 'warn');
           return;
         }
         adminIncentivesDirtyUntil = 0;
         updateLoyaltyLivePreview();
         const { ok, data } = await apiRequest('/api/admin/settings', 'POST', { loyaltyField: { key, value: v } });
         if (ok && data.success) showToast('تم حفظ وتحديث قاعدة عنابي بوينتس بنجاح 🍇✅', 'ok');
-        else showToast('تعذر الحفظ ⚠️', 'warn');
+        else showToast((data && data.message) || 'تعذر الحفظ ⚠️', 'warn');
       });
     }
 
@@ -2992,8 +3091,10 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
 
     function adminSaveWaitingTimeout() {
       withActionLock(async () => {
-        const v = Number(document.getElementById('adminWaitingTimeoutInput')?.value||30);
-        const {ok, data}=await apiRequest('/api/admin/settings','POST',{waitingTimeoutMinutes:v});
+        const rawVal = normalizeDigits(document.getElementById('adminWaitingTimeoutInput')?.value ?? 30).trim();
+        const v = Math.max(0, parseInt(rawVal, 10));
+        adminIncentivesDirtyUntil = 0;
+        const {ok, data}=await apiRequest('/api/admin/settings','POST',{waitingTimeoutMinutes: Number.isFinite(v) ? v : 30});
         if(ok&&data.success)showToast('تم حفظ المهلة ✅','ok');
       });
     }
@@ -3151,9 +3252,15 @@ const reInp = document.getElementById('adminCustomFeeReasonInput');
 
     function saveCustomPrices() {
       withActionLock(async () => {
-        const up = {...STATE.pricing}; document.querySelectorAll('.route-price-input').forEach(i=>{ const k=i.getAttribute('data-route'); const v=Number(i.value); if(k&&v>0)up[k]=roundMoney(v); });
-        isPricingDirty=false; const {ok, data}=await apiRequest('/api/admin/settings','POST',{pricing:up});
-        if(ok&&data.success)showToast('تم اعتماد التسعيرة الجديدة 🛵✅','ok');
+        const up = {...STATE.pricing};
+        document.querySelectorAll('.route-price-input').forEach(i => {
+          const k = i.getAttribute('data-route');
+          const v = roundMoney(i.value);
+          if (k && v > 0) up[k] = v;
+        });
+        isPricingDirty = false;
+        const {ok, data} = await apiRequest('/api/admin/settings', 'POST', {pricing: up});
+        if (ok && data.success) showToast('تم اعتماد التسعيرة الجديدة 🛵✅', 'ok');
       });
     }
 
@@ -3581,8 +3688,10 @@ function renderAdminDynamicSettingsInputs() {
       }
       
       const pend = STATE.captains.filter(c=>c.status==='قيد المراجعة');
+      const pendTopupsCnt = Array.isArray(STATE.settings?.pendingTopupRequests) ? STATE.settings.pendingTopupRequests.length : 0;
+      const totalCapTabAlerts = pend.length + pendTopupsCnt;
       const capBadge = document.getElementById('admNavCaptainsBadge');
-      if(capBadge) { capBadge.innerText = pend.length; capBadge.style.display = pend.length ? 'flex' : 'none'; }
+      if(capBadge) { capBadge.innerText = totalCapTabAlerts; capBadge.style.display = totalCapTabAlerts > 0 ? 'flex' : 'none'; }
 
       const dispBadge = document.getElementById('admNavDisputesBadge');
       if(dispBadge) { dispBadge.innerText = disputed.length; dispBadge.style.display = disputed.length ? 'flex' : 'none'; }
@@ -3619,7 +3728,7 @@ function renderAdminDynamicSettingsInputs() {
 
       const fo = STATE.orders.filter(o => {
         const a = n - (Number(o.createdAt) || n);
-        if (tf === 'today' && a > 86400000) return false;
+        if (tf === 'today' && getCairoDateKeyClient(o.createdAt) !== todayKey) return false;
         if (tf === '3days' && a > 3 * 86400000) return false;
         if (tf === 'week' && a > 7 * 86400000) return false;
 

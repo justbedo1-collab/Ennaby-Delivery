@@ -433,39 +433,12 @@
     align-items: center;
 }
 
-/* شريط أزرار الزيادة السريعة بضغطة واحدة (+5 ج | +10 ج | +15 ج) */
-.quick-fare-chips-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 5px;
-    width: 100%;
-    margin: 2px 0;
-}
-
-.quick-fare-chip-btn {
-    height: 26px !important;
-    min-height: 26px !important;
-    border-radius: 7px !important;
-    border: 1px solid #FFB74D;
-    background: #FFFFFF;
-    color: #E65100;
-    font-size: 10.5px !important;
-    font-weight: 900 !important;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap !important;
-    transition: all 0.15s ease;
-    padding: 0 6px !important;
-}
-
-.quick-fare-chip-btn:active,
-.quick-fare-chip-btn.active-chip {
-    background: #E65100;
-    color: #FFFFFF;
-    border-color: #E65100;
-    transform: scale(0.96);
+/* توحيد الهوية اللونية البنفسجية البرجاندي الغامقة (#5A2846) لكافة التنبيهات والكروت */
+#customerSurgeActiveBanner,
+#courierSurgeActiveBanner {
+    background: linear-gradient(135deg, #F7F0F5, #EFE2EC) !important;
+    border-color: #C8A6BE !important;
+    color: #5A2846 !important;
 }
   </style>
 </head>
@@ -1981,21 +1954,35 @@
     }
 
     async function apiRequest(endpoint, method = 'POST', bodyObj = null) {
-      const opts = { method, credentials: 'include', headers: {} };
-      if (bodyObj !== null) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(bodyObj); }
-      const res = await fetch(`${API_BASE}${endpoint}`, opts);
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 401 && STATE.currentRole === 'courier' && STATE.activeCourierPhone && !endpoint.includes('/auth/captain/login')) {
-        STATE.activeCourierPhone = null;
-        saveSession();
-        renderCourierScreen();
-        updateBottomNavVisibility();
+      try {
+        const opts = { method, credentials: 'include', headers: {} };
+        if (bodyObj !== null) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(bodyObj); }
+        const res = await fetch(`${API_BASE}${endpoint}`, opts);
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && STATE.currentRole === 'courier' && STATE.activeCourierPhone && !endpoint.includes('/auth/captain/login')) {
+          STATE.activeCourierPhone = null;
+          saveSession();
+          renderCourierScreen();
+          updateBottomNavVisibility();
+        }
+        if (res.status === 401 && STATE.currentRole === 'customer' && !endpoint.includes('/auth/customer/login')) {
+          STATE.authenticatedCustomerPhone = '';
+          saveSession();
+          updateCustomerPinFieldVisibility();
+        }
+        if (data && data.state) {
+          try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch (e) {}
+          applyCloudStateSnapshot(data.state);
+        }
+        return { ok: res.ok, status: res.status, data };
+      } catch (netErr) {
+        console.warn('Public API network warning:', netErr);
+        return {
+          ok: false,
+          status: 0,
+          data: { success: false, message: 'السيرفر مش بيرد دلوقتي، اتأكد إن النت شغال عندك يا باشا 🌐⚠️' }
+        };
       }
-      if (data && data.state) {
-        try { lastCloudStateFingerprint = JSON.stringify(data.state); } catch (e) {}
-        applyCloudStateSnapshot(data.state);
-      }
-      return { ok: res.ok, status: res.status, data };
     }
 
 function applyCloudStateSnapshot(cloudState) {
@@ -2045,6 +2032,12 @@ function applyCloudStateSnapshot(cloudState) {
             if (STATE.currentRole === 'customer' && savedCustPhone && ownerPh === savedCustPhone) {
               triggerDeviceAlert('customer_status_update');
               showToast(`🔔 جديد في طلبك (${o.id}): ${o.status} 🛵`, 'ok');
+              // إذا أُلغي الطلب (إدارياً أو بانتهاء المهلة) وكان عليه كود خصم، نعيد تفعيله تلقائياً للعميل
+              if (String(o.status || '').includes('ملغي') && o.promoCode && (!savedPromoCodeObj || !savedPromoCodeObj.code)) {
+                const availPromos = Array.isArray(STATE.settings?.availablePromoCodes) ? STATE.settings.availablePromoCodes : [];
+                const restoredPromo = availPromos.find(p => p && String(p.code).toUpperCase() === String(o.promoCode).toUpperCase());
+                if (restoredPromo) persistSavedPromoCode(restoredPromo);
+              }
             }
             // نافذة تهنئة فورية للكابتن عند موافقة العميل على عرضه وإسناد المشوار له
             if (STATE.currentRole === 'courier' && activeCourier && prevStatus === 'في انتظار كابتن' && o.status === 'تم قبول الطلب' && normalizePhone(o.assignedCourierPhone) === normalizePhone(activeCourier.phone)) {
@@ -2063,8 +2056,13 @@ function applyCloudStateSnapshot(cloudState) {
 
           // تنبيه فوري للكابتن عند وصول سعر مقترح مقابل من العميل أو رفع السعر ع الرادار
           if (STATE.currentRole === 'courier' && activeCourier && o.status === 'في انتظار كابتن' && prevOrd) {
-            if (Number(o.originalFare) > Number(prevOrd.originalFare || 0)) {
-              courierSeenPopupOrderIds.delete(o.id);
+            if (Number(o.originalFare) !== Number(prevOrd.originalFare || 0)) {
+              if (Number(o.originalFare) > Number(prevOrd.originalFare || 0)) {
+                courierSeenPopupOrderIds.delete(o.id);
+              }
+              if (typeof currentPopupOrderId !== 'undefined' && currentPopupOrderId === o.id && typeof openCourierNewOrderPopup === 'function') {
+                openCourierNewOrderPopup(o);
+              }
             }
             const oldMyOff = (prevOrd.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
             const newMyOff = (o.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
@@ -2106,11 +2104,30 @@ function applyCloudStateSnapshot(cloudState) {
       finally { isCloudSyncInFlight = false; }
     }
 
-    document.addEventListener('pointerdown', function(e) {
+    let lastInteractedRelativeY = null;
+
+    function recordPublicInteractionTarget(e) {
       unlockAudioEngine();
-      const target = e.target.closest('button, a, select, input, label, .upload-card-box');
-      if (target && !target.closest('#toast')) lastInteractedElement = target;
-    }, true);
+      const target = e.target && e.target.closest ? e.target.closest('button, a, select, input, label, .upload-card-box, .switch') : null;
+      if (!target || target.closest('#toast')) return;
+      const mockup = document.getElementById('phoneMockup');
+      const isInsideActionModal = Boolean(target.closest('#customActionModal'));
+
+      if (!isInsideActionModal) {
+        lastInteractedElement = target;
+        if (mockup) {
+          const mockupRect = mockup.getBoundingClientRect();
+          const elRect = target.getBoundingClientRect();
+          if (elRect.width > 0 && elRect.height > 0) {
+            lastInteractedRelativeY = elRect.top - mockupRect.top;
+          }
+        }
+      }
+    }
+
+    document.addEventListener('pointerdown', recordPublicInteractionTarget, true);
+    document.addEventListener('click', recordPublicInteractionTarget, true);
+    document.addEventListener('change', recordPublicInteractionTarget, true);
 
     function withActionLock(fn) {
       if (actionLock) return;
@@ -2129,15 +2146,21 @@ function applyCloudStateSnapshot(cloudState) {
         btn.disabled = true;
         btn.innerHTML = loadingHtml;
       }
-      Promise.resolve(fn()).finally(() => {
-        if (btn && document.body.contains(btn)) {
-          if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
-            btn.innerHTML = origHtml;
+      Promise.resolve()
+        .then(() => fn())
+        .catch(err => {
+          console.error('Action execution error:', err);
+          showToast('حصلت لخبطة بسيطة، جرب تاني كدا يا باشا ⚠️', 'warn');
+        })
+        .finally(() => {
+          if (btn && document.body.contains(btn)) {
+            if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
+              btn.innerHTML = origHtml;
+            }
+            btn.disabled = origDisabled;
           }
-          btn.disabled = origDisabled;
-        }
-        setTimeout(() => { actionLock = false; }, 260);
-      });
+          setTimeout(() => { actionLock = false; }, 260);
+        });
     }
 
     function getStatusBadgeClass(status) {
@@ -2535,7 +2558,15 @@ function getCourierActiveOrder(courierPhone) { if (!courierPhone || !Array.isArr
       const streetAddress = await fetchArabicAddressFromCoords(lat, lng);
       if (reqId !== reverseGeocodeReqId[targetKey]) return;
 
-      const zoneVal = document.getElementById(targetKey === 'pickup' ? 'pickupZone' : 'dropoffZone')?.value || 'المنصورة';
+      const zoneSel = document.getElementById(targetKey === 'pickup' ? 'pickupZone' : 'dropoffZone');
+      if (zoneSel && streetAddress && Array.isArray(STATE.zones)) {
+        const matchedZone = STATE.zones.find(z => z && streetAddress.includes(z));
+        if (matchedZone && zoneSel.value !== matchedZone) {
+          zoneSel.value = matchedZone;
+          calculateDeliveryPrice();
+        }
+      }
+      const zoneVal = zoneSel?.value || 'المنصورة';
       const finalAddressText = streetAddress || `موقع متحدد ع الخريطة (${zoneVal})`;
       tempResolvedAddresses[targetKey] = finalAddressText;
 
@@ -2641,7 +2672,11 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (titleEl) { titleEl.innerText = title || 'تأكيد الخطوة دي'; titleEl.style.color = isDanger ? 'var(--danger)' : 'var(--primary)'; }
       if (msgEl) msgEl.innerText = message || '';
       if (inpWrap) inpWrap.style.display = needInput ? 'block' : 'none';
-      if (inpEl) { inpEl.value = defaultValue || ''; inpEl.placeholder = inputPlaceholder || 'اكتب السبب أو التفاصيل هنا...'; }
+      if (inpEl) {
+        inpEl.value = defaultValue || '';
+        inpEl.placeholder = inputPlaceholder || 'اكتب السبب أو التفاصيل هنا...';
+        inpEl.onkeydown = function(ev) { if (ev.key === 'Enter' && typeof customModalCallback === 'function') customModalCallback(); };
+      }
       if (confBtn) { confBtn.innerText = confirmText; confBtn.style.background = isDanger ? 'var(--danger)' : 'var(--primary)'; }
       customModalCallback = function() {
         const val = inpEl ? inpEl.value.trim() : '';
@@ -3262,6 +3297,27 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         const btn = document.getElementById(id);
         if (btn) btn.classList.toggle('active', lbl === selectedPurchaseBudget);
       });
+      if (STATE.currentTripType === 'fetch') {
+        const notesLabel = document.getElementById('customerOrderNotesLabel');
+        const notesInput = document.getElementById('customerOrderNotes');
+        if (selectedPurchaseBudget === 'بدون حساب (خالص)') {
+          if (notesLabel) {
+            notesLabel.innerText = '🛍️ اكتب الحاجة اللي الكابتن هيستلمها ويجيبهالك (الطلب خالص بدون دفع فلوس) 👇';
+            notesLabel.style.color = 'var(--success)';
+          }
+          if (notesInput) {
+            notesInput.placeholder = 'اكتب هنا تفاصيل الحاجة اللي الكابتن هيستلمها (مثلاً: شنطة أو أوردر مدفوع مسبقاً باسم كذا)...';
+          }
+        } else {
+          if (notesLabel) {
+            notesLabel.innerText = '🛍️ اكتب الحاجة اللي الكابتن هيشتريها ولو عليها فلوس تقريباً في حدود كام ؟ 👇';
+            notesLabel.style.color = '#5A2846';
+          }
+          if (notesInput) {
+            notesInput.placeholder = 'اكتب هنا المشتريات وتمنها التقريبي عشان الكابتن يعمل حسابه في الكاش (مثلاً: أوردر من مطعم كذا بحوالي 150 ج)...';
+          }
+        }
+      }
     }
 
     function getCustomerFavAddressesMap() {
@@ -3347,11 +3403,35 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const senderInp = document.getElementById('orderSenderPhone');
       const recipInp = document.getElementById('orderRecipientPhone');
       const notesInp = document.getElementById('customerOrderNotes');
+      const pkgSel = document.getElementById('packageWeight');
 
       if (pZoneEl && STATE.zones.includes(ord.pickupZone)) pZoneEl.value = ord.pickupZone;
       if (pAddrEl) pAddrEl.value = ord.pickupAddress || '';
       if (dZoneEl && STATE.zones.includes(ord.dropoffZone)) dZoneEl.value = ord.dropoffZone;
       if (dAddrEl) dAddrEl.value = ord.dropoffAddress || '';
+      if (pkgSel && ord.packageType) pkgSel.value = ord.packageType;
+
+      // استعادة إحداثيات الخريطة من الطلب السابق أو تصفيرها لمنع إرسال لوكيشن قديم بالخطأ
+      if (isValidGpsCoord(ord.pickupLat, ord.pickupLng)) {
+        tempOrderCoords.pickupLat = Number(ord.pickupLat);
+        tempOrderCoords.pickupLng = Number(ord.pickupLng);
+        tempResolvedAddresses.pickup = ord.pickupAddress || '';
+      } else {
+        tempOrderCoords.pickupLat = null;
+        tempOrderCoords.pickupLng = null;
+        tempResolvedAddresses.pickup = '';
+      }
+      if (isValidGpsCoord(ord.dropoffLat, ord.dropoffLng)) {
+        tempOrderCoords.dropoffLat = Number(ord.dropoffLat);
+        tempOrderCoords.dropoffLng = Number(ord.dropoffLng);
+        tempResolvedAddresses.dropoff = ord.dropoffAddress || '';
+      } else {
+        tempOrderCoords.dropoffLat = null;
+        tempOrderCoords.dropoffLng = null;
+        tempResolvedAddresses.dropoff = '';
+      }
+      syncInlineMapMarkers();
+      updateGpsPillsUI();
 
       const isFetch = ord.tripType === 'fetch';
       const clientPh = resolveOrderClientPhone(ord) || STATE.customerProfile.savedPhone || '';
@@ -3361,13 +3441,21 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (notesInp) notesInp.value = cleanDisplayNotesText(ord.customerNotes || '');
       if (ord.purchaseBudget) selectPurchaseBudget(ord.purchaseBudget);
 
+      const p1Radio = document.getElementById('payerOption1Radio');
+      const p2Radio = document.getElementById('payerOption2Radio');
+      if (p1Radio && p2Radio && ord.payer) {
+        if (p2Radio.value === ord.payer) p2Radio.checked = true;
+        else p1Radio.checked = true;
+      }
+
       customerCustomProposedFare = null;
       calculateDeliveryPrice();
+      updateCustomerPinFieldVisibility();
       switchCustTab('home');
       setTimeout(() => {
         document.getElementById('submitOrderBtn')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 150);
-      showToast('ملينا بيانات المشوار بالكامل يا باشا.. راجع السعر ودوس تأكيد الطلب علطول! 🔄🚀', 'ok');
+      showToast('ملينا بيانات المشوار واللوكيشن بالكامل يا باشا.. راجع السعر ودوس تأكيد الطلب علطول! 🔄🚀', 'ok');
     }
 
     function toEgyptWhatsAppNumber(rawPhone) {
@@ -4811,25 +4899,25 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (acceptBtnTxt) acceptBtnTxt.innerText = `قبول العرض (${offeredAmt} ج) ✅`;
 
       detailsBox.innerHTML = `
-        <div style="background:#FFF8E1; border:1.5px solid #FFB74D; border-radius:13px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="background:#F7F0F5; border:1.5px solid #C8A6BE; border-radius:13px; padding:12px; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-            <strong style="font-size:14px; color:var(--primary);"><i class="fa-solid fa-motorcycle"></i> الكابتن: ${escapeHtml(offerPayload.captainName)}</strong>
+            <strong style="font-size:14px; color:#5A2846;"><i class="fa-solid fa-motorcycle"></i> الكابتن: ${escapeHtml(offerPayload.captainName)}</strong>
             <span class="badge ${tierCls}" style="font-size:10.5px;">${escapeHtml(offerPayload.tierBadgeText)}</span>
           </div>
           <div style="font-size:11.5px; color:var(--text-muted); font-weight:700;">
             📍 المشوار: من (${escapeHtml(ord.pickupZone)}) إلى (${escapeHtml(ord.dropoffZone)}) • المركبة: <strong>${escapeHtml(offerPayload.vehicleType || 'موتوسيكل')}</strong>
           </div>
-          <div style="background:#FFFFFF; border:1.5px solid #FFE082; border-radius:11px; padding:10px; text-align:center;">
-            <span style="font-size:11px; color:#5D4037; font-weight:800; display:block;">💵 السعر المقترح من الكابتن لتوصيل المشوار:</span>
+          <div style="background:#FFFFFF; border:1.5px solid #C8A6BE; border-radius:11px; padding:10px; text-align:center;">
+            <span style="font-size:11px; color:#5A2846; font-weight:800; display:block;">💵 السعر المقترح من الكابتن لتوصيل المشوار:</span>
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px;">
-              <strong style="font-size:22px; font-weight:900; color:var(--primary);">${offeredAmt} جنيه</strong>
+              <strong style="font-size:22px; font-weight:900; color:#5A2846;">${offeredAmt} جنيه</strong>
               <span class="${pctMeta.cls}">${pctMeta.text}</span>
             </div>
             <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:3px;">
               (بدلاً من ${ord.originalFare} ج)${ord.discountApplied > 0 ? ` — هتدفع كاش <strong style="color:var(--success);">${cashAfterDisc} ج</strong> بعد خصمك 🎁` : ''}
             </div>
           </div>
-          <div style="font-size:10.5px; color:#78350F; font-weight:800; text-align:center;">
+          <div style="font-size:10.5px; color:#5A2846; font-weight:800; text-align:center;">
             💡 لو انتهت الـ 15 ثانية، هتلاقي العرض موجود في صفحة «طلباتي» تقدر تقبله أو ترفضه في أي وقت!
           </div>
         </div>
@@ -6027,8 +6115,8 @@ function renderCustomerOrdersList() {
         showToast('سجل دخولك الأول يا كابتن ⚠️', 'warn');
         return;
       }
-      if (!amt || amt <= 0) {
-        showToast('اكتب مبلغ شحن صحيح يا بطل ⚠️', 'warn');
+      if (!Number.isFinite(amt) || amt <= 0 || amt > 10000) {
+        showToast('اكتب مبلغ شحن صحيح (من 10 إلى 10000 جنيه) الأول يا بطل ⚠️', 'warn');
         return;
       }
       closeTopupModal();
@@ -6062,14 +6150,26 @@ function renderCustomerOrdersList() {
       }
 
       let targetTop = 52;
-      if (mockup && lastInteractedElement && document.body.contains(lastInteractedElement)) {
+      if (mockup) {
         const mockupRect = mockup.getBoundingClientRect();
-        const elRect = lastInteractedElement.getBoundingClientRect();
-        if (elRect.width > 0 && elRect.height > 0) {
-          const relativeY = elRect.top - mockupRect.top - 62;
+        let resolvedRelativeY = null;
+
+        if (lastInteractedElement && document.body.contains(lastInteractedElement)) {
+          const elRect = lastInteractedElement.getBoundingClientRect();
+          if (elRect.width > 0 && elRect.height > 0) {
+            resolvedRelativeY = elRect.top - mockupRect.top - 52;
+            lastInteractedRelativeY = elRect.top - mockupRect.top;
+          }
+        }
+
+        if (resolvedRelativeY === null && lastInteractedRelativeY !== null) {
+          resolvedRelativeY = lastInteractedRelativeY - 52;
+        }
+
+        if (resolvedRelativeY !== null) {
           const minTop = 16;
           const maxTop = Math.max(minTop, mockup.clientHeight - 130);
-          targetTop = Math.max(minTop, Math.min(relativeY, maxTop));
+          targetTop = Math.max(minTop, Math.min(resolvedRelativeY, maxTop));
         }
       }
       toast.style.top = `${Math.round(targetTop)}px`;
