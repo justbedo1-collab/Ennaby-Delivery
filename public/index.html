@@ -349,98 +349,400 @@
     .map-search-sug-main { font-size: 11.5px; font-weight: 800; color: var(--text-main); line-height: 1.35; display: block; }
     .map-search-sug-sub { font-size: 10px; font-weight: 700; color: var(--text-muted); line-height: 1.3; display: block; margin-top: 1px; }
     /* --- تنسيق المربعات المالية المدمجة للكابتن (في سطر واحد متناسق بدون انقسام حرف ج) --- */
-.financial-summary-compact {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    background-color: #FAF4F6;
-    border-radius: 10px;
-    padding: 6px 10px;
-    margin: 6px 0;
-    border: 1px solid #E8DCE0;
-    gap: 6px;
-}
+    .financial-summary-compact {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      background-color: #FAF4F6;
+      border-radius: 10px;
+      padding: 6px 10px;
+      margin: 6px 0;
+      border: 1px solid #E8DCE0;
+      gap: 6px;
+    }
+    .finance-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+    .finance-title {
+      font-size: 10.5px;
+      color: #5D4037;
+      margin-bottom: 2px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .finance-amount {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: center;
+      gap: 3px;
+      line-height: 1.15;
+      white-space: nowrap !important;
+    }
+    .finance-amount .number {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .finance-amount .currency {
+      font-size: 11.5px;
+      color: #7B3F52;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .divider {
+      width: 1.5px;
+      height: 28px;
+      background-color: #E2D5DA;
+      margin: 0 4px;
+    }
+    .highlight-net .number {
+      color: var(--success);
+    }
+    .highlight-net .currency {
+      color: #1B5E20;
+    }
+    .net-profit-pill-nowrap {
+      font-size: 10.5px !important;
+      font-weight: 900 !important;
+      color: #1B5E20 !important;
+      background: #E8F5E9;
+      border: 1px solid #C8E6C9;
+      padding: 2px 8px;
+      border-radius: 50px;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      display: inline-flex;
+      align-items: center;
+    }
+    #customerSurgeActiveBanner,
+    #courierSurgeActiveBanner {
+      background: linear-gradient(135deg, #F7F0F5, #EFE2EC) !important;
+      border-color: #C8A6BE !important;
+      color: #5A2846 !important;
+    }
 
-.finance-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-}
+    /* =========================================================================
+       ضبط شامل واحترافي لجميع الكروت والإطارات والأزرار لمنع خروج أي نص خارج الإطار
+       ========================================================================= */
+    .card,
+    .route-party-card,
+    .price-preview-banner,
+    .promo-compact-card,
+    .order-captain-card,
+    .captain-offer-card,
+    .fare-negotiation-box,
+    .courier-party-contact-box,
+    .modal-content-card,
+    .radar-popup-card {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
 
-.finance-title {
-    font-size: 10.5px;
-    color: #5D4037;
-    margin-bottom: 2px;
-    font-weight: 800;
-    white-space: nowrap;
-}
+    .card *,
+    .sub-tab-section *,
+    .modal-content-card * {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
 
-/* وضع الرقم وحرف الجيم على سطر واحد أفقياً مع منع الانقسام نهائياً */
-.finance-amount {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: center;
-    gap: 3px;
-    line-height: 1.15;
-    white-space: nowrap !important;
-}
+    /* منع خروج النصوص والأيقونات من جميع الأزرار والروابط مع الحفاظ على الشكل المستطيل الأنيق */
+    .btn-main,
+    .btn-secondary,
+    .btn-danger,
+    .btn-success,
+    .order-card-actions > button,
+    .order-card-actions > a,
+    .order-card-actions-row > button,
+    .order-card-actions-row > a {
+      width: 100%;
+      max-width: 100% !important;
+      min-height: 35px !important;
+      height: auto !important;
+      max-height: none !important;
+      padding: 7px 10px !important;
+      white-space: normal !important;
+      flex-wrap: nowrap !important;
+      text-align: center !important;
+      line-height: 1.35 !important;
+      overflow: hidden !important;
+      word-break: break-word;
+    }
 
-.finance-amount .number {
-    font-size: 17px;
-    font-weight: 900;
-    color: var(--primary);
-    white-space: nowrap;
-}
+    .order-card-actions-row > button,
+    .order-card-actions-row > a {
+      width: auto !important;
+      flex: 1 1 0% !important;
+      font-size: 11px !important;
+      padding: 6px 8px !important;
+    }
 
-.finance-amount .currency {
-    font-size: 11.5px;
-    color: #7B3F52;
-    font-weight: 800;
-    white-space: nowrap;
-}
+    /* تثبيت وتنسيق شريط العنوان العلوي في تبويب «طلباتي» للعميل والكابتن لمنع انقطاعه من الأعلى */
+    #custTab-orders > .card-title:first-child,
+    #courTab-orders > .card-title:first-child {
+      background: #FFFFFF;
+      border: 1.5px solid #E8DCE0;
+      border-radius: 14px;
+      padding: 10px 14px !important;
+      margin-top: 2px !important;
+      margin-bottom: 4px !important;
+      box-shadow: 0 2px 8px rgba(123, 63, 82, 0.06);
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
 
-/* الخط الفاصل بين المبلغين */
-.divider {
-    width: 1.5px;
-    height: 28px;
-    background-color: #E2D5DA;
-    margin: 0 4px;
-}
+    #custTab-orders > .card-title:first-child button,
+    #courTab-orders > .card-title:first-child button {
+      background: #FAF4F6 !important;
+      border: 1px solid #E2D2D8 !important;
+      border-radius: 50px !important;
+      padding: 4px 11px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      color: var(--primary) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      width: auto !important;
+    }
 
-/* تمييز مربع صافيك بعد العمولة */
-.highlight-net .number {
-    color: var(--success);
-}
-.highlight-net .currency {
-    color: #1B5E20;
-}
+    /* تنسيق احترافي لكروت الطلبات في قائمة العميل والرادار وسجل الكابتن */
+    #customerOrdersList > .card,
+    #courierOrdersFeed > .card,
+    #courierHistoryOrdersList > .card {
+      padding: 14px !important;
+      border-radius: 16px !important;
+      border: 1.5px solid #E5D6DC !important;
+      box-shadow: 0 4px 14px rgba(123, 63, 82, 0.07) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+    }
 
-/* شارة صافي الربح داخل كارت اقتراح السعر غير قابلة للانقسام على سطرين */
-.net-profit-pill-nowrap {
-    font-size: 10.5px !important;
-    font-weight: 900 !important;
-    color: #1B5E20 !important;
-    background: #E8F5E9;
-    border: 1px solid #C8E6C9;
-    padding: 2px 8px;
-    border-radius: 50px;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    display: inline-flex;
-    align-items: center;
-}
+    /* رأس كارت الطلب (رقم الطلب + التوقيت + شارة الحالة) */
+    #customerOrdersList > .card > div:first-child,
+    #courierOrdersFeed > .card > div:first-child,
+    #courierHistoryOrdersList > .card > div:first-child {
+      padding-bottom: 8px;
+      border-bottom: 1.5px dashed #ECE0E5;
+      margin-bottom: 0 !important;
+      align-items: center !important;
+    }
 
-/* توحيد الهوية اللونية البنفسجية البرجاندي الغامقة (#5A2846) لكافة التنبيهات والكروت */
-#customerSurgeActiveBanner,
-#courierSurgeActiveBanner {
-    background: linear-gradient(135deg, #F7F0F5, #EFE2EC) !important;
-    border-color: #C8A6BE !important;
-    color: #5A2846 !important;
-}
+    /* شريط مراحل الطلب (Stepper) داخل إطار متناسق */
+    .order-stepper {
+      background: #FAF7F4;
+      border: 1px solid #EDE2E6;
+      border-radius: 12px;
+      padding: 9px 6px 7px !important;
+      margin: 2px 0 !important;
+    }
+    .order-stepper::before {
+      top: 21px !important;
+      right: 13% !important;
+      left: 13% !important;
+    }
+    .order-step-label {
+      font-size: 9.5px !important;
+      font-weight: 800 !important;
+      margin-top: 2px;
+    }
+
+    /* تنسيق كارت بيانات الكابتن داخل كارت طلب العميل */
+    .order-captain-card {
+      background: linear-gradient(180deg, #FDFBFC 0%, #F7EFF2 100%) !important;
+      border: 1.5px solid #DEC8D0 !important;
+      border-right: 4.5px solid var(--primary) !important;
+      border-radius: 13px !important;
+      padding: 10px 11px !important;
+      margin: 2px 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 7px !important;
+    }
+
+    /* السطر الأول في كارت الكابتن: الاسم على اليمين والشارة على اليسار بانتظام */
+    .order-captain-card > div:first-child {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+      background: #FFFFFF;
+      border: 1px solid #EAE0E4;
+      border-radius: 9px;
+      padding: 6px 9px;
+    }
+
+    /* السطر الثاني في كارت الكابتن: المركبة والنمرة */
+    .order-captain-card > div:nth-child(2) {
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px dashed #D7C2CA;
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      color: var(--text-main) !important;
+      text-align: right;
+    }
+
+    /* أزرار الاتصال والواتساب بالكابتن */
+    .contact-actions-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 7px !important;
+      width: 100% !important;
+    }
+    .btn-call-pill,
+    .btn-wa-pill {
+      height: 34px !important;
+      min-height: 34px !important;
+      padding: 0 8px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      border-radius: 9px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* زر «بلّغ المستلم بتفاصيل الكابتن والأوردر ع الواتساب» داخل كارت الكابتن */
+    .order-captain-card > a,
+    .order-captain-card > button,
+    .order-captain-card .btn-success,
+    .order-captain-card .btn-secondary {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 34px !important;
+      height: auto !important;
+      max-height: none !important;
+      padding: 6px 10px !important;
+      font-size: 10.5px !important;
+      font-weight: 800 !important;
+      line-height: 1.4 !important;
+      white-space: normal !important;
+      text-align: center !important;
+      border-radius: 9px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      box-sizing: border-box !important;
+      text-decoration: none !important;
+    }
+
+    /* صندوق تفاصيل خط السير والدفع المنظم داخل كارت الطلب */
+    .ennaby-order-details-box {
+      background: #FAF7F4;
+      border: 1px solid #E8DCE0;
+      border-radius: 11px;
+      padding: 8px 10px !important;
+      font-size: 11.5px !important;
+      line-height: 1.55 !important;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ennaby-order-detail-row {
+      padding: 3px 0;
+      border-bottom: 1px dashed #E5D8DC;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .ennaby-order-detail-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .ennaby-order-pay-row {
+      background: #FFFFFF;
+      border: 1px solid #E2D4D9;
+      border-radius: 8px;
+      padding: 5px 9px !important;
+      margin-top: 2px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    /* ضبط المسافات في كروت الإرسال والاستلام بالصفحة الرئيسية على الشاشات الصغيرة */
+    @media (max-width: 380px) {
+      .route-fields-grid {
+        grid-template-columns: 102px 1fr !important;
+        gap: 6px !important;
+      }
+      .route-party-badge {
+        font-size: 11.5px !important;
+        white-space: normal !important;
+      }
+      .fare-negotiation-header {
+        flex-wrap: wrap !important;
+      }
+    }
   </style>
+  <script>
+    // منسق تلقائي ذكي لكروت الطلبات يضمن تأطير بيانات المسار والدفع وتناسق الأزرار فور رسمها
+    (function () {
+      function polishOrderCardsInContainer(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var cards = container.querySelectorAll('.card');
+        cards.forEach(function (card) {
+          if (card.dataset.layoutPolished === '1') return;
+          card.dataset.layoutPolished = '1';
+
+          Array.from(card.children).forEach(function (child) {
+            if (!child || child.tagName !== 'DIV') return;
+            var txt = (child.textContent || '').trim();
+
+            // تنسيق شريط «إيه الأخبار دلوقتي»
+            if (txt.indexOf('إيه الأخبار دلوقتي') !== -1 && !child.classList.contains('order-captain-card')) {
+              child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:10px; padding:7px 11px; font-size:11.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.45;';
+            }
+
+            // تأطير وتنسيق تفاصيل خط السير والدفع (النوع / من / إلى / الدفع)
+            if (txt.indexOf('من:') !== -1 && txt.indexOf('إلى:') !== -1 && !child.classList.contains('radar-popup-route-box') && !child.classList.contains('ennaby-order-details-box')) {
+              child.classList.add('ennaby-order-details-box');
+              Array.from(child.children).forEach(function (lineEl) {
+                var lineTxt = (lineEl.textContent || '').trim();
+                if (lineTxt.indexOf('الدفع:') !== -1 || lineTxt.indexOf('كاش:') !== -1) {
+                  lineEl.classList.add('ennaby-order-pay-row');
+                } else {
+                  lineEl.classList.add('ennaby-order-detail-row');
+                }
+              });
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          polishOrderCardsInContainer(id);
+          var obs = new MutationObserver(function () {
+            polishOrderCardsInContainer(id);
+          });
+          obs.observe(el, { childList: true });
+        });
+      });
+    })();
+  </script>
 </head>
 <body>
 
