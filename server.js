@@ -176,10 +176,16 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط وحظر كشف ملفات الجذر مثل server.js و .env
+// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع منع تخزين sw.js في الكاش لضمان عمل الإشعارات فوراً
 const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
 ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
   app.get(`/${assetName}`, (req, res) => {
+    if (assetName === 'sw.js') {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Service-Worker-Allowed', '/');
+    } else if (assetName === 'manifest.json') {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
     const pubPath = path.join(__dirname, 'public', assetName);
     const rootPath = path.join(__dirname, assetName);
     if (fs.existsSync(pubPath)) return res.sendFile(pubPath);
@@ -1720,21 +1726,61 @@ async function buildClientState(req, forceRefresh = false) {
 // ==========================================
 // 5. محرك إشعارات الموبايل (Web Push Notifications) + رادار الأدمن اللحظي
 // ==========================================
-async function sendPushNotificationToPhone(phone, payloadObj) {
-  if (!phone) return;
-  try {
-    const { data: subRow } = await supabase.from('push_subscriptions').select('subscription').eq('phone', phone).maybeSingle();
-    if (!subRow || !subRow.subscription) return;
-    await webpush.sendNotification(subRow.subscription, JSON.stringify({
-      title: payloadObj.title || 'الرجل العنابي 🛵',
-      body: payloadObj.body || 'تحديث جديد في طلبك!',
-      url: payloadObj.url || '/'
-    }));
-  } catch (err) {
-    if (err.statusCode === 410 || err.statusCode === 404) {
-      await supabase.from('push_subscriptions').delete().eq('phone', phone);
-    }
+const WEB_PUSH_OPTIONS = {
+  TTL: 86400,
+  urgency: 'high',
+  headers: {
+    Urgency: 'high'
   }
+};
+
+async function sendWebPushWithHighPriority(subscription, payloadObj = {}) {
+  if (!subscription || !subscription.endpoint) return { ok: false, expired: true };
+  const payloadStr = JSON.stringify({
+    title: payloadObj.title || 'الرجل العنابي 🛵',
+    body: payloadObj.body || 'تحديث جديد في طلبك!',
+    url: payloadObj.url || '/',
+    tag: payloadObj.tag || ('ennaby-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6))
+  });
+  try {
+    await webpush.sendNotification(subscription, payloadStr, WEB_PUSH_OPTIONS);
+    return { ok: true };
+  } catch (err) {
+    const code = Number(err && err.statusCode) || 0;
+    const expired = (code === 404 || code === 410);
+    return { ok: false, expired, statusCode: code };
+  }
+}
+
+async function sendPushNotificationToPhone(phone, payloadObj) {
+  const cleanPh = normalizePhoneServer(phone);
+  if (!cleanPh) return;
+  try {
+    const { data: subRows } = await supabase
+      .from('push_subscriptions')
+      .select('phone, subscription')
+      .or(`phone.eq.${cleanPh},phone.like.${cleanPh}:%`);
+
+    if (!subRows || subRows.length === 0) return;
+
+    const expiredKeys = [];
+    const seenEndpoints = new Set();
+
+    await Promise.allSettled(
+      subRows.map(async (row) => {
+        if (!row || !row.subscription || !row.subscription.endpoint) return;
+        if (seenEndpoints.has(row.subscription.endpoint)) return;
+        seenEndpoints.add(row.subscription.endpoint);
+
+        const res = await sendWebPushWithHighPriority(row.subscription, payloadObj);
+        if (res.expired) expiredKeys.push(row.phone);
+      })
+    );
+
+    if (expiredKeys.length > 0) {
+      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+    }
+  } catch (err) {}
 }
 
 async function notifyAdminsPush(category = 'platform', payloadObj = {}) {
@@ -1784,23 +1830,21 @@ async function notifyAdminsPush(category = 'platform', payloadObj = {}) {
 
     if (targetSubs.length === 0) return;
 
-    const payloadStr = JSON.stringify({
-      title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
-      body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
-      url: payloadObj.url || '/admin'
-    });
-
     const expiredKeys = [];
+    const seenEndpoints = new Set();
+
     await Promise.allSettled(
       targetSubs.map(async (subRow) => {
-        if (!subRow || !subRow.subscription) return;
-        try {
-          await webpush.sendNotification(subRow.subscription, payloadStr);
-        } catch (err) {
-          if (err.statusCode === 410 || err.statusCode === 404) {
-            expiredKeys.push(subRow.phone);
-          }
-        }
+        if (!subRow || !subRow.subscription || !subRow.subscription.endpoint) return;
+        if (seenEndpoints.has(subRow.subscription.endpoint)) return;
+        seenEndpoints.add(subRow.subscription.endpoint);
+
+        const res = await sendWebPushWithHighPriority(subRow.subscription, {
+          title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
+          body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
+          url: payloadObj.url || '/admin'
+        });
+        if (res.expired) expiredKeys.push(subRow.phone);
       })
     );
 
@@ -1821,17 +1865,39 @@ async function broadcastPushToAvailableCaptains(payloadObj) {
       .eq('is_available', true);
 
     if (!availCaptains || availCaptains.length === 0) return;
-    const phones = availCaptains.map(c => c.phone);
-    const { data: subs } = await supabase.from('push_subscriptions').select('phone, subscription').in('phone', phones);
-    if (!subs || subs.length === 0) return;
+    const availSet = new Set(availCaptains.map(c => normalizePhoneServer(c.phone)));
 
-    const payloadStr = JSON.stringify({
-      title: payloadObj.title || 'الرجل العنابي 🛵',
-      body: payloadObj.body || 'أوردر جديد متاح على الرادار الآن!',
-      url: '/'
+    const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+    if (!allSubs || allSubs.length === 0) return;
+
+    const matchedSubs = allSubs.filter(s => {
+      const rawPh = String(s.phone || '');
+      if (rawPh.startsWith('admin:') || rawPh.startsWith('guest:')) return false;
+      const basePh = normalizePhoneServer(rawPh.split(':')[0]);
+      return availSet.has(basePh);
     });
 
-    await Promise.allSettled(subs.map(s => webpush.sendNotification(s.subscription, payloadStr)));
+    const expiredKeys = [];
+    const seenEndpoints = new Set();
+
+    await Promise.allSettled(
+      matchedSubs.map(async (s) => {
+        if (!s || !s.subscription || !s.subscription.endpoint) return;
+        if (seenEndpoints.has(s.subscription.endpoint)) return;
+        seenEndpoints.add(s.subscription.endpoint);
+
+        const res = await sendWebPushWithHighPriority(s.subscription, {
+          title: payloadObj.title || 'الرجل العنابي 🛵',
+          body: payloadObj.body || 'أوردر جديد متاح على الرادار الآن!',
+          url: '/'
+        });
+        if (res.expired) expiredKeys.push(s.phone);
+      })
+    );
+
+    if (expiredKeys.length > 0) {
+      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+    }
   } catch (e) {}
 }
 
@@ -1840,10 +1906,10 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
     const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
     if (!allSubs || allSubs.length === 0) return 0;
 
-    const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
     const { data: captainsRows } = await supabase.from('captains').select('phone');
-    const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
+    const captainPhones = new Set((captainsRows || []).map(c => normalizePhoneServer(c.phone)));
 
+    const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
     const registeredEndpoints = new Set();
     publicSubs.forEach(s => {
       const ph = String(s.phone || '').trim();
@@ -1852,13 +1918,18 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
       }
     });
 
-    let filteredSubs = publicSubs;
+    let filteredSubs = target === 'all' ? allSubs : publicSubs;
     if (target === 'captains') {
-      filteredSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
+      filteredSubs = publicSubs.filter(s => {
+        const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
+        return captainPhones.has(basePh);
+      });
     } else if (target === 'customers') {
       filteredSubs = publicSubs.filter(s => {
-        const ph = String(s.phone || '').trim();
-        return !ph.startsWith('guest:') && !captainPhones.has(ph);
+        const rawPh = String(s.phone || '').trim();
+        if (rawPh.startsWith('guest:')) return false;
+        const basePh = normalizePhoneServer(rawPh.split(':')[0]);
+        return Boolean(basePh && !captainPhones.has(basePh));
       });
     } else if (target === 'unregistered') {
       filteredSubs = publicSubs.filter(s => {
@@ -1870,33 +1941,34 @@ async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
 
     const seenEndpoints = new Set();
     const targetSubs = filteredSubs.filter(s => {
-      if (!s || !s.subscription) return false;
-      const ep = s.subscription.endpoint || s.phone;
+      if (!s || !s.subscription || !s.subscription.endpoint) return false;
+      const ep = s.subscription.endpoint;
       if (seenEndpoints.has(ep)) return false;
       seenEndpoints.add(ep);
       return true;
     });
 
-    const payloadStr = JSON.stringify({
-      title: payloadObj.title || 'الرجل العنابي 🛵',
-      body: payloadObj.body || '',
-      url: payloadObj.url || '/'
-    });
-
     let sent = 0;
+    const expiredKeys = [];
+
     await Promise.allSettled(
       targetSubs.map(async s => {
-        await webpush.sendNotification(s.subscription, payloadStr);
-        sent++;
+        const res = await sendWebPushWithHighPriority(s.subscription, payloadObj);
+        if (res.ok) sent++;
+        else if (res.expired) expiredKeys.push(s.phone);
       })
     );
+
+    if (expiredKeys.length > 0) {
+      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+    }
     return sent;
   } catch (e) {
     return 0;
   }
 }
 
-// [NEW-SEC-04] التحقق من ملكية الرقم أو جلسة الأدمن أو تسجيل الجهاز كزائر غير مسجل لإشعارات Web Push
+// حفظ اشتراك Web Push لجميع الهواتف (أدمن، كباتن، عملاء، وزوار) دون رفض أي هاتف
 app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
   try {
     const { phone, clientId, subscription } = req.body || {};
@@ -1905,7 +1977,7 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
     }
 
     const rawState = await fetchRawDatabaseState(false);
-    let rawPhoneStr = phone ? String(phone).trim() : '';
+    const rawPhoneStr = phone ? String(phone).trim() : '';
     const cleanClientId = String(clientId || '').trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
     let cleanKey = '';
 
@@ -1929,36 +2001,21 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
       const parts = rawPhoneStr.split(':');
       const deviceSuffix = parts[2] ? String(parts[2]).trim().replace(/[^a-zA-Z0-9_-]/g, '') : 'default';
       cleanKey = `admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`;
-    } else if (!rawPhoneStr || rawPhoneStr.startsWith('guest:')) {
+    } else {
       const custPhone = getAuthenticatedCustomerFromCookie(req, rawState.rawCustomersRows);
       const capPhone = getAuthenticatedCaptainFromCookie(req, rawState.rawCaptains);
-      if (capPhone || custPhone) {
-        cleanKey = capPhone || custPhone;
+      const candidatePhone = (!rawPhoneStr || rawPhoneStr.startsWith('guest:'))
+        ? (capPhone || custPhone || '')
+        : normalizePhoneServer(rawPhoneStr);
+
+      if (candidatePhone && isValidEgyptianPhoneServer(candidatePhone)) {
+        cleanKey = candidatePhone;
         if (cleanClientId) {
           await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
         }
       } else {
-        const guestId = cleanClientId || rawPhoneStr.replace(/^guest:/, '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
-        if (!guestId) {
-          return res.status(400).json({ success: false });
-        }
+        const guestId = cleanClientId || rawPhoneStr.replace(/^guest:/, '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || ('g_' + Date.now());
         cleanKey = `guest:${guestId}`;
-      }
-    } else {
-      cleanKey = normalizePhoneServer(rawPhoneStr);
-      if (!isValidEgyptianPhoneServer(cleanKey)) {
-        return res.status(400).json({ success: false, message: 'رقم الهاتف غير صالح ⚠️' });
-      }
-      const custPhone = getAuthenticatedCustomerFromCookie(req, rawState.rawCustomersRows);
-      const capPhone = getAuthenticatedCaptainFromCookie(req, rawState.rawCaptains);
-      if (cleanKey !== custPhone && cleanKey !== capPhone) {
-        const { data: pendingCap } = await supabase.from('captains').select('status').eq('phone', cleanKey).maybeSingle();
-        if (!pendingCap || pendingCap.status !== 'قيد المراجعة') {
-          return res.status(403).json({ success: false, message: 'غير مصرح بربط الإشعارات لهذا الرقم 🔒' });
-        }
-      }
-      if (cleanClientId) {
-        await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
       }
     }
 
@@ -1967,7 +2024,7 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
       subscription,
       updated_at: new Date().toISOString()
     }]);
-    res.json({ success: true });
+    res.json({ success: true, key: cleanKey });
   } catch (e) {
     res.status(500).json({ success: false });
   }
@@ -5268,83 +5325,24 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, asyncHandler(async (req
     }
 
     const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
-    const publicSubs = (allSubs || []).filter(s => !String(s.phone || '').startsWith('admin:'));
-    if (publicSubs.length === 0) {
+    if (!allSubs || allSubs.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'لا توجد هواتف مشتركة في الإشعارات حالياً ⚠️'
+        message: 'لا توجد هواتف مشتركة في الإشعارات حالياً (اضغط على تفعيل واستقبال إشعارات الرادار أعلى الصفحة أولاً) 📲⚠️'
       });
     }
 
-    const { data: captainsRows } = await supabase.from('captains').select('phone');
-    const captainPhones = new Set((captainsRows || []).map(c => String(c.phone).trim()));
-
-    const registeredEndpoints = new Set();
-    publicSubs.forEach(s => {
-      const ph = String(s.phone || '').trim();
-      if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
-        registeredEndpoints.add(s.subscription.endpoint);
-      }
-    });
-
-    let filteredSubs = publicSubs;
-    if (target === 'captains') {
-      filteredSubs = publicSubs.filter(s => captainPhones.has(String(s.phone).trim()));
-    } else if (target === 'customers') {
-      filteredSubs = publicSubs.filter(s => {
-        const ph = String(s.phone || '').trim();
-        return !ph.startsWith('guest:') && !captainPhones.has(ph);
-      });
-    } else if (target === 'unregistered') {
-      filteredSubs = publicSubs.filter(s => {
-        const ph = String(s.phone || '').trim();
-        const ep = s.subscription && s.subscription.endpoint;
-        return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
-      });
-    }
-
-    // منع إرسال الإشعار مرتين لنفس الهاتف إذا كان له أكثر من سجل
-    const seenEndpoints = new Set();
-    const targetSubs = filteredSubs.filter(s => {
-      if (!s || !s.subscription) return false;
-      const ep = s.subscription.endpoint || s.phone;
-      if (seenEndpoints.has(ep)) return false;
-      seenEndpoints.add(ep);
-      return true;
-    });
-
-    if (targetSubs.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'لا توجد هواتف نشطة مسجلة ضمن هذه الفئة حالياً ⚠️'
-      });
-    }
-
-    const payloadStr = JSON.stringify({
+    const sentCount = await broadcastPushByTargetGroup(target, {
       title: cleanTitle,
       body: cleanBody,
       url: '/'
     });
 
-    let sentCount = 0;
-    const expiredPhones = [];
-
-    await Promise.allSettled(
-      targetSubs.map(async (subRow) => {
-        if (!subRow || !subRow.subscription) return;
-        try {
-          await webpush.sendNotification(subRow.subscription, payloadStr);
-          sentCount++;
-        } catch (err) {
-          if (err.statusCode === 410 || err.statusCode === 404) {
-            expiredPhones.push(subRow.phone);
-          }
-        }
-      })
-    );
-
-    if (expiredPhones.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('phone', expiredPhones);
+    if (sentCount === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لم يتم العثور على هواتف نشطة في هذه الفئة أو انتهت صلاحية الاشتراكات القديمة؛ اضغط على «تفعيل واستقبال إشعارات الرادار على هذا الجهاز» وجرب مجدداً 🔄📲'
+      });
     }
 
     const targetLabels = {
@@ -5365,7 +5363,7 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, asyncHandler(async (req
     res.json({
       success: true,
       sentCount,
-      message: `تم إرسال الإشعار بنجاح إلى ${sentCount} هاتف 📲✅`,
+      message: `تم إرسال الإشعار الفوري بنجاح إلى ${sentCount} هاتف محمول 📲✅`,
       state
     });
   } catch (err) {

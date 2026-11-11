@@ -175,7 +175,95 @@
       color: #FFFFFF !important;
       box-shadow: 0 3px 8px rgba(90, 40, 70, 0.22) !important;
     }
+
+    /* تحسين تنسيق كارت إشعارات الهواتف (Push) ومفاتيح الرادار على شاشات الموبايل */
+    .switch-wrapper {
+      gap: 10px !important;
+      align-items: center !important;
+    }
+    .switch-wrapper > div {
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+      text-align: right;
+    }
+    .switch-wrapper > div strong {
+      font-size: 12px !important;
+      line-height: 1.45 !important;
+      margin-bottom: 2px;
+    }
+    .switch-wrapper > div small {
+      display: block;
+      line-height: 1.4 !important;
+      font-size: 10px !important;
+    }
+    .push-card-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1.5px dashed #E2D5DA;
+      flex-wrap: nowrap !important;
+    }
+    .push-card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .push-card-icon-box {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 10px;
+      background: #302A2D;
+      color: #FBC02D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      flex-shrink: 0;
+    }
+    .push-card-title-text {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #302A2D;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #admCard-pushBroadcast {
+      border: 2px solid #302A2D !important;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F4 100%) !important;
+      padding: 15px !important;
+    }
+    #admCard-pushBroadcast .input-field,
+    #admCard-pushBroadcast .select-field {
+      background: #FFFFFF !important;
+      border: 1.5px solid #D7CCC8 !important;
+      height: 38px !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+    }
+    #admCard-pushBroadcast textarea.input-field {
+      height: auto !important;
+      min-height: 82px !important;
+      padding: 9px 11px !important;
+      line-height: 1.55 !important;
+      resize: none !important;
+    }
   </style>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7B3F52">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="عمليات العنابي">
+  <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
 <body>
   <main class="device-container">
@@ -441,34 +529,48 @@
               </div>
             </div>
 
-            <!-- كارت إرسال إشعارات Push للهواتف (حصرياً للأدمن الرئيسي فقط) -->
-            <div class="card" id="admCard-pushBroadcast" style="border: 2px solid #302A2D; background: #FFFDF9; display: none;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h2 class="card-title" style="margin-bottom:0; color:#302A2D;"><i class="fa-solid fa-bell"></i> إرسال إشعار للهواتف (Push) 📲</h2>
-                <span class="badge badge-master">الأدمن الرئيسي فقط 👑</span>
+            <!-- كارت إرسال إشعارات Push للهواتف المحسّن (حصرياً للأدمن الرئيسي فقط) -->
+            <div class="card" id="admCard-pushBroadcast" style="display: none;">
+              <div class="push-card-header-bar">
+                <div class="push-card-title-wrap">
+                  <div class="push-card-icon-box">
+                    <i class="fa-solid fa-bell"></i>
+                  </div>
+                  <div>
+                    <div class="push-card-title-text">إرسال إشعار للهواتف 📲</div>
+                    <span style="font-size:10px; color:var(--text-muted); font-weight:700; display:block;">إشعار خارجي فوري (Web Push)</span>
+                  </div>
+                </div>
+                <span class="badge badge-master" style="font-size:10px; padding:4px 9px; flex-shrink:0;">الأدمن الرئيسي 👑</span>
               </div>
-              <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
-                أرسل إشعاراً فورياً يظهر في قائمة إشعارات الهاتف الخارجية للمستخدمين (حتى لو كان التطبيق مغلقاً).
+
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:11px; line-height:1.5; background:#F5ECF2; border:1px solid #C8A6BE; border-radius:10px; padding:7px 10px; font-weight:700;">
+                💡 يصل الإشعار فوراً في شريط إشعارات الهاتف العلوي للمستخدمين (حتى لو كان التطبيق مغلقاً).
               </p>
+
               <div class="input-group">
-                <label class="input-label" for="adminPushTargetSelect">الفئة المستهدفة بالإشعار:</label>
+                <label class="input-label" for="adminPushTargetSelect" style="color:#302A2D; font-weight:800;">🎯 الفئة المستهدفة بالإشعار:</label>
                 <select id="adminPushTargetSelect" class="select-field">
-                  <option value="all">📲 جميع الهواتف المحملة للتطبيق (الكل: مسجلين + غير مسجلين)</option>
-                  <option value="unregistered">👋 الزوار المحملين للتطبيق (غير المسجلين فقط — لتذكيرهم بالتسجيل)</option>
-                  <option value="customers">👑 العملاء المسجلين فقط</option>
+                  <option value="all">📲 جميع الهواتف المحملة للتطبيق (الكل)</option>
                   <option value="captains">🛵 الكباتن المسجلين فقط</option>
+                  <option value="customers">👑 العملاء المسجلين فقط</option>
+                  <option value="unregistered">👋 الزوار غير المسجلين فقط</option>
                 </select>
               </div>
+
               <div class="input-group">
-                <label class="input-label" for="adminPushTitleInput">عنوان الإشعار:</label>
-                <input type="text" id="adminPushTitleInput" class="input-field" placeholder="مثال: الرجل العنابي 🛵🔥" value="الرجل العنابي 🛵">
+                <label class="input-label" for="adminPushTitleInput" style="color:#302A2D; font-weight:800;">🏷️ عنوان الإشعار:</label>
+                <input type="text" id="adminPushTitleInput" class="input-field" placeholder="مثال: كباتن الرجل العنابي 🛵" value="الرجل العنابي 🛵">
               </div>
-              <div class="input-group">
-                <label class="input-label" for="adminPushBodyInput">نص رسالة الإشعار *:</label>
-                <textarea id="adminPushBodyInput" class="input-field" rows="3" placeholder="اكتب نص الإشعار الذي سيظهر في قائمة إشعارات الهواتف..." style="resize:vertical; min-height:72px;"></textarea>
+
+              <div class="input-group" style="margin-bottom:12px;">
+                <label class="input-label" for="adminPushBodyInput" style="color:#302A2D; font-weight:800;">💬 نص رسالة الإشعار *:</label>
+                <textarea id="adminPushBodyInput" class="input-field" rows="3" placeholder="اكتب نص الإشعار الذي سيظهر في قائمة إشعارات الهواتف..."></textarea>
               </div>
-              <button type="button" class="btn-main" style="background:#302A2D;" onclick="adminSendPushBroadcast()">
-                <i class="fa-solid fa-paper-plane"></i> إرسال الإشعار للهواتف الآن 🚀
+
+              <button type="button" class="btn-main" style="background:linear-gradient(135deg, #302A2D, #5A2846); height:38px !important; font-size:12px !important;" onclick="adminSendPushBroadcast()">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>إرسال الإشعار للهواتف الآن 🚀</span>
               </button>
             </div>
           </div>
@@ -1536,12 +1638,13 @@
       const badge = document.getElementById('adminDevicePushStatusBadge');
       const btn = document.getElementById('adminEnableDevicePushBtn');
       const activeAdm = getActiveAdmin();
-      if (!activeAdm || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-        if (badge) { badge.className = 'badge badge-rejected'; badge.innerText = 'غير مدعوم بالمتصفح'; }
+      if (!activeAdm || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        if (badge) { badge.className = 'badge badge-rejected'; badge.innerText = 'يتطلب إضافة للشاشة الرئيسية 📲'; }
         return;
       }
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
+        const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+        await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.getSubscription();
         if (sub && Notification.permission === 'granted') {
           if (badge) { badge.className = 'badge badge-completed'; badge.innerText = 'مربوط ونشط على هذا الهاتف 📲✅'; }
@@ -1563,28 +1666,46 @@
     }
 
     function adminEnableDevicePushSubscription() {
-      withActionLock(async () => {
-        const activeAdm = getActiveAdmin();
-        if (!activeAdm) return;
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      const activeAdm = getActiveAdmin();
+      if (!activeAdm) return;
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || Boolean(window.navigator.standalone);
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        if (isIOS && !isStandalone) {
+          showToast('في هواتف آيفون 🍎: اضغط على مشاركة ثم «إضافة إلى الشاشة الرئيسية» لتفعيل الإشعارات 📲', 'warn');
+        } else {
           showToast('متصفحك الحالي لا يدعم إشعارات الـ Push الخارجية ⚠️', 'warn');
-          return;
         }
+        return;
+      }
+
+      // طلب الإذن في نفس لحظة اللمس قبل أي await غير متزامن (ضروري لأندرويد وآيفون)
+      const permPromise = Notification.permission === 'default'
+        ? Notification.requestPermission()
+        : Promise.resolve(Notification.permission);
+
+      withActionLock(async () => {
         try {
-          const perm = await Notification.requestPermission();
+          const perm = await permPromise;
           if (perm !== 'granted') {
             showToast('يرجى السماح بالإشعارات من إعدادات المتصفح أولاً 🔔⚠️', 'warn');
             return;
           }
-          const reg = await navigator.serviceWorker.register('/sw.js');
-          await navigator.serviceWorker.ready;
-          let sub = await reg.pushManager.getSubscription();
-          if (!sub) {
-            sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
-            });
+          const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+          await reg.update().catch(() => {});
+          const readyReg = await navigator.serviceWorker.ready;
+
+          let sub = await readyReg.pushManager.getSubscription();
+          if (sub) {
+            await sub.unsubscribe().catch(() => {});
           }
+          sub = await readyReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+          });
+
           const adminKey = `admin:${String(activeAdm.username).toLowerCase()}:${ADMIN_DEVICE_ID}`;
           const { ok } = await apiRequest('/api/push/subscribe', 'POST', {
             phone: adminKey,
@@ -1592,12 +1713,12 @@
           });
           if (ok) {
             await checkAdminDevicePushSubscriptionStatus(false);
-            showToast('تم ربط هاتفك برادار إشعارات غرفة العمليات اللحظية بنجاح! 🔔📲✅', 'ok');
+            showToast('تم تفعيل وتحديث ربط إشعارات الـ Push على هاتفك بنجاح! 🔔📲✅', 'ok');
           } else {
             showToast('تعذر حفظ اشتراك الإشعارات، حاول مرة أخرى ⚠️', 'warn');
           }
         } catch (err) {
-          showToast('تعذر تفعيل الإشعارات على هذا الجهاز، تأكد من فتح الموقع عبر HTTPS أو تثبيت التطبيق ⚠️', 'warn');
+          showToast('تعذر تفعيل الإشعارات على هذا الجهاز، تأكد من السماح بالإشعارات في المتصفح ⚠️', 'warn');
         }
       });
     }

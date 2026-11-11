@@ -1630,32 +1630,38 @@
       return Number.isFinite(nLat) && Number.isFinite(nLng) && Math.abs(nLat) > 0.1 && Math.abs(nLng) > 0.1;
     }
 
-    // ==================== Web Push Notifications (شاملاً الزوار غير المسجلين) ====================
+    // ==================== Web Push Notifications (شاملاً العملاء والكباتن والزوار على أندرويد و iOS) ====================
     let guestPushGestureBound = false;
 
-    async function subscribeUserToPush(userPhone = null) {
+    async function subscribeUserToPush(userPhone = null, fromDirectTap = false) {
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
       try {
-        const resolvedPhone = userPhone || STATE.activeCourierPhone || STATE.authenticatedCustomerPhone || (STATE.customerProfile && STATE.customerProfile.savedPhone) || '';
-        const registration = await navigator.serviceWorker.ready;
         let permission = Notification.permission;
+
         if (permission === 'default') {
-          permission = await Notification.requestPermission();
-        }
-        if (permission !== 'granted') {
-          // في هواتف الأندرويد والآيفون التي تشترط لمسة من المستخدم لإظهار نافذة السماح بالإشعارات
-          if (permission === 'default' && !guestPushGestureBound) {
-            guestPushGestureBound = true;
-            const retryOnFirstTap = () => {
-              document.removeEventListener('pointerdown', retryOnFirstTap);
-              subscribeUserToPush();
-            };
-            document.addEventListener('pointerdown', retryOnFirstTap, { once: true });
+          if (fromDirectTap) {
+            // طلب الإذن فوراً داخل حدث اللمس قبل أي await غير متزامن
+            permission = await Notification.requestPermission();
+          } else {
+            if (!guestPushGestureBound) {
+              guestPushGestureBound = true;
+              const retryOnFirstTap = () => {
+                document.removeEventListener('click', retryOnFirstTap, true);
+                subscribeUserToPush(null, true);
+              };
+              document.addEventListener('click', retryOnFirstTap, { once: true, capture: true });
+            }
+            return;
           }
-          return;
         }
 
+        if (permission !== 'granted') return;
+
+        const resolvedPhone = userPhone || STATE.activeCourierPhone || STATE.authenticatedCustomerPhone || (STATE.customerProfile && STATE.customerProfile.savedPhone) || '';
+        await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+        const registration = await navigator.serviceWorker.ready;
         const publicVapidKey = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
+
         let subscription = await registration.pushManager.getSubscription();
         if (!subscription) {
           subscription = await registration.pushManager.subscribe({
@@ -1663,15 +1669,26 @@
             applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
           });
         }
-        await apiRequest('/api/push/subscribe', 'POST', {
-          phone: resolvedPhone || null,
-          clientId: CLIENT_DEVICE_ID,
-          subscription
+
+        await fetch(`${API_BASE}/api/push/subscribe`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: resolvedPhone || null,
+            clientId: CLIENT_DEVICE_ID,
+            subscription
+          })
         });
       } catch (e) {
-        console.error('Push subscription error:', e);
+        console.warn('Push subscription warning:', e.message);
       }
     }
+
+    // مزامنة وتفعيل اشتراك الإشعارات تلقائياً عند فتح التطبيق لجميع المستخدمين والزوار
+    window.addEventListener('load', () => {
+      setTimeout(() => { subscribeUserToPush(null, false); }, 1000);
+    });
 
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);

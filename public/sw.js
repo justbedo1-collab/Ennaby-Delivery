@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ennaby-cache-v53';
+const CACHE_NAME = 'ennaby-cache-v54';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
+      return cache.addAll(urlsToCache).catch(() => {});
     })
   );
 });
@@ -33,13 +33,24 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const reqUrl = new URL(event.request.url);
 
-  // عدم تخزين طلبات الـ API أو طلبات POST نهائياً لضمان المزامنة اللحظية
-  if (event.request.method !== 'GET' || reqUrl.pathname.startsWith('/api/')) {
+  // عدم تخزين طلبات النطاقات الخارجية أو الـ API أو ملف المشغل الخلفي نفسه نهائياً
+  if (
+    event.request.method !== 'GET' ||
+    reqUrl.origin !== self.location.origin ||
+    reqUrl.pathname.startsWith('/api/') ||
+    reqUrl.pathname === '/sw.js'
+  ) {
     return;
   }
 
-  // استراتيجية Network-First لصفحات HTML لضمان ظهور أي تحديث فوراً
-  if (event.request.mode === 'navigate' || reqUrl.pathname.endsWith('.html') || reqUrl.pathname === '/') {
+  // استراتيجية Network-First لصفحات HTML والمسارات الرئيسية لضمان ظهور أي تحديث فوراً
+  if (
+    event.request.mode === 'navigate' ||
+    reqUrl.pathname.endsWith('.html') ||
+    reqUrl.pathname === '/' ||
+    reqUrl.pathname === '/admin' ||
+    reqUrl.pathname === '/install'
+  ) {
     event.respondWith(
       fetch(event.request)
         .then(networkRes => {
@@ -52,7 +63,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // استراتيجية Cache-First للأيقونات والملفات الثابتة لتوفير الاستهلاك
+  // استراتيجية Cache-First للأيقونات والملفات الثابتة المحلية
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
@@ -60,35 +71,64 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// استقبال وتشغيل إشعارات الـ Web Push
+// استقبال وتشغيل إشعارات الـ Web Push على هواتف أندرويد و iOS
 self.addEventListener('push', function(event) {
-  let data = { title: 'الرجل العنابي 🛵', body: 'تحديث جديد في طلبك!', url: '/' };
-  try {
-    if (event.data) {
-      data = event.data.json();
+  let data = {
+    title: 'الرجل العنابي 🛵',
+    body: 'تحديث جديد في طلبك!',
+    url: '/'
+  };
+
+  if (event.data) {
+    try {
+      const parsed = event.data.json();
+      if (parsed && typeof parsed === 'object') {
+        data = { ...data, ...parsed };
+      }
+    } catch (e) {
+      try {
+        const rawText = event.data.text();
+        if (rawText) data.body = rawText;
+      } catch (err) {}
     }
-  } catch (e) {
-    console.error('Push data parsing error:', e);
   }
 
+  const title = data.title || 'الرجل العنابي 🛵';
   const options = {
-    body: data.body,
+    body: data.body || 'تحديث جديد من منصة الرجل العنابي 🛵',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     dir: 'rtl',
     lang: 'ar',
-    vibrate: [200, 100, 200, 100, 300], // اهتزاز مميز
+    vibrate: [220, 100, 220, 100, 320],
+    tag: data.tag || ('ennaby-push-' + Date.now()),
+    renotify: true,
+    requireInteraction: false,
     data: { url: data.url || '/' }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(title, options)
   );
 });
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
+  const targetUrl = (event.notification && event.notification.data && event.notification.data.url)
+    ? event.notification.data.url
+    : '/';
+
   event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
   );
 });
