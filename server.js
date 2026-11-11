@@ -33,13 +33,28 @@ const CAPTAIN_DOCS_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'captain-docs
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'KvjK8OyYPhFEUdIOgmPEBqxgAMw48AU98sI4GfYTeqw';
+const DEFAULT_VAPID_PUBLIC = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
+const DEFAULT_VAPID_PRIVATE = 'KvjK8OyYPhFEUdIOgmPEBqxgAMw48AU98sI4GfYTeqw';
 
+let VAPID_PRIVATE_KEY = String(process.env.VAPID_PRIVATE_KEY || DEFAULT_VAPID_PRIVATE).trim();
+let VAPID_PUBLIC_KEY = String(process.env.VAPID_PUBLIC_KEY || DEFAULT_VAPID_PUBLIC).trim();
+
+// اشتقاق المفتاح العام رياضياً من المفتاح الخاص لضمان التطابق 100% ومنع خطأ 401/403 من جوجل وأبل
 try {
+  const ecdh = crypto.createECDH('prime256v1');
+  ecdh.setPrivateKey(Buffer.from(VAPID_PRIVATE_KEY, 'base64url'));
+  const derivedPub = ecdh.getPublicKey(null, 'uncompressed').toString('base64url');
+  if (derivedPub && derivedPub !== VAPID_PUBLIC_KEY) {
+    VAPID_PUBLIC_KEY = derivedPub;
+  }
   webpush.setVapidDetails('mailto:support@ennaby.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 } catch (err) {
-  console.warn('⚠️ WebPush setup warning:', err.message);
+  console.warn('⚠️ WebPush fallback to verified default keys:', err.message);
+  VAPID_PUBLIC_KEY = DEFAULT_VAPID_PUBLIC;
+  VAPID_PRIVATE_KEY = DEFAULT_VAPID_PRIVATE;
+  try {
+    webpush.setVapidDetails('mailto:support@ennaby.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  } catch (e) {}
 }
 
 // تغليف المسارات غير المتزامنة لمنع أي Request معلّق أو Unhandled Rejection
@@ -1715,7 +1730,8 @@ async function buildClientState(req, forceRefresh = false) {
     authenticatedCustomerPhone,
     realtimeConfig: {
       supabaseUrl: SUPABASE_URL || '',
-      supabaseAnonKey: SUPABASE_ANON_KEY || ''
+      supabaseAnonKey: SUPABASE_ANON_KEY || '',
+      vapidPublicKey: VAPID_PUBLIC_KEY || ''
     },
     adminAccounts: canViewAuditAndAdmins ? raw.adminAccounts : (isAuthenticatedAdmin && verifiedAdminAccount ? [verifiedAdminAccount] : []),
     auditLogs: canViewAuditAndAdmins ? raw.auditLogs : [],
@@ -1728,14 +1744,46 @@ async function buildClientState(req, forceRefresh = false) {
 // ==========================================
 const WEB_PUSH_OPTIONS = {
   TTL: 86400,
-  urgency: 'high',
-  headers: {
-    Urgency: 'high'
-  }
+  urgency: 'high'
 };
 
+// طابور تتبع ذكي يضمن اكتمال إرسال جميع إشعارات الـ Push قبل إغلاق استجابة Vercel Serverless
+const pendingPushPromises = new Set();
+
+function trackPushTask(promise) {
+  if (!promise || typeof promise.then !== 'function') return promise;
+  pendingPushPromises.add(promise);
+  promise.finally(() => pendingPushPromises.delete(promise)).catch(() => {});
+  return promise;
+}
+
+async function flushPendingPushTasks(timeoutMs = 4500) {
+  if (pendingPushPromises.size === 0) return;
+  const tasks = Array.from(pendingPushPromises);
+  await Promise.race([
+    Promise.allSettled(tasks),
+    new Promise(resolve => setTimeout(resolve, timeoutMs))
+  ]);
+}
+
+app.use((req, res, next) => {
+  const origJson = res.json.bind(res);
+  res.json = function(body) {
+    if (pendingPushPromises.size > 0) {
+      flushPendingPushTasks(4500).finally(() => {
+        origJson(body);
+      });
+      return res;
+    }
+    return origJson(body);
+  };
+  next();
+});
+
 async function sendWebPushWithHighPriority(subscription, payloadObj = {}) {
-  if (!subscription || !subscription.endpoint) return { ok: false, expired: true };
+  if (!subscription || typeof subscription !== 'object' || !subscription.endpoint) {
+    return { ok: false, expired: true, errorMsg: 'Invalid subscription object' };
+  }
   const payloadStr = JSON.stringify({
     title: payloadObj.title || 'الرجل العنابي 🛵',
     body: payloadObj.body || 'تحديث جديد في طلبك!',
@@ -1747,239 +1795,260 @@ async function sendWebPushWithHighPriority(subscription, payloadObj = {}) {
     return { ok: true };
   } catch (err) {
     const code = Number(err && err.statusCode) || 0;
-    const expired = (code === 404 || code === 410);
-    return { ok: false, expired, statusCode: code };
+    const errBody = String((err && err.body) || (err && err.message) || '');
+    console.warn(`⚠️ WebPush error [HTTP ${code}]:`, errBody);
+    const expired = (code === 404 || code === 410 || code === 401 || code === 403);
+    return { ok: false, expired, statusCode: code, errorMsg: errBody };
   }
 }
 
-async function sendPushNotificationToPhone(phone, payloadObj) {
-  const cleanPh = normalizePhoneServer(phone);
-  if (!cleanPh) return;
-  try {
-    const { data: subRows } = await supabase
-      .from('push_subscriptions')
-      .select('phone, subscription')
-      .or(`phone.eq.${cleanPh},phone.like.${cleanPh}:%`);
+function sendPushNotificationToPhone(phone, payloadObj = {}) {
+  return trackPushTask((async () => {
+    const cleanPh = normalizePhoneServer(phone);
+    if (!cleanPh) return;
+    try {
+      const { data: subRows } = await supabase
+        .from('push_subscriptions')
+        .select('phone, subscription')
+        .or(`phone.eq.${cleanPh},phone.like.${cleanPh}:%`);
 
-    if (!subRows || subRows.length === 0) return;
+      if (!subRows || subRows.length === 0) return;
 
-    const expiredKeys = [];
-    const seenEndpoints = new Set();
+      const expiredKeys = [];
+      const seenEndpoints = new Set();
 
-    await Promise.allSettled(
-      subRows.map(async (row) => {
-        if (!row || !row.subscription || !row.subscription.endpoint) return;
-        if (seenEndpoints.has(row.subscription.endpoint)) return;
-        seenEndpoints.add(row.subscription.endpoint);
+      await Promise.allSettled(
+        subRows.map(async (row) => {
+          if (!row || !row.subscription || !row.subscription.endpoint) return;
+          if (seenEndpoints.has(row.subscription.endpoint)) return;
+          seenEndpoints.add(row.subscription.endpoint);
 
-        const res = await sendWebPushWithHighPriority(row.subscription, payloadObj);
-        if (res.expired) expiredKeys.push(row.phone);
-      })
-    );
+          const res = await sendWebPushWithHighPriority(row.subscription, payloadObj);
+          if (res.expired) expiredKeys.push(row.phone);
+        })
+      );
 
-    if (expiredKeys.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
-    }
-  } catch (err) {}
+      if (expiredKeys.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+      }
+    } catch (err) {}
+  })());
 }
 
-async function notifyAdminsPush(category = 'platform', payloadObj = {}) {
-  try {
-    const rawState = await fetchRawDatabaseState(false);
-    const s = rawState.settings || {};
+function notifyAdminsPush(category = 'platform', payloadObj = {}) {
+  return trackPushTask((async () => {
+    try {
+      const rawState = await fetchRawDatabaseState(false);
+      const s = rawState.settings || {};
 
-    if (s.adminPushMasterEnabled === false) return;
-    if (category === 'customer' && s.adminPushCustomersEnabled === false) return;
-    if (category === 'captain' && s.adminPushCaptainsEnabled === false) return;
+      if (s.adminPushMasterEnabled === false) return;
+      if (category === 'customer' && s.adminPushCustomersEnabled === false) return;
+      if (category === 'captain' && s.adminPushCaptainsEnabled === false) return;
 
-    const dedupeKey = `${category}|${payloadObj.title || ''}|${payloadObj.body || ''}`;
-    const nowTs = Date.now();
-    const lastSentTs = recentAdminPushDedupeMap.get(dedupeKey) || 0;
-    if (nowTs - lastSentTs < 3000) return;
-    recentAdminPushDedupeMap.set(dedupeKey, nowTs);
-    if (recentAdminPushDedupeMap.size > 200) {
-      for (const [k, ts] of recentAdminPushDedupeMap.entries()) {
-        if (nowTs - ts > 10000) recentAdminPushDedupeMap.delete(k);
+      const dedupeKey = `${category}|${payloadObj.title || ''}|${payloadObj.body || ''}`;
+      const nowTs = Date.now();
+      const lastSentTs = recentAdminPushDedupeMap.get(dedupeKey) || 0;
+      if (nowTs - lastSentTs < 3000) return;
+      recentAdminPushDedupeMap.set(dedupeKey, nowTs);
+      if (recentAdminPushDedupeMap.size > 200) {
+        for (const [k, ts] of recentAdminPushDedupeMap.entries()) {
+          if (nowTs - ts > 10000) recentAdminPushDedupeMap.delete(k);
+        }
       }
-    }
 
-    const allowedAdminUsers = new Set();
-    const envMasterUser = String(process.env.INITIAL_ADMIN_USER || 'ennaby1').trim().toLowerCase();
-    allowedAdminUsers.add(envMasterUser);
+      const allowedAdminUsers = new Set();
+      const envMasterUser = String(process.env.INITIAL_ADMIN_USER || 'ennaby1').trim().toLowerCase();
+      allowedAdminUsers.add(envMasterUser);
 
-    (rawState.adminAccounts || []).forEach(a => {
-      if (!a || a.status === 'معطل') return;
-      if (a.isMaster || (a.permissions && a.permissions.receiveAdminPush)) {
-        allowedAdminUsers.add(String(a.username || '').trim().toLowerCase());
-      }
-    });
-
-    const { data: adminSubs } = await supabase
-      .from('push_subscriptions')
-      .select('phone, subscription')
-      .like('phone', 'admin:%');
-
-    if (!adminSubs || adminSubs.length === 0) return;
-
-    const targetSubs = adminSubs.filter(sub => {
-      const rawPhoneKey = String(sub.phone || '');
-      const parts = rawPhoneKey.split(':');
-      const uname = String(parts[1] || '').trim().toLowerCase();
-      return uname && allowedAdminUsers.has(uname);
-    });
-
-    if (targetSubs.length === 0) return;
-
-    const expiredKeys = [];
-    const seenEndpoints = new Set();
-
-    await Promise.allSettled(
-      targetSubs.map(async (subRow) => {
-        if (!subRow || !subRow.subscription || !subRow.subscription.endpoint) return;
-        if (seenEndpoints.has(subRow.subscription.endpoint)) return;
-        seenEndpoints.add(subRow.subscription.endpoint);
-
-        const res = await sendWebPushWithHighPriority(subRow.subscription, {
-          title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
-          body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
-          url: payloadObj.url || '/admin'
-        });
-        if (res.expired) expiredKeys.push(subRow.phone);
-      })
-    );
-
-    if (expiredKeys.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
-    }
-  } catch (e) {
-    console.warn('Admin push notify warning:', e.message);
-  }
-}
-
-async function broadcastPushToAvailableCaptains(payloadObj) {
-  try {
-    const { data: availCaptains } = await supabase
-      .from('captains')
-      .select('phone')
-      .eq('status', 'معتمد')
-      .eq('is_available', true);
-
-    if (!availCaptains || availCaptains.length === 0) return;
-    const availSet = new Set(availCaptains.map(c => normalizePhoneServer(c.phone)));
-
-    const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
-    if (!allSubs || allSubs.length === 0) return;
-
-    const matchedSubs = allSubs.filter(s => {
-      const rawPh = String(s.phone || '');
-      if (rawPh.startsWith('admin:') || rawPh.startsWith('guest:')) return false;
-      const basePh = normalizePhoneServer(rawPh.split(':')[0]);
-      return availSet.has(basePh);
-    });
-
-    const expiredKeys = [];
-    const seenEndpoints = new Set();
-
-    await Promise.allSettled(
-      matchedSubs.map(async (s) => {
-        if (!s || !s.subscription || !s.subscription.endpoint) return;
-        if (seenEndpoints.has(s.subscription.endpoint)) return;
-        seenEndpoints.add(s.subscription.endpoint);
-
-        const res = await sendWebPushWithHighPriority(s.subscription, {
-          title: payloadObj.title || 'الرجل العنابي 🛵',
-          body: payloadObj.body || 'أوردر جديد متاح على الرادار الآن!',
-          url: '/'
-        });
-        if (res.expired) expiredKeys.push(s.phone);
-      })
-    );
-
-    if (expiredKeys.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
-    }
-  } catch (e) {}
-}
-
-async function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
-  try {
-    const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
-    if (!allSubs || allSubs.length === 0) return 0;
-
-    const { data: captainsRows } = await supabase.from('captains').select('phone');
-    const captainPhones = new Set((captainsRows || []).map(c => normalizePhoneServer(c.phone)));
-
-    const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
-    const registeredEndpoints = new Set();
-    publicSubs.forEach(s => {
-      const ph = String(s.phone || '').trim();
-      if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
-        registeredEndpoints.add(s.subscription.endpoint);
-      }
-    });
-
-    let filteredSubs = target === 'all' ? allSubs : publicSubs;
-    if (target === 'captains') {
-      filteredSubs = publicSubs.filter(s => {
-        const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
-        return captainPhones.has(basePh);
+      (rawState.adminAccounts || []).forEach(a => {
+        if (!a || a.status === 'معطل') return;
+        if (a.isMaster || (a.permissions && a.permissions.receiveAdminPush)) {
+          allowedAdminUsers.add(String(a.username || '').trim().toLowerCase());
+        }
       });
-    } else if (target === 'customers') {
-      filteredSubs = publicSubs.filter(s => {
-        const rawPh = String(s.phone || '').trim();
-        if (rawPh.startsWith('guest:')) return false;
+
+      const { data: adminSubs } = await supabase
+        .from('push_subscriptions')
+        .select('phone, subscription')
+        .like('phone', 'admin:%');
+
+      if (!adminSubs || adminSubs.length === 0) return;
+
+      const targetSubs = adminSubs.filter(sub => {
+        const rawPhoneKey = String(sub.phone || '');
+        const parts = rawPhoneKey.split(':');
+        const uname = String(parts[1] || '').trim().toLowerCase();
+        return uname && allowedAdminUsers.has(uname);
+      });
+
+      if (targetSubs.length === 0) return;
+
+      const expiredKeys = [];
+      const seenEndpoints = new Set();
+
+      await Promise.allSettled(
+        targetSubs.map(async (subRow) => {
+          if (!subRow || !subRow.subscription || !subRow.subscription.endpoint) return;
+          if (seenEndpoints.has(subRow.subscription.endpoint)) return;
+          seenEndpoints.add(subRow.subscription.endpoint);
+
+          const res = await sendWebPushWithHighPriority(subRow.subscription, {
+            title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
+            body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
+            url: payloadObj.url || '/admin'
+          });
+          if (res.expired) expiredKeys.push(subRow.phone);
+        })
+      );
+
+      if (expiredKeys.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+      }
+    } catch (e) {
+      console.warn('Admin push notify warning:', e.message);
+    }
+  })());
+}
+
+function broadcastPushToAvailableCaptains(payloadObj = {}) {
+  return trackPushTask((async () => {
+    try {
+      const { data: availCaptains } = await supabase
+        .from('captains')
+        .select('phone')
+        .eq('status', 'معتمد')
+        .eq('is_available', true);
+
+      if (!availCaptains || availCaptains.length === 0) return;
+      const availSet = new Set(availCaptains.map(c => normalizePhoneServer(c.phone)).filter(Boolean));
+
+      const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+      if (!allSubs || allSubs.length === 0) return;
+
+      const matchedSubs = allSubs.filter(s => {
+        const rawPh = String(s.phone || '');
+        if (rawPh.startsWith('admin:') || rawPh.startsWith('guest:')) return false;
         const basePh = normalizePhoneServer(rawPh.split(':')[0]);
-        return Boolean(basePh && !captainPhones.has(basePh));
+        return availSet.has(basePh);
       });
-    } else if (target === 'unregistered') {
-      filteredSubs = publicSubs.filter(s => {
-        const ph = String(s.phone || '').trim();
-        const ep = s.subscription && s.subscription.endpoint;
-        return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
-      });
-    }
 
-    const seenEndpoints = new Set();
-    const targetSubs = filteredSubs.filter(s => {
-      if (!s || !s.subscription || !s.subscription.endpoint) return false;
-      const ep = s.subscription.endpoint;
-      if (seenEndpoints.has(ep)) return false;
-      seenEndpoints.add(ep);
-      return true;
-    });
+      if (matchedSubs.length === 0) return;
 
-    let sent = 0;
-    const expiredKeys = [];
+      const expiredKeys = [];
+      const seenEndpoints = new Set();
 
-    await Promise.allSettled(
-      targetSubs.map(async s => {
-        const res = await sendWebPushWithHighPriority(s.subscription, payloadObj);
-        if (res.ok) sent++;
-        else if (res.expired) expiredKeys.push(s.phone);
-      })
-    );
+      await Promise.allSettled(
+        matchedSubs.map(async (s) => {
+          if (!s || !s.subscription || !s.subscription.endpoint) return;
+          if (seenEndpoints.has(s.subscription.endpoint)) return;
+          seenEndpoints.add(s.subscription.endpoint);
 
-    if (expiredKeys.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
-    }
-    return sent;
-  } catch (e) {
-    return 0;
-  }
+          const res = await sendWebPushWithHighPriority(s.subscription, {
+            title: payloadObj.title || 'الرجل العنابي 🛵',
+            body: payloadObj.body || 'أوردر جديد متاح على الرادار الآن!',
+            url: payloadObj.url || '/'
+          });
+          if (res.expired) expiredKeys.push(s.phone);
+        })
+      );
+
+      if (expiredKeys.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+      }
+    } catch (e) {}
+  })());
 }
 
-// حفظ اشتراك Web Push لجميع الهواتف (أدمن، كباتن، عملاء، وزوار) دون رفض أي هاتف
+function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
+  return trackPushTask((async () => {
+    try {
+      const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+      if (!allSubs || allSubs.length === 0) return 0;
+
+      const { data: captainsRows } = await supabase.from('captains').select('phone');
+      const captainPhones = new Set((captainsRows || []).map(c => normalizePhoneServer(c.phone)).filter(Boolean));
+
+      const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
+      const registeredEndpoints = new Set();
+      publicSubs.forEach(s => {
+        const ph = String(s.phone || '').trim();
+        if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
+          registeredEndpoints.add(s.subscription.endpoint);
+        }
+      });
+
+      let filteredSubs = target === 'all' ? allSubs : publicSubs;
+      if (target === 'captains') {
+        filteredSubs = publicSubs.filter(s => {
+          const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
+          return captainPhones.has(basePh);
+        });
+      } else if (target === 'customers') {
+        filteredSubs = publicSubs.filter(s => {
+          const rawPh = String(s.phone || '').trim();
+          if (rawPh.startsWith('guest:')) return false;
+          const basePh = normalizePhoneServer(rawPh.split(':')[0]);
+          return Boolean(basePh && !captainPhones.has(basePh));
+        });
+      } else if (target === 'unregistered') {
+        filteredSubs = publicSubs.filter(s => {
+          const ph = String(s.phone || '').trim();
+          const ep = s.subscription && s.subscription.endpoint;
+          return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
+        });
+      }
+
+      const seenEndpoints = new Set();
+      const targetSubs = filteredSubs.filter(s => {
+        if (!s || !s.subscription || !s.subscription.endpoint) return false;
+        const ep = s.subscription.endpoint;
+        if (seenEndpoints.has(ep)) return false;
+        seenEndpoints.add(ep);
+        return true;
+      });
+
+      let sent = 0;
+      const expiredKeys = [];
+
+      await Promise.allSettled(
+        targetSubs.map(async s => {
+          const res = await sendWebPushWithHighPriority(s.subscription, payloadObj);
+          if (res.ok) sent++;
+          else if (res.expired) expiredKeys.push(s.phone);
+        })
+      );
+
+      if (expiredKeys.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('phone', expiredKeys);
+      }
+      return sent;
+    } catch (e) {
+      return 0;
+    }
+  })());
+}
+
+app.get('/api/push/vapid-public-key', (req, res) => {
+  res.json({ success: true, vapidPublicKey: VAPID_PUBLIC_KEY });
+});
+
+// حفظ ومزامنة اشتراك Web Push لجميع الأدوار النشطة على الهاتف (أدمن، كباتن، عملاء، وزوار)
 app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
   try {
-    const { phone, clientId, subscription } = req.body || {};
+    const { phone, courierPhone, customerPhone, clientId, subscription } = req.body || {};
     if (!subscription || typeof subscription !== 'object' || !subscription.endpoint) {
-      return res.status(400).json({ success: false });
+      return res.status(400).json({ success: false, message: 'بيانات الاشتراك غير صالحة ⚠️' });
     }
 
     const rawState = await fetchRawDatabaseState(false);
     const rawPhoneStr = phone ? String(phone).trim() : '';
     const cleanClientId = String(clientId || '').trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
-    let cleanKey = '';
+    const nowIso = new Date().toISOString();
+
+    const custCookiePhone = getAuthenticatedCustomerFromCookie(req, rawState.rawCustomersRows);
+    const capCookiePhone = getAuthenticatedCaptainFromCookie(req, rawState.rawCaptains);
+
+    const keysToUpsert = new Set();
 
     if (rawPhoneStr.startsWith('admin:')) {
       const adminToken = getAuthenticatedAdminFromCookie(req, rawState.rawAdminsRows);
@@ -2000,31 +2069,35 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
       }
       const parts = rawPhoneStr.split(':');
       const deviceSuffix = parts[2] ? String(parts[2]).trim().replace(/[^a-zA-Z0-9_-]/g, '') : 'default';
-      cleanKey = `admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`;
-    } else {
-      const custPhone = getAuthenticatedCustomerFromCookie(req, rawState.rawCustomersRows);
-      const capPhone = getAuthenticatedCaptainFromCookie(req, rawState.rawCaptains);
-      const candidatePhone = (!rawPhoneStr || rawPhoneStr.startsWith('guest:'))
-        ? (capPhone || custPhone || '')
-        : normalizePhoneServer(rawPhoneStr);
-
-      if (candidatePhone && isValidEgyptianPhoneServer(candidatePhone)) {
-        cleanKey = candidatePhone;
-        if (cleanClientId) {
-          await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
-        }
-      } else {
-        const guestId = cleanClientId || rawPhoneStr.replace(/^guest:/, '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || ('g_' + Date.now());
-        cleanKey = `guest:${guestId}`;
-      }
+      keysToUpsert.add(`admin:${String(adminRow.username).trim().toLowerCase()}:${deviceSuffix}`);
     }
 
-    await supabase.from('push_subscriptions').upsert([{
-      phone: cleanKey,
+    [rawPhoneStr, courierPhone, customerPhone, capCookiePhone, custCookiePhone].forEach(phCandidate => {
+      if (!phCandidate || String(phCandidate).startsWith('admin:') || String(phCandidate).startsWith('guest:')) return;
+      const norm = normalizePhoneServer(phCandidate);
+      if (isValidEgyptianPhoneServer(norm)) {
+        keysToUpsert.add(norm);
+        if (cleanClientId) {
+          keysToUpsert.add(`${norm}:${cleanClientId}`);
+        }
+      }
+    });
+
+    if (keysToUpsert.size === 0) {
+      const guestId = cleanClientId || rawPhoneStr.replace(/^guest:/, '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || ('g_' + Date.now());
+      keysToUpsert.add(`guest:${guestId}`);
+    } else if (cleanClientId) {
+      await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
+    }
+
+    const upsertRows = Array.from(keysToUpsert).map(k => ({
+      phone: k,
       subscription,
-      updated_at: new Date().toISOString()
-    }]);
-    res.json({ success: true, key: cleanKey });
+      updated_at: nowIso
+    }));
+
+    await supabase.from('push_subscriptions').upsert(upsertRows);
+    res.json({ success: true, keys: Array.from(keysToUpsert), vapidPublicKey: VAPID_PUBLIC_KEY });
   } catch (e) {
     res.status(500).json({ success: false });
   }

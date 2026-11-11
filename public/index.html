@@ -491,6 +491,18 @@
             <i class="fa-solid fa-download"></i> نزّله دلوقتي
           </button>
         </div>
+        <div class="install-banner" id="globalPushPermissionBanner" style="display:none; background:linear-gradient(135deg, #F5ECF2, #EFE2EC); border-bottom:1.5px solid #C8A6BE;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; background:#5A2846; color:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🔔</div>
+            <div>
+              <strong style="font-size:11.5px; color:#5A2846; display:block;">شغّل إشعارات الموبايل الفورية 📲</strong>
+              <span style="font-size:10px; color:#431B33; font-weight:700;">عشان يوصلك تنبيه بالطلبات والعروض حتى لو قافل التطبيق!</span>
+            </div>
+          </div>
+          <button type="button" class="install-app-btn" style="background:linear-gradient(135deg, #5A2846, #431B33); flex-shrink:0;" onclick="requestAndSubscribePushNow()">
+            <i class="fa-solid fa-bell"></i> تفعيل 🔔
+          </button>
+        </div>
         <div class="broadcast-banner" id="globalBroadcastBanner">
           <i class="fa-solid fa-bullhorn" style="color:var(--primary); font-size:15px; flex-shrink:0;"></i>
           <span id="globalBroadcastText"></span>
@@ -1631,38 +1643,82 @@
     }
 
     // ==================== Web Push Notifications (شاملاً العملاء والكباتن والزوار على أندرويد و iOS) ====================
-    let guestPushGestureBound = false;
+    const DEFAULT_PUBLIC_VAPID_KEY = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
 
-    async function subscribeUserToPush(userPhone = null, fromDirectTap = false) {
+    function getActiveServerVapidKey() {
+      return (STATE.realtimeConfig && STATE.realtimeConfig.vapidPublicKey)
+        ? STATE.realtimeConfig.vapidPublicKey
+        : DEFAULT_PUBLIC_VAPID_KEY;
+    }
+
+    function doesSubscriptionMatchVapidKey(sub, expectedKeyBase64) {
+      try {
+        if (!sub || !sub.options || !sub.options.applicationServerKey) return true;
+        const actualBytes = new Uint8Array(sub.options.applicationServerKey);
+        const expectedBytes = urlBase64ToUint8Array(expectedKeyBase64);
+        if (actualBytes.length !== expectedBytes.length) return false;
+        for (let i = 0; i < actualBytes.length; i++) {
+          if (actualBytes[i] !== expectedBytes[i]) return false;
+        }
+        return true;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    function updatePushPermissionBannerUI() {
+      const banner = document.getElementById('globalPushPermissionBanner');
+      if (!banner) return;
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        banner.style.display = 'none';
+        return;
+      }
+      banner.style.display = (Notification.permission === 'granted') ? 'none' : 'flex';
+    }
+
+    function requestAndSubscribePushNow() {
+      if (!('Notification' in window)) {
+        showToast('متصفحك الحالي لا يدعم الإشعارات الخارجية ⚠️', 'warn');
+        return;
+      }
+      // طلب الإذن في السطر الأول مباشرة داخل نقرة الزر (ضروري لهواتف آيفون وأندرويد)
+      const permPromise = Notification.requestPermission();
+      permPromise.then(async (perm) => {
+        updatePushPermissionBannerUI();
+        if (perm === 'granted') {
+          await subscribeUserToPush(null, true);
+          showToast('تم تفعيل إشعارات الموبايل الفورية بنجاح! 🔔📲✅', 'ok');
+        } else {
+          showToast('يرجى السماح بالإشعارات من إعدادات المتصفح لتصلك التنبيهات 🔔⚠️', 'warn');
+        }
+      }).catch(() => {});
+    }
+
+    async function subscribeUserToPush(userPhone = null, isDirectGesture = false) {
+      updatePushPermissionBannerUI();
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
       try {
         let permission = Notification.permission;
-
-        if (permission === 'default') {
-          if (fromDirectTap) {
-            // طلب الإذن فوراً داخل حدث اللمس قبل أي await غير متزامن
-            permission = await Notification.requestPermission();
-          } else {
-            if (!guestPushGestureBound) {
-              guestPushGestureBound = true;
-              const retryOnFirstTap = () => {
-                document.removeEventListener('click', retryOnFirstTap, true);
-                subscribeUserToPush(null, true);
-              };
-              document.addEventListener('click', retryOnFirstTap, { once: true, capture: true });
-            }
-            return;
-          }
+        if (permission === 'default' && isDirectGesture) {
+          permission = await Notification.requestPermission();
+          updatePushPermissionBannerUI();
         }
-
         if (permission !== 'granted') return;
 
-        const resolvedPhone = userPhone || STATE.activeCourierPhone || STATE.authenticatedCustomerPhone || (STATE.customerProfile && STATE.customerProfile.savedPhone) || '';
-        await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+        const courierPh = STATE.activeCourierPhone || '';
+        const customerPh = STATE.authenticatedCustomerPhone || (STATE.customerProfile && STATE.customerProfile.savedPhone) || '';
+        const resolvedPhone = userPhone || courierPh || customerPh || '';
+
+        const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
         const registration = await navigator.serviceWorker.ready;
-        const publicVapidKey = 'BOyNefapT_wxw5HHpZFaPsQvyj9OIfV9owv8-9cJd5RMcfdGMK9c0j7D8zv1nNlWBd2K6DB-1v_YhzW2z2xxklc';
+        const publicVapidKey = getActiveServerVapidKey();
 
         let subscription = await registration.pushManager.getSubscription();
+        // إذا كان هناك اشتراك قديم بمفتاح مختلف نجدده فقط، أما إذا كان مطابقاً فنحافظ عليه
+        if (subscription && !doesSubscriptionMatchVapidKey(subscription, publicVapidKey)) {
+          await subscription.unsubscribe().catch(() => {});
+          subscription = null;
+        }
         if (!subscription) {
           subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
@@ -1676,17 +1732,31 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             phone: resolvedPhone || null,
+            courierPhone: courierPh || null,
+            customerPhone: customerPh || null,
             clientId: CLIENT_DEVICE_ID,
             subscription
           })
         });
+        updatePushPermissionBannerUI();
       } catch (e) {
         console.warn('Push subscription warning:', e.message);
       }
     }
 
-    // مزامنة وتفعيل اشتراك الإشعارات تلقائياً عند فتح التطبيق لجميع المستخدمين والزوار
+    // استقبال رسائل المشغل الخلفي عند وصول إشعار والتطبيق مفتوح أمام المستخدم
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'ENNABY_PUSH_RECEIVED') {
+          triggerDeviceAlert('courier_new_order');
+          showToast(`🔔 ${event.data.title || 'إشعار جديد'}: ${event.data.body || ''}`, 'ok');
+          syncFromCloudServer(true);
+        }
+      });
+    }
+
     window.addEventListener('load', () => {
+      updatePushPermissionBannerUI();
       setTimeout(() => { subscribeUserToPush(null, false); }, 1000);
     });
 

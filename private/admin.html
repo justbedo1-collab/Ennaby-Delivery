@@ -1697,14 +1697,26 @@
           await reg.update().catch(() => {});
           const readyReg = await navigator.serviceWorker.ready;
 
+          const activeVapidKey = (STATE.realtimeConfig && STATE.realtimeConfig.vapidPublicKey)
+            ? STATE.realtimeConfig.vapidPublicKey
+            : PUBLIC_VAPID_KEY;
+
           let sub = await readyReg.pushManager.getSubscription();
-          if (sub) {
-            await sub.unsubscribe().catch(() => {});
+          if (sub && sub.options && sub.options.applicationServerKey) {
+            const actualKey = new Uint8Array(sub.options.applicationServerKey);
+            const expectedKey = urlBase64ToUint8Array(activeVapidKey);
+            const isSameKey = actualKey.length === expectedKey.length && actualKey.every((v, i) => v === expectedKey[i]);
+            if (!isSameKey) {
+              await sub.unsubscribe().catch(() => {});
+              sub = null;
+            }
           }
-          sub = await readyReg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
-          });
+          if (!sub) {
+            sub = await readyReg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(activeVapidKey)
+            });
+          }
 
           const adminKey = `admin:${String(activeAdm.username).toLowerCase()}:${ADMIN_DEVICE_ID}`;
           const { ok } = await apiRequest('/api/push/subscribe', 'POST', {
