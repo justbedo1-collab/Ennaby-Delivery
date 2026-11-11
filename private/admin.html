@@ -1520,8 +1520,16 @@
       } catch(e) {} finally { isCloudSyncInFlight = false; }
     }
 
+let allowNestedActionLock = false;
+
     function withActionLock(fn) {
-      if (actionLock) return;
+      if (actionLock) {
+        if (allowNestedActionLock) {
+          allowNestedActionLock = false;
+          return Promise.resolve().then(() => fn());
+        }
+        return;
+      }
       actionLock = true;
       const btn = (
         lastInteractedElement &&
@@ -1537,12 +1545,18 @@
         btn.innerHTML = loadingHtml;
       }
       Promise.resolve()
-        .then(() => fn())
+        .then(() => {
+          const res = fn();
+          allowNestedActionLock = false;
+          return res;
+        })
         .catch(err => {
+          allowNestedActionLock = false;
           console.error('Admin action error:', err);
           showToast('حدث خطأ أثناء تنفيذ العملية، حاول مرة أخرى ⚠️', 'warn');
         })
         .finally(() => {
+          allowNestedActionLock = false;
           if (btn && document.body.contains(btn)) {
             if (btn.innerHTML === loadingHtml || btn.innerHTML.includes('fa-spinner')) {
               btn.innerHTML = origHtml;
@@ -1643,9 +1657,33 @@
         return;
       }
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
-        await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
+        await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+        const readyReg = await navigator.serviceWorker.ready;
+        const activeVapidKey = (STATE.realtimeConfig && STATE.realtimeConfig.vapidPublicKey)
+          ? STATE.realtimeConfig.vapidPublicKey
+          : PUBLIC_VAPID_KEY;
+
+        let sub = await readyReg.pushManager.getSubscription();
+        if (sub && Notification.permission === 'granted') {
+          if (sub.options && sub.options.applicationServerKey) {
+            const actualKey = new Uint8Array(sub.options.applicationServerKey);
+            const expectedKey = urlBase64ToUint8Array(activeVapidKey);
+            const isSameKey = actualKey.length === expectedKey.length && actualKey.every((v, i) => v === expectedKey[i]);
+            if (!isSameKey) {
+              await sub.unsubscribe().catch(() => {});
+              sub = await readyReg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: expectedKey
+              }).catch(() => null);
+            }
+          }
+        } else if (!sub && Notification.permission === 'granted' && silentAutoSubscribe) {
+          sub = await readyReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(activeVapidKey)
+          }).catch(() => null);
+        }
+
         if (sub && Notification.permission === 'granted') {
           if (badge) { badge.className = 'badge badge-completed'; badge.innerText = 'مربوط ونشط على هذا الهاتف 📲✅'; }
           if (btn) { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> تحديث ربط إشعارات الرادار على هذا الجهاز 📲'; }
@@ -1655,7 +1693,7 @@
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ phone: adminKey, subscription: sub })
+              body: JSON.stringify({ phone: adminKey, clientId: ADMIN_DEVICE_ID, subscription: sub })
             }).catch(() => {});
           }
         } else {
@@ -2085,8 +2123,9 @@
         if(needInput&&!v){ showToast('برجاء كتابة القيمة أو التفاصيل أولاً ⚠️','warn'); return; }
         closeCustomActionModal();
         if(typeof onConfirm==='function') {
-          if (actionLock) onConfirm(v);
-          else withActionLock(() => onConfirm(v));
+          actionLock = false;
+          allowNestedActionLock = true;
+          withActionLock(() => onConfirm(v));
         }
       };
       b.onclick = customModalCallback; document.getElementById('customActionModal').classList.add('show');

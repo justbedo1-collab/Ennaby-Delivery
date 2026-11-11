@@ -453,38 +453,66 @@
       box-sizing: border-box;
     }
 
-    /* منع خروج النصوص والأيقونات من جميع الأزرار والروابط مع الحفاظ على الشكل المستطيل الأنيق */
-    .btn-main,
+    /* ضبط الهيدر العلوي وزر الخروج والأزرار الفرعية لمنع انقسام الكلمات عمودياً نهائياً */
+    .brand-header {
+      gap: 10px !important;
+      align-items: center !important;
+    }
+    .brand-header .brand-title {
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+    }
+    .brand-header > div:last-child,
+    .brand-header button,
     .btn-secondary,
     .btn-danger,
-    .btn-success,
+    .btn-success {
+      flex-shrink: 0 !important;
+      width: auto !important;
+      white-space: nowrap !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+    }
+
+    .btn-main {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 36px !important;
+      padding: 6px 12px !important;
+      white-space: nowrap !important;
+      word-break: normal !important;
+      text-align: center !important;
+      line-height: 1.35 !important;
+    }
+
     .order-card-actions > button,
-    .order-card-actions > a,
-    .order-card-actions-row > button,
-    .order-card-actions-row > a {
-      width: 100%;
+    .order-card-actions > a {
+      width: 100% !important;
       max-width: 100% !important;
       min-height: 35px !important;
       height: auto !important;
       max-height: none !important;
       padding: 7px 10px !important;
       white-space: normal !important;
-      flex-wrap: nowrap !important;
+      word-break: normal !important;
       text-align: center !important;
       line-height: 1.35 !important;
-      overflow: hidden !important;
-      word-break: break-word;
     }
 
     .order-card-actions-row > button,
     .order-card-actions-row > a {
       width: auto !important;
       flex: 1 1 0% !important;
+      min-height: 35px !important;
+      height: auto !important;
+      max-height: none !important;
       font-size: 11px !important;
       padding: 6px 8px !important;
+      white-space: nowrap !important;
+      word-break: normal !important;
     }
 
-    /* تثبيت وتنسيق شريط العنوان العلوي في تبويب «طلباتي» للعميل والكابتن لمنع انقطاعه من الأعلى */
+    /* تثبيت وتنسيق شريط العنوان العلوي في تبويب «طلباتي» للعميل والكابتن */
     #custTab-orders > .card-title:first-child,
     #courTab-orders > .card-title:first-child {
       background: #FFFFFF;
@@ -512,6 +540,7 @@
       align-items: center !important;
       gap: 5px !important;
       width: auto !important;
+      flex-shrink: 0 !important;
     }
 
     /* تنسيق احترافي لكروت الطلبات في قائمة العميل والرادار وسجل الكابتن */
@@ -570,7 +599,6 @@
       gap: 7px !important;
     }
 
-    /* السطر الأول في كارت الكابتن: الاسم على اليمين والشارة على اليسار بانتظام */
     .order-captain-card > div:first-child {
       display: flex !important;
       flex-direction: row !important;
@@ -584,7 +612,6 @@
       padding: 6px 9px;
     }
 
-    /* السطر الثاني في كارت الكابتن: المركبة والنمرة */
     .order-captain-card > div:nth-child(2) {
       background: rgba(255, 255, 255, 0.75);
       border: 1px dashed #D7C2CA;
@@ -596,7 +623,6 @@
       text-align: right;
     }
 
-    /* أزرار الاتصال والواتساب بالكابتن */
     .contact-actions-row {
       display: grid !important;
       grid-template-columns: 1fr 1fr !important;
@@ -631,6 +657,7 @@
       font-weight: 800 !important;
       line-height: 1.4 !important;
       white-space: normal !important;
+      word-break: normal !important;
       text-align: center !important;
       border-radius: 9px !important;
       display: inline-flex !important;
@@ -657,29 +684,36 @@
     .ennaby-order-detail-row {
       padding: 3px 0;
       border-bottom: 1px dashed #E5D8DC;
-      word-break: break-word;
-      overflow-wrap: anywhere;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
     .ennaby-order-detail-row:last-child {
       border-bottom: none;
       padding-bottom: 0;
     }
+
+    /* سطر الدفع والمبلغ الكاش مع تلوين (الراسل/المستلم) والمبلغ باللون الأخضر */
     .ennaby-order-pay-row {
       background: #FFFFFF;
-      border: 1px solid #E2D4D9;
+      border: 1px solid #C8E6C9;
       border-radius: 8px;
-      padding: 5px 9px !important;
+      padding: 6px 10px !important;
       margin-top: 2px;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 4px;
     }
+    .ennaby-order-pay-row strong,
+    .ennaby-order-pay-row b,
+    .ennaby-green-val {
+      color: var(--success) !important;
+      font-weight: 900 !important;
+    }
 
-    /* ضبط المسافات في كروت الإرسال والاستلام بالصفحة الرئيسية على الشاشات الصغيرة */
     @media (max-width: 380px) {
       .route-fields-grid {
         grid-template-columns: 102px 1fr !important;
@@ -695,7 +729,7 @@
     }
   </style>
   <script>
-    // منسق تلقائي ذكي لكروت الطلبات يضمن تأطير بيانات المسار والدفع وتناسق الأزرار فور رسمها
+    // منسق تلقائي ذكي لكروت الطلبات يضمن تأطير بيانات المسار وتلوين (الراسل/المستلم) والمبلغ بالأخضر
     (function () {
       function polishOrderCardsInContainer(containerId) {
         var container = document.getElementById(containerId);
@@ -721,6 +755,10 @@
                 var lineTxt = (lineEl.textContent || '').trim();
                 if (lineTxt.indexOf('الدفع:') !== -1 || lineTxt.indexOf('كاش:') !== -1) {
                   lineEl.classList.add('ennaby-order-pay-row');
+                  lineEl.querySelectorAll('strong, b, span').forEach(function (el) {
+                    el.style.color = 'var(--success)';
+                    el.style.fontWeight = '900';
+                  });
                 } else {
                   lineEl.classList.add('ennaby-order-detail-row');
                 }
@@ -1996,27 +2034,41 @@
       }).catch(() => {});
     }
 
-    async function subscribeUserToPush(userPhone = null, isDirectGesture = false) {
+    let guestPushGestureBound = false;
+    let lastSyncedPushSignature = '';
+
+    async function subscribeUserToPush(userPhone = null, isDirectGesture = true) {
       updatePushPermissionBannerUI();
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
       try {
         let permission = Notification.permission;
         if (permission === 'default' && isDirectGesture) {
-          permission = await Notification.requestPermission();
-          updatePushPermissionBannerUI();
+          try {
+            permission = await Notification.requestPermission();
+            updatePushPermissionBannerUI();
+          } catch (e) {}
         }
-        if (permission !== 'granted') return;
+        if (permission !== 'granted') {
+          if (permission === 'default' && !guestPushGestureBound) {
+            guestPushGestureBound = true;
+            const retryOnFirstTap = () => {
+              document.removeEventListener('click', retryOnFirstTap);
+              subscribeUserToPush(null, true);
+            };
+            document.addEventListener('click', retryOnFirstTap, { once: true });
+          }
+          return;
+        }
 
         const courierPh = STATE.activeCourierPhone || '';
         const customerPh = STATE.authenticatedCustomerPhone || (STATE.customerProfile && STATE.customerProfile.savedPhone) || '';
         const resolvedPhone = userPhone || courierPh || customerPh || '';
 
-        const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+        await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
         const registration = await navigator.serviceWorker.ready;
         const publicVapidKey = getActiveServerVapidKey();
 
         let subscription = await registration.pushManager.getSubscription();
-        // إذا كان هناك اشتراك قديم بمفتاح مختلف نجدده فقط، أما إذا كان مطابقاً فنحافظ عليه
         if (subscription && !doesSubscriptionMatchVapidKey(subscription, publicVapidKey)) {
           await subscription.unsubscribe().catch(() => {});
           subscription = null;
@@ -2028,7 +2080,13 @@
           });
         }
 
-        await fetch(`${API_BASE}/api/push/subscribe`, {
+        const sig = `${resolvedPhone}|${courierPh}|${customerPh}|${publicVapidKey}|${subscription ? subscription.endpoint : ''}`;
+        if (!userPhone && sig === lastSyncedPushSignature) {
+          updatePushPermissionBannerUI();
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/api/push/subscribe`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -2040,6 +2098,9 @@
             subscription
           })
         });
+        if (res.ok) {
+          lastSyncedPushSignature = sig;
+        }
         updatePushPermissionBannerUI();
       } catch (e) {
         console.warn('Push subscription warning:', e.message);
@@ -2400,6 +2461,9 @@ function applyCloudStateSnapshot(cloudState) {
       if (cloudState.realtimeConfig) {
         STATE.realtimeConfig = cloudState.realtimeConfig;
         setupPublicSupabaseRealtime(cloudState.realtimeConfig);
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          subscribeUserToPush(null, false);
+        }
       }
       if (STATE.activeCourierPhone && !STATE.captains.some(c => c.phone === STATE.activeCourierPhone)) STATE.activeCourierPhone = null;
       if (STATE.customerProfile && STATE.customerProfile.savedPhone) syncActiveCustomerProfile(STATE.customerProfile.savedPhone);
@@ -4632,7 +4696,13 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       if (diffMins <= 10) return `من ${diffMins} دقايق ⏱️`;
       if (diffMins < 60) return `من ${diffMins} دقيقة ⏱️`;
       const hrs = Math.floor(diffMins / 60);
-      return `من ${hrs} ساعة 🕒`;
+      if (hrs < 24) return `من ${hrs} ساعة 🕒`;
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return `من ${days} يوم 📅`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `من ${months} شهر 📅`;
+      const years = Math.max(1, Math.floor(months / 12));
+      return `من ${years} عام 📅`;
     }
 
     function openCourierAllActiveOrdersMapModal() {

@@ -1780,7 +1780,11 @@ app.use((req, res, next) => {
   next();
 });
 
-async function sendWebPushWithHighPriority(subscription, payloadObj = {}) {
+async function sendWebPushWithHighPriority(rawSubscription, payloadObj = {}) {
+  let subscription = rawSubscription;
+  if (typeof subscription === 'string') {
+    try { subscription = JSON.parse(subscription); } catch (e) { subscription = null; }
+  }
   if (!subscription || typeof subscription !== 'object' || !subscription.endpoint) {
     return { ok: false, expired: true, errorMsg: 'Invalid subscription object' };
   }
@@ -1795,9 +1799,28 @@ async function sendWebPushWithHighPriority(subscription, payloadObj = {}) {
     return { ok: true };
   } catch (err) {
     const code = Number(err && err.statusCode) || 0;
+    // إذا كان الاشتراك مسجلاً بالمفتاح الافتراضي بينما تم تغيير مفتاح البيئة في Vercel، نعيد المحاولة تلقائياً بالمفتاح الافتراضي
+    if ((code === 401 || code === 403) && (VAPID_PUBLIC_KEY !== DEFAULT_VAPID_PUBLIC || VAPID_PRIVATE_KEY !== DEFAULT_VAPID_PRIVATE)) {
+      try {
+        await webpush.sendNotification(subscription, payloadStr, {
+          ...WEB_PUSH_OPTIONS,
+          vapidDetails: {
+            subject: 'mailto:support@ennaby.com',
+            publicKey: DEFAULT_VAPID_PUBLIC,
+            privateKey: DEFAULT_VAPID_PRIVATE
+          }
+        });
+        return { ok: true };
+      } catch (retryErr) {
+        const retryCode = Number(retryErr && retryErr.statusCode) || code;
+        const retryExpired = (retryCode === 404 || retryCode === 410);
+        return { ok: false, expired: retryExpired, statusCode: retryCode };
+      }
+    }
     const errBody = String((err && err.body) || (err && err.message) || '');
     console.warn(`⚠️ WebPush error [HTTP ${code}]:`, errBody);
-    const expired = (code === 404 || code === 410 || code === 401 || code === 403);
+    // لا نحذف الاشتراك من القاعدة إلا إذا كان منتهياً فعلياً (404 أو 410)
+    const expired = (code === 404 || code === 410);
     return { ok: false, expired, statusCode: code, errorMsg: errBody };
   }
 }
@@ -1810,20 +1833,26 @@ function sendPushNotificationToPhone(phone, payloadObj = {}) {
       const { data: subRows } = await supabase
         .from('push_subscriptions')
         .select('phone, subscription')
-        .or(`phone.eq.${cleanPh},phone.like.${cleanPh}:%`);
+        .ilike('phone', `${cleanPh}%`);
 
-      if (!subRows || subRows.length === 0) return;
+      const matchedRows = (subRows || []).filter(r => {
+        const k = String(r && r.phone ? r.phone : '');
+        return k === cleanPh || k.startsWith(`${cleanPh}:`);
+      });
+
+      if (matchedRows.length === 0) return;
 
       const expiredKeys = [];
       const seenEndpoints = new Set();
 
       await Promise.allSettled(
-        subRows.map(async (row) => {
-          if (!row || !row.subscription || !row.subscription.endpoint) return;
-          if (seenEndpoints.has(row.subscription.endpoint)) return;
-          seenEndpoints.add(row.subscription.endpoint);
+        matchedRows.map(async (row) => {
+          const subObj = typeof row.subscription === 'string' ? JSON.parse(row.subscription) : row.subscription;
+          if (!subObj || !subObj.endpoint) return;
+          if (seenEndpoints.has(subObj.endpoint)) return;
+          seenEndpoints.add(subObj.endpoint);
 
-          const res = await sendWebPushWithHighPriority(row.subscription, payloadObj);
+          const res = await sendWebPushWithHighPriority(subObj, payloadObj);
           if (res.expired) expiredKeys.push(row.phone);
         })
       );
@@ -1870,7 +1899,7 @@ function notifyAdminsPush(category = 'platform', payloadObj = {}) {
       const { data: adminSubs } = await supabase
         .from('push_subscriptions')
         .select('phone, subscription')
-        .like('phone', 'admin:%');
+        .ilike('phone', 'admin:%');
 
       if (!adminSubs || adminSubs.length === 0) return;
 
@@ -1888,11 +1917,12 @@ function notifyAdminsPush(category = 'platform', payloadObj = {}) {
 
       await Promise.allSettled(
         targetSubs.map(async (subRow) => {
-          if (!subRow || !subRow.subscription || !subRow.subscription.endpoint) return;
-          if (seenEndpoints.has(subRow.subscription.endpoint)) return;
-          seenEndpoints.add(subRow.subscription.endpoint);
+          const subObj = typeof subRow.subscription === 'string' ? JSON.parse(subRow.subscription) : subRow.subscription;
+          if (!subObj || !subObj.endpoint) return;
+          if (seenEndpoints.has(subObj.endpoint)) return;
+          seenEndpoints.add(subObj.endpoint);
 
-          const res = await sendWebPushWithHighPriority(subRow.subscription, {
+          const res = await sendWebPushWithHighPriority(subObj, {
             title: payloadObj.title || '🔔 رادار غرفة العمليات 🛡️',
             body: payloadObj.body || 'حركة جديدة على منصة الرجل العنابي',
             url: payloadObj.url || '/admin'
@@ -1939,11 +1969,12 @@ function broadcastPushToAvailableCaptains(payloadObj = {}) {
 
       await Promise.allSettled(
         matchedSubs.map(async (s) => {
-          if (!s || !s.subscription || !s.subscription.endpoint) return;
-          if (seenEndpoints.has(s.subscription.endpoint)) return;
-          seenEndpoints.add(s.subscription.endpoint);
+          const subObj = typeof s.subscription === 'string' ? JSON.parse(s.subscription) : s.subscription;
+          if (!subObj || !subObj.endpoint) return;
+          if (seenEndpoints.has(subObj.endpoint)) return;
+          seenEndpoints.add(subObj.endpoint);
 
-          const res = await sendWebPushWithHighPriority(s.subscription, {
+          const res = await sendWebPushWithHighPriority(subObj, {
             title: payloadObj.title || 'الرجل العنابي 🛵',
             body: payloadObj.body || 'أوردر جديد متاح على الرادار الآن!',
             url: payloadObj.url || '/'
@@ -1972,8 +2003,9 @@ function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
       const registeredEndpoints = new Set();
       publicSubs.forEach(s => {
         const ph = String(s.phone || '').trim();
-        if (!ph.startsWith('guest:') && s.subscription && s.subscription.endpoint) {
-          registeredEndpoints.add(s.subscription.endpoint);
+        const subObj = typeof s.subscription === 'string' ? JSON.parse(s.subscription) : s.subscription;
+        if (!ph.startsWith('guest:') && subObj && subObj.endpoint) {
+          registeredEndpoints.add(subObj.endpoint);
         }
       });
 
@@ -1993,18 +2025,23 @@ function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
       } else if (target === 'unregistered') {
         filteredSubs = publicSubs.filter(s => {
           const ph = String(s.phone || '').trim();
-          const ep = s.subscription && s.subscription.endpoint;
+          const subObj = typeof s.subscription === 'string' ? JSON.parse(s.subscription) : s.subscription;
+          const ep = subObj && subObj.endpoint;
           return ph.startsWith('guest:') && (!ep || !registeredEndpoints.has(ep));
         });
       }
 
       const seenEndpoints = new Set();
-      const targetSubs = filteredSubs.filter(s => {
-        if (!s || !s.subscription || !s.subscription.endpoint) return false;
-        const ep = s.subscription.endpoint;
-        if (seenEndpoints.has(ep)) return false;
-        seenEndpoints.add(ep);
-        return true;
+      const targetSubs = [];
+      filteredSubs.forEach(s => {
+        let subObj = s && s.subscription;
+        if (typeof subObj === 'string') {
+          try { subObj = JSON.parse(subObj); } catch (e) { subObj = null; }
+        }
+        if (!subObj || !subObj.endpoint) return;
+        if (seenEndpoints.has(subObj.endpoint)) return;
+        seenEndpoints.add(subObj.endpoint);
+        targetSubs.push({ phone: s.phone, subscription: subObj });
       });
 
       let sent = 0;
