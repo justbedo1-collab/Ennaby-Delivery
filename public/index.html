@@ -714,30 +714,351 @@
       font-weight: 900 !important;
     }
 
+    /* =========================================================================
+       توسيط احترافي لأزرار الشروط والسياسات وتحسين UI/UX للهيدر والكروت
+       ========================================================================= */
+    button[onclick="openLegalTermsModal()"],
+    button[onclick="openCaptainLegalTermsModal()"] {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      width: fit-content !important;
+      min-width: 240px !important;
+      max-width: 92% !important;
+      margin: 12px auto 4px auto !important;
+      padding: 8px 18px !important;
+      height: auto !important;
+      min-height: 36px !important;
+      max-height: none !important;
+      background: linear-gradient(135deg, #FAF4F6, #F3E7EC) !important;
+      color: var(--primary) !important;
+      border: 1.5px solid #DEC8D0 !important;
+      border-radius: 50px !important;
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      text-decoration: none !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+      box-shadow: 0 2px 8px rgba(123, 63, 82, 0.08) !important;
+      transition: all 0.2s ease !important;
+    }
+    button[onclick="openLegalTermsModal()"]:active,
+    button[onclick="openCaptainLegalTermsModal()"]:active {
+      transform: scale(0.97) !important;
+      background: var(--accent) !important;
+    }
+
+    /* ضمان تمدد وتوسيط أزرار شروط المستويات والخريطة المجمعة داخل الكروت */
+    #courTab-profile button[onclick="openCaptainTiersModal()"],
+    #courierCombinedActiveMapBtnWrap button {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 6px auto 0 auto !important;
+      text-align: center !important;
+    }
+
+    /* منع انضغاط أو قص هيدر الكابتن وشريط تقدم المستوى العلوي في جميع الشاشات */
+    #courierDashboardContent > header.brand-header {
+      background: #FFFFFF;
+      border: 1.5px solid #E8DCE0;
+      border-radius: 16px;
+      padding: 10px 12px !important;
+      margin-bottom: 2px;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0 !important;
+    }
+    #courierHeaderTierProgressWrap {
+      flex-shrink: 0 !important;
+    }
+
+    /* ضبط شريط عنوان الخريطة وزر القط مكاني تلقائي في سطر واحد متناسق */
+    .inline-live-map-card > div:first-child {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: nowrap !important;
+      gap: 6px !important;
+    }
+    .inline-live-map-card > div:first-child > span {
+      white-space: nowrap !important;
+      font-size: 11px !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .inline-live-map-card > div:first-child > button {
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      height: 28px !important;
+      padding: 0 10px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+    }
+
+    /* تحسين شارة خطوتي الاستلام والتسليم (1 و 2) لتظهر في سطر واحد أنيق */
+    .route-party-badge {
+      font-size: 11.5px !important;
+      padding: 4px 10px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: calc(100% - 32px) !important;
+    }
+
     @media (max-width: 380px) {
       .route-fields-grid {
         grid-template-columns: 102px 1fr !important;
         gap: 6px !important;
       }
       .route-party-badge {
-        font-size: 11.5px !important;
-        white-space: normal !important;
+        font-size: 10.5px !important;
       }
       .fare-negotiation-header {
         flex-wrap: wrap !important;
       }
+      button[onclick="openLegalTermsModal()"],
+      button[onclick="openCaptainLegalTermsModal()"] {
+        font-size: 10.5px !important;
+        padding: 7px 14px !important;
+        min-width: 210px !important;
+      }
+    }
+  /* =========================================================================
+       تصميم بطاقات الاستلام (العنابي) والتسليم (الأخضر) داخل كروت الطلبات والرادار
+       ========================================================================= */
+    .active-mission-ribbon {
+      margin: -14px -14px 8px -14px !important;
+      padding: 7px 12px !important;
+      width: calc(100% + 28px) !important;
+      max-width: calc(100% + 28px) !important;
+      border-radius: 14px 14px 0 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    .ord-route-cards-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin: 4px 0;
+      width: 100%;
+    }
+    .ord-party-step-card {
+      border-radius: 12px;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      position: relative;
+      text-align: right;
+    }
+    .ord-party-step-card.step-pickup-card {
+      background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%);
+      border: 1.5px solid #E5D4DA;
+      border-right: 4.5px solid var(--primary);
+    }
+    .ord-party-step-card.step-dropoff-card {
+      background: linear-gradient(180deg, #FFFFFF 0%, #F5FBF6 100%);
+      border: 1.5px solid #C8E6C9;
+      border-right: 4.5px solid var(--success);
+    }
+    .ord-party-step-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: nowrap;
+      border-bottom: 1px dashed rgba(123, 63, 82, 0.16);
+      padding-bottom: 5px;
+    }
+    .ord-party-step-card.step-dropoff-card .ord-party-step-head {
+      border-bottom-color: rgba(46, 125, 50, 0.2);
+    }
+    .ord-party-step-title {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ord-party-step-card.step-dropoff-card .ord-party-step-title {
+      color: var(--success);
+    }
+    .ord-party-zone-pill {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 50px;
+      background: var(--accent);
+      color: var(--primary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .ord-party-step-card.step-dropoff-card .ord-party-zone-pill {
+      background: #E8F5E9;
+      color: var(--success);
+    }
+    .ord-party-addr-line {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .ord-party-phone-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid #EAE0E4;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+    .ord-party-step-card.step-dropoff-card .ord-party-phone-bar {
+      border-color: #D5ECD7;
+    }
+    .ord-meta-pills-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+      margin-top: 2px;
+    }
+    .ord-meta-pill {
+      background: #FFFFFF;
+      border: 1px solid #E5D8DC;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
   </style>
   <script>
-    // منسق تلقائي ذكي لكروت الطلبات يضمن تأطير بيانات المسار وتلوين (الراسل/المستلم) والمبلغ بالأخضر
+    // محرك تنسيق ذكي يحوّل بيانات الطلب في واجهة العميل والكابتن إلى بطاقات استلام وتسليم احترافية
     (function () {
+      function safeEsc(s) {
+        if (s === null || s === undefined) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      }
+
+      function buildStructuredRouteHtml(ord, isCustomerView) {
+        var isFetch = ord.tripType === 'fetch';
+        var pickupRoleTitle = isFetch
+          ? '🏪 أولاً: مكان الشراء / الاستلام (المحل)'
+          : '📦 أولاً: مكان الاستلام (بيانات الراسل)';
+        var dropoffRoleTitle = isFetch
+          ? (isCustomerView ? '🏠 ثانياً: مكان التسليم (عنوانك عند الباب)' : '🏠 ثانياً: مكان التسليم (عنوان العميل)')
+          : '🏁 ثانياً: مكان التسليم (بيانات المستلم)';
+
+        var pickupPhoneLabel = isFetch ? 'تليفون المكان/المحل:' : 'رقم تليفون الراسل:';
+        var dropoffPhoneLabel = isFetch
+          ? (isCustomerView ? 'رقمك للاستلام:' : 'رقم تليفون العميل:')
+          : 'رقم تليفون المستلم:';
+
+        var sPhone = ord.senderPhone || '';
+        var rPhone = ord.recipientPhone || '';
+        var cleanNotes = typeof cleanDisplayNotesText === 'function' ? cleanDisplayNotesText(ord.customerNotes || '') : (ord.customerNotes || '');
+        var notesTitle = isFetch ? '🛍️ المشتريات المطلوبة:' : '📝 ملحوظة المشوار:';
+
+        var pickupPhoneHtml = sPhone
+          ? '<div class="ord-party-phone-bar"><span><i class="fa-solid fa-phone-volume" style="color:var(--primary);"></i> ' + pickupPhoneLabel + '</span><strong dir="ltr" style="color:var(--primary); font-size:11.5px;">' + safeEsc(sPhone) + '</strong></div>'
+          : '';
+
+        var dropoffPhoneHtml = rPhone
+          ? '<div class="ord-party-phone-bar"><span><i class="fa-solid fa-mobile-screen" style="color:var(--success);"></i> ' + dropoffPhoneLabel + '</span><strong dir="ltr" style="color:var(--success); font-size:11.5px;">' + safeEsc(rPhone) + '</strong></div>'
+          : '';
+
+        var tripBadgeText = isFetch ? '🛍️ مشوار: هاتلي حاجة ليا' : '📦 مشوار: هبعت حاجة لحد';
+        var budgetPillHtml = (isFetch && ord.purchaseBudget)
+          ? '<span class="ord-meta-pill" style="background:#F3E5F5; border-color:#CE93D8; color:#6A1B9A;">💵 المشتريات: ' + safeEsc(ord.purchaseBudget) + '</span>'
+          : '';
+
+        var notesBoxHtml = cleanNotes
+          ? '<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:9px; padding:6px 9px; font-size:11px; color:#5D4037; font-weight:800; line-height:1.45;"><strong>' + notesTitle + '</strong> ' + safeEsc(cleanNotes) + '</div>'
+          : '';
+
+        var payRowHtml = isCustomerView
+          ? '<div class="ennaby-order-pay-row">' +
+              '<span>💰 الدفع عند: <strong>' + safeEsc(ord.payer || 'الراسل') + '</strong></span>' +
+              '<span>💵 المطلوب كاش: <strong style="font-size:13px;">' + safeEsc(ord.fare) + ' ج</strong>' + (ord.discountApplied > 0 ? ' <small style="color:var(--primary);">(بعد خصم ' + safeEsc(ord.discountApplied) + 'ج)</small>' : '') + '</span>' +
+            '</div>'
+          : '';
+
+        return '<div class="ord-route-cards-wrap">' +
+          '<div class="ord-meta-pills-strip">' +
+            '<span class="ord-meta-pill" style="background:#FAF4F6; color:var(--primary); border-color:#E5D4DA;">' + tripBadgeText + '</span>' +
+            (ord.packageType ? '<span class="ord-meta-pill">⚖️ ' + safeEsc(ord.packageType) + '</span>' : '') +
+            (!isCustomerView && ord.payer ? '<span class="ord-meta-pill" style="background:#E8F5E9; border-color:#C8E6C9; color:#1B5E20;">💰 الدفع: ' + safeEsc(ord.payer) + '</span>' : '') +
+            budgetPillHtml +
+          '</div>' +
+          '<div class="ord-party-step-card step-pickup-card">' +
+            '<div class="ord-party-step-head">' +
+              '<span class="ord-party-step-title">' + pickupRoleTitle + '</span>' +
+              '<span class="ord-party-zone-pill">📍 ' + safeEsc(ord.pickupZone) + '</span>' +
+            '</div>' +
+            '<div class="ord-party-addr-line">' + safeEsc(ord.pickupAddress) + '</div>' +
+            (isCustomerView ? pickupPhoneHtml : '') +
+          '</div>' +
+          '<div class="ord-party-step-card step-dropoff-card">' +
+            '<div class="ord-party-step-head">' +
+              '<span class="ord-party-step-title">' + dropoffRoleTitle + '</span>' +
+              '<span class="ord-party-zone-pill">🏁 ' + safeEsc(ord.dropoffZone) + '</span>' +
+            '</div>' +
+            '<div class="ord-party-addr-line">' + safeEsc(ord.dropoffAddress) + '</div>' +
+            (isCustomerView ? dropoffPhoneHtml : '') +
+          '</div>' +
+          notesBoxHtml +
+          payRowHtml +
+        '</div>';
+      }
+
       function polishOrderCardsInContainer(containerId) {
         var container = document.getElementById(containerId);
         if (!container) return;
+        var isCustomerContainer = (containerId === 'customerOrdersList');
         var cards = container.querySelectorAll('.card');
+
         cards.forEach(function (card) {
           if (card.dataset.layoutPolished === '1') return;
           card.dataset.layoutPolished = '1';
+
+          // استخراج رقم الطلب #ORD-xxxx للوصول لبياناته الكاملة من STATE.orders
+          var cardText = card.textContent || '';
+          var idMatch = cardText.match(/#ORD-[0-9]+/);
+          var ordId = idMatch ? idMatch[0] : null;
+          var ordObj = (ordId && window.STATE && Array.isArray(window.STATE.orders))
+            ? window.STATE.orders.find(function (x) { return x && x.id === ordId; })
+            : null;
+
+          // تحسين كارت الكابتن داخل طلب العميل ليبقى الاسم والشارة في سطر متوازن
+          var capCard = card.querySelector('.order-captain-card');
+          if (capCard) {
+            var firstRow = capCard.children[0];
+            if (firstRow) {
+              firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:nowrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:9px; padding:6px 9px;';
+              var nameStrong = firstRow.querySelector('strong');
+              if (nameStrong) {
+                nameStrong.style.cssText = 'font-size:12px; color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+              }
+            }
+          }
 
           Array.from(card.children).forEach(function (child) {
             if (!child || child.tagName !== 'DIV') return;
@@ -748,21 +1069,22 @@
               child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:10px; padding:7px 11px; font-size:11.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.45;';
             }
 
-            // تأطير وتنسيق تفاصيل خط السير والدفع (النوع / من / إلى / الدفع)
+            // تحويل صندوق المسار التقليدي إلى بطاقتي استلام وتسليم احترافيتين باللونين العنابي والأخضر
             if (txt.indexOf('من:') !== -1 && txt.indexOf('إلى:') !== -1 && !child.classList.contains('radar-popup-route-box') && !child.classList.contains('ennaby-order-details-box')) {
               child.classList.add('ennaby-order-details-box');
-              Array.from(child.children).forEach(function (lineEl) {
-                var lineTxt = (lineEl.textContent || '').trim();
-                if (lineTxt.indexOf('الدفع:') !== -1 || lineTxt.indexOf('كاش:') !== -1) {
-                  lineEl.classList.add('ennaby-order-pay-row');
-                  lineEl.querySelectorAll('strong, b, span').forEach(function (el) {
-                    el.style.color = 'var(--success)';
-                    el.style.fontWeight = '900';
-                  });
-                } else {
-                  lineEl.classList.add('ennaby-order-detail-row');
-                }
-              });
+              if (ordObj) {
+                child.style.cssText = 'background:transparent !important; border:none !important; padding:0 !important;';
+                child.innerHTML = buildStructuredRouteHtml(ordObj, isCustomerContainer);
+              } else {
+                Array.from(child.children).forEach(function (lineEl) {
+                  var lineTxt = (lineEl.textContent || '').trim();
+                  if (lineTxt.indexOf('الدفع:') !== -1 || lineTxt.indexOf('كاش:') !== -1) {
+                    lineEl.classList.add('ennaby-order-pay-row');
+                  } else {
+                    lineEl.classList.add('ennaby-order-detail-row');
+                  }
+                });
+              }
             }
           });
         });
@@ -2111,8 +2433,15 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'ENNABY_PUSH_RECEIVED') {
-          triggerDeviceAlert('courier_new_order');
-          showToast(`🔔 ${event.data.title || 'إشعار جديد'}: ${event.data.body || ''}`, 'ok');
+          // تجاهل الإشعارات الخاصة بلوحة الإدارة حتى لا تظهر للكابتن أو العميل على نفس المتصفح
+          if (event.data.url && String(event.data.url).includes('/admin')) return;
+          const titleStr = String(event.data.title || 'إشعار جديد');
+          const bodyStr = String(event.data.body || '');
+          // إذا كان الإشعار يخص طلب رادار جديد فستتولى نافذة الرادار المنبثقة تشغيل التنبيه الصوتي للكابتن
+          if (!titleStr.includes('ع الرادار') && !titleStr.includes('على الرادار')) {
+            triggerDeviceAlert('status_update');
+            showToast(`🔔 ${titleStr}: ${bodyStr}`, 'ok');
+          }
           syncFromCloudServer(true);
         }
       });
@@ -2191,8 +2520,12 @@
       syncCourierScreenWakeLock();
     }
 
+    // النطق الصوتي مخصص حصرياً لرادار الكباتن المعتمدين عند نزول طلب جديد فقط
     function speakNewRadarOrderAlert() {
       try {
+        if (!STATE || STATE.currentRole !== 'courier') return;
+        const courier = typeof getActiveCourier === 'function' ? getActiveCourier() : null;
+        if (!courier || courier.status !== 'معتمد' || !courier.isAvailable) return;
         if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
         window.speechSynthesis.cancel();
         const utter = new SpeechSynthesisUtterance('طلب جديد على الرادار');
@@ -2235,9 +2568,11 @@
     });
 
     function triggerDeviceAlert(alertType) {
+      const isRadarVoice = (alertType === 'courier_radar_voice');
+      const isStrongAlert = (isRadarVoice || alertType === 'courier_new_order');
       try {
         if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-          if (alertType === 'courier_new_order') navigator.vibrate([240, 100, 240, 100, 320]);
+          if (isStrongAlert) navigator.vibrate([240, 100, 240, 100, 320]);
           else if (alertType === 'warning') navigator.vibrate([300, 80, 150]);
           else navigator.vibrate([180, 90, 220]);
         }
@@ -2248,10 +2583,10 @@
           if (!ennabyAudioCtx) ennabyAudioCtx = new AudioContextClass();
           if (ennabyAudioCtx.state === 'suspended') ennabyAudioCtx.resume();
           const now = ennabyAudioCtx.currentTime;
-          const notes = alertType === 'courier_new_order' ? [587.33, 880.00, 1174.66] : [523.25, 659.25, 783.99];
+          const notes = isStrongAlert ? [587.33, 880.00, 1174.66] : [523.25, 659.25, 783.99];
           notes.forEach((freq, idx) => {
             const osc = ennabyAudioCtx.createOscillator(); const gain = ennabyAudioCtx.createGain();
-            osc.type = alertType === 'courier_new_order' ? 'triangle' : 'sine';
+            osc.type = isStrongAlert ? 'triangle' : 'sine';
             osc.frequency.setValueAtTime(freq, now + idx * 0.13);
             gain.gain.setValueAtTime(0.001, now + idx * 0.13);
             gain.gain.exponentialRampToValueAtTime(0.25, now + idx * 0.13 + 0.02);
@@ -2261,7 +2596,7 @@
           });
         }
       } catch (e) {}
-      if (alertType === 'courier_new_order') {
+      if (isRadarVoice) {
         setTimeout(() => speakNewRadarOrderAlert(), 260);
       }
     }
@@ -3597,7 +3932,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       // إخفاء شريط التقدم العلوي في تبويب «حسابي» اكتفاءً بكارت التقدم التفصيلي داخله، مع إبقائه في الرئيسية وطلباتي والدعم
       const headerTierWrap = document.getElementById('courierHeaderTierProgressWrap');
       if (headerTierWrap) {
-        headerTierWrap.style.display = (validTab === 'profile') ? 'none' : 'block';
+        headerTierWrap.style.display = (validTab === 'home') ? 'block' : 'none';
       }
       const screen = document.getElementById('phoneScreen'); if (screen) screen.scrollTop = 0;
     }
@@ -4985,22 +5320,32 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
       const routeMatchBannerHtml = ''; // تم تفريغ الشريط بناءً على طلبك لتقليص الحجم
 
+      const popupPickupTitle = isFetch ? '🏪 الاستلام (المحل):' : '📦 الاستلام (الراسل):';
+      const popupDropoffTitle = isFetch ? '🏠 التسليم (العميل):' : '🏁 التسليم (المستلم):';
+
       detailsBox.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-          <strong style="font-size:12px; color:var(--primary);">${escapeHtml(order.id)}</strong>
+          <strong style="font-size:12.5px; color:var(--primary);">${escapeHtml(order.id)}</strong>
           <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
             ${order.purchaseBudget ? `<span class="badge badge-delivering" style="font-size:9.5px; padding:2px 7px;">💵 ${escapeHtml(order.purchaseBudget)}</span>` : ''}
             ${hasCustProposed ? `<span class="badge badge-awaiting" style="font-size:9.5px; padding:2px 7px;">💬 مقترح (${order.customerProposedFare}ج)</span>` : ''}
             ${order.surgePercent > 0 ? `<span class="badge badge-pending" style="font-size:9.5px; padding:2px 7px;">⚡ +${order.surgePercent}%</span>` : ''}
-            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}" style="font-size:9.5px; padding:2px 7px;">${isFetch ? '🛍️ هاتلي' : '📦 طرد'}</span>
+            <span class="badge ${isFetch ? 'badge-delivering' : 'badge-accepted'}" style="font-size:9.5px; padding:2px 7px;">${isFetch ? '🛍️ هاتلي حاجة' : '📦 توصيل طرد'}</span>
           </div>
         </div>
         
-        <div class="radar-popup-route-box" style="padding:5px 8px; font-size:11px; line-height:1.4; gap:3px; margin-top:4px;">
-          <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📦 <strong style="color:var(--primary);">من:</strong> ${escapeHtml(order.pickupZone)} - ${escapeHtml(order.pickupAddress)}</div>
-          <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top:1px dashed #E2D5DA; padding-top:3px;">🏁 <strong style="color:var(--success);">إلى:</strong> ${escapeHtml(order.dropoffZone)} - ${escapeHtml(order.dropoffAddress)}</div>
-          <div style="border-top:1px dashed #E2D5DA; padding-top:3px; font-size:10px; color:var(--text-muted);">⚖️ ${escapeHtml(order.packageType)} | 💰 الدفع: ${escapeHtml(order.payer)}</div>
-          ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:5px; padding:3px 6px; color:#5D4037; font-weight:700; font-size:10px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
+        <div style="display:flex; flex-direction:column; gap:5px; margin-top:4px;">
+          <div style="background:#FDF8FA; border:1px solid #E5D4DA; border-right:3.5px solid var(--primary); border-radius:8px; padding:5px 8px; font-size:11px; line-height:1.4;">
+            <strong style="color:var(--primary);">${popupPickupTitle}</strong> <strong>(${escapeHtml(order.pickupZone)})</strong> — ${escapeHtml(order.pickupAddress)}
+          </div>
+          <div style="background:#F5FBF6; border:1px solid #C8E6C9; border-right:3.5px solid var(--success); border-radius:8px; padding:5px 8px; font-size:11px; line-height:1.4;">
+            <strong style="color:var(--success);">${popupDropoffTitle}</strong> <strong>(${escapeHtml(order.dropoffZone)})</strong> — ${escapeHtml(order.dropoffAddress)}
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:5px; flex-wrap:wrap; font-size:10px; font-weight:800;">
+            <span style="background:#FAF7F4; border:1px solid #E2D5DA; border-radius:6px; padding:2px 7px; color:var(--text-main);">⚖️ ${escapeHtml(order.packageType)}</span>
+            <span style="background:#E8F5E9; border:1px solid #C8E6C9; border-radius:6px; padding:2px 7px; color:#1B5E20;">💰 الدفع عند: ${escapeHtml(order.payer)}</span>
+          </div>
+          ${cleanNotes ? `<div style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:6px; padding:4px 7px; color:#5D4037; font-weight:800; font-size:10.5px;"><strong>${notesHeadingLabel}</strong> ${escapeHtml(cleanNotes)}</div>` : ''}
         </div>
 
         <div class="financial-summary-compact">
@@ -5033,8 +5378,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
       if (timerBadge) timerBadge.innerText = '⏳ 15 ثانية';
 
+      document.getElementById('toast')?.classList.remove('show');
       modal.classList.add('show');
-      triggerDeviceAlert('courier_new_order');
+      triggerDeviceAlert('courier_radar_voice');
 
       if (courierPopupIntervalId) clearInterval(courierPopupIntervalId);
       courierPopupEndTime = Date.now() + COURIER_POPUP_DURATION_MS;
@@ -5355,29 +5701,36 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const tierCls = getCaptainTierBadgeClass(offerPayload.tier);
 
       if (ordBadge) ordBadge.innerText = `🛵 طلب ${ord.id}`;
-      if (acceptBtnTxt) acceptBtnTxt.innerText = `قبول العرض (${offeredAmt} ج) ✅`;
+      if (acceptBtnTxt) acceptBtnTxt.innerText = `قبول العرض (${offeredAmt} ج)`;
 
       detailsBox.innerHTML = `
-        <div style="background:#F7F0F5; border:1.5px solid #C8A6BE; border-radius:13px; padding:12px; display:flex; flex-direction:column; gap:8px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-            <strong style="font-size:14px; color:#5A2846;"><i class="fa-solid fa-motorcycle"></i> الكابتن: ${escapeHtml(offerPayload.captainName)}</strong>
-            <span class="badge ${tierCls}" style="font-size:10.5px;">${escapeHtml(offerPayload.tierBadgeText)}</span>
+        <div style="background:#F7F0F5; border:1.5px solid #C8A6BE; border-radius:13px; padding:10px 11px; display:flex; flex-direction:column; gap:7px;">
+          <div style="background:#FFFFFF; border:1px solid #E2D2D8; border-radius:10px; padding:7px 9px; display:flex; flex-direction:column; gap:5px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:nowrap;">
+              <strong style="font-size:13px; color:#5A2846; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <i class="fa-solid fa-user-astronaut"></i> ${escapeHtml(offerPayload.captainName)}
+              </strong>
+              <span class="badge ${tierCls}" style="font-size:10px; flex-shrink:0;">${escapeHtml(offerPayload.tierBadgeText)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:var(--text-muted); border-top:1px dashed #EFE3E7; padding-top:4px;">
+              <span>🛵 المركبة: <strong style="color:var(--primary);">${escapeHtml(offerPayload.vehicleType || 'موتوسيكل')}</strong></span>
+              <span>📍 ${escapeHtml(ord.pickupZone)} ⬅️ ${escapeHtml(ord.dropoffZone)}</span>
+            </div>
           </div>
-          <div style="font-size:11.5px; color:var(--text-muted); font-weight:700;">
-            📍 المشوار: من (${escapeHtml(ord.pickupZone)}) إلى (${escapeHtml(ord.dropoffZone)}) • المركبة: <strong>${escapeHtml(offerPayload.vehicleType || 'موتوسيكل')}</strong>
-          </div>
-          <div style="background:#FFFFFF; border:1.5px solid #C8A6BE; border-radius:11px; padding:10px; text-align:center;">
+
+          <div style="background:#FFFFFF; border:1.5px solid #C8A6BE; border-radius:11px; padding:9px 10px; text-align:center;">
             <span style="font-size:11px; color:#5A2846; font-weight:800; display:block;">💵 السعر المقترح من الكابتن لتوصيل المشوار:</span>
-            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:3px;">
               <strong style="font-size:22px; font-weight:900; color:#5A2846;">${offeredAmt} جنيه</strong>
               <span class="${pctMeta.cls}">${pctMeta.text}</span>
             </div>
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:3px;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-top:2px;">
               (بدلاً من ${ord.originalFare} ج)${ord.discountApplied > 0 ? ` — هتدفع كاش <strong style="color:var(--success);">${cashAfterDisc} ج</strong> بعد خصمك 🎁` : ''}
             </div>
           </div>
-          <div style="font-size:10.5px; color:#5A2846; font-weight:800; text-align:center;">
-            💡 لو انتهت الـ 15 ثانية، هتلاقي العرض موجود في صفحة «طلباتي» تقدر تقبله أو ترفضه في أي وقت!
+
+          <div style="font-size:10px; color:#5A2846; font-weight:800; text-align:center; line-height:1.4;">
+            💡 لو انتهت الـ 15 ثانية، هتلاقي العرض محفوظ في صفحة «طلباتي» تقدر تقبله أو ترفضه في أي وقت!
           </div>
         </div>
       `;
@@ -5388,6 +5741,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
       if (timerBadge) timerBadge.innerText = '⏳ 15 ثانية';
 
+      document.getElementById('toast')?.classList.remove('show');
       modal.classList.add('show');
       triggerDeviceAlert('courier_new_order');
 

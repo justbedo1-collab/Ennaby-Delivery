@@ -1706,9 +1706,13 @@ async function buildClientState(req, forceRefresh = false) {
             clientPhone: '',
             senderPhone: '',
             recipientPhone: '',
+            adminResolutionNote: null,
+            disputeReason: null,
             captainOffers: myOnlyOffers
           } : {
             ...o,
+            adminResolutionNote: null,
+            disputeReason: null,
             captainOffers: myOnlyOffers
           });
         }
@@ -2125,6 +2129,27 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
       keysToUpsert.add(`guest:${guestId}`);
     } else if (cleanClientId) {
       await supabase.from('push_subscriptions').delete().eq('phone', `guest:${cleanClientId}`);
+    }
+
+    // عزل تام للإشعارات: حذف أي ربط قديم لنفس الجهاز (endpoint) يخص حساباً آخر أو جلسة أدمن سابقة
+    const { data: existingSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+    if (Array.isArray(existingSubs) && existingSubs.length > 0) {
+      const hasValidAdminSession = Boolean(getAuthenticatedAdminFromCookie(req, rawState.rawAdminsRows));
+      const stalePhonesToDelete = [];
+      existingSubs.forEach(row => {
+        if (!row || !row.phone) return;
+        let subObj = row.subscription;
+        if (typeof subObj === 'string') {
+          try { subObj = JSON.parse(subObj); } catch (e) { subObj = null; }
+        }
+        if (!subObj || subObj.endpoint !== subscription.endpoint) return;
+        if (keysToUpsert.has(row.phone)) return;
+        if (String(row.phone).startsWith('admin:') && hasValidAdminSession) return;
+        stalePhonesToDelete.push(row.phone);
+      });
+      if (stalePhonesToDelete.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('phone', stalePhonesToDelete);
+      }
     }
 
     const upsertRows = Array.from(keysToUpsert).map(k => ({
@@ -3964,13 +3989,9 @@ app.post('/api/captain/availability', authenticateCaptain, asyncHandler(async (r
   }
   const isAvail = Boolean(req.body.isAvailable);
   await supabase.from('captains').update({ is_available: isAvail }).eq('phone', req.user.phone);
-  notifyAdminsPush('captain', {
-    title: '📡 تغيير حالة استعداد كابتن',
-    body: `الكابتن ${req.user.full_name} (${req.user.phone}) أصبح الآن: ${isAvail ? 'متاح على الرادار 🟢' : 'في استراحة 🔴'}`
-  });
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, message: 'تم تحديث حالة الاستعداد 📡✅', state });
+  res.json({ success: true, message: isAvail ? 'أصبحت متاحاً على الرادار الآن 📡🟢' : 'أصبحت في وضع استراحة الآن ☕🔴', state });
 }));
 
 app.post('/api/captain/notices/:noticeId/dismiss', authenticateCaptain, asyncHandler(async (req, res) => {
