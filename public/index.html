@@ -3062,16 +3062,24 @@ function applyCloudStateSnapshot(cloudState) {
             showToast(`🔔 الكابتن ${o.assignedCourierName || 'العنابي'} وصل ومستنيك تحت الباب في طلبك (${o.id})! 🛵🏃‍♂️`, 'ok');
           }
 
-          // تنبيه فوري للكابتن عند وصول سعر مقترح مقابل من العميل أو رفع السعر ع الرادار
-          if (STATE.currentRole === 'courier' && activeCourier && o.status === 'في انتظار كابتن' && prevOrd) {
-            if (Number(o.originalFare) !== Number(prevOrd.originalFare || 0)) {
-              if (Number(o.originalFare) > Number(prevOrd.originalFare || 0)) {
-                courierSeenPopupOrderIds.delete(o.id);
-              }
+          // تحديث المسودات وإعادة إظهار النافذة المنبثقة لجميع الكباتن المتاحين فور تعديل العميل للسعر (بالزيادة أو النقصان)
+          if (o.status === 'في انتظار كابتن' && prevOrd && roundMoney(o.originalFare) !== roundMoney(prevOrd.originalFare || 0)) {
+            customerOrderFareDrafts[o.id] = roundMoney(o.originalFare);
+            courierOrderOfferDrafts[o.id] = roundMoney(Number(o.originalFare) + 5);
+            courierSeenPopupOrderIds.delete(o.id);
+            if (typeof courierSeenOrderFareMap !== 'undefined') {
+              courierSeenOrderFareMap.delete(o.id);
+            }
+            if (STATE.currentRole === 'courier' && activeCourier && activeCourier.status === 'معتمد' && activeCourier.isAvailable) {
               if (typeof currentPopupOrderId !== 'undefined' && currentPopupOrderId === o.id && typeof openCourierNewOrderPopup === 'function') {
                 openCourierNewOrderPopup(o);
+              } else {
+                courierPopupOrderQueue = [o.id, ...courierPopupOrderQueue.filter(id => id !== o.id)];
               }
             }
+          }
+
+          if (STATE.currentRole === 'courier' && activeCourier && o.status === 'في انتظار كابتن' && prevOrd) {
             const oldMyOff = (prevOrd.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
             const newMyOff = (o.captainOffers || []).find(x => normalizePhone(x.captainPhone) === normalizePhone(activeCourier.phone));
             if (newMyOff && newMyOff.status === 'countered' && (!oldMyOff || oldMyOff.status !== 'countered' || Number(oldMyOff.customerCounterFare) !== Number(newMyOff.customerCounterFare))) {
@@ -5663,6 +5671,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
     }
 
+    // خريطة تحفظ آخر سعر شاهده الكابتن لكل طلب لإعادة إظهار النافذة المنبثقة فوراً عند زيادة أو نقصان السعر
+    const courierSeenOrderFareMap = new Map();
+
     function evaluateCourierNewOrderPopup(oldOrderMap = {}) {
       const waitingOrders = (STATE.orders || []).filter(o => o && o.status === 'في انتظار كابتن');
 
@@ -5672,9 +5683,23 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
         waitingOrders.forEach(o => {
           if (now - (Number(o.createdAt) || 0) > 30000) {
             courierSeenPopupOrderIds.add(o.id);
+            courierSeenOrderFareMap.set(o.id, roundMoney(o.originalFare || o.fare));
           }
         });
       }
+
+      // إذا قام العميل بتغيير سعر أي طلب منتظر (بالزيادة أو النقصان) نعيد تفعيله في النافذة المنبثقة لكل الكباتن
+      waitingOrders.forEach(o => {
+        const currentFare = roundMoney(o.originalFare || o.fare);
+        const lastSeenFare = courierSeenOrderFareMap.get(o.id);
+        if (lastSeenFare !== undefined && lastSeenFare !== currentFare) {
+          courierSeenPopupOrderIds.delete(o.id);
+          courierSeenOrderFareMap.set(o.id, currentFare);
+          if (currentPopupOrderId === o.id && STATE.currentRole === 'courier') {
+            openCourierNewOrderPopup(o);
+          }
+        }
+      });
 
       const courier = getActiveCourier();
       if (!courier || courier.status !== 'معتمد' || !courier.isAvailable || STATE.currentRole !== 'courier') return;
@@ -5700,6 +5725,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       });
 
       candidates.forEach(c => {
+        courierSeenOrderFareMap.set(c.id, roundMoney(c.originalFare || c.fare));
         if (!courierPopupOrderQueue.includes(c.id) && c.id !== currentPopupOrderId) {
           courierPopupOrderQueue.push(c.id);
         }
@@ -6081,7 +6107,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
     }
 
-    // دوال التحكم السريع بالسعر للعميل داخل صفحة «طلباتي» (+5 / -5 / كتابة يدوية ونسبة الزيادة %)
+    // دوال التحكم السريع بالسعر للعميل داخل صفحة «طلباتي» (+5 / -5 / زر الزيادة الفورية / كتابة يدوية)
     function stepCustomerCardOrderFare(orderId, delta) {
       const ord = STATE.orders.find(o => o.id === orderId);
       if (!ord) return;
@@ -6117,21 +6143,49 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       }
     }
 
-    function submitCustomerCardOrderFare(orderId, targetCaptainPhone = '') {
+    function submitCustomerCardOrderFare(orderId, targetCaptainPhone = '', explicitNewFare = null) {
       const ord = STATE.orders.find(o => o.id === orderId);
       if (!ord || ord.status !== 'في انتظار كابتن') return;
       const baseRef = roundMoney(ord.routeDefaultFare || ord.originalFare || 40);
       const minAllowed = Math.max(15, Math.floor(baseRef * 0.7));
       const inp = document.getElementById(`custCardFareInput-${orderId}`);
-      const newFare = roundMoney(inp ? inp.value : (customerOrderFareDrafts[orderId] || ord.originalFare));
+
+      let resolvedCapPhone = targetCaptainPhone;
+      let forcedFare = explicitNewFare;
+
+      // إذا تم تمرير السعر الجديد كمعامل ثانٍ مباشرة (مثل 45) بدلاً من رقم هاتف
+      if (resolvedCapPhone !== '' && resolvedCapPhone !== null && resolvedCapPhone !== undefined) {
+        const strArg = normalizeDigits(String(resolvedCapPhone)).trim();
+        if (!/^01[0125][0-9]{8}$/.test(strArg) && Number.isFinite(Number(strArg)) && Number(strArg) > 0) {
+          forcedFare = roundMoney(strArg);
+          resolvedCapPhone = '';
+        }
+      }
+
+      // إذا ضغط العميل على زر «زود لـ X ج فوراً 🚀» نلتقط الرقم المقترح من الزر مباشرة
+      if ((forcedFare === null || forcedFare === undefined) && lastInteractedElement) {
+        const btnText = normalizeDigits(lastInteractedElement.textContent || '');
+        const bumpMatch = btnText.match(/زود\s*لـ\s*([0-9]+(?:\.[0-9]+)?)/);
+        if (bumpMatch && bumpMatch[1]) {
+          forcedFare = roundMoney(bumpMatch[1]);
+        }
+      }
+
+      const newFare = (forcedFare !== null && forcedFare !== undefined && roundMoney(forcedFare) > 0)
+        ? roundMoney(forcedFare)
+        : roundMoney(inp ? inp.value : (customerOrderFareDrafts[orderId] || ord.originalFare));
 
       if (!Number.isFinite(newFare) || newFare < minAllowed) {
         showToast(`أقل سعر عادل للمشوار ده هو (${minAllowed} جنيه) يا باشا 💵⚠️`, 'warn');
         return;
       }
 
+      // تحديث فوري للخانة والمسودة على الشاشة قبل انتظار السيرفر
       customerOrderFareDrafts[orderId] = newFare;
-      const pendingOfferCap = targetCaptainPhone || ((Array.isArray(ord.captainOffers) && ord.captainOffers.find(x => x && x.status === 'pending'))?.captainPhone || '');
+      if (inp) inp.value = newFare;
+      updateCustomerCardFareRowUI(orderId, newFare, baseRef);
+
+      const pendingOfferCap = resolvedCapPhone || ((Array.isArray(ord.captainOffers) && ord.captainOffers.find(x => x && x.status === 'pending'))?.captainPhone || '');
 
       withActionLock(async () => {
         const { ok, data } = await apiRequest(`/api/orders/${encodeURIComponent(orderId)}/negotiate`, 'POST', {
@@ -6140,6 +6194,10 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           newFare
         });
         if (ok && data && data.success) {
+          customerOrderFareDrafts[orderId] = newFare;
+          const updatedInput = document.getElementById(`custCardFareInput-${orderId}`);
+          if (updatedInput) updatedInput.value = newFare;
+          renderAllData();
           showToast(data.message || `تم تحديث أجرة المشوار إلى (${newFare} ج) وإبلاغ الكباتن فوراً! 🚀`, 'ok');
         } else {
           showToast((data && data.message) || 'تعذر تحديث السعر ⚠️', 'warn');
@@ -6147,7 +6205,15 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       });
     }
 
-    function customerUpdateWaitingOrderFare(orderId) {
+    function customerUpdateWaitingOrderFare(orderId, explicitNewFare = null) {
+      if (explicitNewFare !== null && explicitNewFare !== undefined && roundMoney(explicitNewFare) > 0) {
+        const cleanFare = roundMoney(explicitNewFare);
+        customerOrderFareDrafts[orderId] = cleanFare;
+        const inp = document.getElementById(`custCardFareInput-${orderId}`);
+        if (inp) inp.value = cleanFare;
+        submitCustomerCardOrderFare(orderId, '', cleanFare);
+        return;
+      }
       submitCustomerCardOrderFare(orderId);
     }
 
