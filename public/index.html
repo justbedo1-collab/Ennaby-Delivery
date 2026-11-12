@@ -1080,6 +1080,8 @@
   </style>
   <script>
     (function () {
+      var isPolishingContainer = {};
+
       function safeEsc(s) {
         if (s === null || s === undefined) return '';
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
@@ -1095,12 +1097,12 @@
         return window.STATE || null;
       }
 
-      // بناء ملخص مبسط ومدمج للطلب في صندوق واحد بدون كروت الراسل والمستلم الضخمة
+      // بناء ملخص الطلب بحيث يبدأ مباشرة بـ (الاستلام) و(التسليم) بلون مميز ومختلف ثم يليه العنوان المطلوب
       function buildSimpleRouteSummaryHtml(ord, isCustomerView) {
         var isFetch = ord.tripType === 'fetch';
         var tripLabel = isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد';
-        var fromLabel = isFetch ? '🏪 من (الشراء):' : '📦 من (الاستلام):';
-        var toLabel = isFetch ? '🏠 إلى (التسليم):' : '🏁 إلى (التسليم):';
+        var pickupIcon = isFetch ? '🏪' : '📦';
+        var dropoffIcon = isFetch ? '🏠' : '🏁';
 
         var sPhone = ord.senderPhone || '';
         var rPhone = ord.recipientPhone || '';
@@ -1139,11 +1141,11 @@
             (isCustomerView && ord.packageType ? '<span>⚖️ ' + safeEsc(ord.packageType) + '</span>' : '') +
           '</div>' +
           '<div class="ennaby-simple-row">' +
-            '<span><strong style="color:var(--primary);">' + fromLabel + '</strong> <strong>' + safeEsc(ord.pickupZone) + '</strong> - ' + safeEsc(ord.pickupAddress) + '</span>' +
+            '<span style="line-height:1.5;"><strong style="color:#7B3F52; background:#F5EAEF; border:1px solid #DFC5CE; padding:1px 7px; border-radius:6px; margin-left:5px; display:inline-block;">' + pickupIcon + ' الاستلام:</strong> <strong>' + safeEsc(ord.pickupZone) + '</strong> - ' + safeEsc(ord.pickupAddress) + '</span>' +
             sPhoneBadge +
           '</div>' +
           '<div class="ennaby-simple-row">' +
-            '<span><strong style="color:var(--success);">' + toLabel + '</strong> <strong>' + safeEsc(ord.dropoffZone) + '</strong> - ' + safeEsc(ord.dropoffAddress) + '</span>' +
+            '<span style="line-height:1.5;"><strong style="color:#1B5E20; background:#E8F5E9; border:1px solid #A5D6A7; padding:1px 7px; border-radius:6px; margin-left:5px; display:inline-block;">' + dropoffIcon + ' التسليم:</strong> <strong>' + safeEsc(ord.dropoffZone) + '</strong> - ' + safeEsc(ord.dropoffAddress) + '</span>' +
             rPhoneBadge +
           '</div>' +
           notesRowHtml +
@@ -1152,70 +1154,84 @@
       }
 
       function polishOrderCardsV3(containerId) {
+        if (isPolishingContainer[containerId]) return;
         var container = document.getElementById(containerId);
         if (!container) return;
-        var isCustomerContainer = (containerId === 'customerOrdersList');
-        var appState = getAppState();
-        var cards = container.querySelectorAll('.card');
 
-        cards.forEach(function (card) {
-          var cardText = card.textContent || '';
-          var idMatch = cardText.match(/#ORD-[0-9]+/);
-          var ordId = idMatch ? idMatch[0] : null;
-          var ordObj = (ordId && appState && Array.isArray(appState.orders))
-            ? appState.orders.find(function (x) { return x && x.id === ordId; })
-            : null;
+        isPolishingContainer[containerId] = true;
+        try {
+          var isCustomerContainer = (containerId === 'customerOrdersList');
+          var appState = getAppState();
+          var cards = container.querySelectorAll('.card');
 
-          // 1. تنسيق كارت الكابتن وزر مشاركة تفاصيل الأوردر للمستلم عبر الواتساب
-          var capCard = card.querySelector('.order-captain-card');
-          if (capCard) {
-            var firstRow = capCard.children[0];
-            if (firstRow) {
-              firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:9px; padding:6px 9px;';
-              var nameStrong = firstRow.querySelector('strong');
-              if (nameStrong) {
-                nameStrong.style.cssText = 'font-size:12px; font-weight:900; color:var(--primary); line-height:1.35; white-space:normal; overflow:visible;';
+          cards.forEach(function (card) {
+            if (card.dataset.cardPolishedV4 === '1') return;
+            card.dataset.cardPolishedV4 = '1';
+
+            var cardText = card.textContent || '';
+            var idMatch = cardText.match(/#ORD-[0-9]+/);
+            var ordId = idMatch ? idMatch[0] : null;
+            var ordObj = (ordId && appState && Array.isArray(appState.orders))
+              ? appState.orders.find(function (x) { return x && x.id === ordId; })
+              : null;
+
+            // 1. تنسيق كارت الكابتن وزر مشاركة تفاصيل الأوردر للمستلم مرة واحدة فقط لمنع أي حلقة تكرار
+            var capCard = card.querySelector('.order-captain-card');
+            if (capCard && capCard.dataset.capPolished !== '1') {
+              capCard.dataset.capPolished = '1';
+              var firstRow = capCard.children[0];
+              if (firstRow) {
+                firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:9px; padding:6px 9px;';
+                var nameStrong = firstRow.querySelector('strong');
+                if (nameStrong) {
+                  nameStrong.style.cssText = 'font-size:12px; font-weight:900; color:var(--primary); line-height:1.35; white-space:normal; overflow:visible;';
+                }
               }
+              var shareLinks = capCard.querySelectorAll('a, button');
+              shareLinks.forEach(function (btnEl) {
+                if (btnEl.dataset.waPolished === '1') return;
+                var bTxt = (btnEl.textContent || '').trim();
+                if (bTxt.indexOf('بلّغ المستلم') !== -1 || bTxt.indexOf('مشاركة بيانات الكابتن') !== -1) {
+                  btnEl.dataset.waPolished = '1';
+                  btnEl.className = 'ennaby-wa-share-recipient-btn';
+                  btnEl.innerHTML = '<i class="fa-brands fa-whatsapp"></i> <span>مشاركة بيانات الكابتن والطلب مع المستلم</span>';
+                }
+              });
             }
-            var shareLinks = capCard.querySelectorAll('a, button');
-            shareLinks.forEach(function (btnEl) {
-              var bTxt = (btnEl.textContent || '').trim();
-              if (bTxt.indexOf('بلّغ المستلم') !== -1 || bTxt.indexOf('مشاركة بيانات الكابتن') !== -1) {
-                btnEl.className = 'ennaby-wa-share-recipient-btn';
-                btnEl.innerHTML = '<i class="fa-brands fa-whatsapp"></i> <span>مشاركة بيانات الكابتن والطلب مع المستلم</span>';
+
+            // 2. تنسيق شريط الحالة وتبسيط تفاصيل الطلب إلى صندوق الاستلام والتسليم المدمج
+            Array.from(card.children).forEach(function (child) {
+              if (!child || child.tagName !== 'DIV') return;
+              var txt = (child.textContent || '').trim();
+
+              if (txt.indexOf('قيم الكابتن وأكد المشوار') !== -1 || txt.indexOf('قيّم الكابتن وأكد المشوار') !== -1) {
+                child.style.display = 'none';
+                return;
+              }
+
+              if (txt.indexOf('إيه الأخبار دلوقتي') !== -1 && !child.classList.contains('order-captain-card')) {
+                child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:9px; padding:6px 10px; font-size:11.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.4;';
+              }
+
+              var isRouteBox = (
+                child.classList.contains('ennaby-order-details-box') ||
+                (txt.indexOf('من:') !== -1 && txt.indexOf('إلى:') !== -1) ||
+                (txt.indexOf('من (') !== -1 && txt.indexOf('إلى (') !== -1) ||
+                (txt.indexOf('الاستلام:') !== -1 && txt.indexOf('التسليم:') !== -1)
+              );
+
+              if (isRouteBox && !child.classList.contains('radar-popup-route-box') && child.dataset.routeUpgradedV3 !== '1') {
+                if (ordObj) {
+                  child.dataset.routeUpgradedV3 = '1';
+                  child.style.cssText = 'background:transparent !important; border:none !important; padding:0 !important;';
+                  child.innerHTML = buildSimpleRouteSummaryHtml(ordObj, isCustomerContainer);
+                }
               }
             });
-          }
-
-          // 2. إخفاء ملحوظة «قيم الكابتن وأكد المشوار» وتبسيط تفاصيل الطلب إلى صندوق مدمج أنيق
-          Array.from(card.children).forEach(function (child) {
-            if (!child || child.tagName !== 'DIV') return;
-            var txt = (child.textContent || '').trim();
-
-            if (txt.indexOf('قيم الكابتن وأكد المشوار') !== -1 || txt.indexOf('قيّم الكابتن وأكد المشوار') !== -1) {
-              child.style.display = 'none';
-              return;
-            }
-
-            if (txt.indexOf('إيه الأخبار دلوقتي') !== -1 && !child.classList.contains('order-captain-card')) {
-              child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:9px; padding:6px 10px; font-size:11.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.4;';
-            }
-
-            var isRouteBox = (
-              child.classList.contains('ennaby-order-details-box') ||
-              (txt.indexOf('من:') !== -1 && txt.indexOf('إلى:') !== -1) ||
-              (txt.indexOf('من (') !== -1 && txt.indexOf('إلى (') !== -1)
-            );
-
-            if (isRouteBox && !child.classList.contains('radar-popup-route-box') && child.dataset.routeUpgradedV3 !== '1') {
-              if (ordObj) {
-                child.dataset.routeUpgradedV3 = '1';
-                child.style.cssText = 'background:transparent !important; border:none !important; padding:0 !important;';
-                child.innerHTML = buildSimpleRouteSummaryHtml(ordObj, isCustomerContainer);
-              }
-            }
           });
-        });
+        } finally {
+          isPolishingContainer[containerId] = false;
+        }
       }
 
       // 3. دالة الإشعارات المنبثقة (Toast) باللون الأخضر للناجحة وبالأحمر للفاشلة
@@ -1280,6 +1296,7 @@
           mapSearchInp.placeholder = 'ابحث عن شارع، محل، أو منطقة...';
         }
 
+        // مراقبة التغير المباشر في عناصر القائمة فقط (childList: true بدون subtree) لمنع أي تجمّد نهائياً
         ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(function (id) {
           var el = document.getElementById(id);
           if (!el) return;
@@ -1287,12 +1304,8 @@
           var obs = new MutationObserver(function () {
             polishOrderCardsV3(id);
           });
-          obs.observe(el, { childList: true, subtree: true });
+          obs.observe(el, { childList: true });
         });
-
-        setInterval(function () {
-          ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(polishOrderCardsV3);
-        }, 800);
       });
     })();
   </script>
@@ -1306,12 +1319,26 @@
     <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 5px;">ثواني وبنجهزلك الدنيا...</span>
   </div>
   <script>
-    // إذا تم عرض شاشة التحميل مسبقاً في هذه الجلسة، يتم إزالتها فوراً لمنع تكرارها
-    try {
-      if (sessionStorage.getItem('ENNABY_SPLASH_SHOWN_V1') === '1') {
-        document.querySelectorAll('#ios-splash-screen').forEach(function (el) { el.remove(); });
+    // إزالة شاشة التحميل فوراً إذا ظهرت سابقاً، مع صمام أمان يضمن إخفاءها خلال 2.5 ثانية كحد أقصى تحت أي ظرف
+    (function () {
+      function dismissSplashSafely() {
+        try { sessionStorage.setItem('ENNABY_SPLASH_SHOWN_V1', '1'); } catch (e) {}
+        document.querySelectorAll('#ios-splash-screen').forEach(function (el) {
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+          setTimeout(function () { if (el.parentNode) el.remove(); }, 300);
+        });
       }
-    } catch (e) {}
+      try {
+        if (sessionStorage.getItem('ENNABY_SPLASH_SHOWN_V1') === '1') {
+          document.querySelectorAll('#ios-splash-screen').forEach(function (el) { el.remove(); });
+        } else {
+          setTimeout(dismissSplashSafely, 2500);
+        }
+      } catch (e) {
+        setTimeout(dismissSplashSafely, 2500);
+      }
+    })();
   </script>
 
   <main class="device-container" id="deviceContainer">
@@ -5170,9 +5197,9 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           <div style="margin-top:4px; font-weight:800; color:var(--primary); font-size:14px;">
             الأجرة المتفق عليها: ${order.originalFare} جنيه (هتقبض كاش: ${order.fare} ج)
           </div>
-          <div style="font-size:11.5px; color:#2E7D32; margin-top:4px;">
-            📦 من: ${escapeHtml(order.pickupZone)} - ${escapeHtml(order.pickupAddress)}<br>
-            🏁 إلى: ${escapeHtml(order.dropoffZone)} - ${escapeHtml(order.dropoffAddress)}
+          <div style="font-size:11.5px; color:var(--text-main); margin-top:6px; text-align:right; line-height:1.7;">
+            <div><strong style="color:var(--primary);">📦 الاستلام:</strong> <strong>${escapeHtml(order.pickupZone)}</strong> - ${escapeHtml(order.pickupAddress)}</div>
+            <div><strong style="color:var(--success);">🏁 التسليم:</strong> <strong>${escapeHtml(order.dropoffZone)}</strong> - ${escapeHtml(order.dropoffAddress)}</div>
           </div>
         </div>
         <div style="font-size:11px; color:var(--text-muted); font-weight:800;">
@@ -5513,8 +5540,8 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
       const routeMatchBannerHtml = ''; // تم تفريغ الشريط بناءً على طلبك لتقليص الحجم
 
-      const popupPickupTitle = isFetch ? '🏪 الاستلام (المحل):' : '📦 الاستلام (الراسل):';
-      const popupDropoffTitle = isFetch ? '🏠 التسليم (العميل):' : '🏁 التسليم (المستلم):';
+      const popupPickupTitle = isFetch ? '🏪 الاستلام:' : '📦 الاستلام:';
+      const popupDropoffTitle = isFetch ? '🏠 التسليم:' : '🏁 التسليم:';
 
       detailsBox.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
