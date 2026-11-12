@@ -1,10 +1,8 @@
-const CACHE_NAME = 'ennaby-cache-v57';
+const CACHE_NAME = 'ennaby-cache-v56';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/manifest.json'
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -33,12 +31,13 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const reqUrl = new URL(event.request.url);
 
-  // عدم تخزين طلبات النطاقات الخارجية أو الـ API أو ملف المشغل الخلفي نفسه نهائياً
+  // عدم تخزين طلبات النطاقات الخارجية أو الـ API أو ملف المشغل الخلفي أو manifest.json نهائياً
   if (
     event.request.method !== 'GET' ||
     reqUrl.origin !== self.location.origin ||
     reqUrl.pathname.startsWith('/api/') ||
-    reqUrl.pathname === '/sw.js'
+    reqUrl.pathname === '/sw.js' ||
+    reqUrl.pathname === '/manifest.json'
   ) {
     return;
   }
@@ -63,7 +62,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // استراتيجية Cache-First للأيقونات والملفات الثابتة المحلية
+  // استراتيجية Cache-First للملفات الثابتة المحلية
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
@@ -107,7 +106,7 @@ self.addEventListener('push', function(event) {
     data: { url: data.url || '/' }
   };
 
-event.waitUntil(
+  event.waitUntil(
     Promise.all([
       self.registration.showNotification(title, options),
       self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {

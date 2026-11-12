@@ -21,9 +21,9 @@
   <meta property="og:image" content="https://ennaby-delivery.vercel.app/icon-512.png">
   <meta property="og:url" content="https://ennaby-delivery.vercel.app">
 
-  <!-- إعدادات تطبيق الويب (PWA) الأساسية -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#FAF7F4">
+  <!-- إعدادات تطبيق الويب (PWA) الأساسية مع كسر كاش المانيفست القديم -->
+  <link rel="manifest" href="/manifest.json?v=56">
+  <meta name="theme-color" content="#7B3F52">
   <link rel="preload" as="image" href="/icon-512.png">
 
   <!-- إعدادات التوافق المخصصة لهواتف آبل (iOS) -->
@@ -32,12 +32,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="العنابى دليفرى">
 
-  <!-- أيقونة الشاشة الرئيسية وشاشة التحميل الكاملة بتصميم الرجل العنابي وجارى التحميل -->
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <!-- اعتماد تصميم الرجل العنابي بالموتوسيكل (/icon-512.png) لشاشة البداية -->
+  <link rel="apple-touch-icon" href="/icon-512.png">
   <link rel="apple-touch-startup-image" href="/icon-512.png">
   <script>
-    // توليد شاشة البداية الموحدة (تصميم الرجل العنابي + جارى التحميل ... 🛵) من اللحظة الأولى للفتح
+    // توليد شاشة البداية الأصلية بتصميم الرجل العنابي (/icon-512.png)
     (function () {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (!isIOS) return;
       var img = new Image();
       img.crossOrigin = 'anonymous';
       img.src = '/icon-512.png';
@@ -53,15 +55,8 @@
           ctx.fillStyle = '#FAF7F4';
           ctx.fillRect(0, 0, w, h);
           var iconSize = Math.min(w, h) * 0.56;
-          var imgY = (h - iconSize) / 2 - (h * 0.06);
+          var imgY = (h - iconSize) / 2 - (h * 0.05);
           ctx.drawImage(img, (w - iconSize) / 2, imgY, iconSize, iconSize);
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#7B3F52';
-          ctx.font = '900 ' + Math.round(18 * dpr) + 'px Cairo, sans-serif';
-          ctx.fillText('جارى التحميل ... 🛵', w / 2, imgY + iconSize + (28 * dpr));
-          ctx.fillStyle = '#665E62';
-          ctx.font = '700 ' + Math.round(11.5 * dpr) + 'px Cairo, sans-serif';
-          ctx.fillText('ثواني وبنجهزلك الدنيا...', w / 2, imgY + iconSize + (50 * dpr));
           var link = document.querySelector('link[rel="apple-touch-startup-image"]') || document.createElement('link');
           link.rel = 'apple-touch-startup-image';
           link.href = canvas.toDataURL('image/png');
@@ -71,12 +66,22 @@
     })();
   </script>
 
-  <!-- تسجيل المشغل الخلفي (Service Worker) -->
+  <!-- تسجيل المشغل الخلفي وتطهير أي كاش قديم لملف manifest.json -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('✅ PWA Engine Ready:', reg.scope))
+        if ('caches' in window) {
+          caches.keys().then(keys => {
+            keys.forEach(k => {
+              if (k !== 'ennaby-cache-v56') caches.delete(k);
+            });
+          }).catch(() => {});
+        }
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+          .then(reg => {
+            reg.update().catch(() => {});
+            console.log('✅ PWA Engine Ready:', reg.scope);
+          })
           .catch(err => console.log('⚠️ PWA Engine Error:', err));
       });
     }
