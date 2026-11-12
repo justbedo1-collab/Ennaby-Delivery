@@ -715,72 +715,72 @@
     }
 
     /* =========================================================================
-       معالجة شاملة للهوامش، أحجام الخطوط، الأزرار، الكروت، والإشعارات (UI/UX Pro V2)
+       معالجة شاملة للهوامش، تصغير الخط درجة واحدة، تبسيط طلباتي، ونص الشروط (UI/UX Pro V3)
        ========================================================================= */
 
-    /* 1. توسيع عرض الشاشة وتقليل الهوامش الجانبية المهدرة */
+    /* 1. توسيع عرض الشاشة وتقليل الهوامش الجانبية */
     .view-container {
       padding: 10px 8px !important;
-      gap: 12px !important;
+      gap: 11px !important;
     }
     .card {
-      padding: 13px 11px !important;
-      border-radius: 16px !important;
-    }
-    .route-party-card {
       padding: 12px 10px !important;
       border-radius: 15px !important;
     }
+    .route-party-card {
+      padding: 11px 10px !important;
+      border-radius: 14px !important;
+    }
 
-    /* 2. تكبير أحجام الخطوط ومنع انقطاع الكلمات أو خروج النص عن الأزرار */
+    /* 2. تصغير حجم الكتابة والحقول والأزرار بمقدار درجة واحدة متناسقة */
     .card-title {
-      font-size: 16px !important;
-      line-height: 1.4 !important;
+      font-size: 14.5px !important;
+      line-height: 1.35 !important;
     }
     .input-label,
     .route-field-label {
-      font-size: 12.5px !important;
+      font-size: 11.5px !important;
       font-weight: 800 !important;
-      line-height: 1.4 !important;
-      margin-bottom: 3px !important;
+      line-height: 1.35 !important;
+      margin-bottom: 2px !important;
     }
     .input-field,
     .select-field,
     .textarea-field,
     .route-party-card .input-field,
     .route-party-card .select-field {
-      font-size: 13.5px !important;
-      height: 42px !important;
-      min-height: 42px !important;
-      padding: 0 12px !important;
-      border-radius: 11px !important;
+      font-size: 12px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 10px !important;
+      border-radius: 10px !important;
     }
     .textarea-field {
       height: auto !important;
-      padding: 10px 12px !important;
+      padding: 8px 10px !important;
     }
     .route-party-card .input-field::placeholder,
     .input-field::placeholder,
     .textarea-field::placeholder {
-      font-size: 12px !important;
+      font-size: 11px !important;
     }
 
-    /* جعل حقلي المنطقة والعنوان بعرض كامل (Full-Width) لمنع اقتصاص العنوان */
+    /* جعل حقلي المنطقة والعنوان بعرض كامل لمنع انقطاع النص */
     .route-fields-grid {
       grid-template-columns: 1fr !important;
-      gap: 10px !important;
-      margin-bottom: 10px !important;
+      gap: 8px !important;
+      margin-bottom: 8px !important;
     }
 
-    /* فك قيود الارتفاع والقص عن جميع الأزرار لتظهر الكلمات كاملة وبخط واضح */
+    /* ضبط الأزرار بحجم خط مصغر درجة واحدة مع ظهور النص كاملاً */
     .btn-main {
       height: auto !important;
-      min-height: 42px !important;
+      min-height: 38px !important;
       max-height: none !important;
-      padding: 9px 14px !important;
-      font-size: 13.5px !important;
+      padding: 7px 12px !important;
+      font-size: 12px !important;
       font-weight: 800 !important;
-      border-radius: 11px !important;
+      border-radius: 10px !important;
       white-space: normal !important;
       overflow: visible !important;
       line-height: 1.35 !important;
@@ -789,12 +789,12 @@
     .btn-danger,
     .btn-success {
       height: auto !important;
-      min-height: 38px !important;
+      min-height: 34px !important;
       max-height: none !important;
-      padding: 7px 12px !important;
-      font-size: 12.5px !important;
+      padding: 6px 10px !important;
+      font-size: 11px !important;
       font-weight: 800 !important;
-      border-radius: 10px !important;
+      border-radius: 9px !important;
       white-space: normal !important;
       overflow: visible !important;
       line-height: 1.35 !important;
@@ -803,20 +803,20 @@
     .order-card-actions > a,
     .order-card-actions-row > button,
     .order-card-actions-row > a {
-      min-height: 40px !important;
+      min-height: 35px !important;
       height: auto !important;
       max-height: none !important;
-      font-size: 12.5px !important;
-      padding: 8px 12px !important;
-      border-radius: 10px !important;
+      font-size: 11.5px !important;
+      padding: 6px 10px !important;
+      border-radius: 9px !important;
       white-space: normal !important;
       overflow: visible !important;
       line-height: 1.35 !important;
     }
 
-    /* 3. إصلاح عنوان الخريطة وأزرارها وشريط البحث لمنع انقطاع النص بـ (...) */
+    /* 3. ضبط عنوان الخريطة وأزرارها بحجم متناسق */
     .inline-live-map-card {
-      padding: 11px 10px !important;
+      padding: 10px 9px !important;
     }
     .inline-live-map-card > div:first-child {
       display: flex !important;
@@ -824,87 +824,107 @@
       justify-content: space-between !important;
       flex-wrap: wrap !important;
       gap: 6px !important;
-      margin-bottom: 8px !important;
+      margin-bottom: 7px !important;
     }
     .inline-live-map-card > div:first-child > span {
-      font-size: 12.5px !important;
+      font-size: 11.5px !important;
       font-weight: 900 !important;
       white-space: normal !important;
       overflow: visible !important;
       text-overflow: clip !important;
     }
     .inline-live-map-card > div:first-child > button {
-      height: 32px !important;
-      padding: 0 11px !important;
-      font-size: 11.5px !important;
+      height: 29px !important;
+      padding: 0 9px !important;
+      font-size: 10.5px !important;
       flex-shrink: 0 !important;
     }
     .inline-map-mode-btn {
       height: auto !important;
-      min-height: 38px !important;
-      font-size: 12px !important;
-      padding: 6px 8px !important;
+      min-height: 34px !important;
+      font-size: 11px !important;
+      padding: 5px 7px !important;
       white-space: normal !important;
       line-height: 1.25 !important;
     }
     .map-search-input {
-      font-size: 12.5px !important;
-    }
-    .map-search-input::placeholder {
       font-size: 11.5px !important;
     }
+    .map-search-input::placeholder {
+      font-size: 10.5px !important;
+    }
 
-    /* 4. إصلاح شارة عنوان بطاقة الاستلام والتسليم (1 و 2) لمنع تداخل الأيقونة مع النص */
+    /* 4. ضبط شارة عنوان بطاقة الاستلام والتسليم (1 و 2) في الصفحة الرئيسية */
     .route-step-top-row {
       display: flex !important;
       align-items: center !important;
-      gap: 8px !important;
+      gap: 7px !important;
       width: 100% !important;
     }
     .route-party-badge {
-      font-size: 12.5px !important;
+      font-size: 11.5px !important;
       font-weight: 900 !important;
-      padding: 5px 11px !important;
-      border-radius: 10px !important;
+      padding: 4px 10px !important;
+      border-radius: 9px !important;
       display: inline-flex !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 5px !important;
       white-space: normal !important;
       overflow: visible !important;
       text-overflow: clip !important;
-      max-width: calc(100% - 32px) !important;
+      max-width: calc(100% - 30px) !important;
       line-height: 1.35 !important;
     }
     .route-party-subtitle {
-      font-size: 12px !important;
+      font-size: 11px !important;
       margin-top: 2px !important;
     }
 
-    /* 5. توسيط أزرار الشروط والسياسات في منتصف الشاشة */
+    /* 5. تحويل الشروط والسياسة في جميع الصفحات إلى Text فقط بدون زر باللون البنفسجي المتدرج للعنابي */
     button[onclick="openLegalTermsModal()"],
     button[onclick="openCaptainLegalTermsModal()"] {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 6px !important;
+      display: block !important;
       width: fit-content !important;
-      min-width: 240px !important;
+      min-width: 0 !important;
       max-width: 96% !important;
-      margin: 12px auto 4px auto !important;
-      padding: 9px 18px !important;
+      margin: 10px auto 2px auto !important;
+      padding: 3px 6px !important;
       height: auto !important;
-      min-height: 38px !important;
+      min-height: 0 !important;
       max-height: none !important;
-      background: linear-gradient(135deg, #FAF4F6, #F3E7EC) !important;
-      color: var(--primary) !important;
-      border: 1.5px solid #DEC8D0 !important;
-      border-radius: 50px !important;
-      font-size: 12px !important;
-      font-weight: 800 !important;
+      background: linear-gradient(135deg, #4A153B 0%, #7B3F52 55%, #9B556C 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      color: #7B3F52 !important;
+      -webkit-text-fill-color: transparent !important;
+      border: none !important;
+      border-bottom: 1.5px dashed rgba(123, 63, 82, 0.38) !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      font-size: 11.5px !important;
+      font-weight: 900 !important;
       text-decoration: none !important;
       text-align: center !important;
       white-space: normal !important;
-      box-shadow: 0 2px 8px rgba(123, 63, 82, 0.08) !important;
+      line-height: 1.5 !important;
+      cursor: pointer !important;
+      transition: opacity 0.2s ease, transform 0.15s ease !important;
+    }
+    button[onclick="openLegalTermsModal()"] i,
+    button[onclick="openCaptainLegalTermsModal()"] i {
+      color: #5A2846 !important;
+      -webkit-text-fill-color: #5A2846 !important;
+      font-size: 11.5px !important;
+      margin-left: 4px !important;
+    }
+    button[onclick="openLegalTermsModal()"]:active,
+    button[onclick="openCaptainLegalTermsModal()"]:active {
+      opacity: 0.65 !important;
+      transform: scale(0.98) !important;
+      background: linear-gradient(135deg, #4A153B 0%, #7B3F52 55%, #9B556C 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
     }
 
     #courTab-profile button[onclick="openCaptainTiersModal()"],
@@ -921,8 +941,8 @@
     #courierDashboardContent > header.brand-header {
       background: #FFFFFF;
       border: 1.5px solid #E8DCE0;
-      border-radius: 16px;
-      padding: 10px 12px !important;
+      border-radius: 15px;
+      padding: 9px 11px !important;
       margin-bottom: 2px;
       box-shadow: var(--shadow-sm);
       flex-shrink: 0 !important;
@@ -933,10 +953,10 @@
 
     /* 6. الإشعارات المنبثقة (Toast): أخضر صريح للناجحة وأحمر صريح للفاشلة */
     .toast-box {
-      font-size: 13px !important;
+      font-size: 11.5px !important;
       font-weight: 800 !important;
-      padding: 12px 15px !important;
-      border-radius: 14px !important;
+      padding: 10px 13px !important;
+      border-radius: 13px !important;
       line-height: 1.45 !important;
       z-index: 2500 !important;
     }
@@ -953,153 +973,100 @@
       box-shadow: 0 10px 28px rgba(183, 28, 28, 0.35) !important;
     }
 
-    /* 7. تصميم زر «بلّغ المستلم ع الواتساب» بشكل زمردي احترافي بارز */
+    /* 7. تصميم زر «بلّغ المستلم ع الواتساب» بشكل زمردي أنيق ومصغر درجة واحدة */
     .ennaby-wa-share-recipient-btn {
       background: linear-gradient(135deg, #25D366, #128C7E) !important;
       color: #FFFFFF !important;
       border: none !important;
-      border-radius: 11px !important;
-      padding: 9px 12px !important;
-      min-height: 42px !important;
+      border-radius: 10px !important;
+      padding: 7px 10px !important;
+      min-height: 36px !important;
       height: auto !important;
       width: 100% !important;
-      font-size: 12.5px !important;
+      font-size: 11.5px !important;
       font-weight: 900 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 7px !important;
+      gap: 6px !important;
       text-decoration: none !important;
-      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28) !important;
+      box-shadow: 0 3px 10px rgba(37, 211, 102, 0.24) !important;
       transition: transform 0.15s ease !important;
     }
     .ennaby-wa-share-recipient-btn:active {
       transform: scale(0.98) !important;
     }
     .ennaby-wa-share-recipient-btn i {
-      font-size: 17px !important;
+      font-size: 15px !important;
       color: #FFFFFF !important;
     }
 
-    /* 8. تنسيق بطاقتي الاستلام (العنابي) والتسليم (الأخضر) في كروت الطلبات والرادار */
+    /* 8. التصميم المبسط والأنيق لقسم طلباتي للعميل والكابتن بدون كروت منفصلة */
     .active-mission-ribbon {
-      margin: -14px -12px 10px -12px !important;
-      padding: 8px 14px !important;
-      width: calc(100% + 24px) !important;
-      max-width: calc(100% + 24px) !important;
-      border-radius: 14px 14px 0 0 !important;
-      font-size: 12px !important;
+      margin: -12px -10px 8px -10px !important;
+      padding: 6px 12px !important;
+      width: calc(100% + 20px) !important;
+      max-width: calc(100% + 20px) !important;
+      border-radius: 13px 13px 0 0 !important;
+      font-size: 11px !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
     }
-    .ord-route-cards-wrap {
+    .ennaby-simple-order-box {
+      background: #FAF7F4;
+      border: 1px solid #E6D8DD;
+      border-radius: 11px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin: 4px 0;
-      width: 100%;
-    }
-    .ord-party-step-card {
-      border-radius: 12px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      gap: 5px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-main);
       text-align: right;
     }
-    .ord-party-step-card.step-pickup-card {
-      background: linear-gradient(180deg, #FFFFFF 0%, #FDF8FA 100%);
-      border: 1.5px solid #E5D4DA;
-      border-right: 5px solid var(--primary);
-    }
-    .ord-party-step-card.step-dropoff-card {
-      background: linear-gradient(180deg, #FFFFFF 0%, #F5FBF6 100%);
-      border: 1.5px solid #C8E6C9;
-      border-right: 5px solid var(--success);
-    }
-    .ord-party-step-head {
+    .ennaby-simple-row {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
-      gap: 6px;
       flex-wrap: wrap;
-      border-bottom: 1px dashed rgba(123, 63, 82, 0.18);
-      padding-bottom: 5px;
+      gap: 4px 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #E5D8DC;
     }
-    .ord-party-step-card.step-dropoff-card .ord-party-step-head {
-      border-bottom-color: rgba(46, 125, 50, 0.22);
+    .ennaby-simple-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
     }
-    .ord-party-step-title {
-      font-size: 12px;
-      font-weight: 900;
-      color: var(--primary);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      white-space: normal !important;
-    }
-    .ord-party-step-card.step-dropoff-card .ord-party-step-title {
-      color: var(--success);
-    }
-    .ord-party-zone-pill {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 9px;
-      border-radius: 50px;
-      background: var(--accent);
-      color: var(--primary);
-      white-space: nowrap;
-    }
-    .ord-party-step-card.step-dropoff-card .ord-party-zone-pill {
-      background: #E8F5E9;
-      color: var(--success);
-    }
-    .ord-party-addr-line {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .ord-party-phone-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      background: #FFFFFF;
-      border: 1px solid #EAE0E4;
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 11.5px;
+    .ennaby-simple-phone-tag {
+      font-size: 10.5px;
       font-weight: 800;
       color: var(--text-muted);
-    }
-    .ord-party-step-card.step-dropoff-card .ord-party-phone-bar {
-      border-color: #C8E6C9;
-    }
-    .ord-meta-pills-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
-      gap: 6px;
-      width: 100%;
-    }
-    .ord-meta-pill {
-      background: #FAF7F4;
+      background: #FFFFFF;
       border: 1px solid #E5D8DC;
-      border-radius: 9px;
-      padding: 6px 9px;
+      border-radius: 6px;
+      padding: 1px 6px;
+      white-space: nowrap;
+      direction: ltr;
+      display: inline-block;
+    }
+    .ennaby-simple-pay-bar {
+      background: #FFFFFF;
+      border: 1px solid #C8E6C9;
+      border-radius: 8px;
+      padding: 5px 9px;
+      margin-top: 2px;
       font-size: 11.5px;
       font-weight: 800;
-      color: var(--text-main);
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 5px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
     }
 
-    /* ضبط كبسولات الوزن والدفع في نافذة الرادار المنبثقة لتتوزع بالتساوي */
+    /* ضبط كبسولات الوزن والدفع في نافذة الرادار المنبثقة */
     #courierPopupContentDetails span[style*="background:#FAF7F4"],
     #courierPopupContentDetails span[style*="background:#E8F5E9"] {
       flex: 1 1 45% !important;
@@ -1107,8 +1074,8 @@
       justify-content: center !important;
       display: inline-flex !important;
       align-items: center !important;
-      font-size: 11px !important;
-      padding: 5px 8px !important;
+      font-size: 10.5px !important;
+      padding: 4px 7px !important;
     }
   </style>
   <script>
@@ -1128,78 +1095,63 @@
         return window.STATE || null;
       }
 
-      function buildStructuredRouteHtml(ord, isCustomerView) {
+      // بناء ملخص مبسط ومدمج للطلب في صندوق واحد بدون كروت الراسل والمستلم الضخمة
+      function buildSimpleRouteSummaryHtml(ord, isCustomerView) {
         var isFetch = ord.tripType === 'fetch';
-        var pickupRoleTitle = isFetch
-          ? '🏪 أولاً: مكان الشراء / الاستلام (المحل)'
-          : '📦 أولاً: مكان الاستلام (بيانات الراسل)';
-        var dropoffRoleTitle = isFetch
-          ? (isCustomerView ? '🏠 ثانياً: مكان التسليم (عنوانك عند الباب)' : '🏠 ثانياً: مكان التسليم (عنوان العميل)')
-          : '🏁 ثانياً: مكان التسليم (بيانات المستلم)';
-
-        var pickupPhoneLabel = isFetch ? 'تليفون المكان/المحل:' : 'تليفون الراسل:';
-        var dropoffPhoneLabel = isFetch
-          ? (isCustomerView ? 'رقمك للاستلام:' : 'تليفون العميل:')
-          : 'تليفون المستلم:';
+        var tripLabel = isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 توصيل طرد';
+        var fromLabel = isFetch ? '🏪 من (الشراء):' : '📦 من (الاستلام):';
+        var toLabel = isFetch ? '🏠 إلى (التسليم):' : '🏁 إلى (التسليم):';
 
         var sPhone = ord.senderPhone || '';
         var rPhone = ord.recipientPhone || '';
         var cleanNotes = typeof cleanDisplayNotesText === 'function' ? cleanDisplayNotesText(ord.customerNotes || '') : (ord.customerNotes || '');
-        var notesTitle = isFetch ? '🛍️ المشتريات المطلوبة:' : '📝 ملحوظة المشوار:';
 
-        var pickupPhoneHtml = (isCustomerView && sPhone)
-          ? '<div class="ord-party-phone-bar"><span><i class="fa-solid fa-phone-volume" style="color:var(--primary);"></i> ' + pickupPhoneLabel + '</span><strong dir="ltr" style="color:var(--primary); font-size:12.5px;">' + safeEsc(sPhone) + '</strong></div>'
+        var sPhoneBadge = (isCustomerView && sPhone)
+          ? '<span class="ennaby-simple-phone-tag">📱 ' + safeEsc(sPhone) + '</span>'
+          : '';
+        var rPhoneBadge = (isCustomerView && rPhone)
+          ? '<span class="ennaby-simple-phone-tag">📱 ' + safeEsc(rPhone) + '</span>'
           : '';
 
-        var dropoffPhoneHtml = (isCustomerView && rPhone)
-          ? '<div class="ord-party-phone-bar"><span><i class="fa-solid fa-mobile-screen" style="color:var(--success);"></i> ' + dropoffPhoneLabel + '</span><strong dir="ltr" style="color:var(--success); font-size:12.5px;">' + safeEsc(rPhone) + '</strong></div>'
+        var budgetInline = (isFetch && ord.purchaseBudget)
+          ? ' • <span style="color:#6A1B9A; font-weight:800;">💵 ' + safeEsc(ord.purchaseBudget) + '</span>'
           : '';
 
-        var tripBadgeText = isFetch ? '🛍️ هاتلي حاجة ليا' : '📦 هبعت حاجة لحد';
-        var budgetPillHtml = (isFetch && ord.purchaseBudget)
-          ? '<div class="ord-meta-pill" style="background:#F3E5F5; border-color:#CE93D8; color:#6A1B9A;">💵 ' + safeEsc(ord.purchaseBudget) + '</div>'
-          : '';
-
-        var notesBoxHtml = cleanNotes
-          ? '<div style="background:#FFFDE7; border:1.5px solid #FBC02D; border-radius:10px; padding:7px 10px; font-size:12px; color:#5D4037; font-weight:800; line-height:1.5;"><strong>' + notesTitle + '</strong> ' + safeEsc(cleanNotes) + '</div>'
-          : '';
-
-        var payRowHtml = isCustomerView
-          ? '<div class="ennaby-order-pay-row" style="font-size:12.5px; padding:8px 11px !important;">' +
-              '<span>💰 الدفع عند: <strong>' + safeEsc(ord.payer || 'الراسل') + '</strong></span>' +
-              '<span>💵 المطلوب كاش: <strong style="font-size:14px;">' + safeEsc(ord.fare) + ' ج</strong>' + (ord.discountApplied > 0 ? ' <small style="color:var(--primary);">(خصم ' + safeEsc(ord.discountApplied) + 'ج)</small>' : '') + '</span>' +
+        var notesRowHtml = cleanNotes
+          ? '<div class="ennaby-simple-row" style="background:#FFFDE7; border:1px solid #FBC02D; border-radius:7px; padding:4px 8px; margin-top:2px; color:#5D4037; font-size:11px; font-weight:800;">' +
+              '<span><strong>' + (isFetch ? '🛍️ المشتريات:' : '📝 ملحوظة:') + '</strong> ' + safeEsc(cleanNotes) + '</span>' +
             '</div>'
           : '';
 
-        return '<div class="ord-route-cards-wrap">' +
-          '<div class="ord-meta-pills-strip">' +
-            '<div class="ord-meta-pill" style="background:#FAF4F6; color:var(--primary); border-color:#E5D4DA;">' + tripBadgeText + '</div>' +
-            (ord.packageType ? '<div class="ord-meta-pill">⚖️ ' + safeEsc(ord.packageType) + '</div>' : '') +
-            (!isCustomerView && ord.payer ? '<div class="ord-meta-pill" style="background:#E8F5E9; border-color:#C8E6C9; color:#1B5E20;">💰 الدفع عند: ' + safeEsc(ord.payer) + '</div>' : '') +
-            budgetPillHtml +
+        var payBarHtml = isCustomerView
+          ? '<div class="ennaby-simple-pay-bar">' +
+              '<span>💰 الدفع: <strong style="color:var(--success);">' + safeEsc(ord.payer || 'الراسل') + '</strong></span>' +
+              '<span>💵 الكاش: <strong style="color:var(--success); font-size:12.5px;">' + safeEsc(ord.fare) + ' ج</strong>' + (ord.discountApplied > 0 ? ' <small style="color:var(--primary);">(خصم ' + safeEsc(ord.discountApplied) + 'ج)</small>' : '') + '</span>' +
+            '</div>'
+          : '<div class="ennaby-simple-row" style="font-size:11px; color:var(--text-muted); font-weight:800;">' +
+              '<span>⚖️ ' + safeEsc(ord.packageType || '') + '</span>' +
+              '<span>💰 الدفع عند: <strong style="color:var(--success);">' + safeEsc(ord.payer || 'الراسل') + '</strong></span>' +
+            '</div>';
+
+        return '<div class="ennaby-simple-order-box">' +
+          '<div class="ennaby-simple-row" style="font-size:11px; color:var(--text-muted); font-weight:800;">' +
+            '<span><strong style="color:var(--primary);">' + tripLabel + '</strong>' + budgetInline + '</span>' +
+            (isCustomerView && ord.packageType ? '<span>⚖️ ' + safeEsc(ord.packageType) + '</span>' : '') +
           '</div>' +
-          '<div class="ord-party-step-card step-pickup-card">' +
-            '<div class="ord-party-step-head">' +
-              '<span class="ord-party-step-title">' + pickupRoleTitle + '</span>' +
-              '<span class="ord-party-zone-pill">📍 ' + safeEsc(ord.pickupZone) + '</span>' +
-            '</div>' +
-            '<div class="ord-party-addr-line">' + safeEsc(ord.pickupAddress) + '</div>' +
-            pickupPhoneHtml +
+          '<div class="ennaby-simple-row">' +
+            '<span><strong style="color:var(--primary);">' + fromLabel + '</strong> <strong>' + safeEsc(ord.pickupZone) + '</strong> - ' + safeEsc(ord.pickupAddress) + '</span>' +
+            sPhoneBadge +
           '</div>' +
-          '<div class="ord-party-step-card step-dropoff-card">' +
-            '<div class="ord-party-step-head">' +
-              '<span class="ord-party-step-title">' + dropoffRoleTitle + '</span>' +
-              '<span class="ord-party-zone-pill">🏁 ' + safeEsc(ord.dropoffZone) + '</span>' +
-            '</div>' +
-            '<div class="ord-party-addr-line">' + safeEsc(ord.dropoffAddress) + '</div>' +
-            dropoffPhoneHtml +
+          '<div class="ennaby-simple-row">' +
+            '<span><strong style="color:var(--success);">' + toLabel + '</strong> <strong>' + safeEsc(ord.dropoffZone) + '</strong> - ' + safeEsc(ord.dropoffAddress) + '</span>' +
+            rPhoneBadge +
           '</div>' +
-          notesBoxHtml +
-          payRowHtml +
+          notesRowHtml +
+          payBarHtml +
         '</div>';
       }
 
-      function polishOrderCardsV2(containerId) {
+      function polishOrderCardsV3(containerId) {
         var container = document.getElementById(containerId);
         if (!container) return;
         var isCustomerContainer = (containerId === 'customerOrdersList');
@@ -1214,15 +1166,15 @@
             ? appState.orders.find(function (x) { return x && x.id === ordId; })
             : null;
 
-          // 1. ترقية كارت الكابتن وزر مشاركة تفاصيل الأوردر للمستلم عبر الواتساب
+          // 1. تنسيق كارت الكابتن وزر مشاركة تفاصيل الأوردر للمستلم عبر الواتساب
           var capCard = card.querySelector('.order-captain-card');
           if (capCard) {
             var firstRow = capCard.children[0];
             if (firstRow) {
-              firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:10px; padding:8px 10px;';
+              firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:9px; padding:6px 9px;';
               var nameStrong = firstRow.querySelector('strong');
               if (nameStrong) {
-                nameStrong.style.cssText = 'font-size:13px; font-weight:900; color:var(--primary); line-height:1.4; white-space:normal; overflow:visible;';
+                nameStrong.style.cssText = 'font-size:12px; font-weight:900; color:var(--primary); line-height:1.35; white-space:normal; overflow:visible;';
               }
             }
             var shareLinks = capCard.querySelectorAll('a, button');
@@ -1235,13 +1187,13 @@
             });
           }
 
-          // 2. تحويل تفاصيل العنوان في كروت العميل والكابتن إلى بطاقتي استلام (عنابي) وتسليم (أخضر)
+          // 2. تبسيط تفاصيل الطلب إلى صندوق مدمج أنيق بدون كروت منفصلة
           Array.from(card.children).forEach(function (child) {
             if (!child || child.tagName !== 'DIV') return;
             var txt = (child.textContent || '').trim();
 
             if (txt.indexOf('إيه الأخبار دلوقتي') !== -1 && !child.classList.contains('order-captain-card')) {
-              child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:10px; padding:8px 12px; font-size:12.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.45;';
+              child.style.cssText = 'background:#FAF4F6; border:1px solid #E5D4DA; border-radius:9px; padding:6px 10px; font-size:11.5px; font-weight:800; color:var(--primary); text-align:center; line-height:1.4;';
             }
 
             var isRouteBox = (
@@ -1250,18 +1202,18 @@
               (txt.indexOf('من (') !== -1 && txt.indexOf('إلى (') !== -1)
             );
 
-            if (isRouteBox && !child.classList.contains('radar-popup-route-box') && child.dataset.routeUpgradedV2 !== '1') {
+            if (isRouteBox && !child.classList.contains('radar-popup-route-box') && child.dataset.routeUpgradedV3 !== '1') {
               if (ordObj) {
-                child.dataset.routeUpgradedV2 = '1';
+                child.dataset.routeUpgradedV3 = '1';
                 child.style.cssText = 'background:transparent !important; border:none !important; padding:0 !important;';
-                child.innerHTML = buildStructuredRouteHtml(ordObj, isCustomerContainer);
+                child.innerHTML = buildSimpleRouteSummaryHtml(ordObj, isCustomerContainer);
               }
             }
           });
         });
       }
 
-      // 3. إصلاح جذري لدالة الإشعارات المنبثقة (Toast) لتظهر باللون الأخضر للناجحة وبالأحمر للفاشلة
+      // 3. دالة الإشعارات المنبثقة (Toast) باللون الأخضر للناجحة وبالأحمر للفاشلة
       function installColorCodedToastOverride() {
         window.showToast = function (msg, type) {
           if (type === undefined) type = 'auto';
@@ -1297,9 +1249,9 @@
               var mockupRect = mockup.getBoundingClientRect();
               var elRect = lastInteractedElement.getBoundingClientRect();
               if (elRect.width > 0 && elRect.height > 0) {
-                var relY = elRect.top - mockupRect.top - 58;
-                var minTop = 18;
-                var maxTop = Math.max(minTop, mockup.clientHeight - 135);
+                var relY = elRect.top - mockupRect.top - 54;
+                var minTop = 16;
+                var maxTop = Math.max(minTop, mockup.clientHeight - 130);
                 targetTop = Math.max(minTop, Math.min(relY, maxTop));
               }
             }
@@ -1326,15 +1278,15 @@
         ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(function (id) {
           var el = document.getElementById(id);
           if (!el) return;
-          polishOrderCardsV2(id);
+          polishOrderCardsV3(id);
           var obs = new MutationObserver(function () {
-            polishOrderCardsV2(id);
+            polishOrderCardsV3(id);
           });
           obs.observe(el, { childList: true, subtree: true });
         });
 
         setInterval(function () {
-          ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(polishOrderCardsV2);
+          ['customerOrdersList', 'courierOrdersFeed', 'courierHistoryOrdersList'].forEach(polishOrderCardsV3);
         }, 800);
       });
     })();
