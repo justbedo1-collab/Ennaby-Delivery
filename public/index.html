@@ -1042,21 +1042,22 @@
     .ennaby-acc-toolbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      justify-content: center;
       background: #FAF4F6;
       border: 1px dashed #D7C2CA;
-      border-radius: 12px;
-      padding: 7px 11px;
+      border-radius: 11px;
+      padding: 6px 10px;
       margin-bottom: 2px;
+      text-align: center;
     }
     .ennaby-acc-toolbar-hint {
       font-size: 11px;
       font-weight: 800;
-      color: var(--text-muted);
-      line-height: 1.4;
-      text-align: right;
-      flex: 1;
+      color: var(--primary);
+      line-height: 1.35;
+      text-align: center;
+      white-space: nowrap;
+      width: 100%;
     }
     .ennaby-acc-expand-all-btn {
       background: #FFFFFF;
@@ -1327,16 +1328,101 @@
       font-size: 10.5px !important;
       padding: 4px 7px !important;
     }
+
+    /* 10. تنسيقات شريط التقييم الإجمالي للكابتن (5 نجوم + 5.0) وشارة التقييم الرقمية للعميل */
+    .courier-rating-strip-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #FFFDF7, #FAF4F6);
+      border: 1px solid #E5D4DA;
+      border-radius: 50px;
+      padding: 2px 9px;
+      margin-top: 3px;
+      width: fit-content;
+      box-shadow: 0 1px 4px rgba(123, 63, 82, 0.06);
+    }
+    .courier-rating-stars-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      line-height: 1;
+    }
+    .courier-rating-stars-row i.star-lit {
+      color: #FFB300;
+    }
+    .courier-rating-stars-row i.star-dim {
+      color: #D2C5C8;
+    }
+    .courier-rating-num-val {
+      font-size: 11.5px;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+      direction: ltr;
+      display: inline-block;
+    }
+    .cust-cap-rating-num-pill {
+      display: inline-flex;
+      align-items: center;
+      background: #FAF4F6;
+      color: var(--primary);
+      border: 1px solid #DEC8D0;
+      border-radius: 50px;
+      padding: 1.5px 7px;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.3;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .unrated-order-remind-btn {
+      background: linear-gradient(135deg, #FFB300, #F57C00) !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 9px !important;
+      padding: 7px 12px !important;
+      font-size: 11.5px !important;
+      font-weight: 900 !important;
+      cursor: pointer !important;
+      width: 100% !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      box-shadow: 0 3px 10px rgba(245, 124, 0, 0.25) !important;
+    }
   </style>
   <script>
     (function () {
       var isPolishingContainer = {};
-      // حفظ حالة الطي والفرد لكل طلب حتى لا تُغلق الكروت المفتوحة أثناء المزامنة التلقائية
       var expandedOrdersMap = {};
       var expandAllStateByContainer = {
         customerOrdersList: false,
         courierHistoryOrdersList: false
       };
+
+      // تتبع الطلبات التي ظهرت نافذتها التلقائية للعميل أو الكابتن لمنع التكرار المزعج
+      var customerAutoPromptedRatingOrderIds = new Set();
+      var captainSeenRatingEventSigs = new Set();
+      var initialRatingStateSeeded = false;
+      var prevOrdersStatusSnapshot = {};
+      var prevOrdersRatingSnapshot = {};
+
+      try {
+        var savedCapRatedSigs = sessionStorage.getItem('ENNABY_CAP_SEEN_RATINGS_V1');
+        if (savedCapRatedSigs) {
+          JSON.parse(savedCapRatedSigs).forEach(function (s) { captainSeenRatingEventSigs.add(s); });
+        }
+      } catch (e) {}
+
+      function rememberCaptainSeenRatingSig(sig) {
+        captainSeenRatingEventSigs.add(sig);
+        try {
+          sessionStorage.setItem('ENNABY_CAP_SEEN_RATINGS_V1', JSON.stringify(Array.from(captainSeenRatingEventSigs).slice(-60)));
+        } catch (e) {}
+      }
 
       // درع منع التكبير والتصغير (No Zoom In / Out) في آيفون وجميع الهواتف
       function lockScreenZoomCompletely() {
@@ -1397,36 +1483,229 @@
         return window.STATE || null;
       }
 
-      // تبديل فتح أو طي كارت طلب واحد عند الضغط عليه
+      // بناء نجوم التقييم الخمس (تضيء وتنطفئ حسب الرقم الفعلي للتقييم)
+      function buildFiveStarsIconsHtml(ratingValue, starFontSize) {
+        var num = Number(ratingValue);
+        if (!Number.isFinite(num) || num <= 0) num = 5.0;
+        var litCount = Math.max(1, Math.min(5, Math.round(num)));
+        var sizeStyle = starFontSize ? ('font-size:' + starFontSize + ';') : '';
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+          if (i <= litCount) {
+            html += '<i class="fa-solid fa-star star-lit" style="color:#FFB300;' + sizeStyle + '"></i>';
+          } else {
+            html += '<i class="fa-regular fa-star star-dim" style="color:#D2C5C8;' + sizeStyle + '"></i>';
+          }
+        }
+        return html;
+      }
+
+      // حساب وتحديث شريط التقييم الإجمالي للكابتن أسفل اسمه مباشرة
+      window.syncCourierHeaderRatingBar = function () {
+        var starsBox = document.getElementById('courierHeaderStarsBox');
+        var numEl = document.getElementById('courierHeaderRatingNum');
+        if (!starsBox || !numEl) return;
+
+        var appState = getAppState();
+        var courier = (typeof getActiveCourier === 'function') ? getActiveCourier() : null;
+        var ratingAvg = 5.0;
+
+        if (courier) {
+          if (courier.ratingAvg !== undefined && courier.ratingAvg !== null && Number.isFinite(Number(courier.ratingAvg))) {
+            ratingAvg = Number(courier.ratingAvg);
+          } else if (appState && Array.isArray(appState.orders)) {
+            var cPh = typeof normalizePhone === 'function' ? normalizePhone(courier.phone) : courier.phone;
+            var ratedOrds = appState.orders.filter(function (o) {
+              var aPh = typeof normalizePhone === 'function' ? normalizePhone(o.assignedCourierPhone || '') : (o.assignedCourierPhone || '');
+              return aPh === cPh && o.rating !== null && o.rating !== undefined && Number.isFinite(Number(o.rating));
+            });
+            if (ratedOrds.length > 0) {
+              var sum = ratedOrds.reduce(function (acc, o) { return acc + Number(o.rating); }, 0);
+              ratingAvg = Math.round((sum / ratedOrds.length) * 10) / 10;
+            }
+          }
+        }
+
+        var formatted = ratingAvg.toFixed(1);
+        starsBox.innerHTML = buildFiveStarsIconsHtml(ratingAvg);
+        numEl.innerText = formatted;
+      };
+
+      // فتح وإغلاق نافذة تقييم الكابتن للعميل
+      window.closeCustomerRatingModal = function () {
+        var modal = document.getElementById('ratingModal');
+        if (modal) modal.classList.remove('show');
+        // إبقاء كارت الطلب مفتوحاً في قائمة طلباتي طالما لم يتم تقييمه بعد
+        var hid = document.getElementById('ratingOrderIdHidden');
+        var ordId = hid ? hid.value : '';
+        if (ordId) {
+          expandedOrdersMap[ordId] = true;
+          var card = document.querySelector('#customerOrdersList .card[data-ennaby-ord-id="' + ordId + '"]');
+          if (card) card.classList.add('ennaby-acc-open');
+        }
+      };
+
+      window.openCustomerRatingModalEnhanced = function (orderId) {
+        var appState = getAppState();
+        var order = (appState && Array.isArray(appState.orders))
+          ? appState.orders.find(function (o) { return o && o.id === orderId; })
+          : null;
+        if (!order || (order.rating !== null && order.rating !== undefined)) {
+          if (typeof showToast === 'function') showToast('إنت قيّمت المشوار ده قبل كدا يا باشا ومينفعش يتعدل تاني ⭐', 'warn');
+          return;
+        }
+        var hid = document.getElementById('ratingOrderIdHidden');
+        if (hid) hid.value = orderId;
+
+        var badgeEl = document.getElementById('ratingModalOrderBadge');
+        var headingEl = document.getElementById('ratingModalMainHeading');
+        var capSubEl = document.getElementById('ratingModalCaptainSubName');
+
+        if (badgeEl) badgeEl.innerText = '⭐ أوردر ' + orderId;
+        if (headingEl) headingEl.innerText = 'قيّم الكابتن على أوردرك الأخير (' + orderId + ')';
+        if (capSubEl) {
+          capSubEl.innerHTML = order.assignedCourierName
+            ? ('🛵 الكابتن: <strong style="color:var(--primary);">' + safeEsc(order.assignedCourierName) + '</strong>')
+            : '🛵 قيّم تجربتك مع كابتن الرجل العنابي';
+        }
+
+        if (typeof setRatingStars === 'function') setRatingStars(5);
+        document.getElementById('toast')?.classList.remove('show');
+        document.getElementById('ratingModal')?.classList.add('show');
+      };
+
+      // فتح وإغلاق نافذة إشعار التقييم الفوري للكابتن
+      window.openCaptainNewRatingPopupModal = function (orderId, starsCount) {
+        var modal = document.getElementById('captainNewRatingPopupModal');
+        var badgeEl = document.getElementById('captainRatingPopupOrderBadge');
+        var titleEl = document.getElementById('captainRatingPopupTitle');
+        var bodyBox = document.getElementById('captainRatingPopupBodyBox');
+        if (!modal || !bodyBox) return;
+
+        var starsNum = Math.max(1, Math.min(5, Math.round(Number(starsCount) || 5)));
+        if (badgeEl) badgeEl.innerText = '🛵 أوردر ' + orderId;
+        if (titleEl) titleEl.innerText = '🌟 وصلك تقييم جديد على (' + orderId + ')!';
+
+        var starsVisualHtml = buildFiveStarsIconsHtml(starsNum, '24px');
+        bodyBox.innerHTML =
+          '<div style="background:#FAF4F6; border:1.5px solid #E5D4DA; border-radius:13px; padding:12px 10px; display:flex; flex-direction:column; gap:8px;">' +
+            '<div style="font-size:13px; font-weight:900; color:var(--primary); line-height:1.5;">' +
+              'العميل صاحب الأوردر <strong dir="ltr" style="color:#5A2846;">(' + safeEsc(orderId) + ')</strong> بعتلك تقييم:' +
+            '</div>' +
+            '<div style="display:flex; justify-content:center; align-items:center; gap:6px; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:10px; padding:10px;">' +
+              starsVisualHtml +
+            '</div>' +
+            '<div style="font-size:12px; font-weight:900; color:var(--success);">' +
+              'حصلت على ' + starsNum + ' من 5 نجوم ⭐' +
+            '</div>' +
+          '</div>';
+
+        document.getElementById('toast')?.classList.remove('show');
+        modal.classList.add('show');
+        if (typeof triggerDeviceAlert === 'function') triggerDeviceAlert('courier_new_order');
+        window.syncCourierHeaderRatingBar();
+      };
+
+      window.closeCaptainNewRatingModal = function () {
+        document.getElementById('captainNewRatingPopupModal')?.classList.remove('show');
+      };
+
+      // فحص التغييرات اللحظية لفتح نافذة التقييم للعميل فور اكتمال الطلب وللكابتن فور وصول التقييم
+      window.evaluateRealtimeRatingPopups = function () {
+        var appState = getAppState();
+        if (!appState || !Array.isArray(appState.orders)) return;
+
+        window.syncCourierHeaderRatingBar();
+
+        if (!initialRatingStateSeeded) {
+          initialRatingStateSeeded = true;
+          appState.orders.forEach(function (o) {
+            if (!o || !o.id) return;
+            prevOrdersStatusSnapshot[o.id] = o.status;
+            prevOrdersRatingSnapshot[o.id] = o.rating;
+            if (o.rating !== null && o.rating !== undefined) {
+              rememberCaptainSeenRatingSig(o.id + '|' + o.rating);
+            }
+          });
+          return;
+        }
+
+        var role = appState.currentRole;
+        var savedCustPh = typeof normalizePhone === 'function'
+          ? normalizePhone((appState.customerProfile && appState.customerProfile.savedPhone) || appState.authenticatedCustomerPhone || '')
+          : '';
+        var activeCourier = typeof getActiveCourier === 'function' ? getActiveCourier() : null;
+        var activeCapPh = (activeCourier && typeof normalizePhone === 'function') ? normalizePhone(activeCourier.phone) : '';
+
+        appState.orders.forEach(function (o) {
+          if (!o || !o.id) return;
+          var oldSt = prevOrdersStatusSnapshot[o.id];
+          var oldRt = prevOrdersRatingSnapshot[o.id];
+          prevOrdersStatusSnapshot[o.id] = o.status;
+          prevOrdersRatingSnapshot[o.id] = o.rating;
+
+          var isUnratedCompleted = (o.status === 'مكتمل' && (o.rating === null || o.rating === undefined));
+          var ownerPh = typeof resolveOrderClientPhone === 'function' ? resolveOrderClientPhone(o) : '';
+
+          // 1. للعميل: فتح نافذة التقييم فوراً عند تحول الطلب إلى مكتمل
+          if (role === 'customer' && savedCustPh && ownerPh === savedCustPh && isUnratedCompleted) {
+            expandedOrdersMap[o.id] = true;
+            if (oldSt && oldSt !== 'مكتمل' && !customerAutoPromptedRatingOrderIds.has(o.id)) {
+              customerAutoPromptedRatingOrderIds.add(o.id);
+              setTimeout(function () {
+                window.openCustomerRatingModalEnhanced(o.id);
+              }, 300);
+            }
+          }
+
+          // 2. للعميل: بمجرد تقييم الطلب ينطوي الكارت تلقائياً
+          if (role === 'customer' && (oldRt === null || oldRt === undefined) && o.rating !== null && o.rating !== undefined) {
+            expandedOrdersMap[o.id] = false;
+            var ratedCard = document.querySelector('#customerOrdersList .card[data-ennaby-ord-id="' + o.id + '"]');
+            if (ratedCard) ratedCard.classList.remove('ennaby-acc-open');
+          }
+
+          // 3. للكابتن: فتح نافذة إشعار التقييم الفوري لحظة إرسال العميل للتقييم
+          var ordCapPh = typeof normalizePhone === 'function' ? normalizePhone(o.assignedCourierPhone || '') : (o.assignedCourierPhone || '');
+          if (role === 'courier' && activeCapPh && ordCapPh === activeCapPh && o.rating !== null && o.rating !== undefined) {
+            var sig = o.id + '|' + o.rating;
+            if (!captainSeenRatingEventSigs.has(sig) && (oldRt === null || oldRt === undefined)) {
+              rememberCaptainSeenRatingSig(sig);
+              setTimeout(function () {
+                window.openCaptainNewRatingPopupModal(o.id, o.rating);
+              }, 250);
+            }
+          }
+        });
+      };
+
+      // تبديل فتح أو طي كارت طلب واحد عند الضغط عليه (مع منع طي الطلب المكتمل غير المقيّم)
       window.toggleEnnabyOrderCard = function (ordId, cardEl) {
         var card = cardEl || document.querySelector('[data-ennaby-ord-id="' + ordId + '"]');
         if (!card) return;
+
+        var appState = getAppState();
+        var ordObj = (ordId && appState && Array.isArray(appState.orders))
+          ? appState.orders.find(function (x) { return x && x.id === ordId; })
+          : null;
+        var isCustomerCard = Boolean(card.closest && card.closest('#customerOrdersList'));
+        var isUnratedCompleted = Boolean(
+          isCustomerCard &&
+          ordObj &&
+          ordObj.status === 'مكتمل' &&
+          (ordObj.rating === null || ordObj.rating === undefined)
+        );
+
+        if (isUnratedCompleted && card.classList.contains('ennaby-acc-open')) {
+          expandedOrdersMap[ordId] = true;
+          window.openCustomerRatingModalEnhanced(ordId);
+          return;
+        }
+
         var willOpen = !card.classList.contains('ennaby-acc-open');
         card.classList.toggle('ennaby-acc-open', willOpen);
         if (ordId) {
           expandedOrdersMap[ordId] = willOpen;
-        }
-      };
-
-      // توسيع أو طي جميع الكروت في قسم طلباتي بضغطة واحدة
-      window.toggleAllEnnabyOrdersInContainer = function (containerId) {
-        var container = document.getElementById(containerId);
-        if (!container) return;
-        var nextState = !expandAllStateByContainer[containerId];
-        expandAllStateByContainer[containerId] = nextState;
-
-        var cards = container.querySelectorAll('.card[data-ennaby-ord-id]');
-        cards.forEach(function (c) {
-          var oid = c.getAttribute('data-ennaby-ord-id');
-          c.classList.toggle('ennaby-acc-open', nextState);
-          if (oid) expandedOrdersMap[oid] = nextState;
-        });
-
-        var btn = document.getElementById('accExpandAllBtn-' + containerId);
-        if (btn) {
-          btn.innerHTML = nextState
-            ? '<span>طي الصفحة</span> 🔼'
-            : '<span>توسيع الصفحة</span> 🔽';
         }
       };
 
@@ -1449,19 +1728,12 @@
           existingToolbar.id = toolbarId;
           existingToolbar.className = 'ennaby-acc-toolbar';
           existingToolbar.innerHTML =
-            '<span class="ennaby-acc-toolbar-hint">💡 اضغط على أي طلب لفتح أو طي تفاصيله الكاملة</span>' +
-            '<button type="button" class="ennaby-acc-expand-all-btn" id="accExpandAllBtn-' + containerId + '" onclick="toggleAllEnnabyOrdersInContainer(\'' + containerId + '\')">' +
-              '<span>توسيع الصفحة</span> 🔽' +
-            '</button>';
+            '<span class="ennaby-acc-toolbar-hint">💡 اضغط على أي طلب لفتح أو طي تفاصيله الكاملة</span>';
           container.parentNode.insertBefore(existingToolbar, container);
         } else {
           existingToolbar.style.display = 'flex';
-          var btn = document.getElementById('accExpandAllBtn-' + containerId);
-          if (btn) {
-            btn.innerHTML = expandAllStateByContainer[containerId]
-              ? '<span>طي الصفحة</span> 🔼'
-              : '<span>توسيع الصفحة</span> 🔽';
-          }
+          existingToolbar.innerHTML =
+            '<span class="ennaby-acc-toolbar-hint">💡 اضغط على أي طلب لفتح أو طي تفاصيله الكاملة</span>';
         }
       }
 
@@ -1534,9 +1806,12 @@
           clientPh = ord.recipientPhone || ord.senderPhone || '';
         }
 
+        var isUnratedCompleted = isCustomerView && ord.status === 'مكتمل' && (ord.rating === null || ord.rating === undefined);
         var bottomLeftHtml = '';
         if (isCustomerView) {
-          if (ord.assignedCourierName) {
+          if (isUnratedCompleted) {
+            bottomLeftHtml = '<span class="ennaby-acc-captain-label" style="color:#E65100; font-weight:900;">⭐ قيّم الكابتن</span>';
+          } else if (ord.assignedCourierName) {
             bottomLeftHtml = '<span class="ennaby-acc-captain-label">🛵 ' + safeEsc(ord.assignedCourierName) + '</span>';
           } else if (ord.status === 'في انتظار كابتن') {
             var pendingOffCnt = Array.isArray(ord.captainOffers) ? ord.captainOffers.filter(function (x) { return x && x.status === 'pending'; }).length : 0;
@@ -1547,7 +1822,8 @@
             bottomLeftHtml = '<span class="ennaby-acc-captain-label" style="color:var(--text-muted);">🛵 بدون كابتن</span>';
           }
         } else {
-          bottomLeftHtml = '<span class="ennaby-acc-captain-label" style="color:var(--success);">💵 صافيك: ' + safeEsc(ord.courierNet ?? ord.fare) + ' ج</span>';
+          var ratingTag = (ord.rating !== null && ord.rating !== undefined) ? (' • ⭐ ' + ord.rating) : '';
+          bottomLeftHtml = '<span class="ennaby-acc-captain-label" style="color:var(--success);">💵 صافيك: ' + safeEsc(ord.courierNet ?? ord.fare) + ' ج' + ratingTag + '</span>';
         }
 
         return '<div class="ennaby-acc-right-col">' +
@@ -1602,7 +1878,7 @@
               ? appState.orders.find(function (x) { return x && x.id === ordId; })
               : null;
 
-            // 1. تنسيق كارت الكابتن وزر مشاركة تفاصيل الأوردر للمستلم
+            // 1. تنسيق كارت الكابتن وإضافة شارة التقييم الرقمية (التقييم 5.0) بجوار اسمه للعميل
             var capCard = card.querySelector('.order-captain-card');
             if (capCard && capCard.dataset.capPolished !== '1') {
               capCard.dataset.capPolished = '1';
@@ -1611,7 +1887,14 @@
                 firstRow.style.cssText = 'display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:6px !important; background:#FFFFFF; border:1px solid #EAE0E4; border-radius:9px; padding:6px 9px;';
                 var nameStrong = firstRow.querySelector('strong');
                 if (nameStrong) {
-                  nameStrong.style.cssText = 'font-size:12px; font-weight:900; color:var(--primary); line-height:1.35; white-space:normal; overflow:visible;';
+                  nameStrong.style.cssText = 'font-size:12px; font-weight:900; color:var(--primary); line-height:1.35; white-space:normal; overflow:visible; display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap;';
+                  if (!nameStrong.querySelector('.cust-cap-rating-num-pill')) {
+                    var capRatStr = (ordObj && ordObj.assignedCourierRating) ? ordObj.assignedCourierRating : '5.0';
+                    var ratSpan = document.createElement('span');
+                    ratSpan.className = 'cust-cap-rating-num-pill';
+                    ratSpan.innerText = 'التقييم ' + capRatStr;
+                    nameStrong.appendChild(ratSpan);
+                  }
                 }
               }
               var shareLinks = capCard.querySelectorAll('a, button');
@@ -1626,6 +1909,28 @@
               });
             }
 
+            // 1-ب. إضافة التقييم الرقمي (التقييم 5.0) بجوار اسم الكابتن في كروت عروض الأسعار داخل قائمة طلباتي
+            var offerCards = card.querySelectorAll('.captain-offer-card');
+            offerCards.forEach(function (ofCard, ofIdx) {
+              if (ofCard.dataset.offerRatPolished === '1') return;
+              ofCard.dataset.offerRatPolished = '1';
+              var nameEl = ofCard.querySelector('strong');
+              if (nameEl && !nameEl.querySelector('.cust-cap-rating-num-pill')) {
+                var offerRatingStr = '5.0';
+                if (ordObj && Array.isArray(ordObj.captainOffers)) {
+                  var pendOffers = ordObj.captainOffers.filter(function (x) { return x && x.status === 'pending'; });
+                  if (pendOffers[ofIdx] && pendOffers[ofIdx].captainRating) {
+                    offerRatingStr = pendOffers[ofIdx].captainRating;
+                  }
+                }
+                nameEl.style.cssText = 'display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap; font-size:12px; color:#5A2846;';
+                var rPill = document.createElement('span');
+                rPill.className = 'cust-cap-rating-num-pill';
+                rPill.innerText = 'التقييم ' + offerRatingStr;
+                nameEl.appendChild(rPill);
+              }
+            });
+
             // 2. إلغاء جزء «إيه الأخبار دلوقتي» نهائياً لتقليص حجم الكارت، وتنسيق صندوق الاستلام والتسليم
             Array.from(card.children).forEach(function (child) {
               if (!child || child.tagName !== 'DIV') return;
@@ -1639,6 +1944,17 @@
                 child.style.display = 'none';
                 child.dataset.hiddenByEnnaby = '1';
                 return;
+              }
+
+              // إضافة التقييم الرقمي للكابتن في سطر «وصّلهولك الكابتن» للطلبات المكتملة
+              if (isCustomerContainer && ordObj && txt.indexOf('وصّلهولك الكابتن') !== -1 && !child.querySelector('.cust-cap-rating-num-pill')) {
+                var cRatingVal = ordObj.assignedCourierRating || '5.0';
+                var strongEl = child.querySelector('strong') || child;
+                var pill = document.createElement('span');
+                pill.className = 'cust-cap-rating-num-pill';
+                pill.style.marginRight = '5px';
+                pill.innerText = 'التقييم ' + cRatingVal;
+                strongEl.appendChild(pill);
               }
 
               var isRouteBox = (
@@ -1657,14 +1973,27 @@
               }
             });
 
-            // 3. تحويل الكروت في «طلباتي» للعميل والكابتن إلى كروت قابلة للطي والفرد (Accordion) مثل صفحة الأدمن
+            // تحديث زر التقييم داخل الكارت ليفتح النافذة المنبثقة المطورة
+            card.querySelectorAll('button').forEach(function (btnEl) {
+              var bText = (btnEl.textContent || '').trim();
+              if (bText.indexOf('قيّم الكابتن') !== -1 || bText.indexOf('قيم الكابتن') !== -1) {
+                btnEl.className = 'unrated-order-remind-btn';
+                btnEl.innerHTML = '<i class="fa-solid fa-star"></i> <span>قيّم الكابتن على أوردرك (' + safeEsc(ordId || '') + ') ⭐</span>';
+                if (ordId) {
+                  btnEl.onclick = function () {
+                    window.openCustomerRatingModalEnhanced(ordId);
+                  };
+                }
+              }
+            });
+
+            // 3. تحويل الكروت في «طلباتي» للعميل والكابتن إلى كروت قابلة للطي والفرد (Accordion)
             if (isAccordionList && ordObj && card.dataset.accWrapped !== '1') {
               card.dataset.accWrapped = '1';
               card.setAttribute('data-ennaby-ord-id', ordObj.id);
 
               var originalChildren = Array.from(card.children);
               if (originalChildren.length > 0) {
-                // إخفاء السطر العلوي القديم واستبداله بالهيدر التفاعلي القابل للطي والفرد
                 originalChildren[0].style.display = 'none';
               }
 
@@ -1685,17 +2014,20 @@
               card.appendChild(accHeader);
               card.appendChild(accBody);
 
-              // فتح الطلبات النشطة/الجارية للعميل تلقائياً، وإبقاء المكتملة والملغية مطوية لترتيب الشاشة
-              var isFinishedOrder = (
+              // الطلب المكتمل غير المقيّم يظل مفتوحاً ولا ينطوي إلا بعد أن يقيمه العميل
+              var isUnratedCompletedOrd = isCustomerContainer && ordObj.status === 'مكتمل' && (ordObj.rating === null || ordObj.rating === undefined);
+              var isFinishedOrder = !isUnratedCompletedOrd && (
                 ordObj.status === 'مكتمل' ||
                 ordObj.status === 'تمت التسوية الإدارية' ||
                 String(ordObj.status || '').indexOf('ملغي') !== -1
               );
-              var isActiveCustomerOrder = isCustomerContainer && !isFinishedOrder;
+              var isActiveOrUnratedCustomerOrder = isCustomerContainer && !isFinishedOrder;
 
-              var shouldBeOpen = expandedOrdersMap[ordObj.id] !== undefined
-                ? Boolean(expandedOrdersMap[ordObj.id])
-                : (Boolean(expandAllStateByContainer[containerId]) || Boolean(isActiveCustomerOrder));
+              var shouldBeOpen = isUnratedCompletedOrd
+                ? true
+                : (expandedOrdersMap[ordObj.id] !== undefined
+                    ? Boolean(expandedOrdersMap[ordObj.id])
+                    : (Boolean(expandAllStateByContainer[containerId]) || Boolean(isActiveOrUnratedCustomerOrder)));
 
               card.classList.toggle('ennaby-acc-open', shouldBeOpen);
             }
@@ -1770,6 +2102,11 @@
       document.addEventListener('DOMContentLoaded', function () {
         installColorCodedToastOverride();
 
+        // ربط دالة openRatingModal الأصلية بالنافذة المنبثقة المطورة
+        window.openRatingModal = function (orderId) {
+          window.openCustomerRatingModalEnhanced(orderId);
+        };
+
         var mapSearchInp = document.getElementById('inlineMapSearchInput');
         if (mapSearchInp) {
           mapSearchInp.placeholder = 'ابحث عن شارع، محل، أو منطقة...';
@@ -1781,9 +2118,14 @@
           polishOrderCardsV3(id);
           var obs = new MutationObserver(function () {
             polishOrderCardsV3(id);
+            window.evaluateRealtimeRatingPopups();
           });
           obs.observe(el, { childList: true });
         });
+
+        setTimeout(function () {
+          window.evaluateRealtimeRatingPopups();
+        }, 600);
       });
     })();
   </script>
@@ -2356,6 +2698,17 @@
                     <h1 style="font-size:16.5px;" id="courierNameHeading">كابتن العنابي</h1>
                     <span id="courierTierBadgeHeader" class="badge tier-badge-bronze" onclick="openCaptainTiersModal()" style="cursor:pointer;" title="دوس هنا عشان تعرف شروط المستويات">كابتن برونزي 🥉</span>
                   </div>
+                  <!-- شريط التقييم الإجمالي الأنيق أسفل اسم الكابتن مباشرة (5 نجوم + 5.0 افتراضي) -->
+                  <div id="courierHeaderRatingBar" class="courier-rating-strip-bar" title="تقييمك الإجمالي من العملاء">
+                    <span id="courierHeaderStarsBox" class="courier-rating-stars-row">
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                    </span>
+                    <strong id="courierHeaderRatingNum" class="courier-rating-num-val">5.0</strong>
+                  </div>
                   <span style="display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 11.5px; font-weight: 700;">
   <span id="courierIdHeading">#----</span>
   <span style="color: var(--text-muted); opacity: 0.6;">•</span>
@@ -2641,12 +2994,9 @@
               </div>
               <!-- كارت نظام مستويات وترقيات الكباتن بالتصميم الاحترافي المتناسق -->
               <div style="background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%); border: 1.5px solid #29B6F6; border-right: 4.5px solid #0288D1; border-radius: 15px; padding: 12px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(2, 136, 209, 0.08);">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed #B3E5FC; flex-wrap: nowrap;">
-                  <div style="display: flex; align-items: center; gap: 7px; min-width: 0;">
-                    <span style="width: 30px; height: 30px; min-width: 30px; border-radius: 9px; background: #E1F5FE; color: #0277BD; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid #81D4FA;">💎</span>
-                    <strong style="font-size: 12.5px; font-weight: 900; color: #01579B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">نظام مستويات وترقيات الكباتن</strong>
-                  </div>
-                  <span style="background: linear-gradient(135deg, #E1F5FE, #B3E5FC); color: #01579B; border: 1px solid #29B6F6; border-radius: 50px; padding: 3px 9px; font-size: 10px; font-weight: 900; white-space: nowrap; flex-shrink: 0;">خصم عمولة تلقائي 🔥</span>
+                <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed #B3E5FC;">
+                  <span style="width: 30px; height: 30px; min-width: 30px; border-radius: 9px; background: #E1F5FE; color: #0277BD; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid #81D4FA; flex-shrink: 0;">💎</span>
+                  <strong style="font-size: 13px; font-weight: 900; color: #01579B; white-space: nowrap;">نظام مستويات وترقيات الكباتن</strong>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 4px; background: #FFFFFF; border: 1px solid #CFEFFD; border-radius: 10px; padding: 6px 8px; margin-bottom: 8px; text-align: center; font-size: 10.5px; font-weight: 900;">
@@ -2824,7 +3174,58 @@
     </div>
   </div>
   <div class="custom-modal" id="disputeModal"><div class="modal-content-card"><h3 style="font-size:15px; font-weight:800; color:var(--danger); margin-bottom:10px;">فيه مشكلة في الأوردر؟ بلّغنا فوراً ⚠️</h3><input type="hidden" id="disputeOrderIdHidden"><textarea id="disputeReasonInput" class="textarea-field" rows="3" placeholder="احكيلنا إيه اللي حصل بالتفصيل يا باشا..."></textarea><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn-main" style="background:var(--danger); flex:1.25; width:auto; height:42px; padding:0 12px; font-size:12.5px; white-space:nowrap;" onclick="confirmCustomerDispute()">ابعت الشكوى للإدارة</button><button class="btn-secondary" style="flex:1; width:auto; height:42px; padding:0 12px; font-size:12px; white-space:nowrap;" onclick="closeDisputeModal()">خلاص رجعت في كلامي</button></div></div></div>
-  <div class="custom-modal" id="ratingModal"><div class="modal-content-card" style="text-align:center;"><h3 style="font-size:15px; font-weight:800; color:var(--primary); margin-bottom:8px;">قيّم الكابتن الشقيان يا باشا 🛵⭐</h3><input type="hidden" id="ratingOrderIdHidden"><div style="display:flex; justify-content:center; gap:8px; font-size:26px; color:#FFB300; margin-bottom:10px; cursor:pointer;" id="starRatingContainer"><i class="fa-solid fa-star" onclick="setRatingStars(1)"></i><i class="fa-solid fa-star" onclick="setRatingStars(2)"></i><i class="fa-solid fa-star" onclick="setRatingStars(3)"></i><i class="fa-solid fa-star" onclick="setRatingStars(4)"></i><i class="fa-solid fa-star" onclick="setRatingStars(5)"></i></div><div id="ratingStarFeedbackText" style="font-size:12px; font-weight:800; color:var(--primary); background:#FAF4F6; border:1px dashed rgba(123,63,82,0.25); border-radius:10px; padding:6px 10px; margin-bottom:12px;">⭐⭐⭐⭐⭐ — طيار عنابي أصلي وأجدع كابتن! 😍🔥</div><button class="btn-main" onclick="submitOrderRating()">اعتمد التقييم الحلو ده ⭐</button></div></div>
+  <!-- نافذة تقييم العميل للكابتن بعد انتهاء المشوار (بنفس هوية المنصة وزر إغلاق ✕ في الأعلى) -->
+  <div class="custom-modal" id="ratingModal" style="z-index: 2200;" onclick="if(event.target === this) closeCustomerRatingModal()">
+    <div class="modal-content-card radar-popup-card" style="max-width: 365px; border-color: var(--primary);">
+      <div class="radar-popup-header" style="padding: 10px 14px 9px; position: relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="badge" id="ratingModalOrderBadge" style="background:rgba(255,255,255,0.22); color:#fff; font-size:10.5px;">⭐ تقييم المشوار</span>
+          <button type="button" onclick="closeCustomerRatingModal()" aria-label="إغلاق" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.35); width:26px; height:26px; border-radius:50%; font-size:13px; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+        </div>
+        <h3 id="ratingModalMainHeading" style="font-size:14.5px; font-weight:900; line-height:1.35; margin:0;">
+          قيّم الكابتن على أوردرك الأخير 🛵⭐
+        </h3>
+      </div>
+      <div class="radar-popup-body" style="padding: 14px 12px 14px; text-align:center; gap: 10px;">
+        <input type="hidden" id="ratingOrderIdHidden">
+        <div id="ratingModalCaptainSubName" style="font-size:12px; font-weight:800; color:var(--text-main);"></div>
+        <div style="display:flex; justify-content:center; gap:10px; font-size:28px; color:#FFB300; margin:2px 0; cursor:pointer;" id="starRatingContainer">
+          <i class="fa-solid fa-star" onclick="setRatingStars(1)"></i>
+          <i class="fa-solid fa-star" onclick="setRatingStars(2)"></i>
+          <i class="fa-solid fa-star" onclick="setRatingStars(3)"></i>
+          <i class="fa-solid fa-star" onclick="setRatingStars(4)"></i>
+          <i class="fa-solid fa-star" onclick="setRatingStars(5)"></i>
+        </div>
+        <div id="ratingStarFeedbackText" style="font-size:11.5px; font-weight:800; color:var(--primary); background:#FAF4F6; border:1px dashed rgba(123,63,82,0.28); border-radius:10px; padding:7px 10px;">
+          ⭐⭐⭐⭐⭐ — طيار عنابي أصلي وأجدع كابتن! 😍🔥
+        </div>
+        <button type="button" class="btn-main" id="submitOrderRatingBtn" onclick="submitOrderRating()">
+          <i class="fa-solid fa-star"></i> اعتمد التقييم الحلو ده ⭐
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إشعار الكابتن المنبثقة الفورية لحظة إرسال العميل للتقييم 🌟 -->
+  <div class="custom-modal" id="captainNewRatingPopupModal" style="z-index: 2220;" onclick="if(event.target === this) closeCaptainNewRatingModal()">
+    <div class="modal-content-card radar-popup-card" style="max-width: 365px; border-color: var(--primary);">
+      <div class="radar-popup-header" style="padding: 10px 14px 9px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="badge" id="captainRatingPopupOrderBadge" style="background:rgba(255,255,255,0.22); color:#fff; font-size:10.5px;">🛵 تقييم فوري جديد</span>
+          <button type="button" onclick="closeCaptainNewRatingModal()" aria-label="إغلاق" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.35); width:26px; height:26px; border-radius:50%; font-size:13px; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+        </div>
+        <h3 id="captainRatingPopupTitle" style="font-size:14.5px; font-weight:900; line-height:1.35; margin:0;">
+          🌟 العميل بعتلك تقييم على مشوارك!
+        </h3>
+      </div>
+      <div class="radar-popup-body" style="padding: 14px 12px 14px; text-align:center; gap: 10px;">
+        <div id="captainRatingPopupBodyBox"></div>
+        <button type="button" class="btn-main" onclick="closeCaptainNewRatingModal()">
+          <i class="fa-solid fa-heart"></i> تسلم يا باشا.. مستمر في التألق 🛵💪
+        </button>
+      </div>
+    </div>
+  </div>
   
   <div class="custom-modal" id="captainSuccessModal">
     <div class="modal-content-card" style="text-align:center; padding:24px 16px;">
@@ -2924,6 +3325,57 @@
         </div>
       </div>
       <button type="button" class="btn-main" style="margin-top:12px;" onclick="closeCaptainLegalTermsModal()">قرأت الشروط وموافق يا بطل 💪✅</button>
+    </div>
+  </div>
+
+  <!-- نافذة استعادة وتعيين باسورد جديد للكابتن بالرقم القومي مع فتح الحساب أوتوماتيكياً 🔐 -->
+  <div class="custom-modal" id="courierForgotPassModal" style="z-index: 2250;" onclick="if(event.target === this) closeCourierForgotPassModal()">
+    <div class="modal-content-card radar-popup-card" style="max-width: 370px; border-color: var(--primary);">
+      <div class="radar-popup-header" style="padding: 11px 14px 10px; position: relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="badge" style="background:rgba(255,255,255,0.22); color:#fff; font-size:10px; padding:2px 8px;">🛵 حماية حساب الكابتن</span>
+          <button type="button" onclick="closeCourierForgotPassModal()" aria-label="إغلاق" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.35); width:26px; height:26px; border-radius:50%; font-size:13px; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+        </div>
+        <h3 style="font-size:15px; font-weight:900; line-height:1.35; margin:0;">
+          اعمل باسورد جديد لحسابك 🔐
+        </h3>
+      </div>
+
+      <div class="radar-popup-body" style="padding: 12px 13px 14px; display:flex; flex-direction:column; gap:8px; text-align:right;">
+        <div class="input-group" style="margin-bottom:2px;">
+          <label class="input-label" for="forgotPassPhoneInput" style="color:var(--primary); font-weight:800;">رقم موبايلك المسجل بيه 📱</label>
+          <input type="tel" inputmode="numeric" autocomplete="tel" id="forgotPassPhoneInput" class="input-field" placeholder="01xxxxxxxxx" maxlength="15">
+        </div>
+
+        <div class="input-group" style="margin-bottom:2px;">
+          <label class="input-label" for="forgotPassNationalIdInput" style="color:var(--primary); font-weight:800;">اكتب الرقم القومى بتاعك 🪪</label>
+          <input type="text" inputmode="numeric" id="forgotPassNationalIdInput" class="input-field" placeholder="اكتب الـ 14 رقم بتوع البطاقة كاملين" maxlength="14">
+        </div>
+
+        <div class="input-group" style="margin-bottom:2px;">
+          <label class="input-label" for="forgotPassNewInput" style="color:var(--primary); font-weight:800;">اكتب الرقم السرى الجديد 🔒</label>
+          <div style="position:relative;">
+            <input type="password" id="forgotPassNewInput" class="input-field" placeholder="اكتب الرقم السري الجديد">
+            <button type="button" onclick="togglePasswordVisibility('forgotPassNewInput', 'toggleForgotNewPassIcon')" style="position:absolute; left:10px; top:9px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
+              <i class="fa-solid fa-eye" id="toggleForgotNewPassIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:4px;">
+          <label class="input-label" for="forgotPassConfirmInput" style="color:var(--primary); font-weight:800;">اعد تأكيد كتابة الرقم السرى الجديد 🔐</label>
+          <div style="position:relative;">
+            <input type="password" id="forgotPassConfirmInput" class="input-field" placeholder="اكتب الرقم السري الجديد تاني للتأكيد" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitCourierForgotPasswordReset(); }">
+            <button type="button" onclick="togglePasswordVisibility('forgotPassConfirmInput', 'toggleForgotConfPassIcon')" style="position:absolute; left:10px; top:9px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
+              <i class="fa-solid fa-eye" id="toggleForgotConfPassIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-main" id="courierResetPassSubmitBtn" onclick="submitCourierForgotPasswordReset()" style="margin-top:2px;">
+          <i class="fa-solid fa-unlock-keyhole"></i> حفظ وفتح الحساب الآن
+        </button>
+      </div>
     </div>
   </div>
   <script>
@@ -5476,10 +5928,124 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
     }
 
     function handleCourierForgotPassword() {
-      const p = normalizePhone(document.getElementById('courierLoginPhone')?.value || '');
-      if (!isValidEgyptianPhone(p)) { showToast('اكتب رقم موبايلك اللي مسجل بيه صح الأول يا كابتن 📱⚠️', 'warn'); return; }
-      const msg = `أنا الكابتن صاحب رقم الموبايل المسجل "${p}" ونسيت الباسورد بتاعي وعاوز أستعيده.`;
-      window.open(`https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`, '_blank');
+      const typedLoginPhone = normalizePhone(document.getElementById('courierLoginPhone')?.value || '');
+      const phoneInp = document.getElementById('forgotPassPhoneInput');
+      const natIdInp = document.getElementById('forgotPassNationalIdInput');
+      const newPassInp = document.getElementById('forgotPassNewInput');
+      const confPassInp = document.getElementById('forgotPassConfirmInput');
+
+      if (phoneInp) phoneInp.value = typedLoginPhone || '';
+      if (natIdInp) natIdInp.value = '';
+      if (newPassInp) { newPassInp.value = ''; newPassInp.type = 'password'; }
+      if (confPassInp) { confPassInp.value = ''; confPassInp.type = 'password'; }
+
+      const ic1 = document.getElementById('toggleForgotNewPassIcon');
+      const ic2 = document.getElementById('toggleForgotConfPassIcon');
+      if (ic1) ic1.className = 'fa-solid fa-eye';
+      if (ic2) ic2.className = 'fa-solid fa-eye';
+
+      document.getElementById('toast')?.classList.remove('show');
+      document.getElementById('courierForgotPassModal')?.classList.add('show');
+
+      setTimeout(() => {
+        if (isValidEgyptianPhone(typedLoginPhone)) {
+          natIdInp?.focus();
+        } else {
+          phoneInp?.focus();
+        }
+      }, 90);
+    }
+
+    function closeCourierForgotPassModal() {
+      document.getElementById('courierForgotPassModal')?.classList.remove('show');
+    }
+
+    function submitCourierForgotPasswordReset() {
+      const submitBtn = document.getElementById('courierResetPassSubmitBtn');
+      if (submitBtn) lastInteractedElement = submitBtn;
+
+      withActionLock(async () => {
+        const p = normalizePhone(document.getElementById('forgotPassPhoneInput')?.value || '');
+        const natId = normalizeDigits(document.getElementById('forgotPassNationalIdInput')?.value || '').replace(/\s+/g, '').trim();
+        const newPass = (document.getElementById('forgotPassNewInput')?.value || '').trim();
+        const confPass = (document.getElementById('forgotPassConfirmInput')?.value || '').trim();
+
+        if (!isValidEgyptianPhone(p)) {
+          showToast('اكتب رقم موبايلك المسجل بيه صح يا بطل (11 رقم بيبدأ بـ 01) 📱⚠️', 'warn');
+          document.getElementById('forgotPassPhoneInput')?.focus();
+          return;
+        }
+        if (!/^[0-9]{14}$/.test(natId)) {
+          showToast('اكتب الرقم القومي بتاعك صح (14 رقم كاملين زي البطاقة) 🪪⚠️', 'warn');
+          document.getElementById('forgotPassNationalIdInput')?.focus();
+          return;
+        }
+        if (!newPass || newPass.length < 4) {
+          showToast('الرقم السري الجديد لازم ميكونش أقل من 4 حروف أو أرقام 🔐⚠️', 'warn');
+          document.getElementById('forgotPassNewInput')?.focus();
+          return;
+        }
+        if (newPass !== confPass) {
+          showToast('الرقم السري الجديد وتأكيده مش شبه بعض يا بطل.. راجعهم تاني 🔐⚠️', 'warn');
+          document.getElementById('forgotPassConfirmInput')?.focus();
+          return;
+        }
+
+        const noticeBox = document.getElementById('courierSuspendedNoticeBox');
+        const noticeTitle = document.getElementById('courierSuspendedNoticeTitle');
+        const noticeText = document.getElementById('courierSuspendedReasonText');
+        const reuploadBtn = document.getElementById('courierReuploadDocsBtn');
+        const supportBtn = document.getElementById('courierSuspendedSupportBtn');
+        if (noticeBox) noticeBox.style.display = 'none';
+        if (reuploadBtn) reuploadBtn.style.display = 'none';
+
+        try {
+          const { ok, status, data } = await apiRequest('/api/auth/captain/reset-by-national-id', 'POST', {
+            phone: p,
+            nationalId: natId,
+            newPassword: newPass
+          });
+
+          if (status === 403 && data && data.status === 'مرفوض') {
+            closeCourierForgotPassModal();
+            const loginPhoneEl = document.getElementById('courierLoginPhone');
+            if (loginPhoneEl) loginPhoneEl.value = p;
+            const reason = data.rejectReason || 'الورق والبطاقة محتاجين يتصوروا بوضوح أكتر';
+            rejectedCaptainCache = data.captainProfile || { phone: p };
+            reuploadPhoneTarget = p;
+            if (noticeTitle) noticeTitle.innerText = '❌ ورق التسجيل محتاج يتحدث يا بطل';
+            if (noticeText) noticeText.innerText = `السبب: ${reason}`;
+            if (reuploadBtn) reuploadBtn.style.display = 'flex';
+            const msg = `السلام عليكم، أنا الكابتن صاحب الرقم "${p}"، بخصوص ملاحظة مراجعة الورق: "${reason}"`;
+            if (supportBtn) supportBtn.href = `https://wa.me/${getSupportWhatsapp()}?text=${encodeURIComponent(msg)}`;
+            if (noticeBox) noticeBox.style.display = 'block';
+            showToast(data.message || 'تم تحديث الباسورد، ولكن الورق محتاج يتحدث دلوقتي يا بطل 📄⚠️', 'warn');
+            return;
+          }
+
+          if (!ok || !data || !data.success) {
+            triggerDeviceAlert('warning');
+            showToast((data && data.message) || 'البيانات غير مطابقة، اتأكد من رقم الموبايل والـ 14 رقم بتوع البطاقة ⚠️', 'warn');
+            return;
+          }
+
+          closeCourierForgotPassModal();
+          STATE.activeCourierPhone = p;
+          const loginPhoneEl = document.getElementById('courierLoginPhone');
+          const loginPassEl = document.getElementById('courierLoginPass');
+          if (loginPhoneEl) loginPhoneEl.value = p;
+          if (loginPassEl) loginPassEl.value = '';
+
+          saveSession();
+          subscribeUserToPush(p);
+          renderAllData();
+          switchCourierTab(STATE.currentCourTab || 'home');
+          updateBottomNavVisibility();
+          showToast(data.message || 'تم حفظ الباسورد الجديد وفتح حسابك فوراً يا بطل! 🛵🔐✅', 'ok');
+        } catch (err) {
+          showToast('السيرفر مش مجمع دلوقتي، اتأكد من النت وجرب تاني يا بطل ⚠️', 'warn');
+        }
+      });
     }
 
     function handleCourierLogin() {
@@ -6431,6 +6997,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const pctMeta = formatFareDiffPercentMeta(offeredAmt, baseFare);
       const cashAfterDisc = Math.max(0, roundMoney(offeredAmt - (ord.discountApplied || 0)));
       const tierCls = getCaptainTierBadgeClass(offerPayload.tier);
+      const capRatingNum = offerPayload.captainRating || '5.0';
 
       if (ordBadge) ordBadge.innerText = `🛵 طلب ${ord.id}`;
       if (acceptBtnTxt) acceptBtnTxt.innerText = `قبول العرض (${offeredAmt} ج)`;
@@ -6438,10 +7005,13 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       detailsBox.innerHTML = `
         <div style="background:#F7F0F5; border:1.5px solid #C8A6BE; border-radius:13px; padding:10px 11px; display:flex; flex-direction:column; gap:7px;">
           <div style="background:#FFFFFF; border:1px solid #E2D2D8; border-radius:10px; padding:7px 9px; display:flex; flex-direction:column; gap:5px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:nowrap;">
-              <strong style="font-size:13px; color:#5A2846; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                <i class="fa-solid fa-user-astronaut"></i> ${escapeHtml(offerPayload.captainName)}
-              </strong>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:5px; min-width:0; flex-wrap:wrap;">
+                <strong style="font-size:12.5px; color:#5A2846; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  <i class="fa-solid fa-user-astronaut"></i> ${escapeHtml(offerPayload.captainName)}
+                </strong>
+                <span class="cust-cap-rating-num-pill">التقييم ${escapeHtml(capRatingNum)}</span>
+              </div>
               <span class="badge ${tierCls}" style="font-size:10px; flex-shrink:0;">${escapeHtml(offerPayload.tierBadgeText)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:var(--text-muted); border-top:1px dashed #EFE3E7; padding-top:4px;">
@@ -6545,6 +7115,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
               orderId: o.id,
               captainPhone: capPh,
               captainName: ofItem.captainName || 'كابتن العنابي',
+              captainRating: ofItem.captainRating || '5.0',
               vehicleType: ofItem.vehicleType || 'موتوسيكل',
               tier: ofItem.tier || 'bronze',
               tierBadgeText: ofItem.tierBadgeText || 'كابتن برونزي 🥉',

@@ -568,6 +568,7 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
   if (meta.purchaseBudget) payload.bg = String(meta.purchaseBudget).trim();
   if (Number.isFinite(Number(meta.arrivedAt)) && Number(meta.arrivedAt) > 0) payload.at = Number(meta.arrivedAt);
   if (Number.isFinite(Number(meta.lastBuzzAt)) && Number(meta.lastBuzzAt) > 0) payload.bz = Number(meta.lastBuzzAt);
+  if (Number.isFinite(Number(meta.ratedAt)) && Number(meta.ratedAt) > 0) payload.rt = Number(meta.ratedAt);
   if (Array.isArray(meta.captainOffers) && meta.captainOffers.length > 0) {
     payload.of = meta.captainOffers.slice(0, 15);
   }
@@ -615,6 +616,7 @@ function decodeOrderMetaFromNotes(storedNotes) {
     purchaseBudget: meta.bg || null,
     arrivedAt: meta.at ? Number(meta.at) : null,
     lastBuzzAt: meta.bz ? Number(meta.bz) : null,
+    ratedAt: meta.rt ? Number(meta.rt) : null,
     captainOffers: Array.isArray(meta.of) ? meta.of : []
   };
 }
@@ -1035,6 +1037,32 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
 
   const tierData = computeCaptainTierAndFee(c, mappedOrders, settings);
 
+  // حساب تقييم الكابتن الديناميكي من جميع تقييمات العملاء السابقة والحالية (الافتراضي 5.0)
+  const capNormPhone = normalizePhoneServer(c.phone);
+  const ratedOrdersForCap = (mappedOrders || []).filter(
+    o => o && normalizePhoneServer(o.assignedCourierPhone) === capNormPhone && o.rating !== null && o.rating !== undefined && Number.isFinite(Number(o.rating)) && Number(o.rating) >= 1 && Number(o.rating) <= 5
+  );
+  const ratingsCount = ratedOrdersForCap.length;
+  const ratingAvg = ratingsCount > 0
+    ? Math.round((ratedOrdersForCap.reduce((sum, o) => sum + Number(o.rating), 0) / ratingsCount) * 10) / 10
+    : 5.0;
+  const ratingFormatted = ratingAvg.toFixed(1);
+
+  let lastRatingEvent = null;
+  if (ratingsCount > 0) {
+    const sortedByRatedTime = [...ratedOrdersForCap].sort(
+      (a, b) => (Number(b.ratedAt || b.createdAt) || 0) - (Number(a.ratedAt || a.createdAt) || 0)
+    );
+    const latestOrd = sortedByRatedTime[0];
+    if (latestOrd) {
+      lastRatingEvent = {
+        orderId: latestOrd.id,
+        rating: Number(latestOrd.rating),
+        at: Number(latestOrd.ratedAt || latestOrd.createdAt || 0)
+      };
+    }
+  }
+
   return {
     phone: c.phone,
     fullName: c.full_name || '',
@@ -1060,6 +1088,10 @@ function mapCaptainRow(c, includePhotos = false, storageMap = {}, mappedOrders =
     walletTransactions: Array.isArray(c.wallet_transactions) ? c.wallet_transactions.slice(0, 40) : [],
     adminNotices: Array.isArray(c.admin_notices) ? c.admin_notices : (Array.isArray(c.admin_notices_json) ? c.admin_notices_json : []),
     createdAt: c.created_at ? new Date(c.created_at).getTime() : null,
+    ratingAvg,
+    ratingFormatted,
+    ratingsCount,
+    lastRatingEvent,
     tier: tierData.tier,
     autoTier: tierData.autoTier,
     isManualTier: tierData.isManualTier,
@@ -1117,6 +1149,7 @@ function mapOrderRow(o) {
     purchaseBudget: parsedMeta.purchaseBudget || null,
     arrivedAt: parsedMeta.arrivedAt || null,
     lastBuzzAt: parsedMeta.lastBuzzAt || null,
+    ratedAt: parsedMeta.ratedAt || null,
     captainOffers: Array.isArray(parsedMeta.captainOffers) ? parsedMeta.captainOffers : [],
     packageType: o.package_type || DEFAULT_PACKAGE_TYPES[0],
     payer: o.payer || 'الراسل',
@@ -1648,7 +1681,10 @@ async function buildClientState(req, forceRefresh = false) {
       vehicleType: c.vehicleType || 'موتوسيكل',
       plateNumber: c.plateNumber || '',
       tier: c.tier || 'bronze',
-      tierBadgeText: c.tierBadgeText || 'كابتن برونزي 🥉'
+      tierBadgeText: c.tierBadgeText || 'كابتن برونزي 🥉',
+      ratingAvg: c.ratingAvg ?? 5.0,
+      ratingFormatted: c.ratingFormatted || '5.0',
+      ratingsCount: c.ratingsCount || 0
     });
   });
 
@@ -1673,7 +1709,8 @@ async function buildClientState(req, forceRefresh = false) {
         captainName: ofCapMeta ? ofCapMeta.fullName : (ofItem.captainName || 'كابتن العنابي'),
         vehicleType: ofCapMeta ? ofCapMeta.vehicleType : (ofItem.vehicleType || 'موتوسيكل'),
         tier: ofCapMeta ? ofCapMeta.tier : (ofItem.tier || 'bronze'),
-        tierBadgeText: ofCapMeta ? ofCapMeta.tierBadgeText : (ofItem.tierBadgeText || 'كابتن برونزي 🥉')
+        tierBadgeText: ofCapMeta ? ofCapMeta.tierBadgeText : (ofItem.tierBadgeText || 'كابتن برونزي 🥉'),
+        captainRating: ofCapMeta ? ofCapMeta.ratingFormatted : (ofItem.captainRating || '5.0')
       };
     });
 
@@ -1685,6 +1722,7 @@ async function buildClientState(req, forceRefresh = false) {
       assignedCourierPlate: meta ? meta.plateNumber : '',
       assignedCourierTier: meta ? meta.tier : 'bronze',
       assignedCourierTierBadge: meta ? meta.tierBadgeText : '',
+      assignedCourierRating: meta ? meta.ratingFormatted : '5.0',
       assignedCourierActiveCount: activeCount,
       isCourierStacked: Boolean(isOrdActive && activeCount > 1)
     };
@@ -2674,6 +2712,143 @@ app.post('/api/auth/captain/logout', (req, res) => {
   res.clearCookie('captain_session');
   res.json({ success: true });
 });
+
+// استعادة كلمة مرور الكابتن ذاتياً عبر مطابقة رقم الموبايل والرقم القومي وفتح الحساب أوتوماتيكياً
+app.post('/api/auth/captain/reset-by-national-id', asyncHandler(async (req, res) => {
+  try {
+    const cleanPhone = normalizePhoneServer(req.body && req.body.phone);
+    const cleanNatId = String((req.body && req.body.nationalId) || '')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776))
+      .replace(/\s+/g, '')
+      .trim();
+    const rawNewPass = String((req.body && req.body.newPassword) || '').trim();
+
+    if (!isValidEgyptianPhoneServer(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'اكتب رقم موبايلك المسجل صح يا بطل (11 رقم بيبدأ بـ 01) 📱⚠️' });
+    }
+    if (!/^[0-9]{14}$/.test(cleanNatId)) {
+      return res.status(400).json({ success: false, message: 'الرقم القومي لازم يكون 14 رقم بالظبط زي البطاقة 🪪⚠️' });
+    }
+    if (!rawNewPass || rawNewPass.length < 4) {
+      return res.status(400).json({ success: false, message: 'الرقم السري الجديد لازم ميكونش أقل من 4 حروف أو أرقام 🔐⚠️' });
+    }
+
+    const rateKey = `cap_reset_${cleanPhone}`;
+    const rateLimit = await checkRateLimit(rateKey);
+    if (rateLimit.locked) {
+      return res.status(429).json({ success: false, message: rateLimit.message });
+    }
+
+    const { data: captain } = await supabase
+      .from('captains')
+      .select('*')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
+    if (!captain) {
+      await recordFailedAttempt(rateKey, rateLimit.attemptData);
+      return res.status(404).json({ success: false, message: 'رقم الموبايل ده مش مسجل في كباتن العنابي ⚠️' });
+    }
+
+    const storedNatId = String(captain.national_id || '')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776))
+      .replace(/\s+/g, '')
+      .trim();
+
+    if (!storedNatId || storedNatId !== cleanNatId) {
+      await recordFailedAttempt(rateKey, rateLimit.attemptData);
+      return res.status(401).json({
+        success: false,
+        message: 'الرقم القومي غير مطابق للرقم المسجل مع هذا الموبايل! اتأكد من الـ 14 رقم صح 🪪⚠️'
+      });
+    }
+
+    await clearFailedAttempts(rateKey);
+    await clearFailedAttempts(cleanPhone);
+
+    const hashedPass = await bcrypt.hash(rawNewPass, 10);
+    const nextSessionVer = Number(captain.session_version || 1) + 1;
+
+    const { error: updErr } = await supabase
+      .from('captains')
+      .update({
+        password_hash: hashedPass,
+        session_version: nextSessionVer
+      })
+      .eq('phone', cleanPhone);
+
+    if (updErr) {
+      return res.status(500).json({ success: false, message: 'تعذر حفظ الباسورد الجديد حالياً، جرب تاني ⚠️' });
+    }
+
+    if (captain.status === 'مرفوض') {
+      invalidateStateCache();
+      return res.status(403).json({
+        success: false,
+        status: 'مرفوض',
+        rejectReason: captain.reject_reason || captain.suspend_reason || 'يرجى إعادة رفع صور البطاقة والمركبة بوضوح',
+        captainProfile: {
+          phone: captain.phone,
+          fullName: captain.full_name,
+          nationalId: captain.national_id,
+          primaryZone: captain.primary_zone,
+          vehicleType: captain.vehicle_type,
+          plateNumber: captain.plate_number
+        },
+        message: 'تم تحديث الباسورد، ولكن يرجى إعادة رفع صور واضحة للمستندات 📄⚠️'
+      });
+    }
+
+    if (captain.status === 'موقوف') {
+      invalidateStateCache();
+      return res.status(403).json({
+        success: false,
+        status: 'موقوف',
+        message: `تم تحديث الباسورد، ولكن حسابك موقوف حالياً: ${captain.suspend_reason || 'يرجى التواصل مع الإدارة'} ⛔`
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        phone: cleanPhone,
+        role: 'courier',
+        session_version: nextSessionVer,
+        pwdSig: getPasswordSignature(hashedPass)
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    const isSecureCookie = IS_PRODUCTION || req.secure || req.headers['x-forwarded-proto'] === 'https';
+    res.cookie('captain_session', token, {
+      httpOnly: true,
+      secure: isSecureCookie,
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    req.cookies = { ...(req.cookies || {}), captain_session: token };
+    req.query = { ...(req.query || {}), role: 'courier' };
+
+    invalidateStateCache();
+    notifyAdminsPush('captain', {
+      title: `🔐 استعادة باسورد كابتن (${captain.full_name})`,
+      body: `قام الكابتن ${captain.full_name} (${cleanPhone}) بتعيين باسورد جديد بالرقم القومي وفتح حسابه.`
+    });
+
+    const state = await buildClientState(req, true);
+    res.json({
+      success: true,
+      phone: cleanPhone,
+      message: `تم حفظ الباسورد الجديد وفتح حسابك بنجاح يا كابتن ${captain.full_name}! 🛵🔐✅`,
+      state
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'تعذر استعادة كلمة المرور حالياً، جرب تاني ⚠️' });
+  }
+}));
 
 app.post('/api/captains/register', asyncHandler(async (req, res) => {
   try {
@@ -4128,7 +4303,7 @@ app.post('/api/orders/:id/cancel', asyncHandler(async (req, res) => {
   }
 }));
 
-// [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل التقييم
+// [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل التقييم وإبلاغ الكابتن لحظياً
 app.post('/api/orders/:id/rate', asyncHandler(async (req, res) => {
   const rawState = await fetchRawDatabaseState(false);
   const { data: existing } = await supabase.from('orders').select('*').eq('id', req.params.id).maybeSingle();
@@ -4145,15 +4320,32 @@ app.post('/api/orders/:id/rate', asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'تم تقييم هذا المشوار مسبقاً يا باشا ⭐' });
   }
 
-  const rating = Math.min(5, Math.max(1, Number(req.body.rating) || 5));
-  await supabase.from('orders').update({ rating }).eq('id', req.params.id).is('rating', null);
+  const rating = Math.min(5, Math.max(1, Math.round(Number(req.body.rating) || 5)));
+  const meta = decodeOrderMetaFromNotes(existing.customer_notes || '');
+  meta.ratedAt = Date.now();
+  const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, meta);
+
+  await supabase
+    .from('orders')
+    .update({ rating, customer_notes: updatedNotes })
+    .eq('id', req.params.id)
+    .is('rating', null);
+
+  if (existing.assigned_courier_phone) {
+    const starsVisual = '⭐'.repeat(rating);
+    sendPushNotificationToPhone(existing.assigned_courier_phone, {
+      title: `🌟 تقييم جديد على أوردرك (${existing.id})!`,
+      body: `العميل صاحب الأوردر (${existing.id}) بعتلك تقييم ${rating} نجوم ${starsVisual} عاش يا بطل! 🛵`
+    });
+  }
+
   notifyAdminsPush('customer', {
     title: `⭐ تقييم جديد للطلب (${req.params.id})`,
     body: `قام العميل بتقييم الكابتن بـ ${rating} نجوم.`
   });
   invalidateStateCache();
   const state = await buildClientState(req, true);
-  res.json({ success: true, state });
+  res.json({ success: true, rating, orderId: existing.id, state });
 }));
 
 // [FIX-06 & NEW-SEC-03] التحقق من ملكية العميل للطلب واكتماله قبل تقديم اعتراض

@@ -3697,6 +3697,20 @@ function renderAdminDynamicSettingsInputs() {
       document.getElementById('adminPricingTableBody').innerHTML = r.map(x=>`<tr><td>${escapeHtml(x.f)}</td><td>${escapeHtml(x.t)}</td><td><input type="number" class="input-field route-price-input" data-route="${escapeHtml(x.k)}" value="${STATE.pricing[x.k]||40}" oninput="handleRoutePriceInput(this)" style="width:85px; padding:6px; font-weight:700;"></td></tr>`).join('');
     }
 
+    function buildAdminCaptainStarsHtml(ratingVal) {
+      const num = Number.isFinite(Number(ratingVal)) ? Number(ratingVal) : 5.0;
+      const litStars = Math.max(1, Math.min(5, Math.round(num)));
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= litStars) {
+          starsHtml += '<i class="fa-solid fa-star" style="color:#FFB300; font-size:11px;"></i>';
+        } else {
+          starsHtml += '<i class="fa-regular fa-star" style="color:#C8BDBF; font-size:11px;"></i>';
+        }
+      }
+      return starsHtml;
+    }
+
     function filterAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect');
       if (!s) return;
@@ -3707,7 +3721,7 @@ function renderAdminDynamicSettingsInputs() {
       const prevVal = s.value;
       s.innerHTML = filtered.length === 0
         ? `<option value="">-- لا يوجد كابتن مطابق للبحث --</option>`
-        : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}]</option>`).join('');
+        : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [⭐ ${escapeHtml(c.ratingFormatted || '5.0')} | ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}]</option>`).join('');
       if (prevVal && filtered.some(c => c.phone === prevVal)) {
         s.value = prevVal;
       } else if (filtered.length > 0) {
@@ -3780,9 +3794,20 @@ function renderAdminDynamicSettingsInputs() {
         ? `${c.effectiveFeePercent ?? STATE.settings.platformFeePercent ?? 13}% (حوالي ${c.effectiveFee ?? 5.2} ج لمشوار 40ج)`
         : `${c.effectiveFee ?? 7} ج`;
 
+      const ratingFormatted = c.ratingFormatted || (Number(c.ratingAvg ?? 5.0).toFixed(1));
+      const ratingsCount = Number(c.ratingsCount || 0);
+      const starsHtml = buildAdminCaptainStarsHtml(c.ratingAvg ?? 5.0);
+
       bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-          <strong>${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
+          <div>
+            <strong style="font-size:13px; display:block;">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
+            <div style="display:inline-flex; align-items:center; gap:5px; background:#FFFFFF; border:1px solid #E5D4DA; border-radius:50px; padding:2px 9px; margin-top:4px;">
+              <span style="display:inline-flex; align-items:center; gap:2px;">${starsHtml}</span>
+              <strong style="font-size:11.5px; color:var(--primary); font-weight:900;">${escapeHtml(ratingFormatted)}</strong>
+              <small style="font-size:10px; color:var(--text-muted); font-weight:700;">(${ratingsCount > 0 ? `${ratingsCount} تقييم` : 'افتراضي'})</small>
+            </div>
+          </div>
           <div style="display:flex; gap:4px; align-items:center;">
             <span class="badge ${tierBadgeCls}">${escapeHtml(c.tierBadgeText || 'كابتن برونزي 🥉')}</span>
             <span class="badge ${getStatusBadgeClass(c.status)}">${escapeHtml(c.status)}</span>
@@ -3976,12 +4001,8 @@ function renderAdminDynamicSettingsInputs() {
       if (fo.length === 0) {
         document.getElementById('adminOrdersFeed').innerHTML = '<div style="color:#888; font-size:11.5px; text-align:center; padding:12px;">لا توجد طلبات مطابقة للفلتر أو البحث الحالي.</div>';
       } else {
-        const allPageExpanded = pageOrders.length > 0 && pageOrders.every(o => window.expandedAdminOrderIds.has(o.id));
-        const quickBarHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:2px 4px; font-size:10.5px; color:var(--text-muted); font-weight:800;">
+        const quickBarHtml = `<div style="display:flex; justify-content:center; align-items:center; background:#FAF4F6; border:1px dashed #D7C2CA; border-radius:10px; padding:6px 10px; margin-bottom:4px; font-size:11px; color:var(--primary); font-weight:800; text-align:center; white-space:nowrap;">
           <span>💡 اضغط على أي طلب لفتح أو طي تفاصيله الكاملة</span>
-          <button type="button" onclick="toggleAllAdminPageOrdersExpand()" style="background:#FAF4F6; color:var(--primary); border:1px solid #E2D2D8; border-radius:20px; padding:3px 10px; font-size:10px; font-weight:800; cursor:pointer;">
-            ${allPageExpanded ? 'طي الكل 🔼' : 'توسيع الصفحة 🔽'}
-          </button>
         </div>`;
 
         const cardsHtml = pageOrders.map(o => {
