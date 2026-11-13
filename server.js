@@ -191,8 +191,8 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع منع تخزين sw.js في الكاش لضمان عمل الإشعارات فوراً
-const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
+// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع دعم التحويل التلقائي بين صيغ PNG و JPG
+const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-192.jpg', 'icon-512.png', 'icon-512.jpg', 'logo-1.png', 'logo-1.jpg'];
 ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
   app.get(`/${assetName}`, (req, res) => {
     if (assetName === 'sw.js') {
@@ -205,11 +205,13 @@ ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
     const rootPath = path.join(__dirname, assetName);
     if (fs.existsSync(pubPath)) return res.sendFile(pubPath);
     if (fs.existsSync(rootPath)) return res.sendFile(rootPath);
-    if (assetName === 'logo-1.png') {
-      const jpgFallback = fs.existsSync(path.join(__dirname, 'public', 'logo-1.jpg'))
-        ? path.join(__dirname, 'public', 'logo-1.jpg')
-        : path.join(__dirname, 'logo-1.jpg');
-      if (fs.existsSync(jpgFallback)) return res.sendFile(jpgFallback);
+
+    if (assetName.endsWith('.png')) {
+      const altJpg = assetName.replace(/\.png$/i, '.jpg');
+      const pubJpg = path.join(__dirname, 'public', altJpg);
+      const rootJpg = path.join(__dirname, altJpg);
+      if (fs.existsSync(pubJpg)) return res.sendFile(pubJpg);
+      if (fs.existsSync(rootJpg)) return res.sendFile(rootJpg);
     }
     res.status(404).end();
   });
@@ -1266,7 +1268,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
     supabase.from('settings').select('*').eq('id', 1).maybeSingle(),
     supabase.from('customers').select('*'),
     supabase.from('captains').select('*').order('created_at', { ascending: false }),
-    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
+    supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(2500),
     supabase.from('admins').select('*').order('created_at', { ascending: true }),
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50),
     fetchCaptainStorageFilesMap()
@@ -1451,55 +1453,72 @@ async function fetchRawDatabaseState(forceRefresh = false) {
   return rawData;
 }
 
+let settingsSaveQueue = Promise.resolve();
+
 async function saveIncentivesToDatabase(rawState, partialIncentives = {}, extraSettingsColumns = {}, customBasePricing = null) {
-  const prevSettings = rawState.settings || {};
-  const mergedIncentives = {
-    commissionMode: prevSettings.commissionMode === 'percentage' ? 'percentage' : 'fixed',
-    platformFeePercent: Math.min(100, Math.max(0, roundMoney(prevSettings.platformFeePercent ?? 13))),
-    tierPlatinumPercent: Math.min(100, Math.max(0, roundMoney(prevSettings.tierPlatinumPercent ?? 12.5))),
-    tierDiamondPercent: Math.min(100, Math.max(0, roundMoney(prevSettings.tierDiamondPercent ?? 12))),
-    welcomeBonusActive: prevSettings.welcomeBonusActive !== false,
-    welcomeBonusAmount: roundMoney(prevSettings.welcomeBonusAmount ?? 7),
-    referralRewardActive: prevSettings.referralRewardActive !== false,
-    referralRewardAmount: roundMoney(prevSettings.referralRewardAmount ?? 50),
-    referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
-    maxConcurrentOrdersPerCaptain: Math.max(1, Number(prevSettings.maxConcurrentOrdersPerCaptain ?? 3)),
-    broadcastTarget: prevSettings.broadcastTarget || 'all',
-    priceHumorMessage: prevSettings.priceHumorMessage !== undefined
-      ? String(prevSettings.priceHumorMessage)
-      : 'صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝',
-    tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
-    tierDaysWindow: Math.max(1, Number(prevSettings.tierDaysWindow ?? 7)),
-    tierConsecutiveDaysForDiamond: Math.max(1, Number(prevSettings.tierConsecutiveDaysForDiamond ?? 28)),
-    tierWeeksForDiamond: Math.max(1, Number(prevSettings.tierWeeksForDiamond ?? 4)),
-    tierPlatinumDiscount: Math.max(0, roundMoney(prevSettings.tierPlatinumDiscount ?? 1)),
-    tierDiamondDiscount: Math.max(0, roundMoney(prevSettings.tierDiamondDiscount ?? 2)),
-    tierManualOverrides: prevSettings.tierManualOverrides || {},
-    surgePercent: Math.max(0, Number(prevSettings.surgePercent ?? 0)),
-    surgeEndTime: Math.max(0, Number(prevSettings.surgeEndTime ?? 0)),
-    surgeDurationMinutes: Math.max(1, Number(prevSettings.surgeDurationMinutes ?? 30)),
-    autoSurgeEnabled: Boolean(prevSettings.autoSurgeEnabled),
-    pendingTopupRequests: Array.isArray(prevSettings.pendingTopupRequests) ? prevSettings.pendingTopupRequests.slice(0, 50) : [],
-    promoCodes: Array.isArray(prevSettings.promoCodes) ? prevSettings.promoCodes : [],
-    adminPushMasterEnabled: prevSettings.adminPushMasterEnabled !== false,
-    adminPushCustomersEnabled: prevSettings.adminPushCustomersEnabled !== false,
-    adminPushCaptainsEnabled: prevSettings.adminPushCaptainsEnabled !== false,
-    appInstallsCount: Math.max(0, Number(prevSettings.appInstallsCount ?? 0)),
-    installedClientIds: Array.isArray(prevSettings.installedClientIds) ? prevSettings.installedClientIds.slice(-2000) : [],
-    analyticsHistory: prevSettings.analyticsHistory || { installs: {}, customers: {}, captains: {}, completedOrders: {} },
-    ...partialIncentives
+  const runSave = async () => {
+    const { data: latestRow } = await supabase.from('settings').select('pricing').eq('id', 1).maybeSingle();
+    const latestPricingObj = (latestRow && latestRow.pricing && typeof latestRow.pricing === 'object')
+      ? { ...latestRow.pricing }
+      : { ...(rawState.pricing || DEFAULT_PRICING) };
+    const latestStoredInc = (latestPricingObj.__incentives && typeof latestPricingObj.__incentives === 'object')
+      ? latestPricingObj.__incentives
+      : {};
+    delete latestPricingObj.__incentives;
+
+    const prevSettings = { ...(rawState.settings || {}), ...latestStoredInc };
+    const mergedIncentives = {
+      commissionMode: prevSettings.commissionMode === 'percentage' ? 'percentage' : 'fixed',
+      platformFeePercent: Math.min(100, Math.max(0, roundMoney(prevSettings.platformFeePercent ?? 13))),
+      tierPlatinumPercent: Math.min(100, Math.max(0, roundMoney(prevSettings.tierPlatinumPercent ?? 12.5))),
+      tierDiamondPercent: Math.min(100, Math.max(0, roundMoney(prevSettings.tierDiamondPercent ?? 12))),
+      welcomeBonusActive: prevSettings.welcomeBonusActive !== false,
+      welcomeBonusAmount: roundMoney(prevSettings.welcomeBonusAmount ?? 7),
+      referralRewardActive: prevSettings.referralRewardActive !== false,
+      referralRewardAmount: roundMoney(prevSettings.referralRewardAmount ?? 50),
+      referralRequiredOrders: Math.max(1, Number(prevSettings.referralRequiredOrders ?? 2)),
+      maxConcurrentOrdersPerCaptain: Math.max(1, Number(prevSettings.maxConcurrentOrdersPerCaptain ?? 3)),
+      broadcastTarget: prevSettings.broadcastTarget || 'all',
+      priceHumorMessage: prevSettings.priceHumorMessage !== undefined
+        ? String(prevSettings.priceHumorMessage)
+        : 'صديقي العزيز اللذيذ 😂 السعر ممكن يزيد لو المشوار بتاعك بره نطاق الاختيارات، وساعتها الكابتن هيبعتلك عرض بالسعر في التطبيق توافق عليه أو تتفاوض معاه براحتك 🛵🤝',
+      tierWeeklyOrdersTarget: Math.max(1, Number(prevSettings.tierWeeklyOrdersTarget ?? 25)),
+      tierDaysWindow: Math.max(1, Number(prevSettings.tierDaysWindow ?? 7)),
+      tierConsecutiveDaysForDiamond: Math.max(1, Number(prevSettings.tierConsecutiveDaysForDiamond ?? 28)),
+      tierWeeksForDiamond: Math.max(1, Number(prevSettings.tierWeeksForDiamond ?? 4)),
+      tierPlatinumDiscount: Math.max(0, roundMoney(prevSettings.tierPlatinumDiscount ?? 1)),
+      tierDiamondDiscount: Math.max(0, roundMoney(prevSettings.tierDiamondDiscount ?? 2)),
+      tierManualOverrides: prevSettings.tierManualOverrides || {},
+      surgePercent: Math.max(0, Number(prevSettings.surgePercent ?? 0)),
+      surgeEndTime: Math.max(0, Number(prevSettings.surgeEndTime ?? 0)),
+      surgeDurationMinutes: Math.max(1, Number(prevSettings.surgeDurationMinutes ?? 30)),
+      autoSurgeEnabled: Boolean(prevSettings.autoSurgeEnabled),
+      pendingTopupRequests: Array.isArray(prevSettings.pendingTopupRequests) ? prevSettings.pendingTopupRequests.slice(0, 50) : [],
+      promoCodes: Array.isArray(prevSettings.promoCodes) ? prevSettings.promoCodes : [],
+      adminPushMasterEnabled: prevSettings.adminPushMasterEnabled !== false,
+      adminPushCustomersEnabled: prevSettings.adminPushCustomersEnabled !== false,
+      adminPushCaptainsEnabled: prevSettings.adminPushCaptainsEnabled !== false,
+      appInstallsCount: Math.max(0, Number(prevSettings.appInstallsCount ?? 0)),
+      installedClientIds: Array.isArray(prevSettings.installedClientIds) ? prevSettings.installedClientIds.slice(-2000) : [],
+      analyticsHistory: prevSettings.analyticsHistory || { installs: {}, customers: {}, captains: {}, completedOrders: {} },
+      ...partialIncentives
+    };
+
+    const basePricing = customBasePricing ? { ...customBasePricing } : latestPricingObj;
+    basePricing.__incentives = mergedIncentives;
+
+    await supabase.from('settings').upsert({
+      id: 1,
+      ...extraSettingsColumns,
+      pricing: basePricing
+    });
+
+    return mergedIncentives;
   };
 
-  const basePricing = customBasePricing ? { ...customBasePricing } : { ...(rawState.pricing || DEFAULT_PRICING) };
-  basePricing.__incentives = mergedIncentives;
-
-  await supabase.from('settings').upsert({
-    id: 1,
-    ...extraSettingsColumns,
-    pricing: basePricing
-  });
-
-  return mergedIncentives;
+  const nextTask = settingsSaveQueue.then(runSave, runSave);
+  settingsSaveQueue = nextTask.catch(() => {});
+  return nextTask;
 }
 
 // [FIX-02 & NEW-SEC-02] تنقية استجابة /api/bootstrap بالكامل وعزل بيانات العملاء والكباتن والطلبات حسب الجلسة الموثقة
@@ -2132,7 +2151,7 @@ app.post('/api/push/subscribe', asyncHandler(async (req, res) => {
     }
 
     // عزل تام للإشعارات: حذف أي ربط قديم لنفس الجهاز (endpoint) يخص حساباً آخر أو جلسة أدمن سابقة
-    const { data: existingSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
+    const { data: existingSubs } = await supabase.from('push_subscriptions').select('phone, subscription').limit(5000);
     if (Array.isArray(existingSubs) && existingSubs.length > 0) {
       const hasValidAdminSession = Boolean(getAuthenticatedAdminFromCookie(req, rawState.rawAdminsRows));
       const stalePhonesToDelete = [];
@@ -4746,12 +4765,14 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, asyncHandl
   promoRedeemLocks.add(compLockKey);
 
   try {
+    let generatedNewPin = null;
     const { data: existing } = await supabase.from('customers').select('phone').eq('phone', phone).maybeSingle();
     if (!existing) {
-      const defaultPinHash = await bcrypt.hash('1234', 10);
+      generatedNewPin = String(crypto.randomInt(1000, 10000));
+      const randomPinHash = await bcrypt.hash(generatedNewPin, 10);
       await supabase.from('customers').insert([{
         phone,
-        pin_hash: defaultPinHash,
+        pin_hash: randomPinHash,
         wallet_balance: 0,
         points: 0,
         wallet_transactions: []
@@ -4768,7 +4789,11 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, asyncHandl
       return res.status(500).json({ success: false, message: 'تعذر إضافة الرصيد للعميل حالياً ⚠️' });
     }
 
-    await logAdminAudit('تعويض عميل', phone, `إضافة ${amt} ج - ${reason || 'هدية'}`, req.admin.name);
+    const auditNote = generatedNewPin
+      ? `إضافة ${amt} ج - ${reason || 'هدية'} (حساب جديد بـ PIN مؤقت: ${generatedNewPin})`
+      : `إضافة ${amt} ج - ${reason || 'هدية'}`;
+
+    await logAdminAudit('تعويض عميل', phone, auditNote, req.admin.name);
     sendPushNotificationToPhone(phone, {
       title: 'هدية في محفظتك يا باشا! 🎁👑',
       body: `نزل في محفظتك ${amt} جنيه رصيد هدية من الرجل العنابي هيتخصم أوتوماتيك في طلبك الجاي فوراً! 😍🛵`
@@ -4781,7 +4806,14 @@ app.post('/api/admin/wallets/customer-compensate', authenticateAdmin, asyncHandl
 
     invalidateStateCache();
     const state = await buildClientState(req, true);
-    res.json({ success: true, state });
+    res.json({
+      success: true,
+      generatedPin: generatedNewPin,
+      message: generatedNewPin
+        ? `تم إضافة ${amt} ج وإنشاء حساب للعميل برمز PIN عشوائي آمن (${generatedNewPin}) ✅`
+        : `تم إضافة ${amt} ج لمحفظة العميل بنجاح ✅`,
+      state
+    });
   } finally {
     promoRedeemLocks.delete(compLockKey);
   }

@@ -2,6 +2,7 @@ const CACHE_NAME = 'ennaby-cache-v56';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/icon-192.png',
   '/icon-512.png'
 ];
 
@@ -131,9 +132,13 @@ self.addEventListener('notificationclick', function(event) {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      const isTargetAdmin = String(targetUrl).includes('/admin');
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
-        if (client && 'focus' in client) {
+        if (!client || !('focus' in client)) continue;
+        const clientPath = new URL(client.url).pathname;
+        const isClientAdmin = clientPath.includes('/admin');
+        if (isTargetAdmin === isClientAdmin) {
           return client.focus();
         }
       }
