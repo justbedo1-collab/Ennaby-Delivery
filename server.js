@@ -191,8 +191,42 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع دعم التحويل التلقائي بين صيغ PNG و JPG
-const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-192.jpg', 'icon-512.png', 'icon-512.jpg', 'logo-1.png', 'logo-1.jpg'];
+// تقديم ملف تعريف تطبيق موبايل الأدمن المستقل (Admin Standalone WebAPK Manifest) بهوية منفصلة تماماً عن تطبيق العملاء
+app.get('/admin-manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.json({
+    id: '/admin',
+    name: 'غرفة عمليات الرجل العنابي 🛡️',
+    short_name: 'عمليات العنابي 🛡️',
+    description: 'تطبيق إدارة وغرفة عمليات منصة الرجل العنابي دليفري',
+    lang: 'ar',
+    dir: 'rtl',
+    start_url: '/admin',
+    scope: '/admin',
+    display: 'standalone',
+    background_color: '#FAF7F4',
+    theme_color: '#7B3F52',
+    orientation: 'portrait',
+    icons: [
+      {
+        src: '/icon-192.png?v=admin58',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any'
+      },
+      {
+        src: '/icon-512.png?v=admin58',
+        sizes: '256x256 384x384 512x512',
+        type: 'image/png',
+        purpose: 'any'
+      }
+    ]
+  });
+});
+
+// [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع منع تخزين sw.js في الكاش لضمان عمل الإشعارات فوراً
+const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'admin-manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
 ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
   app.get(`/${assetName}`, (req, res) => {
     if (assetName === 'sw.js') {

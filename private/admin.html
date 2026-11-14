@@ -360,6 +360,17 @@
       touch-action: manipulation !important;
     }
 
+/* تثبيت الشاشة بالكامل ومنع الـ Zoom In/Out باللمس أو عند الكتابة مثل تطبيق العملاء والكباتن */
+    html, body, .device-container, .phone-mockup, .phone-screen {
+      touch-action: pan-x pan-y !important;
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+      overscroll-behavior-x: none !important;
+    }
+    input, select, textarea, button {
+      touch-action: manipulation !important;
+    }
+
     /* شريط تحميل تطبيق موبايل الأدمن بنفس تصميم تطبيق العملاء والكباتن */
     .admin-install-banner {
       display: none;
@@ -402,7 +413,15 @@
   <meta name="apple-mobile-web-app-title" content="عمليات العنابي">
   <link rel="apple-touch-icon" href="/icon-512.png">
   <script>
-    // قفل الـ Viewport ومنع التكبير والتصغير باللمس أو عند التركيز على الحقول في iOS و Android
+    // التقاط حدث التثبيت الفوري مبكراً في <head> لضمان التثبيت المباشر بضغطة واحدة مثل تطبيق العملاء والكباتن
+    window.deferredAdminInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.deferredAdminInstallPrompt = e;
+      var b = document.getElementById('adminGlobalInstallBanner');
+      if (b) b.style.display = 'flex';
+    });
+
     (function () {
       var vpMeta = document.querySelector('meta[name="viewport"]');
       var fixedVp = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover';
@@ -417,9 +436,7 @@
     })();
 
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
-      });
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
     }
   </script>
 </head>
@@ -4434,9 +4451,7 @@ function renderAdminDynamicSettingsInputs() {
       renderAdminPricingIntelligence();
     }
 
-    let deferredAdminInstallPrompt = null;
-
-    function isAdminAppStandalone() {
+function isAdminAppStandalone() {
       return Boolean(
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone
@@ -4451,16 +4466,25 @@ function renderAdminDynamicSettingsInputs() {
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      deferredAdminInstallPrompt = e;
+      window.deferredAdminInstallPrompt = e;
       updateAdminInstallBannerVisibility();
     });
 
     window.addEventListener('appinstalled', () => {
-      deferredAdminInstallPrompt = null;
-      try { localStorage.setItem('ENNABY_ADMIN_PWA_INSTALLED_V1', '1'); } catch (e) {}
+      window.deferredAdminInstallPrompt = null;
       updateAdminInstallBannerVisibility();
-      showToast('تم تثبيت تطبيق «عمليات العنابي 🛡️» على هاتفك بنجاح! 🎉📲', 'ok');
+      showToast('تم تثبيت تطبيق «عمليات العنابي 🛡️» في قائمة تطبيقات هاتفك بنجاح! 🎉📲', 'ok');
     });
+
+    function triggerNativeAdminInstallPrompt(promptEvent) {
+      promptEvent.prompt();
+      promptEvent.userChoice.then((choice) => {
+        if (choice && choice.outcome === 'accepted') {
+          showToast('جاري تنزيل وتثبيت تطبيق «عمليات العنابي 🛡️» في تطبيقات هاتفك... 📲🎉', 'ok');
+        }
+        window.deferredAdminInstallPrompt = null;
+      });
+    }
 
     function installAdminAppLocally() {
       if (isAdminAppStandalone()) {
@@ -4468,27 +4492,31 @@ function renderAdminDynamicSettingsInputs() {
         showToast('تطبيق غرفة العمليات مثبت وجاهز على هاتفك بالفعل! 🛡️✨', 'ok');
         return;
       }
-      if (deferredAdminInstallPrompt) {
-        deferredAdminInstallPrompt.prompt();
-        deferredAdminInstallPrompt.userChoice.then((choice) => {
-          if (choice && choice.outcome === 'accepted') {
-            try { localStorage.setItem('ENNABY_ADMIN_PWA_INSTALLED_V1', '1'); } catch (e) {}
-            updateAdminInstallBannerVisibility();
-            showToast('جاري تثبيت تطبيق غرفة العمليات على شاشتك الرئيسية 🛡️📲', 'ok');
-          }
-          deferredAdminInstallPrompt = null;
-        });
+      if (window.deferredAdminInstallPrompt) {
+        triggerNativeAdminInstallPrompt(window.deferredAdminInstallPrompt);
         return;
       }
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      openCustomActionModal({
-        title: '📲 تثبيت تطبيق غرفة العمليات 🛡️',
-        message: isIOS
-          ? 'لتثبيت تطبيق الأدمن على آيفون 🍎:\n1. اضغط على زر المشاركة (Share) أسفل المتصفح.\n2. اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen).\nسيفتح التطبيق مباشرة على غرفة العمليات!'
-          : 'لتثبيت تطبيق الأدمن المستقل على هاتفك 🤖:\n1. اضغط على القائمة (⋮) أعلى متصفح كروم.\n2. اختر «تثبيت التطبيق» (Install App) أو «الإضافة إلى الشاشة الرئيسية».\nستظهر أيقونة «عمليات العنابي 🛡️» مستقلة على هاتفك!',
-        confirmText: 'تمام فهمت 👍',
-        onConfirm: () => {}
-      });
+      // إذا ضغط المسؤول فوراً في أول ثانية قبل جهوزية الحدث من المتصفح، ننتظر الحدث تلقائياً ثم نفتح نافذة التثبيت الأصلية
+      showToast('ثواني بنجهز حزمة تثبيت تطبيق العمليات... 📲⏳', 'ok');
+      let checks = 0;
+      const waitTimer = setInterval(() => {
+        checks++;
+        if (window.deferredAdminInstallPrompt) {
+          clearInterval(waitTimer);
+          triggerNativeAdminInstallPrompt(window.deferredAdminInstallPrompt);
+        } else if (checks >= 12) {
+          clearInterval(waitTimer);
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          openCustomActionModal({
+            title: '📲 تثبيت تطبيق غرفة العمليات 🛡️',
+            message: isIOS
+              ? 'لتثبيت تطبيق الأدمن على آيفون 🍎:\n1. اضغط على زر المشاركة (Share) أسفل المتصفح.\n2. اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen).'
+              : 'اضغط على القائمة (⋮) أعلى متصفح Chrome ثم اختر «تثبيت التطبيق» (Install App) لينزل التطبيق مباشرة في قائمة تطبيقات هاتفك 🛡️📲',
+            confirmText: 'تمام 👍',
+            onConfirm: () => {}
+          });
+        }
+      }, 200);
     }
 
     async function initAdminApp() {
