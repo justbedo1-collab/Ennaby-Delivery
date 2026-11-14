@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>غرفة عمليات الرجل العنابي 🛡️</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -349,49 +349,73 @@
       display: inline-block;
     }
 
-    /* شريط تثبيت تطبيق موبايل الأدمن (Admin PWA Banner) */
+    /* تثبيت الشاشة بالكامل ومنع الـ Zoom In/Out باللمس أو عند الكتابة مثل تطبيق العملاء والكباتن */
+    html, body, .device-container, .phone-mockup, .phone-screen {
+      touch-action: pan-x pan-y !important;
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+      overscroll-behavior-x: none !important;
+    }
+    input, select, textarea, button {
+      touch-action: manipulation !important;
+    }
+
+    /* شريط تحميل تطبيق موبايل الأدمن بنفس تصميم تطبيق العملاء والكباتن */
     .admin-install-banner {
       display: none;
-      background: linear-gradient(135deg, #302A2D, #5A2846);
-      color: #FFFFFF;
-      padding: 10px 14px;
-      border-bottom: 2px solid #FBC02D;
+      background: #E8F5E9;
+      border-bottom: 1.5px solid #C8E6C9;
+      padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
       z-index: 50;
     }
     .admin-install-btn {
-      background: linear-gradient(135deg, #FBC02D, #F57F17);
-      color: #302A2D !important;
+      background: linear-gradient(135deg, #25D366, #1E8E3E);
+      color: #FFFFFF !important;
       border: none;
       border-radius: 50px !important;
-      padding: 0 13px !important;
-      height: 32px !important;
-      min-height: 32px !important;
+      padding: 6px 14px !important;
+      height: 33px !important;
+      min-height: 33px !important;
       font-size: 11px !important;
-      font-weight: 900 !important;
+      font-weight: 800 !important;
       cursor: pointer;
       display: inline-flex !important;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 6px;
       white-space: nowrap;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(251, 192, 45, 0.35);
+      box-shadow: 0 2px 8px rgba(30, 142, 62, 0.25);
     }
     .admin-install-btn:active {
       transform: scale(0.96);
     }
   </style>
-  <link rel="manifest" href="/admin-manifest.json?v=57">
-  <meta name="theme-color" content="#302A2D">
+  <link rel="manifest" href="/admin-manifest.json?v=58">
+  <meta name="theme-color" content="#7B3F52">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="عمليات العنابي">
   <link rel="apple-touch-icon" href="/icon-512.png">
   <script>
+    // قفل الـ Viewport ومنع التكبير والتصغير باللمس أو عند التركيز على الحقول في iOS و Android
+    (function () {
+      var vpMeta = document.querySelector('meta[name="viewport"]');
+      var fixedVp = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover';
+      if (vpMeta) vpMeta.setAttribute('content', fixedVp);
+      document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+      document.addEventListener('touchmove', function (e) {
+        if (e.touches && e.touches.length > 1) e.preventDefault();
+      }, { passive: false });
+      document.addEventListener('focusin', function () {
+        if (vpMeta) vpMeta.setAttribute('content', fixedVp);
+      }, true);
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
@@ -411,17 +435,17 @@
       </div>
 
       <div class="phone-screen" id="phoneScreen">
-        <!-- شريط تثبيت تطبيق الموبايل الخاص بالأدمن (يظهر تلقائياً إذا لم يكن مثبتاً على الهاتف) -->
+        <!-- إشعار تحميل تطبيق الموبايل الخاص بالأدمن في الأعلى عند الفتح من المتصفح -->
         <div class="admin-install-banner" id="adminGlobalInstallBanner">
-          <div style="display:flex; align-items:center; gap:9px; min-width:0;">
-            <div style="width:36px; height:36px; min-width:36px; background:rgba(255,255,255,0.14); border:1px solid rgba(251,192,45,0.5); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">🛡️</div>
+          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+            <div style="width:36px; height:36px; min-width:36px; background:#FFFFFF; border:1px solid #C8E6C9; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">🛡️</div>
             <div style="min-width:0;">
-              <strong style="font-size:11.5px; color:#FBC02D; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">تطبيق غرفة عمليات العنابي 📲</strong>
-              <span style="font-size:10px; color:#EFE6E9; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">ثبّت تطبيق الأدمن المستقل لفتح الإدارة والإشعارات فوراً!</span>
+              <strong style="font-size:12px; color:#1B5E20; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">تطبيق غرفة عمليات العنابي 📲</strong>
+              <span style="font-size:10px; color:#2E7D32; font-weight:700; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">نزّل تطبيق الأدمن المستقل لمتابعة الرادار والإشعارات فوراً! 🚀</span>
             </div>
           </div>
           <button type="button" class="admin-install-btn" onclick="installAdminAppLocally()">
-            <i class="fa-solid fa-download"></i> <span>تثبيت التطبيق</span>
+            <i class="fa-solid fa-download"></i> <span>تحميل التطبيق الآن</span>
           </button>
         </div>
 
@@ -4415,8 +4439,7 @@ function renderAdminDynamicSettingsInputs() {
     function isAdminAppStandalone() {
       return Boolean(
         window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone ||
-        localStorage.getItem('ENNABY_ADMIN_PWA_INSTALLED_V1') === '1'
+        window.navigator.standalone
       );
     }
 
