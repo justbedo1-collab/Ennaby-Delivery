@@ -564,6 +564,9 @@
                 <select id="adminPushTargetSelect" class="select-field">
                   <option value="all">📲 جميع الهواتف المحملة للتطبيق (الكل)</option>
                   <option value="captains">🛵 الكباتن المسجلين فقط</option>
+                  <option value="captains_rejected_suspended">⚠️ الكباتن الموقوفين والمرفوضين (الكل)</option>
+                  <option value="captains_rejected">❌ الكباتن المرفوضين فقط (لإعادة رفع الأوراق)</option>
+                  <option value="captains_suspended">⛔ الكباتن الموقوفين فقط</option>
                   <option value="customers">👑 العملاء المسجلين فقط</option>
                   <option value="unregistered">👋 الزوار غير المسجلين فقط</option>
                 </select>
@@ -751,14 +754,40 @@
               </div>
 
               <div class="card" id="admCard-captainDirectory" style="border: 2px solid var(--primary);">
-                <h2 class="card-title"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن المعتمدين 🛵</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+                  <h2 class="card-title" style="margin:0;"><i class="fa-solid fa-id-card-clip"></i> سجل الكباتن المعتمدين 🛵</h2>
+                  <span class="badge badge-completed" id="adminApprovedCaptainsCountBadge">0 معتمد</span>
+                </div>
                 <div class="input-group" style="margin-bottom:8px;">
-                  <input type="text" id="adminCaptainDirectorySearchInput" class="input-field" placeholder="🔍 ابحث باسم الكابتن أو رقم هاتفه..." oninput="filterAdminCaptainDirectoryDropdown()">
+                  <input type="text" id="adminCaptainDirectorySearchInput" class="input-field" placeholder="🔍 ابحث باسم الكابتن المعتمد أو رقم هاتفه..." oninput="filterAdminCaptainDirectoryDropdown()">
                 </div>
                 <div class="input-group">
                   <select class="select-field" id="adminCaptainDirectorySelect" onchange="renderAdminSelectedCaptainCard()"></select>
                 </div>
                 <div id="adminSelectedCaptainCardContainer" style="margin-top:10px;"></div>
+              </div>
+
+              <!-- قسم مستقل لعرض الكباتن المرفوضين (غير مستوفي الشروط) والموقوفين لسهولة الوصول إليهم -->
+              <div class="card" id="admCard-rejectedCaptainsDirectory" style="border: 2px solid var(--danger); background: #FFFDFD;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                  <h2 class="card-title" style="margin:0; color:var(--danger);"><i class="fa-solid fa-user-xmark"></i> سجل المرفوضين والموقوفين ⚠️</h2>
+                  <span class="badge badge-rejected" id="adminRejectedCaptainsCountBadge">0 كابتن</span>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.45;">
+                  يعرض الكباتن الذين لم يتم الموافقة على تسجيلهم لعدم استيفاء المستندات أو الذين تم إيقاف حساباتهم، لسهولة التواصل معهم أو إعادة تفعيلهم.
+                </p>
+                <div style="display:grid; grid-template-columns: 1fr 1.35fr; gap:6px; margin-bottom:8px;">
+                  <select id="adminRejectedCaptainTypeFilter" class="select-field" onchange="filterAdminRejectedCaptainDropdown()">
+                    <option value="all">📋 الكل (مرفوض + موقوف)</option>
+                    <option value="مرفوض">❌ مرفوض فقط (نقص أوراق)</option>
+                    <option value="موقوف">⛔ موقوف فقط</option>
+                  </select>
+                  <input type="text" id="adminRejectedCaptainSearchInput" class="input-field" placeholder="🔍 ابحث بالاسم أو الرقم..." oninput="filterAdminRejectedCaptainDropdown()">
+                </div>
+                <div class="input-group">
+                  <select class="select-field" id="adminRejectedCaptainSelect" onchange="renderAdminSelectedRejectedCaptainCard()"></select>
+                </div>
+                <div id="adminSelectedRejectedCaptainCardContainer" style="margin-top:10px;"></div>
               </div>
 
               <!-- طابور طلبات شحن المحفظة المعلقة للاعتماد بضغطة واحدة -->
@@ -2167,6 +2196,7 @@ let allowNestedActionLock = false;
       toggleEl('admCard-captainTiers', hasAdminPerm('manageCaptains', adm) || hasAdminPerm('manageCommissions', adm));
       toggleEl('admCard-resetPass', hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-captainDirectory', hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm));
+      toggleEl('admCard-rejectedCaptainsDirectory', hasAdminPerm('viewCaptains', adm) || hasAdminPerm('manageCaptains', adm));
       toggleEl('admCard-manualTopup', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-manualDeduct', hasAdminPerm('manageWallets', adm));
       toggleEl('admCard-customerResetPin', hasAdminPerm('manageWallets', adm) || hasAdminPerm('manageSettings', adm));
@@ -2777,7 +2807,10 @@ let allowNestedActionLock = false;
         all: 'جميع الهواتف المحملة للتطبيق (مسجلين وغير مسجلين) 📲',
         unregistered: 'الزوار المحملين للتطبيق (غير المسجلين فقط) 👋',
         customers: 'العملاء المسجلين فقط 👑',
-        captains: 'الكباتن المسجلين فقط 🛵'
+        captains: 'الكباتن المسجلين فقط 🛵',
+        captains_rejected_suspended: 'الكباتن الموقوفين والمرفوضين (الكل) ⚠️',
+        captains_rejected: 'الكباتن المرفوضين فقط (غير مستوفي الأوراق) ❌',
+        captains_suspended: 'الكباتن الموقوفين فقط ⛔'
       };
 
       openCustomActionModal({
@@ -3714,14 +3747,18 @@ function renderAdminDynamicSettingsInputs() {
     function filterAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect');
       if (!s) return;
+      const approvedCaptains = (STATE.captains || []).filter(c => c && c.status === 'معتمد');
+      const countBadge = document.getElementById('adminApprovedCaptainsCountBadge');
+      if (countBadge) countBadge.innerText = `${approvedCaptains.length} معتمد`;
+
       const q = normalizeDigits(document.getElementById('adminCaptainDirectorySearchInput')?.value || '').trim().toLowerCase();
       const filtered = q
-        ? STATE.captains.filter(c => (c.phone && c.phone.toLowerCase().includes(q)) || (c.fullName && c.fullName.toLowerCase().includes(q)))
-        : STATE.captains;
+        ? approvedCaptains.filter(c => (c.phone && c.phone.toLowerCase().includes(q)) || (c.fullName && c.fullName.toLowerCase().includes(q)))
+        : approvedCaptains;
       const prevVal = s.value;
       s.innerHTML = filtered.length === 0
-        ? `<option value="">-- لا يوجد كابتن مطابق للبحث --</option>`
-        : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [⭐ ${escapeHtml(c.ratingFormatted || '5.0')} | ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}]</option>`).join('');
+        ? `<option value="">-- لا يوجد كابتن معتمد مطابق للبحث --</option>`
+        : `<option value="">-- اختر الكابتن المعتمد (${filtered.length}) --</option>` + filtered.map(c => `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [⭐ ${escapeHtml(c.ratingFormatted || '5.0')} | ${roundMoney(c.walletBalance)} ج | ${escapeHtml(c.tierBadgeText||'برونزي 🥉')}]</option>`).join('');
       if (prevVal && filtered.some(c => c.phone === prevVal)) {
         s.value = prevVal;
       } else if (filtered.length > 0) {
@@ -3730,10 +3767,117 @@ function renderAdminDynamicSettingsInputs() {
       renderAdminSelectedCaptainCard();
     }
 
+    function filterAdminRejectedCaptainDropdown() {
+      const s = document.getElementById('adminRejectedCaptainSelect');
+      if (!s) return;
+      const allNonApproved = (STATE.captains || []).filter(c => c && (c.status === 'مرفوض' || c.status === 'موقوف'));
+      const countBadge = document.getElementById('adminRejectedCaptainsCountBadge');
+      if (countBadge) countBadge.innerText = `${allNonApproved.length} كابتن`;
+
+      const statusFilter = document.getElementById('adminRejectedCaptainTypeFilter')?.value || 'all';
+      const q = normalizeDigits(document.getElementById('adminRejectedCaptainSearchInput')?.value || '').trim().toLowerCase();
+
+      const filtered = allNonApproved.filter(c => {
+        if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+        if (q) {
+          const matchPh = c.phone && c.phone.toLowerCase().includes(q);
+          const matchNm = c.fullName && c.fullName.toLowerCase().includes(q);
+          const matchRe = c.suspendReason && c.suspendReason.toLowerCase().includes(q);
+          if (!matchPh && !matchNm && !matchRe) return false;
+        }
+        return true;
+      });
+
+      const prevVal = s.value;
+      s.innerHTML = filtered.length === 0
+        ? `<option value="">-- لا يوجد كباتن مرفوضين أو موقوفين حالياً --</option>`
+        : `<option value="">-- اختر الكابتن (${filtered.length}) --</option>` + filtered.map(c => {
+            const stIcon = c.status === 'مرفوض' ? '❌ مرفوض' : '⛔ موقوف';
+            return `<option value="${escapeHtml(c.phone)}">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)}) — [${stIcon}]</option>`;
+          }).join('');
+
+      if (prevVal && filtered.some(c => c.phone === prevVal)) {
+        s.value = prevVal;
+      } else if (filtered.length > 0) {
+        s.value = filtered[0].phone;
+      }
+      renderAdminSelectedRejectedCaptainCard();
+    }
+
+    function renderAdminSelectedRejectedCaptainCard() {
+      const p = document.getElementById('adminRejectedCaptainSelect')?.value;
+      const bx = document.getElementById('adminSelectedRejectedCaptainCardContainer');
+      if (!bx) return;
+      if (!p) {
+        bx.innerHTML = '<div style="color:#888; font-size:11.5px; text-align:center; padding:10px; background:#FAF7F4; border-radius:10px; border:1px dashed #E2D5DA;">لا يوجد كابتن محدد في قائمة المرفوضين والموقوفين.</div>';
+        return;
+      }
+      const c = (STATE.captains || []).find(x => x.phone === p);
+      if (!c) {
+        bx.innerHTML = '';
+        return;
+      }
+      const canManageCap = hasAdminPerm('manageCaptains');
+      const capWa = toAdminWhatsAppNum(c.phone);
+      const isRejected = c.status === 'مرفوض';
+      const reasonText = c.suspendReason || (isRejected ? 'عدم استيفاء المستندات المطلوبة بوضوح' : 'موقوف إدارياً');
+      const waMsg = isRejected
+        ? `أهلاً بك يا كابتن ${c.fullName} في منصة الرجل العنابي 🛵، بخصوص طلب تسجيلك نرجو منك الدخول للتطبيق وتحديث المستندات للأسباب التالية: (${reasonText}) حتى نتمكن من تفعيل حسابك فوراً.`
+        : `أهلاً بك يا كابتن ${c.fullName}، نتواصل معك من إدارة منصة الرجل العنابي بخصوص حسابك المسجل برقم (${c.phone}).`;
+
+      const ratingFormatted = c.ratingFormatted || (Number(c.ratingAvg ?? 5.0).toFixed(1));
+      const ratingsCount = Number(c.ratingsCount || 0);
+      const starsHtml = buildAdminCaptainStarsHtml(c.ratingAvg ?? 5.0);
+
+      bx.innerHTML = `<div style="background:#FFF8F9; padding:12px; border-radius:12px; border:1.5px solid #FFCDD2;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
+          <div>
+            <strong style="font-size:13px; display:block; color:var(--text-main);">${escapeHtml(c.fullName)} (<span dir="ltr">${escapeHtml(c.phone)}</span>)</strong>
+            <div style="display:inline-flex; align-items:center; gap:5px; background:#FFFFFF; border:1px solid #E5D4DA; border-radius:50px; padding:2px 9px; margin-top:4px;">
+              <span style="display:inline-flex; align-items:center; gap:2px;">${starsHtml}</span>
+              <strong style="font-size:11.5px; color:var(--primary); font-weight:900;">${escapeHtml(ratingFormatted)}</strong>
+              <small style="font-size:10px; color:var(--text-muted); font-weight:700;">(${ratingsCount > 0 ? `${ratingsCount} تقييم` : 'افتراضي'})</small>
+            </div>
+          </div>
+          <span class="badge badge-rejected" style="font-size:11px;">${isRejected ? '❌ مرفوض (نقص أوراق)' : '⛔ موقوف'}</span>
+        </div>
+
+        <div style="color:var(--danger); font-weight:800; margin-top:8px; background:#FFEBEE; border:1px solid #FFCDD2; padding:7px 10px; border-radius:8px; font-size:11.5px; line-height:1.5;">
+          ⚠️ <strong>سبب ${isRejected ? 'عدم الموافقة / الرفض' : 'الإيقاف'}:</strong> ${escapeHtml(reasonText)}
+        </div>
+
+        <div class="adm-mini-actions" style="margin-top:8px;">
+          <a href="tel:${escapeHtml(c.phone)}" class="adm-btn-call" style="padding:6px 10px; font-size:11px;"><i class="fa-solid fa-phone"></i> اتصال بالكابتن</a>
+          <a href="https://wa.me/${capWa}?text=${encodeURIComponent(waMsg)}" target="_blank" class="adm-btn-wa" style="padding:6px 10px; font-size:11px;"><i class="fa-brands fa-whatsapp"></i> مراسلة واتساب بالسبب 💬</a>
+        </div>
+
+        <div style="font-size:11px; margin:8px 0; line-height:1.7; color:var(--text-main);">
+          رقم قومي: <strong>${escapeHtml(c.nationalId || 'محجوب')}</strong> | منطقة: <strong>${escapeHtml(c.primaryZone || 'المنصورة')}</strong><br>
+          مركبة: <strong>${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')})</strong> | رصيد المحفظة: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong>
+        </div>
+
+        ${buildCaptainDocsHtml(c)}
+
+        ${canManageCap ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+          <button type="button" class="btn-success" style="flex:1.2;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')"><i class="fa-solid fa-circle-check"></i> اعتماد وتفعيل الحساب الآن ✅</button>
+          <button type="button" class="btn-danger" style="flex:1; background:#FCE4EC; color:#C2185B; border:1px solid #F8BBD0;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','${isRejected ? 'مرفوض' : 'موقوف'}')"><i class="fa-solid fa-pen"></i> تعديل سبب ${isRejected ? 'الرفض' : 'الإيقاف'}</button>
+        </div>` : ''}
+      </div>`;
+    }
+
     function renderAdminCaptainDirectoryDropdown() {
       const s = document.getElementById('adminCaptainDirectorySelect');
-      if (!s || document.activeElement === s) { renderAdminSelectedCaptainCard(); return; }
-      filterAdminCaptainDirectoryDropdown();
+      if (s && document.activeElement !== s) {
+        filterAdminCaptainDirectoryDropdown();
+      } else {
+        renderAdminSelectedCaptainCard();
+      }
+      const rSel = document.getElementById('adminRejectedCaptainSelect');
+      if (rSel && document.activeElement !== rSel) {
+        filterAdminRejectedCaptainDropdown();
+      } else {
+        renderAdminSelectedRejectedCaptainCard();
+      }
     }
 
     function renderAdminCustomerDirectory() {

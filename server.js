@@ -1215,7 +1215,7 @@ async function runLazyExpiredOrdersCleanup(timeoutMinutes = 30) {
 
     const cutoff = new Date(now - mins * 60000).toISOString();
     const { data: expired } = await supabase.from('orders')
-      .update({ status: 'ملغي (تجاوز مهلة الانتظار)', fee_refunded: true })
+      .update({ status: 'تجاوز مهلة الإنتظار', fee_refunded: true })
       .eq('status', 'في انتظار كابتن')
       .lt('created_at', cutoff)
       .select();
@@ -2057,8 +2057,26 @@ function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
       const { data: allSubs } = await supabase.from('push_subscriptions').select('phone, subscription');
       if (!allSubs || allSubs.length === 0) return 0;
 
-      const { data: captainsRows } = await supabase.from('captains').select('phone');
+      const { data: captainsRows } = await supabase.from('captains').select('phone, status');
       const captainPhones = new Set((captainsRows || []).map(c => normalizePhoneServer(c.phone)).filter(Boolean));
+      const rejectedOrSuspendedPhones = new Set(
+        (captainsRows || [])
+          .filter(c => c && (c.status === 'مرفوض' || c.status === 'موقوف'))
+          .map(c => normalizePhoneServer(c.phone))
+          .filter(Boolean)
+      );
+      const rejectedPhones = new Set(
+        (captainsRows || [])
+          .filter(c => c && c.status === 'مرفوض')
+          .map(c => normalizePhoneServer(c.phone))
+          .filter(Boolean)
+      );
+      const suspendedPhones = new Set(
+        (captainsRows || [])
+          .filter(c => c && c.status === 'موقوف')
+          .map(c => normalizePhoneServer(c.phone))
+          .filter(Boolean)
+      );
 
       const publicSubs = allSubs.filter(s => !String(s.phone || '').startsWith('admin:'));
       const registeredEndpoints = new Set();
@@ -2075,6 +2093,21 @@ function broadcastPushByTargetGroup(target = 'all', payloadObj = {}) {
         filteredSubs = publicSubs.filter(s => {
           const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
           return captainPhones.has(basePh);
+        });
+      } else if (target === 'captains_rejected_suspended') {
+        filteredSubs = publicSubs.filter(s => {
+          const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
+          return rejectedOrSuspendedPhones.has(basePh);
+        });
+      } else if (target === 'captains_rejected') {
+        filteredSubs = publicSubs.filter(s => {
+          const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
+          return rejectedPhones.has(basePh);
+        });
+      } else if (target === 'captains_suspended') {
+        filteredSubs = publicSubs.filter(s => {
+          const basePh = normalizePhoneServer(String(s.phone || '').split(':')[0]);
+          return suspendedPhones.has(basePh);
         });
       } else if (target === 'customers') {
         filteredSubs = publicSubs.filter(s => {
@@ -5704,7 +5737,10 @@ app.post('/api/admin/push-broadcast', authenticateAdmin, asyncHandler(async (req
       all: 'جميع الهواتف المحملة للتطبيق',
       unregistered: 'الزوار غير المسجلين',
       customers: 'العملاء المسجلين',
-      captains: 'الكباتن المسجلين'
+      captains: 'الكباتن المسجلين',
+      captains_rejected_suspended: 'الكباتن الموقوفين والمرفوضين',
+      captains_rejected: 'الكباتن المرفوضين (غير مستوفي الشروط)',
+      captains_suspended: 'الكباتن الموقوفين'
     };
     await logAdminAudit(
       'إشعار موبايل عام',
