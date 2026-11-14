@@ -267,14 +267,137 @@
       line-height: 1.55 !important;
       resize: none !important;
     }
+
+    /* =========================================================================
+       تثبيت شريط القوائم السفلي بشكل دائم (Fixed) وتنسيق تطبيق موبايل الأدمن (PWA)
+       ========================================================================= */
+    html, body {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior-y: none;
+    }
+    .device-container {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .phone-mockup {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .phone-screen {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .bottom-nav {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+      background: #FFFFFF !important;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1.5px solid rgba(123, 63, 82, 0.12) !important;
+      box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08) !important;
+      z-index: 1200 !important;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    @media (min-width: 481px) {
+      .phone-mockup {
+        max-width: 600px;
+        height: 95vh;
+        margin-top: 2.5vh;
+      }
+      .bottom-nav {
+        max-width: 600px !important;
+        margin: 0 auto !important;
+        bottom: 2.5vh !important;
+        border-radius: 0 0 20px 20px !important;
+      }
+    }
+    .nav-item {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 3px !important;
+      padding: 4px 2px !important;
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      line-height: 1.2 !important;
+      white-space: nowrap !important;
+      height: 100% !important;
+    }
+    .nav-item i {
+      font-size: 16px !important;
+      line-height: 1 !important;
+      display: inline-block;
+    }
+
+    /* شريط تثبيت تطبيق موبايل الأدمن (Admin PWA Banner) */
+    .admin-install-banner {
+      display: none;
+      background: linear-gradient(135deg, #302A2D, #5A2846);
+      color: #FFFFFF;
+      padding: 10px 14px;
+      border-bottom: 2px solid #FBC02D;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      z-index: 50;
+    }
+    .admin-install-btn {
+      background: linear-gradient(135deg, #FBC02D, #F57F17);
+      color: #302A2D !important;
+      border: none;
+      border-radius: 50px !important;
+      padding: 0 13px !important;
+      height: 32px !important;
+      min-height: 32px !important;
+      font-size: 11px !important;
+      font-weight: 900 !important;
+      cursor: pointer;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(251, 192, 45, 0.35);
+    }
+    .admin-install-btn:active {
+      transform: scale(0.96);
+    }
   </style>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#7B3F52">
+  <link rel="manifest" href="/admin-manifest.json?v=57">
+  <meta name="theme-color" content="#302A2D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="عمليات العنابي">
   <link rel="apple-touch-icon" href="/icon-512.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
+      });
+    }
+  </script>
 </head>
 <body>
   <main class="device-container">
@@ -288,6 +411,19 @@
       </div>
 
       <div class="phone-screen" id="phoneScreen">
+        <!-- شريط تثبيت تطبيق الموبايل الخاص بالأدمن (يظهر تلقائياً إذا لم يكن مثبتاً على الهاتف) -->
+        <div class="admin-install-banner" id="adminGlobalInstallBanner">
+          <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+            <div style="width:36px; height:36px; min-width:36px; background:rgba(255,255,255,0.14); border:1px solid rgba(251,192,45,0.5); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">🛡️</div>
+            <div style="min-width:0;">
+              <strong style="font-size:11.5px; color:#FBC02D; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">تطبيق غرفة عمليات العنابي 📲</strong>
+              <span style="font-size:10px; color:#EFE6E9; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">ثبّت تطبيق الأدمن المستقل لفتح الإدارة والإشعارات فوراً!</span>
+            </div>
+          </div>
+          <button type="button" class="admin-install-btn" onclick="installAdminAppLocally()">
+            <i class="fa-solid fa-download"></i> <span>تثبيت التطبيق</span>
+          </button>
+        </div>
 
         <!-- شاشة تسجيل دخول غرفة العمليات المركزية -->
         <section id="adminLoginSection" class="view-container" style="min-height:85vh; justify-content:center;">
@@ -767,22 +903,21 @@
                 <div id="adminSelectedCaptainCardContainer" style="margin-top:10px;"></div>
               </div>
 
-              <!-- قسم مستقل لعرض الكباتن المرفوضين (غير مستوفي الشروط) والموقوفين لسهولة الوصول إليهم -->
-              <div class="card" id="admCard-rejectedCaptainsDirectory" style="border: 2px solid var(--danger); background: #FFFDFD;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-                  <h2 class="card-title" style="margin:0; color:var(--danger);"><i class="fa-solid fa-user-xmark"></i> سجل المرفوضين والموقوفين ⚠️</h2>
-                  <span class="badge badge-rejected" id="adminRejectedCaptainsCountBadge">0 كابتن</span>
+              <!-- قسم مستقل لعرض الكباتن المرفوضين والموقوفين بنفس تناسق سجل الكباتن المعتمدين -->
+              <div class="card" id="admCard-rejectedCaptainsDirectory" style="border: 2px solid var(--primary);">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:nowrap;">
+                  <h2 class="card-title" style="margin:0; color:var(--danger); font-size:14px; white-space:nowrap;"><i class="fa-solid fa-user-xmark"></i> سجل المرفوضين والموقوفين ⚠️</h2>
+                  <span class="badge badge-rejected" id="adminRejectedCaptainsCountBadge" style="flex-shrink:0;">0 كابتن</span>
                 </div>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.45;">
-                  يعرض الكباتن الذين لم يتم الموافقة على تسجيلهم لعدم استيفاء المستندات أو الذين تم إيقاف حساباتهم، لسهولة التواصل معهم أو إعادة تفعيلهم.
-                </p>
-                <div style="display:grid; grid-template-columns: 1fr 1.35fr; gap:6px; margin-bottom:8px;">
+                <div class="input-group" style="margin-bottom:8px;">
+                  <input type="text" id="adminRejectedCaptainSearchInput" class="input-field" placeholder="🔍 ابحث باسم الكابتن أو رقم هاتفه..." oninput="filterAdminRejectedCaptainDropdown()">
+                </div>
+                <div class="input-group" style="margin-bottom:8px;">
                   <select id="adminRejectedCaptainTypeFilter" class="select-field" onchange="filterAdminRejectedCaptainDropdown()">
-                    <option value="all">📋 الكل (مرفوض + موقوف)</option>
-                    <option value="مرفوض">❌ مرفوض فقط (نقص أوراق)</option>
-                    <option value="موقوف">⛔ موقوف فقط</option>
+                    <option value="all">📋 عرض الكل (مرفوض + موقوف)</option>
+                    <option value="مرفوض">❌ المرفوضين فقط (نقص أوراق)</option>
+                    <option value="موقوف">⛔ الموقوفين فقط</option>
                   </select>
-                  <input type="text" id="adminRejectedCaptainSearchInput" class="input-field" placeholder="🔍 ابحث بالاسم أو الرقم..." oninput="filterAdminRejectedCaptainDropdown()">
                 </div>
                 <div class="input-group">
                   <select class="select-field" id="adminRejectedCaptainSelect" onchange="renderAdminSelectedRejectedCaptainCard()"></select>
@@ -3818,6 +3953,7 @@ function renderAdminDynamicSettingsInputs() {
         return;
       }
       const canManageCap = hasAdminPerm('manageCaptains');
+      const tierBadgeCls = getCaptainTierBadgeClass(c.tier);
       const capWa = toAdminWhatsAppNum(c.phone);
       const isRejected = c.status === 'مرفوض';
       const reasonText = c.suspendReason || (isRejected ? 'عدم استيفاء المستندات المطلوبة بوضوح' : 'موقوف إدارياً');
@@ -3829,38 +3965,43 @@ function renderAdminDynamicSettingsInputs() {
       const ratingsCount = Number(c.ratingsCount || 0);
       const starsHtml = buildAdminCaptainStarsHtml(c.ratingAvg ?? 5.0);
 
-      bx.innerHTML = `<div style="background:#FFF8F9; padding:12px; border-radius:12px; border:1.5px solid #FFCDD2;">
+      bx.innerHTML = `<div style="background:#FAF7F4; padding:12px; border-radius:12px; border:1px solid #eee;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
           <div>
-            <strong style="font-size:13px; display:block; color:var(--text-main);">${escapeHtml(c.fullName)} (<span dir="ltr">${escapeHtml(c.phone)}</span>)</strong>
+            <strong style="font-size:13px; display:block;">${escapeHtml(c.fullName)} (${escapeHtml(c.phone)})</strong>
             <div style="display:inline-flex; align-items:center; gap:5px; background:#FFFFFF; border:1px solid #E5D4DA; border-radius:50px; padding:2px 9px; margin-top:4px;">
               <span style="display:inline-flex; align-items:center; gap:2px;">${starsHtml}</span>
               <strong style="font-size:11.5px; color:var(--primary); font-weight:900;">${escapeHtml(ratingFormatted)}</strong>
               <small style="font-size:10px; color:var(--text-muted); font-weight:700;">(${ratingsCount > 0 ? `${ratingsCount} تقييم` : 'افتراضي'})</small>
             </div>
           </div>
-          <span class="badge badge-rejected" style="font-size:11px;">${isRejected ? '❌ مرفوض (نقص أوراق)' : '⛔ موقوف'}</span>
-        </div>
-
-        <div style="color:var(--danger); font-weight:800; margin-top:8px; background:#FFEBEE; border:1px solid #FFCDD2; padding:7px 10px; border-radius:8px; font-size:11.5px; line-height:1.5;">
-          ⚠️ <strong>سبب ${isRejected ? 'عدم الموافقة / الرفض' : 'الإيقاف'}:</strong> ${escapeHtml(reasonText)}
+          <div style="display:flex; gap:4px; align-items:center;">
+            <span class="badge ${tierBadgeCls}">${escapeHtml(c.tierBadgeText || 'كابتن برونزي 🥉')}</span>
+            <span class="badge badge-rejected">${isRejected ? 'مرفوض ❌' : 'موقوف ⛔'}</span>
+          </div>
         </div>
 
         <div class="adm-mini-actions" style="margin-top:8px;">
           <a href="tel:${escapeHtml(c.phone)}" class="adm-btn-call" style="padding:6px 10px; font-size:11px;"><i class="fa-solid fa-phone"></i> اتصال بالكابتن</a>
-          <a href="https://wa.me/${capWa}?text=${encodeURIComponent(waMsg)}" target="_blank" class="adm-btn-wa" style="padding:6px 10px; font-size:11px;"><i class="fa-brands fa-whatsapp"></i> مراسلة واتساب بالسبب 💬</a>
+          <a href="https://wa.me/${capWa}?text=${encodeURIComponent(waMsg)}" target="_blank" class="adm-btn-wa" style="padding:6px 10px; font-size:11px;"><i class="fa-brands fa-whatsapp"></i> مراسلة واتساب</a>
         </div>
 
-        <div style="font-size:11px; margin:8px 0; line-height:1.7; color:var(--text-main);">
-          رقم قومي: <strong>${escapeHtml(c.nationalId || 'محجوب')}</strong> | منطقة: <strong>${escapeHtml(c.primaryZone || 'المنصورة')}</strong><br>
-          مركبة: <strong>${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')})</strong> | رصيد المحفظة: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong>
+        <div style="font-size:11px; margin:8px 0; line-height:1.7;">
+          رقم قومي: ${escapeHtml(c.nationalId || 'محجوب')} | منطقة: <strong>${escapeHtml(c.primaryZone || 'المنصورة')}</strong> | مركبة: ${escapeHtml(c.vehicleType)} (${escapeHtml(c.plateNumber || 'بدون لوحة')}) | رصيد: <strong style="color:var(--primary);">${roundMoney(c.walletBalance)} ج</strong>
+          <div style="color:var(--danger); font-weight:800; margin-top:4px; background:#FFEBEE; border:1px solid #FFCDD2; padding:5px 8px; border-radius:6px; line-height:1.5;">
+            ⚠️ سبب ${isRejected ? 'الرفض' : 'الإيقاف'}: ${escapeHtml(reasonText)}
+          </div>
         </div>
 
         ${buildCaptainDocsHtml(c)}
 
         ${canManageCap ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-          <button type="button" class="btn-success" style="flex:1.2;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')"><i class="fa-solid fa-circle-check"></i> اعتماد وتفعيل الحساب الآن ✅</button>
-          <button type="button" class="btn-danger" style="flex:1; background:#FCE4EC; color:#C2185B; border:1px solid #F8BBD0;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','${isRejected ? 'مرفوض' : 'موقوف'}')"><i class="fa-solid fa-pen"></i> تعديل سبب ${isRejected ? 'الرفض' : 'الإيقاف'}</button>
+          <button type="button" class="btn-success" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','معتمد')">اعتماد ✅</button>
+          <button type="button" class="btn-edit" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','${isRejected ? 'مرفوض' : 'موقوف'}')">تعديل السبب ✏️</button>
+          ${isRejected
+            ? `<button type="button" class="btn-danger" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','موقوف')">إيقاف ⛔</button>`
+            : `<button type="button" class="btn-danger" style="background:#FCE4EC; color:#C2185B; border:1px solid #F8BBD0;" onclick="adminChangeCaptainStatus('${escapeHtml(c.phone)}','مرفوض')">رفض ❌</button>`
+          }
         </div>` : ''}
       </div>`;
     }
@@ -4269,7 +4410,66 @@ function renderAdminDynamicSettingsInputs() {
       renderAdminPricingIntelligence();
     }
 
+    let deferredAdminInstallPrompt = null;
+
+    function isAdminAppStandalone() {
+      return Boolean(
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone ||
+        localStorage.getItem('ENNABY_ADMIN_PWA_INSTALLED_V1') === '1'
+      );
+    }
+
+    function updateAdminInstallBannerVisibility() {
+      const banner = document.getElementById('adminGlobalInstallBanner');
+      if (!banner) return;
+      banner.style.display = isAdminAppStandalone() ? 'none' : 'flex';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredAdminInstallPrompt = e;
+      updateAdminInstallBannerVisibility();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredAdminInstallPrompt = null;
+      try { localStorage.setItem('ENNABY_ADMIN_PWA_INSTALLED_V1', '1'); } catch (e) {}
+      updateAdminInstallBannerVisibility();
+      showToast('تم تثبيت تطبيق «عمليات العنابي 🛡️» على هاتفك بنجاح! 🎉📲', 'ok');
+    });
+
+    function installAdminAppLocally() {
+      if (isAdminAppStandalone()) {
+        updateAdminInstallBannerVisibility();
+        showToast('تطبيق غرفة العمليات مثبت وجاهز على هاتفك بالفعل! 🛡️✨', 'ok');
+        return;
+      }
+      if (deferredAdminInstallPrompt) {
+        deferredAdminInstallPrompt.prompt();
+        deferredAdminInstallPrompt.userChoice.then((choice) => {
+          if (choice && choice.outcome === 'accepted') {
+            try { localStorage.setItem('ENNABY_ADMIN_PWA_INSTALLED_V1', '1'); } catch (e) {}
+            updateAdminInstallBannerVisibility();
+            showToast('جاري تثبيت تطبيق غرفة العمليات على شاشتك الرئيسية 🛡️📲', 'ok');
+          }
+          deferredAdminInstallPrompt = null;
+        });
+        return;
+      }
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      openCustomActionModal({
+        title: '📲 تثبيت تطبيق غرفة العمليات 🛡️',
+        message: isIOS
+          ? 'لتثبيت تطبيق الأدمن على آيفون 🍎:\n1. اضغط على زر المشاركة (Share) أسفل المتصفح.\n2. اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen).\nسيفتح التطبيق مباشرة على غرفة العمليات!'
+          : 'لتثبيت تطبيق الأدمن المستقل على هاتفك 🤖:\n1. اضغط على القائمة (⋮) أعلى متصفح كروم.\n2. اختر «تثبيت التطبيق» (Install App) أو «الإضافة إلى الشاشة الرئيسية».\nستظهر أيقونة «عمليات العنابي 🛡️» مستقلة على هاتفك!',
+        confirmText: 'تمام فهمت 👍',
+        onConfirm: () => {}
+      });
+    }
+
     async function initAdminApp() {
+      updateAdminInstallBannerVisibility();
       switchAdminTab(STATE.currentAdminTab || 'home');
       await syncFromCloudServer();
       renderAdminScreen();

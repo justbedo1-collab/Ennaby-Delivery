@@ -38,7 +38,8 @@ self.addEventListener('fetch', event => {
     reqUrl.origin !== self.location.origin ||
     reqUrl.pathname.startsWith('/api/') ||
     reqUrl.pathname === '/sw.js' ||
-    reqUrl.pathname === '/manifest.json'
+    reqUrl.pathname === '/manifest.json' ||
+    reqUrl.pathname === '/admin-manifest.json'
   ) {
     return;
   }

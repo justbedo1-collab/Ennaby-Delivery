@@ -224,6 +224,38 @@ app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) 
   res.sendFile(resolveHtmlFilePath('admin.html'));
 });
 
+// ملف تعريف تطبيق الموبايل المستقل الخاص بالأدمن (Admin PWA Manifest)
+app.get('/admin-manifest.json', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.json({
+    id: '/admin',
+    name: 'غرفة عمليات الرجل العنابي 🛡️',
+    short_name: 'عمليات العنابي',
+    description: 'تطبيق غرفة العمليات والإدارة المركزية لمنصة الرجل العنابي دليفري',
+    lang: 'ar',
+    dir: 'rtl',
+    start_url: '/admin',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#FAF7F4',
+    theme_color: '#302A2D',
+    orientation: 'portrait',
+    icons: [
+      {
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png'
+      },
+      {
+        src: '/icon-512.png?v=56',
+        sizes: '256x256 384x384 512x512',
+        type: 'image/png'
+      }
+    ]
+  });
+});
+
 app.get(['/install', '/install.html'], (req, res) => {
   res.sendFile(resolveHtmlFilePath('install.html'));
 });
