@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>تثبيت تطبيق الرجل العنابي دليفرى</title>
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.json?v=59">
   <meta name="theme-color" content="#7B3F52">
 
   <!-- استدعاء خط Cairo من Google Fonts بأوزان مختلفة -->
@@ -18,6 +18,7 @@
       margin: 0; 
       padding: 0; 
       font-family: 'Cairo', sans-serif !important; 
+      -webkit-tap-highlight-color: transparent;
     }
     body {
       background: #FAF7F4;
@@ -25,7 +26,10 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      min-height: 100dvh;
       padding: 20px;
+      touch-action: pan-x pan-y;
+      -webkit-text-size-adjust: 100%;
     }
     .card {
       background: #FFFFFF;
@@ -72,13 +76,62 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
       box-shadow: 0 4px 15px rgba(123, 63, 82, 0.3);
+      user-select: none;
     }
-    .btn-install:active { 
-      background: #5F2E3E; 
+    .btn-install:active:not(:disabled) { 
+      transform: scale(0.96);
+    }
+
+    /* حالة انطفاء الزر أثناء التحميل والتثبيت */
+    .btn-install.is-loading,
+    .btn-install:disabled {
+      background: #9E8C92 !important;
+      color: rgba(255, 255, 255, 0.92) !important;
+      box-shadow: none !important;
+      cursor: wait !important;
+      opacity: 0.82;
       transform: scale(0.98);
     }
+
+    /* حالة اكتمال التثبيت على الشاشة الرئيسية باللون الأخضر التفاعلي */
+    .btn-install.is-installed {
+      background: linear-gradient(135deg, #25D366, #1E8E3E) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.38) !important;
+      cursor: pointer !important;
+      opacity: 1 !important;
+      animation: installedPulse 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    .btn-install.is-installed:hover {
+      filter: brightness(1.04);
+    }
+    .btn-install.is-installed:active {
+      transform: scale(0.96) !important;
+    }
+
+    @keyframes installedPulse {
+      0% { transform: scale(0.92); opacity: 0.7; }
+      60% { transform: scale(1.03); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* علامة التحميل الدائرية بجانب كلمة ثوانى */
+    .spinner-icon {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      display: inline-block;
+      animation: spinAnim 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spinAnim {
+      to { transform: rotate(360deg); }
+    }
+
     .ios-tip {
       display: none;
       background: #FFF8E7;
@@ -103,8 +156,8 @@
       حمّل يا نجم التطبيق وخليه معاك طول اليوم في أي زنقة.. لو أنت كابتن هتجيب فلوس 💸، ولو أنت زبون هناخد منك الفلوس 😂
     </p>
 
-    <button id="installBtn" class="btn-install">
-      <span>📲 ثبّت التطبيق يا باشا</span>
+    <button id="installBtn" class="btn-install" type="button">
+      <span>📲 ثبّت التطبيق الآن</span>
     </button>
 
     <div id="iosTip" class="ios-tip">
@@ -113,7 +166,11 @@
   </div>
 
   <script>
-    let deferredPrompt;
+    let deferredPrompt = null;
+    let isAppInstalledState = false;
+    let isInstallingInProgress = false;
+    let installCompleteTimer = null;
+
     const installBtn = document.getElementById('installBtn');
     const iosTip = document.getElementById('iosTip');
     const CLIENT_PRESENCE_KEY = 'ENNABY_CLIENT_PRESENCE_ID_V1';
@@ -144,6 +201,39 @@
       }).catch(() => {});
     }
 
+    // 1. إعادة الزر لحالته الطبيعية النشطة
+    function setButtonReadyUI() {
+      if (isAppInstalledState) return;
+      isInstallingInProgress = false;
+      installBtn.disabled = false;
+      installBtn.classList.remove('is-loading', 'is-installed');
+      installBtn.innerHTML = '<span>📲 ثبّت التطبيق الآن</span>';
+    }
+
+    // 2. إطفاء الزر وإظهار «ثوانى» وبجانبها علامة التحميل المتحركة
+    function setButtonLoadingUI() {
+      isInstallingInProgress = true;
+      installBtn.disabled = true;
+      installBtn.classList.remove('is-installed');
+      installBtn.classList.add('is-loading');
+      installBtn.innerHTML = '<span class="spinner-icon"></span><span>ثوانى...</span>';
+    }
+
+    // 3. تحويل الزر إلى اللون الأخضر التفاعلي فور التثبيت على الشاشة الرئيسية
+    function setButtonInstalledGreenUI() {
+      if (installCompleteTimer) {
+        clearTimeout(installCompleteTimer);
+        installCompleteTimer = null;
+      }
+      isInstallingInProgress = false;
+      isAppInstalledState = true;
+      installBtn.disabled = false;
+      installBtn.classList.remove('is-loading');
+      installBtn.classList.add('is-installed');
+      installBtn.innerHTML = '<span>✅ التطبيق نور شاشتك! 🎉</span>';
+      reportActualAppInstallOnce();
+    }
+
     // كشف أجهزة iOS لإظهار الطريقة اليدوية
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIos) {
@@ -152,33 +242,83 @@
 
     // إذا تم فتح الصفحة من داخل التطبيق المثبت بالفعل (Standalone)
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      reportActualAppInstallOnce();
+      setButtonInstalledGreenUI();
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       installBtn.style.display = 'flex';
+      if (!isAppInstalledState && !isInstallingInProgress) {
+        setButtonReadyUI();
+      }
     });
 
+    // يُطلق المتصفح هذا الحدث بمجرد انتهاء تثبيت التطبيق على الشاشة الرئيسية للهاتف
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
-      installBtn.innerText = 'ألف مبروك.. التطبيق نور شاشتك! 🎉';
-      reportActualAppInstallOnce();
+      setButtonInstalledGreenUI();
     });
 
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          installBtn.innerText = 'ألف مبروك.. التطبيق نور شاشتك! 🎉';
-          reportActualAppInstallOnce();
-        }
+    async function triggerInstallPromptFlow(promptEvent) {
+      try {
+        setButtonLoadingUI();
+        promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
         deferredPrompt = null;
-      } else if (!isIos) {
-        alert('التطبيق نازل عندك يا باشا، أو تقدر تثبته يدوي من الـ 3 نقط اللي فوق في المتصفح 🫡');
+
+        if (outcome === 'accepted') {
+          // يظل الزر منطفئاً مع كلمة «ثوانى...» وعلامة التحميل حتى يكتمل التثبيت على الشاشة الرئيسية
+          setButtonLoadingUI();
+          installCompleteTimer = setTimeout(() => {
+            if (!isAppInstalledState) {
+              setButtonInstalledGreenUI();
+            }
+          }, 3500);
+        } else {
+          // إذا أغلق المستخدم نافذة التثبيت دون موافقة، يعود الزر لوضعه النشط
+          setButtonReadyUI();
+        }
+      } catch (err) {
+        setButtonReadyUI();
       }
+    }
+
+    installBtn.addEventListener('click', async () => {
+      // إذا كان الزر باللون الأخضر بعد التثبيت، فعند الضغط عليه يفتح التطبيق مباشرة بشكل تفاعلي
+      if (isAppInstalledState) {
+        window.location.href = '/';
+        return;
+      }
+
+      if (isInstallingInProgress) return;
+
+      // إطفاء الزر فوراً وإظهار «ثوانى...» وعلامة التحميل
+      setButtonLoadingUI();
+
+      if (deferredPrompt) {
+        await triggerInstallPromptFlow(deferredPrompt);
+        return;
+      }
+
+      // انتظار قصير في حال ضغط المستخدم في أول لحظة قبل جهوزية حدث التثبيت من المتصفح
+      let tries = 0;
+      const waitPromptInterval = setInterval(() => {
+        tries++;
+        if (deferredPrompt) {
+          clearInterval(waitPromptInterval);
+          triggerInstallPromptFlow(deferredPrompt);
+        } else if (tries >= 8) {
+          clearInterval(waitPromptInterval);
+          if (isIos) {
+            setButtonReadyUI();
+            iosTip.style.display = 'block';
+          } else {
+            // إذا كان التطبيق مثبتاً بالفعل على الهاتف، يتحول الزر للأخضر التفاعلي
+            setButtonInstalledGreenUI();
+          }
+        }
+      }, 150);
     });
 
     if ('serviceWorker' in navigator) {
