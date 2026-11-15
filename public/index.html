@@ -21,8 +21,13 @@
   <meta property="og:image" content="https://ennaby-delivery.vercel.app/icon-512.png">
   <meta property="og:url" content="https://ennaby-delivery.vercel.app">
 
-  <!-- إعدادات تطبيق الويب (PWA) الأساسية مع كسر كاش المانيفست القديم -->
-  <link rel="manifest" href="/manifest.json?v=56">
+  <!-- ضبط مسار تطبيق العملاء والكباتن على /app ليكون مستقلاً عن تطبيق /admin -->
+  <script>
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      window.history.replaceState(null, '', '/app' + (window.location.search || '') + (window.location.hash || ''));
+    }
+  </script>
+  <link rel="manifest" href="/manifest.json?v=59">
   <meta name="theme-color" content="#7B3F52">
   <link rel="preload" as="image" href="/icon-512.png">
 
@@ -1395,16 +1400,21 @@
       color: #FFFFFF !important;
       border: none !important;
       border-radius: 9px !important;
-      padding: 7px 12px !important;
+      padding: 0 10px !important;
+      height: 35px !important;
+      min-height: 35px !important;
+      max-height: 35px !important;
       font-size: 11.5px !important;
       font-weight: 900 !important;
       cursor: pointer !important;
-      width: 100% !important;
+      flex: 1 1 0% !important;
+      width: auto !important;
+      white-space: nowrap !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 6px !important;
-      box-shadow: 0 3px 10px rgba(245, 124, 0, 0.25) !important;
+      gap: 5px !important;
+      box-shadow: 0 2px 8px rgba(245, 124, 0, 0.22) !important;
     }
   </style>
   <script>
@@ -1986,12 +1996,12 @@
               }
             });
 
-            // تحديث زر التقييم داخل الكارت ليفتح النافذة المنبثقة المطورة
+            // تحديث زر التقييم داخل الكارت ليظهر بنفس حجم الزر المجاور له تماماً بدون رقم الأوردر
             card.querySelectorAll('button').forEach(function (btnEl) {
               var bText = (btnEl.textContent || '').trim();
               if (bText.indexOf('قيّم الكابتن') !== -1 || bText.indexOf('قيم الكابتن') !== -1) {
                 btnEl.className = 'unrated-order-remind-btn';
-                btnEl.innerHTML = '<i class="fa-solid fa-star"></i> <span>قيّم الكابتن على أوردرك (' + safeEsc(ordId || '') + ') ⭐</span>';
+                btnEl.innerHTML = '<i class="fa-solid fa-star"></i> <span>قيّم الكابتن</span>';
                 if (ordId) {
                   btnEl.onclick = function () {
                     window.openCustomerRatingModalEnhanced(ordId);

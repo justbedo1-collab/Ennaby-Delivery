@@ -225,6 +225,40 @@ app.get('/admin-manifest.json', (req, res) => {
   });
 });
 
+// تقديم مانيفيست تطبيق موبايل الأدمن المستقل (Admin Standalone PWA)
+app.get('/admin-manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.json({
+    id: '/admin',
+    name: 'غرفة عمليات الرجل العنابي 🛡️',
+    short_name: 'عمليات العنابي 🛡️',
+    description: 'تطبيق إدارة وغرفة عمليات منصة الرجل العنابي دليفري',
+    lang: 'ar',
+    dir: 'rtl',
+    start_url: '/admin',
+    scope: '/admin',
+    display: 'standalone',
+    background_color: '#FAF7F4',
+    theme_color: '#7B3F52',
+    orientation: 'portrait',
+    icons: [
+      {
+        src: '/icon-192.png?v=admin59',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any'
+      },
+      {
+        src: '/icon-512.png?v=admin59',
+        sizes: '256x256 384x384 512x512',
+        type: 'image/png',
+        purpose: 'any'
+      }
+    ]
+  });
+});
+
 // [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع منع تخزين sw.js في الكاش لضمان عمل الإشعارات فوراً
 const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'admin-manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
 ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
@@ -232,27 +266,24 @@ ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
     if (assetName === 'sw.js') {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       res.setHeader('Service-Worker-Allowed', '/');
-    } else if (assetName === 'manifest.json') {
+    } else if (assetName === 'manifest.json' || assetName === 'admin-manifest.json') {
       res.setHeader('Cache-Control', 'no-cache');
     }
     const pubPath = path.join(__dirname, 'public', assetName);
     const rootPath = path.join(__dirname, assetName);
     if (fs.existsSync(pubPath)) return res.sendFile(pubPath);
     if (fs.existsSync(rootPath)) return res.sendFile(rootPath);
-
-    if (assetName.endsWith('.png')) {
-      const altJpg = assetName.replace(/\.png$/i, '.jpg');
-      const pubJpg = path.join(__dirname, 'public', altJpg);
-      const rootJpg = path.join(__dirname, altJpg);
-      if (fs.existsSync(pubJpg)) return res.sendFile(pubJpg);
-      if (fs.existsSync(rootJpg)) return res.sendFile(rootJpg);
+    if (assetName === 'logo-1.png') {
+      const jpgFallback = fs.existsSync(path.join(__dirname, 'public', 'logo-1.jpg'))
+        ? path.join(__dirname, 'public', 'logo-1.jpg')
+        : path.join(__dirname, 'logo-1.jpg');
+      if (fs.existsSync(jpgFallback)) return res.sendFile(jpgFallback);
     }
     res.status(404).end();
   });
 });
 
-app.get('/', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
-app.get('/index.html', (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
+app.get(['/', '/app', '/app/', '/index.html'], (req, res) => res.sendFile(resolveHtmlFilePath('index.html')));
 
 app.get(['/admin', '/admins', '/admin.html', '/private/admin.html'], (req, res) => {
   res.sendFile(resolveHtmlFilePath('admin.html'));

@@ -49,6 +49,7 @@ self.addEventListener('fetch', event => {
     event.request.mode === 'navigate' ||
     reqUrl.pathname.endsWith('.html') ||
     reqUrl.pathname === '/' ||
+    reqUrl.pathname === '/app' ||
     reqUrl.pathname === '/admin' ||
     reqUrl.pathname === '/install'
   ) {
