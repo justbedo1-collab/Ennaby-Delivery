@@ -124,7 +124,7 @@ app.use((req, res, next) => {
   }
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net data:; img-src 'self' data: blob: https: http: https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.basemaps.cartocdn.com; connect-src 'self' https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.basemaps.cartocdn.com https://*.supabase.co wss://*.supabase.co https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-ancestors 'self';"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net data:; img-src 'self' data: blob: https: http: https://www.facebook.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.basemaps.cartocdn.com; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.basemaps.cartocdn.com https://*.supabase.co wss://*.supabase.co https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-ancestors 'self';"
   );
   next();
 });
@@ -1922,6 +1922,106 @@ app.use((req, res, next) => {
   next();
 });
 
+// ==========================================
+// 5-أ. محرك Meta Conversions API (CAPI) بتشفير SHA-256 ومنع التكرار
+// ==========================================
+const META_PIXEL_ID = String(process.env.META_PIXEL_ID || '1709519630819853').trim();
+const META_CAPI_ACCESS_TOKEN = String(process.env.META_CAPI_ACCESS_TOKEN || '').trim();
+const META_TEST_EVENT_CODE = String(process.env.META_TEST_EVENT_CODE || '').trim();
+
+function sha256MetaValue(val) {
+  if (val === null || val === undefined) return undefined;
+  const clean = String(val).trim().toLowerCase();
+  if (!clean) return undefined;
+  return crypto.createHash('sha256').update(clean).digest('hex');
+}
+
+function hashPhoneForMetaCapi(rawPhone) {
+  const norm = normalizePhoneServer(rawPhone);
+  if (!norm) return undefined;
+  // الصيغة الدولية القياسية لميتا بدون علامة + (مثال: 2010xxxxxxxx)
+  const e164Digits = norm.startsWith('0') ? `2${norm}` : norm;
+  return sha256MetaValue(e164Digits);
+}
+
+function sendMetaCapiEvent({
+  req = null,
+  eventName,
+  eventId,
+  customerPhone = '',
+  customData = {},
+  isCustomerRequest = false
+}) {
+  if (!META_CAPI_ACCESS_TOKEN || !META_PIXEL_ID || !eventName || !eventId) return;
+
+  return trackPushTask((async () => {
+    try {
+      const userData = {
+        country: [sha256MetaValue('eg')],
+        ct: [sha256MetaValue('mansoura')]
+      };
+
+      const hashedPhone = hashPhoneForMetaCapi(customerPhone);
+      if (hashedPhone) {
+        userData.ph = [hashedPhone];
+        userData.external_id = [hashedPhone];
+      }
+
+      // نُرفق بيانات المتصفح (IP / User-Agent / _fbp / _fbc) فقط عندما يكون مصدر الطلب هو العميل نفسه
+      if (isCustomerRequest && req) {
+        const ip = getClientIp(req);
+        if (ip && ip !== 'anon') userData.client_ip_address = ip;
+        const ua = req.headers && req.headers['user-agent'];
+        if (ua) userData.client_user_agent = String(ua);
+        if (req.cookies && req.cookies._fbp) userData.fbp = String(req.cookies._fbp);
+        if (req.cookies && req.cookies._fbc) userData.fbc = String(req.cookies._fbc);
+      }
+
+      const eventSourceUrl = (isCustomerRequest && req && req.headers && req.headers.referer)
+        ? String(req.headers.referer)
+        : 'https://ennaby-delivery.vercel.app/app';
+
+      const eventPayload = {
+        event_name: eventName,
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: String(eventId),
+        action_source: 'website',
+        event_source_url: eventSourceUrl,
+        user_data: userData,
+        custom_data: {
+          currency: 'EGP',
+          ...customData
+        }
+      };
+
+      const requestBody = { data: [eventPayload] };
+      if (META_TEST_EVENT_CODE) {
+        requestBody.test_event_code = META_TEST_EVENT_CODE;
+      }
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3500);
+      try {
+        const url = `https://graph.facebook.com/v21.0/${encodeURIComponent(META_PIXEL_ID)}/events?access_token=${encodeURIComponent(META_CAPI_ACCESS_TOKEN)}`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
+        });
+        if (!resp.ok) {
+          const errText = await resp.text().catch(() => '');
+          console.warn(`⚠️ Meta CAPI [${eventName}] HTTP ${resp.status}:`, errText.slice(0, 200));
+        }
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch (err) {
+      console.warn(`⚠️ Meta CAPI [${eventName}] error:`, err.message);
+    }
+  })());
+}
+
 async function sendWebPushWithHighPriority(rawSubscription, payloadObj = {}) {
   let subscription = rawSubscription;
   if (typeof subscription === 'string') {
@@ -3340,6 +3440,23 @@ app.post('/api/orders', asyncHandler(async (req, res) => {
       body: `العميل: ${clientPhone} | من (${pickupZone}) إلى (${dropoffZone}) | الدفع كاش: ${finalCashFare} ج`
     });
 
+    sendMetaCapiEvent({
+      req,
+      eventName: 'OrderCreated',
+      eventId: `order_created_${orderId}`,
+      customerPhone: clientPhone,
+      isCustomerRequest: true,
+      customData: {
+        order_id: orderId,
+        value: finalCashFare,
+        original_fare: originalFare,
+        discount_applied: discountApplied,
+        pickup_zone: pickupZone,
+        dropoff_zone: dropoffZone,
+        trip_type: tripType
+      }
+    });
+
     const state = await buildClientState(req, true);
     res.json({
       success: true,
@@ -3636,6 +3753,22 @@ app.post('/api/orders/:id/negotiate', asyncHandler(async (req, res) => {
         body: `وافق العميل (${custPhone}) على عرض الكابتن ${capRow.full_name} بسعر ${agreedFare} ج.`
       });
 
+      sendMetaCapiEvent({
+        req,
+        eventName: 'OrderAccepted',
+        eventId: `order_accepted_${orderId}`,
+        customerPhone: custPhone,
+        isCustomerRequest: true,
+        customData: {
+          order_id: orderId,
+          value: finalCashFare,
+          original_fare: agreedFare,
+          pickup_zone: order.pickup_zone,
+          dropoff_zone: order.dropoff_zone,
+          trip_type: order.trip_type
+        }
+      });
+
       const state = await buildClientState(req, true);
       return res.json({
         success: true,
@@ -3833,6 +3966,22 @@ app.post('/api/orders/:id/accept', authenticateCaptain, asyncHandler(async (req,
     notifyAdminsPush('captain', {
       title: `✅ قبول طلب (${orderId}) — كابتن ${captain.full_name}`,
       body: `المسار: ${order.pickup_zone} ⬅️ ${order.dropoff_zone} | الأجرة: ${origFare} ج | العمولة: ${effectiveFee} ج`
+    });
+
+    sendMetaCapiEvent({
+      req,
+      eventName: 'OrderAccepted',
+      eventId: `order_accepted_${orderId}`,
+      customerPhone: custPhone,
+      isCustomerRequest: false,
+      customData: {
+        order_id: orderId,
+        value: roundMoney(order.fare ?? origFare),
+        original_fare: origFare,
+        pickup_zone: order.pickup_zone,
+        dropoff_zone: order.dropoff_zone,
+        trip_type: order.trip_type
+      }
     });
 
     const state = await buildClientState(req, true);
@@ -4272,6 +4421,23 @@ app.post('/api/orders/:id/complete', authenticateCaptain, asyncHandler(async (re
       body: `سلّم الكابتن ${cap.full_name} (${cap.phone}) الطلب بنجاح للعميل (${custPhone}) — صافي الكابتن: ${order.courier_net} ج`
     });
     await recordAnalyticsMetricEvent('completedOrders', 1);
+
+    sendMetaCapiEvent({
+      req,
+      eventName: 'OrderCompleted',
+      eventId: `order_completed_${order.id}`,
+      customerPhone: custPhone,
+      isCustomerRequest: false,
+      customData: {
+        order_id: order.id,
+        value: roundMoney(order.fare ?? order.original_fare ?? 0),
+        original_fare: roundMoney(order.original_fare ?? order.fare ?? 0),
+        pickup_zone: order.pickup_zone,
+        dropoff_zone: order.dropoff_zone,
+        trip_type: order.trip_type
+      }
+    });
+
     const state = await buildClientState(req, true);
     res.json({ success: true, message: 'تسلم إيدك يا بطل! تم التسليم 🛵💨', state });
   } catch (err) {

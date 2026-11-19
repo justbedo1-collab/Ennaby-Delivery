@@ -31,6 +31,135 @@
   <meta name="theme-color" content="#7B3F52">
   <link rel="preload" as="image" href="/icon-512.png">
 
+  <!-- Meta Pixel Code + وحدة التتبع المعزولة (EnnabyMetaTracker) -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1709519630819853');
+
+    (function () {
+      var firedEventIds = new Set();
+      var startOrderLockedForDraft = false;
+
+      function isAdminPath() {
+        return String(window.location.pathname || '').toLowerCase().indexOf('/admin') !== -1;
+      }
+
+      function safeTrack(method, eventName, params, eventId) {
+        try {
+          if (isAdminPath() || typeof window.fbq !== 'function') return;
+          if (eventId) {
+            if (firedEventIds.has(eventId)) return;
+            firedEventIds.add(eventId);
+            window.fbq(method, eventName, params || {}, { eventID: String(eventId) });
+          } else {
+            window.fbq(method, eventName, params || {});
+          }
+        } catch (e) {}
+      }
+
+      // 1. إرسال PageView فوراً مع event_id فريد لكل زيارة (خارج /admin)
+      var pageViewEventId = 'pv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      safeTrack('track', 'PageView', {}, pageViewEventId);
+
+      function trackStartOrderOnce(triggerSource) {
+        try {
+          if (startOrderLockedForDraft || isAdminPath()) return;
+          if (typeof STATE !== 'undefined' && STATE && STATE.currentRole !== 'customer') return;
+          startOrderLockedForDraft = true;
+          var evtId = 'start_order_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+          safeTrack('trackCustom', 'StartOrder', {
+            trigger: triggerSource || 'form_input',
+            trip_type: (typeof STATE !== 'undefined' && STATE && STATE.currentTripType) ? STATE.currentTripType : 'send'
+          }, evtId);
+        } catch (e) {}
+      }
+
+      window.EnnabyMetaTracker = {
+        trackStartOrder: trackStartOrderOnce,
+        resetStartOrderDraftLock: function () {
+          startOrderLockedForDraft = false;
+        },
+        trackOrderCreated: function (payload) {
+          if (!payload || !payload.orderId) return;
+          var cleanId = String(payload.orderId).trim();
+          startOrderLockedForDraft = false; // فتح القفل للطلب القادم
+          safeTrack('trackCustom', 'OrderCreated', {
+            order_id: cleanId,
+            value: Number(payload.value || 0),
+            currency: 'EGP',
+            original_fare: Number(payload.originalFare || payload.value || 0),
+            pickup_zone: String(payload.pickupZone || ''),
+            dropoff_zone: String(payload.dropoffZone || ''),
+            trip_type: String(payload.tripType || 'send')
+          }, 'order_created_' + cleanId);
+        },
+        trackOrderAccepted: function (orderObj) {
+          if (!orderObj || !orderObj.id) return;
+          var cleanId = String(orderObj.id).trim();
+          safeTrack('trackCustom', 'OrderAccepted', {
+            order_id: cleanId,
+            value: Number(orderObj.fare || orderObj.originalFare || 0),
+            currency: 'EGP',
+            original_fare: Number(orderObj.originalFare || orderObj.fare || 0),
+            pickup_zone: String(orderObj.pickupZone || ''),
+            dropoff_zone: String(orderObj.dropoffZone || ''),
+            trip_type: String(orderObj.tripType || 'send')
+          }, 'order_accepted_' + cleanId);
+        },
+        trackOrderCompleted: function (orderObj) {
+          if (!orderObj || !orderObj.id) return;
+          var cleanId = String(orderObj.id).trim();
+          safeTrack('trackCustom', 'OrderCompleted', {
+            order_id: cleanId,
+            value: Number(orderObj.fare || orderObj.originalFare || 0),
+            currency: 'EGP',
+            original_fare: Number(orderObj.originalFare || orderObj.fare || 0),
+            pickup_zone: String(orderObj.pickupZone || ''),
+            dropoff_zone: String(orderObj.dropoffZone || ''),
+            trip_type: String(orderObj.tripType || 'send')
+          }, 'order_completed_' + cleanId);
+        }
+      };
+
+      // ربط حدث StartOrder بالتفاعل الفعلي في نموذج الطلب والخريطة فقط
+      document.addEventListener('DOMContentLoaded', function () {
+        ['pickupAddress', 'dropoffAddress', 'orderSenderPhone'].forEach(function (fieldId) {
+          var el = document.getElementById(fieldId);
+          if (!el) return;
+          el.addEventListener('input', function () {
+            var val = String(el.value || '').trim();
+            if (val.length >= 3 && val.indexOf('ثواني بنلقط') === -1) {
+              trackStartOrderOnce(fieldId);
+            }
+          });
+        });
+
+        var mapEl = document.getElementById('customerInlineLeafletMap');
+        if (mapEl) {
+          mapEl.addEventListener('click', function () {
+            trackStartOrderOnce('map_pin');
+          });
+        }
+
+        var mapSugEl = document.getElementById('inlineMapSearchSuggestions');
+        if (mapSugEl) {
+          mapSugEl.addEventListener('click', function () {
+            trackStartOrderOnce('map_search');
+          });
+        }
+      });
+    })();
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1709519630819853&ev=PageView&noscript=1" /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <!-- إعدادات التوافق المخصصة لهواتف آبل (iOS) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -4046,6 +4175,14 @@ function applyCloudStateSnapshot(cloudState) {
             if (STATE.currentRole === 'customer' && savedCustPhone && ownerPh === savedCustPhone) {
               triggerDeviceAlert('customer_status_update');
               showToast(`🔔 جديد في طلبك (${o.id}): ${o.status} 🛵`, 'ok');
+              // إرسال أحداث Meta Pixel من المتصفح بنفس event_id الموحد مع السيرفر
+              if (window.EnnabyMetaTracker) {
+                if (prevStatus === 'في انتظار كابتن' && o.status === 'تم قبول الطلب') {
+                  window.EnnabyMetaTracker.trackOrderAccepted(o);
+                } else if (o.status === 'مكتمل') {
+                  window.EnnabyMetaTracker.trackOrderCompleted(o);
+                }
+              }
               // إذا أُلغي الطلب (إدارياً أو بانتهاء المهلة) وكان عليه كود خصم، نعيد تفعيله تلقائياً للعميل
               if (String(o.status || '').includes('ملغي') && o.promoCode && (!savedPromoCodeObj || !savedPromoCodeObj.code)) {
                 const availPromos = Array.isArray(STATE.settings?.availablePromoCodes) ? STATE.settings.availablePromoCodes : [];
@@ -5813,6 +5950,16 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
             purchaseBudget: isFetch ? selectedPurchaseBudget : null
           });
           if (ok && data.success) {
+            if (window.EnnabyMetaTracker && data.orderId) {
+              window.EnnabyMetaTracker.trackOrderCreated({
+                orderId: data.orderId,
+                value: priceCalc ? priceCalc.finalFare : 0,
+                originalFare: priceCalc ? priceCalc.originalFare : 0,
+                pickupZone: pZone,
+                dropoffZone: dZone,
+                tripType: isFetch ? 'fetch' : 'send'
+              });
+            }
             STATE.customerProfile.savedPhone = clientPhoneTyped;
             STATE.authenticatedCustomerPhone = clientPhoneTyped;
             customerCustomProposedFare = null;
