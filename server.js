@@ -191,76 +191,8 @@ function resolveHtmlFilePath(filename) {
   return candidates[0];
 }
 
-// تقديم ملف تعريف تطبيق موبايل الأدمن المستقل (Admin Standalone WebAPK Manifest) بهوية منفصلة تماماً عن تطبيق العملاء
-app.get('/admin-manifest.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.json({
-    id: '/admin',
-    name: 'غرفة عمليات الرجل العنابي 🛡️',
-    short_name: 'عمليات العنابي 🛡️',
-    description: 'تطبيق إدارة وغرفة عمليات منصة الرجل العنابي دليفري',
-    lang: 'ar',
-    dir: 'rtl',
-    start_url: '/admin',
-    scope: '/admin',
-    display: 'standalone',
-    background_color: '#FAF7F4',
-    theme_color: '#7B3F52',
-    orientation: 'portrait',
-    icons: [
-      {
-        src: '/icon-192.png?v=admin58',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/icon-512.png?v=admin58',
-        sizes: '256x256 384x384 512x512',
-        type: 'image/png',
-        purpose: 'any'
-      }
-    ]
-  });
-});
-
-// تقديم مانيفيست تطبيق موبايل الأدمن المستقل (Admin Standalone PWA)
-app.get('/admin-manifest.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.json({
-    id: '/admin',
-    name: 'غرفة عمليات الرجل العنابي 🛡️',
-    short_name: 'عمليات العنابي 🛡️',
-    description: 'تطبيق إدارة وغرفة عمليات منصة الرجل العنابي دليفري',
-    lang: 'ar',
-    dir: 'rtl',
-    start_url: '/admin',
-    scope: '/admin',
-    display: 'standalone',
-    background_color: '#FAF7F4',
-    theme_color: '#7B3F52',
-    orientation: 'portrait',
-    icons: [
-      {
-        src: '/icon-192.png?v=admin59',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/icon-512.png?v=admin59',
-        sizes: '256x256 384x384 512x512',
-        type: 'image/png',
-        purpose: 'any'
-      }
-    ]
-  });
-});
-
 // [NEW-SEC-01] تقديم ملفات الواجهة والـ PWA المسموحة فقط مع منع تخزين sw.js في الكاش لضمان عمل الإشعارات فوراً
-const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'admin-manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
+const ALLOWED_PUBLIC_ASSETS = ['sw.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-1.png', 'logo-1.jpg'];
 ALLOWED_PUBLIC_ASSETS.forEach((assetName) => {
   app.get(`/${assetName}`, (req, res) => {
     if (assetName === 'sw.js') {
@@ -666,6 +598,7 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
   if (Number.isFinite(Number(meta.arrivedAt)) && Number(meta.arrivedAt) > 0) payload.at = Number(meta.arrivedAt);
   if (Number.isFinite(Number(meta.lastBuzzAt)) && Number(meta.lastBuzzAt) > 0) payload.bz = Number(meta.lastBuzzAt);
   if (Number.isFinite(Number(meta.ratedAt)) && Number(meta.ratedAt) > 0) payload.rt = Number(meta.ratedAt);
+  if (Number.isFinite(Number(meta.lastReminderAt)) && Number(meta.lastReminderAt) > 0) payload.lr = Number(meta.lastReminderAt);
   if (Array.isArray(meta.captainOffers) && meta.captainOffers.length > 0) {
     payload.of = meta.captainOffers.slice(0, 15);
   }
@@ -714,6 +647,7 @@ function decodeOrderMetaFromNotes(storedNotes) {
     arrivedAt: meta.at ? Number(meta.at) : null,
     lastBuzzAt: meta.bz ? Number(meta.bz) : null,
     ratedAt: meta.rt ? Number(meta.rt) : null,
+    lastReminderAt: meta.lr ? Number(meta.lr) : null,
     captainOffers: Array.isArray(meta.of) ? meta.of : []
   };
 }
@@ -996,6 +930,55 @@ let storageCache = {
 };
 
 let lastLazyCleanupRun = 0;
+let lastLazyReminderRun = 0;
+
+// إرسال إشعار Push أوتوماتيكي لجميع الكباتن المتاحين كل 5 دقائق طالما الطلب ما زال على الرادار
+async function runLazyWaitingOrdersReminder() {
+  const now = Date.now();
+  if (now - lastLazyReminderRun < 30000) return 0;
+  lastLazyReminderRun = now;
+
+  try {
+    const fiveMinsAgoIso = new Date(now - 5 * 60000).toISOString();
+    const { data: waitingOrders } = await supabase
+      .from('orders')
+      .select('id, pickup_zone, pickup_address, dropoff_zone, original_fare, fare, customer_notes, created_at')
+      .eq('status', 'في انتظار كابتن')
+      .lt('created_at', fiveMinsAgoIso);
+
+    if (!Array.isArray(waitingOrders) || waitingOrders.length === 0) return 0;
+
+    let remindedCount = 0;
+    for (const ord of waitingOrders) {
+      const meta = decodeOrderMetaFromNotes(ord.customer_notes || '');
+      const createdMs = ord.created_at ? new Date(ord.created_at).getTime() : 0;
+      const lastRefMs = Number(meta.lastReminderAt || createdMs || 0);
+      if (lastRefMs > 0 && (now - lastRefMs) >= 5 * 60000) {
+        meta.lastReminderAt = now;
+        const updatedNotes = encodeOrderMetaIntoNotes(meta.cleanNotes, meta);
+        const { data: updRows } = await supabase
+          .from('orders')
+          .update({ customer_notes: updatedNotes })
+          .eq('id', ord.id)
+          .eq('status', 'في انتظار كابتن')
+          .select('id');
+
+        if (updRows && updRows.length > 0) {
+          remindedCount++;
+          const displayFare = roundMoney(ord.original_fare ?? ord.fare ?? 0);
+          broadcastPushToAvailableCaptains({
+            title: `🔔 تذكير: أوردر ما زال على الرادار (${ord.id}) 🛵`,
+            body: `من: ${ord.pickup_zone} (${ord.pickup_address}) ⬅️ إلى: ${ord.dropoff_zone} | الأجرة: ${displayFare} ج`
+          });
+        }
+      }
+    }
+    if (remindedCount > 0) invalidateStateCache();
+    return remindedCount;
+  } catch (e) {
+    return 0;
+  }
+}
 
 function invalidateStateCache() {
   stateCache.raw = null;
@@ -1393,6 +1376,7 @@ async function fetchRawDatabaseState(forceRefresh = false) {
 
   const cachedTimeoutMins = stateCache.raw?.settings?.waitingTimeoutMinutes ?? Number(process.env.WAITING_TIMEOUT_MINUTES || 30);
   await runLazyExpiredOrdersCleanup(cachedTimeoutMins);
+  await runLazyWaitingOrdersReminder();
 
   const [settingsRes, customersRes, captainsRes, ordersRes, adminsRes, logsRes, storageFilesMap] = await Promise.all([
     supabase.from('settings').select('*').eq('id', 1).maybeSingle(),

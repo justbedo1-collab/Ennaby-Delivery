@@ -1335,16 +1335,61 @@
       gap: 4px;
     }
 
-    /* ضبط كبسولات الوزن والدفع في نافذة الرادار المنبثقة */
+    /* إصلاح تنسيق كارت كود الخصم في الصفحة الرئيسية لإظهار خانة الكتابة بوضوح وتناسق */
+    #customerPromoCodeSection {
+      padding: 11px 12px !important;
+      border: 1.5px solid #D1C4E9 !important;
+      border-radius: 14px !important;
+      background: #FAF7FC !important;
+    }
+    #customerPromoCodeSection .promo-compact-row {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      gap: 7px !important;
+      width: 100% !important;
+      margin-top: 6px !important;
+    }
+    #customerPromoCodeSection .promo-compact-input {
+      width: 100% !important;
+      min-width: 0 !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 11px !important;
+      font-size: 12.5px !important;
+      font-weight: 800 !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #B39DDB !important;
+      border-radius: 10px !important;
+      color: var(--text-main) !important;
+    }
+    #customerPromoCodeSection .promo-compact-btn {
+      width: auto !important;
+      min-width: 102px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 13px !important;
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      border-radius: 10px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* جعل وصف الأوردر بكامل السطر والدفع عند الراسل/المستلم في سطر مستقل أسفله داخل نافذة الرادار */
     #courierPopupContentDetails span[style*="background:#FAF7F4"],
     #courierPopupContentDetails span[style*="background:#E8F5E9"] {
-      flex: 1 1 45% !important;
+      flex: 1 1 100% !important;
+      width: 100% !important;
+      max-width: 100% !important;
       text-align: center !important;
       justify-content: center !important;
-      display: inline-flex !important;
+      display: flex !important;
       align-items: center !important;
-      font-size: 10.5px !important;
-      padding: 4px 7px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      padding: 6px 9px !important;
+      border-radius: 8px !important;
     }
 
     /* 10. تنسيقات شريط التقييم الإجمالي للكابتن (5 نجوم + 5.0) وشارة التقييم الرقمية للعميل */
@@ -4766,7 +4811,12 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       const hStr = String(hours).padStart(2, '0');
       const mStr = String(mins).padStart(2, '0');
       const sStr = String(secs).padStart(2, '0');
-      return days > 0 ? `${days} يوم و ${hStr}:${mStr}:${sStr}` : `${hStr}:${mStr}:${sStr}`;
+      const timeClock = `\u200E${hStr}:${mStr}:${sStr}\u200E`;
+      if (days > 0) {
+        const dayWord = days === 1 ? 'يوم' : (days === 2 ? 'يومين' : (days <= 10 ? 'أيام' : 'يوم'));
+        return `${days} ${dayWord} و ${timeClock}`;
+      }
+      return timeClock;
     }
 
     function copyCustomerPromoCode(code) {
@@ -4864,24 +4914,24 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
           ? `متبقي <strong>${remUses} من ${maxUses}</strong> مرات استخدام`
           : 'صالح للاستخدام مرة واحدة';
 
-        return `<div style="background:#FFFFFF; border:1.5px solid #CE93D8; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; box-shadow:0 2px 6px rgba(106,27,154,0.06);">
-          <div style="flex:1;">
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <strong style="font-size:14px; font-weight:900; color:#6A1B9A; letter-spacing:0.8px;">${escapeHtml(p.code)}</strong>
+        return `<div style="background:#FFFFFF; border:1.5px solid #CE93D8; border-radius:13px; padding:11px 12px; display:flex; flex-direction:column; gap:8px; box-shadow:0 2px 8px rgba(106,27,154,0.07);">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap; border-bottom:1px dashed #E1BEE7; padding-bottom:7px;">
+            <strong style="font-size:14px; font-weight:900; color:#6A1B9A; letter-spacing:0.6px; direction:ltr;">${escapeHtml(p.code)}</strong>
+            <div style="display:flex; align-items:center; gap:5px;">
               <span class="badge badge-completed" style="font-size:10.5px;">خصم ${roundMoney(p.discountAmount)} ج</span>
               <span class="badge ${isCustom ? 'badge-delivering' : 'badge-accepted'}" style="font-size:10px;">${isCustom ? '👑 مخصوص ليك' : '📢 عام'}</span>
             </div>
-            <div style="font-size:11px; color:#4A148C; margin-top:4px; font-weight:700;">
-              🎯 ${usageText}
-            </div>
-            <div style="font-size:11px; color:#D32F2F; margin-top:3px; font-weight:800; display:flex; align-items:center; gap:4px;">
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-size:11px;">
+            <span style="color:#4A148C; font-weight:700;">🎯 ${usageText}</span>
+            <span style="background:#FFEBEE; border:1px solid #FFCDD2; color:#C62828; border-radius:50px; padding:2px 9px; font-size:10.5px; font-weight:800; display:inline-flex; align-items:center; gap:4px; direction:rtl;">
               <i class="fa-regular fa-clock"></i>
               <span>ينتهي خلال:</span>
-              <span class="js-promo-countdown" data-expires="${Number(p.expiresAt || 0)}" style="direction:ltr; display:inline-block;">${formatPromoCountdownText(p.expiresAt)}</span>
-            </div>
+              <span class="js-promo-countdown" data-expires="${Number(p.expiresAt || 0)}" style="direction:rtl; unicode-bidi:embed;">${formatPromoCountdownText(p.expiresAt)}</span>
+            </span>
           </div>
-          <button type="button" onclick="copyCustomerPromoCode('${escapeHtml(p.code)}')" style="background:#6A1B9A; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:5px; flex-shrink:0; box-shadow:0 2px 8px rgba(106,27,154,0.25);">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> شغّل الكود 🎁
+          <button type="button" onclick="copyCustomerPromoCode('${escapeHtml(p.code)}')" style="background:linear-gradient(135deg, #6A1B9A, #8E24AA); color:#fff; border:none; border-radius:10px; height:36px; width:100%; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(106,27,154,0.22);">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> شغّل الكود الآن 🎁
           </button>
         </div>`;
       }).join('');
@@ -6411,7 +6461,35 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
     // ==================== محرك النافذة المنبثقة الفورية لأوردرات الرادار للكابتن (15 ثانية) ====================
     const COURIER_POPUP_DURATION_MS = 15000;
+    const COURIER_POPUP_REPEAT_MS = 5 * 60 * 1000; // تكرار ظهور نافذة الرادار كل 5 دقائق
     const courierSeenPopupOrderIds = new Set();
+    const courierPopupLastShownMap = {};
+
+    setInterval(() => {
+      if (document.hidden || STATE.currentRole !== 'courier') return;
+      const courier = getActiveCourier();
+      if (!courier || courier.status !== 'معتمد' || !courier.isAvailable) return;
+      if (currentPopupOrderId) return;
+
+      const now = Date.now();
+      let anyRequeued = false;
+      (STATE.orders || []).forEach(o => {
+        if (!o || o.status !== 'في انتظار كابتن') return;
+        const lastShown = Number(courierPopupLastShownMap[o.id] || o.createdAt || 0);
+        if (lastShown > 0 && (now - lastShown) >= COURIER_POPUP_REPEAT_MS) {
+          courierSeenPopupOrderIds.delete(o.id);
+          courierPopupLastShownMap[o.id] = now;
+          if (!courierPopupOrderQueue.includes(o.id)) {
+            courierPopupOrderQueue.push(o.id);
+          }
+          anyRequeued = true;
+        }
+      });
+
+      if (anyRequeued && typeof evaluateCourierNewOrderPopup === 'function') {
+        evaluateCourierNewOrderPopup({});
+      }
+    }, 30000);
     let courierPopupOrderQueue = [];
     let currentPopupOrderId = null;
     let courierPopupIntervalId = null;
@@ -6578,6 +6656,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
 
       currentPopupOrderId = order.id;
       courierSeenPopupOrderIds.add(order.id);
+      courierPopupLastShownMap[order.id] = Date.now();
 
       const isStackedMode = myActiveCount > 0;
       const headerBox = document.getElementById('courierPopupHeaderBox');
