@@ -4998,14 +4998,19 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       updatePromoSectionVisibility();
       if (!box || !txt) return;
       if (savedPromoCodeObj && savedPromoCodeObj.code) {
-        const remHours = savedPromoCodeObj.expiresAt
-          ? Math.max(1, Math.ceil((Number(savedPromoCodeObj.expiresAt) - Date.now()) / 3600000))
-          : 24;
         const maxUses = Math.max(1, Number(savedPromoCodeObj.maxUses) || 1);
         const remUses = savedPromoCodeObj.remainingUses !== undefined ? Number(savedPromoCodeObj.remainingUses) : maxUses;
         const usesNote = maxUses > 1 ? ` • متبقي ${remUses} من ${maxUses}` : '';
+        const expTs = Number(savedPromoCodeObj.expiresAt || 0);
         box.style.display = 'flex';
-        txt.innerText = `🎟️ كود مفعّل (${savedPromoCodeObj.code}): خصم ${savedPromoCodeObj.discountAmount} ج (متاح لـ ${remHours} س${usesNote})`;
+        txt.innerHTML = `<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+          <span>🎟️ كود مفعّل (<strong dir="ltr">${escapeHtml(savedPromoCodeObj.code)}</strong>): خصم <strong>${roundMoney(savedPromoCodeObj.discountAmount)} ج</strong>${usesNote}</span>
+          <span style="background:#FFEBEE; border:1px solid #FFCDD2; color:#C62828; border-radius:50px; padding:1.5px 8px; font-size:10px; font-weight:800; display:inline-flex; align-items:center; gap:4px; direction:rtl;">
+            <i class="fa-regular fa-clock"></i>
+            <span>ينتهي خلال:</span>
+            <span class="js-promo-countdown" data-expires="${expTs}" style="direction:rtl; unicode-bidi:embed;">${formatPromoCountdownText(expTs)}</span>
+          </span>
+        </div>`;
         if (inp && document.activeElement !== inp) inp.value = savedPromoCodeObj.code;
       } else {
         box.style.display = 'none';
