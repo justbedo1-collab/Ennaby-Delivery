@@ -44,8 +44,27 @@
     fbq('init', '1709519630819853');
 
     (function () {
+      var STORAGE_KEY = 'ENNABY_META_FIRED_IDS_V1';
       var firedEventIds = new Set();
       var startOrderLockedForDraft = false;
+
+      try {
+        var savedRaw = localStorage.getItem(STORAGE_KEY);
+        if (savedRaw) {
+          JSON.parse(savedRaw).forEach(function (id) { firedEventIds.add(id); });
+        }
+      } catch (e) {}
+
+      function persistFiredId(id) {
+        firedEventIds.add(id);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(firedEventIds).slice(-120)));
+        } catch (e) {}
+      }
+
+      function cleanEventId(raw) {
+        return String(raw || '').replace(/[^a-zA-Z0-9_-]/g, '');
+      }
 
       function isAdminPath() {
         return String(window.location.pathname || '').toLowerCase().indexOf('/admin') !== -1;
@@ -54,10 +73,11 @@
       function safeTrack(method, eventName, params, eventId) {
         try {
           if (isAdminPath() || typeof window.fbq !== 'function') return;
-          if (eventId) {
-            if (firedEventIds.has(eventId)) return;
-            firedEventIds.add(eventId);
-            window.fbq(method, eventName, params || {}, { eventID: String(eventId) });
+          var safeId = cleanEventId(eventId);
+          if (safeId) {
+            if (firedEventIds.has(safeId)) return;
+            persistFiredId(safeId);
+            window.fbq(method, eventName, params || {}, { eventID: safeId });
           } else {
             window.fbq(method, eventName, params || {});
           }
@@ -88,10 +108,11 @@
         },
         trackOrderCreated: function (payload) {
           if (!payload || !payload.orderId) return;
-          var cleanId = String(payload.orderId).trim();
+          var rawId = String(payload.orderId).trim();
+          var cleanId = cleanEventId(rawId);
           startOrderLockedForDraft = false; // فتح القفل للطلب القادم
           safeTrack('trackCustom', 'OrderCreated', {
-            order_id: cleanId,
+            order_id: rawId,
             value: Number(payload.value || 0),
             currency: 'EGP',
             original_fare: Number(payload.originalFare || payload.value || 0),
@@ -102,9 +123,10 @@
         },
         trackOrderAccepted: function (orderObj) {
           if (!orderObj || !orderObj.id) return;
-          var cleanId = String(orderObj.id).trim();
+          var rawId = String(orderObj.id).trim();
+          var cleanId = cleanEventId(rawId);
           safeTrack('trackCustom', 'OrderAccepted', {
-            order_id: cleanId,
+            order_id: rawId,
             value: Number(orderObj.fare || orderObj.originalFare || 0),
             currency: 'EGP',
             original_fare: Number(orderObj.originalFare || orderObj.fare || 0),
@@ -115,9 +137,10 @@
         },
         trackOrderCompleted: function (orderObj) {
           if (!orderObj || !orderObj.id) return;
-          var cleanId = String(orderObj.id).trim();
+          var rawId = String(orderObj.id).trim();
+          var cleanId = cleanEventId(rawId);
           safeTrack('trackCustom', 'OrderCompleted', {
-            order_id: cleanId,
+            order_id: rawId,
             value: Number(orderObj.fare || orderObj.originalFare || 0),
             currency: 'EGP',
             original_fare: Number(orderObj.originalFare || orderObj.fare || 0),
@@ -128,16 +151,24 @@
         }
       };
 
-      // ربط حدث StartOrder بالتفاعل الفعلي في نموذج الطلب والخريطة فقط
+      // ربط حدث StartOrder بجميع التفاعلات الفعلية للعميل في نموذج الطلب والخريطة
       document.addEventListener('DOMContentLoaded', function () {
-        ['pickupAddress', 'dropoffAddress', 'orderSenderPhone'].forEach(function (fieldId) {
+        ['pickupAddress', 'dropoffAddress', 'orderSenderPhone', 'orderRecipientPhone', 'customerOrderNotes'].forEach(function (fieldId) {
           var el = document.getElementById(fieldId);
           if (!el) return;
           el.addEventListener('input', function () {
             var val = String(el.value || '').trim();
-            if (val.length >= 3 && val.indexOf('ثواني بنلقط') === -1) {
+            if (val.length >= 2 && val.indexOf('ثواني بنلقط') === -1) {
               trackStartOrderOnce(fieldId);
             }
+          });
+        });
+
+        ['pickupZone', 'dropoffZone'].forEach(function (selId) {
+          var sel = document.getElementById(selId);
+          if (!sel) return;
+          sel.addEventListener('change', function () {
+            trackStartOrderOnce(selId);
           });
         });
 
@@ -152,6 +183,13 @@
         if (mapSugEl) {
           mapSugEl.addEventListener('click', function () {
             trackStartOrderOnce('map_search');
+          });
+        }
+
+        var gpsBtn = document.querySelector('button[onclick*="captureRequesterOwnGpsLocation"]');
+        if (gpsBtn) {
+          gpsBtn.addEventListener('click', function () {
+            trackStartOrderOnce('auto_gps');
           });
         }
       });
@@ -5621,6 +5659,7 @@ function openCustomActionModal({ title, message, needInput = false, inputPlaceho
       calculateDeliveryPrice();
       updateCustomerPinFieldVisibility();
       switchCustTab('home');
+      if (window.EnnabyMetaTracker) window.EnnabyMetaTracker.trackStartOrder('reorder');
       setTimeout(() => {
         document.getElementById('submitOrderBtn')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 150);

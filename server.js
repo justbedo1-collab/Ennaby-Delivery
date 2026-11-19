@@ -599,6 +599,10 @@ function encodeOrderMetaIntoNotes(rawNotes, meta = {}) {
   if (Number.isFinite(Number(meta.lastBuzzAt)) && Number(meta.lastBuzzAt) > 0) payload.bz = Number(meta.lastBuzzAt);
   if (Number.isFinite(Number(meta.ratedAt)) && Number(meta.ratedAt) > 0) payload.rt = Number(meta.ratedAt);
   if (Number.isFinite(Number(meta.lastReminderAt)) && Number(meta.lastReminderAt) > 0) payload.lr = Number(meta.lastReminderAt);
+  if (meta.fbp) payload.fbp = String(meta.fbp).slice(0, 120);
+  if (meta.fbc) payload.fbc = String(meta.fbc).slice(0, 180);
+  if (meta.clientUa) payload.cua = String(meta.clientUa).slice(0, 260);
+  if (meta.clientIp) payload.cip = String(meta.clientIp).slice(0, 64);
   if (Array.isArray(meta.captainOffers) && meta.captainOffers.length > 0) {
     payload.of = meta.captainOffers.slice(0, 15);
   }
@@ -648,6 +652,10 @@ function decodeOrderMetaFromNotes(storedNotes) {
     lastBuzzAt: meta.bz ? Number(meta.bz) : null,
     ratedAt: meta.rt ? Number(meta.rt) : null,
     lastReminderAt: meta.lr ? Number(meta.lr) : null,
+    fbp: meta.fbp || null,
+    fbc: meta.fbc || null,
+    clientUa: meta.cua || null,
+    clientIp: meta.cip || null,
     captainOffers: Array.isArray(meta.of) ? meta.of : []
   };
 }
@@ -1944,15 +1952,21 @@ function hashPhoneForMetaCapi(rawPhone) {
   return sha256MetaValue(e164Digits);
 }
 
+function cleanMetaEventId(rawId) {
+  return String(rawId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 function sendMetaCapiEvent({
   req = null,
   eventName,
   eventId,
   customerPhone = '',
   customData = {},
-  isCustomerRequest = false
+  isCustomerRequest = false,
+  savedMeta = null
 }) {
-  if (!META_CAPI_ACCESS_TOKEN || !META_PIXEL_ID || !eventName || !eventId) return;
+  const safeEventId = cleanMetaEventId(eventId);
+  if (!META_CAPI_ACCESS_TOKEN || !META_PIXEL_ID || !eventName || !safeEventId) return;
 
   return trackPushTask((async () => {
     try {
@@ -1967,7 +1981,7 @@ function sendMetaCapiEvent({
         userData.external_id = [hashedPhone];
       }
 
-      // نُرفق بيانات المتصفح (IP / User-Agent / _fbp / _fbc) فقط عندما يكون مصدر الطلب هو العميل نفسه
+      // إرفاق بيانات متصفح العميل المباشرة أو المحفوظة وقت إنشاء الطلب (ولا نستخدم بيانات الكابتن أبداً)
       if (isCustomerRequest && req) {
         const ip = getClientIp(req);
         if (ip && ip !== 'anon') userData.client_ip_address = ip;
@@ -1975,8 +1989,14 @@ function sendMetaCapiEvent({
         if (ua) userData.client_user_agent = String(ua);
         if (req.cookies && req.cookies._fbp) userData.fbp = String(req.cookies._fbp);
         if (req.cookies && req.cookies._fbc) userData.fbc = String(req.cookies._fbc);
+      } else if (savedMeta && typeof savedMeta === 'object') {
+        if (savedMeta.clientIp && savedMeta.clientIp !== 'anon') userData.client_ip_address = String(savedMeta.clientIp);
+        if (savedMeta.clientUa) userData.client_user_agent = String(savedMeta.clientUa);
+        if (savedMeta.fbp) userData.fbp = String(savedMeta.fbp);
+        if (savedMeta.fbc) userData.fbc = String(savedMeta.fbc);
       }
 
+      const hasWebsiteAgent = Boolean(userData.client_user_agent);
       const eventSourceUrl = (isCustomerRequest && req && req.headers && req.headers.referer)
         ? String(req.headers.referer)
         : 'https://ennaby-delivery.vercel.app/app';
@@ -1984,9 +2004,9 @@ function sendMetaCapiEvent({
       const eventPayload = {
         event_name: eventName,
         event_time: Math.floor(Date.now() / 1000),
-        event_id: String(eventId),
-        action_source: 'website',
-        event_source_url: eventSourceUrl,
+        event_id: safeEventId,
+        action_source: hasWebsiteAgent ? 'website' : 'system_generated',
+        ...(hasWebsiteAgent ? { event_source_url: eventSourceUrl } : {}),
         user_data: userData,
         custom_data: {
           currency: 'EGP',
@@ -3365,7 +3385,11 @@ app.post('/api/orders', asyncHandler(async (req, res) => {
       surgePercent: surgeInfo.isActive ? surgeInfo.surgePercent : 0,
       routeDefaultFare,
       customerProposedFare,
-      purchaseBudget: tripType === 'fetch' ? (body.purchaseBudget || 'أقل من 200 ج') : null
+      purchaseBudget: tripType === 'fetch' ? (body.purchaseBudget || 'أقل من 200 ج') : null,
+      fbp: req.cookies && req.cookies._fbp ? String(req.cookies._fbp) : null,
+      fbc: req.cookies && req.cookies._fbc ? String(req.cookies._fbc) : null,
+      clientUa: req.headers && req.headers['user-agent'] ? String(req.headers['user-agent']) : null,
+      clientIp: getClientIp(req)
     });
 
     if (walletDiscount > 0) {
@@ -3968,12 +3992,14 @@ app.post('/api/orders/:id/accept', authenticateCaptain, asyncHandler(async (req,
       body: `المسار: ${order.pickup_zone} ⬅️ ${order.dropoff_zone} | الأجرة: ${origFare} ج | العمولة: ${effectiveFee} ج`
     });
 
+    const acceptOrderMeta = decodeOrderMetaFromNotes(order.customer_notes || '');
     sendMetaCapiEvent({
       req,
       eventName: 'OrderAccepted',
       eventId: `order_accepted_${orderId}`,
       customerPhone: custPhone,
       isCustomerRequest: false,
+      savedMeta: acceptOrderMeta,
       customData: {
         order_id: orderId,
         value: roundMoney(order.fare ?? origFare),
@@ -4422,12 +4448,14 @@ app.post('/api/orders/:id/complete', authenticateCaptain, asyncHandler(async (re
     });
     await recordAnalyticsMetricEvent('completedOrders', 1);
 
+    const completeOrderMeta = decodeOrderMetaFromNotes(order.customer_notes || '');
     sendMetaCapiEvent({
       req,
       eventName: 'OrderCompleted',
       eventId: `order_completed_${order.id}`,
       customerPhone: custPhone,
       isCustomerRequest: false,
+      savedMeta: completeOrderMeta,
       customData: {
         order_id: order.id,
         value: roundMoney(order.fare ?? order.original_fare ?? 0),
